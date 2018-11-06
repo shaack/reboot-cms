@@ -1,4 +1,9 @@
 <?php
+/**
+ * Author and copyright: Stefan Haack (https://shaack.com)
+ * Repository: https://github.com/shaack/reboot
+ * License: MIT, see file 'LICENSE'
+ */
 
 namespace Shaack\Reboot;
 
@@ -7,11 +12,6 @@ use Symfony\Component\Yaml\Yaml;
 require __DIR__ . '/../vendor/autoload.php';
 require 'Page.php';
 
-/**
- * Author and copyright: Stefan Haack (https://shaack.com)
- * Repository: https://github.com/shaack/reboot
- * License: MIT, see file 'LICENSE'
- */
 class Reboot
 {
     private $config;
