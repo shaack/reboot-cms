@@ -5,6 +5,9 @@
  * License: MIT, see file 'LICENSE'
  */
 
-include "core/Reboot.php";
+class Reboot {
+    public function __construct()
+    {
 
-$reboot = new Reboot();
+    }
+}
