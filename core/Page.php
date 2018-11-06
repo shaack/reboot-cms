@@ -1,10 +1,22 @@
 <?php
+
+namespace Shaack\Reboot;
 /**
  * Author and copyright: Stefan Haack (https://shaack.com)
  * Repository: https://github.com/shaack/reboot
  * License: MIT, see file 'LICENSE'
  */
+class Page
+{
+    private $template;
 
-include "core/Reboot.php";
+    public function __construct($reboot)
+    {
 
-new Shaack\Reboot\Reboot();
+    }
+
+    public function render()
+    {
+
+    }
+}

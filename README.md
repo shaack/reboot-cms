@@ -10,6 +10,10 @@ module structure, so it allows to build the page out of slices like Redaxo does.
 The default example uses Bootstrap and it was created with using Bootstrap in mind but 
 it will also work without Bootstrap.
 
+## Install
+
+Install composer and run `./composer.phar install`
+
 ## File Structure
 
 ### /core
@@ -40,4 +44,6 @@ The default _navigation.php renders a navigation from the existing files in `/lo
 If you just want to hide a file for the main navigation, prefix it with `#`, like `#legal.php`
 
 #### /local/modules
+
 #### /local/templates
+
