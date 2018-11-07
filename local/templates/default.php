@@ -1,3 +1,6 @@
+<?php
+use Shaack\Reboot\Block;
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -12,7 +15,11 @@
     <link href="/local/assets/style/default.css" rel="stylesheet">
 </head>
 <body>
-<?php echo($this->article->render()) ?>
+<?php
+$navbar = new Block("navbar");
+echo($navbar->render());
+echo($this->article->render());
+?>
 <script src="/vendor/components/jquery/jquery.slim.js"></script>
 <script src="/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>

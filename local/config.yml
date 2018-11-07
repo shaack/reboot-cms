@@ -1,2 +1,9 @@
+
+navbar:
+  brand: Reboot
+  structure:
+    Home: /
+    Documentation: /documentation
+
 # activate logging
 logging: true
