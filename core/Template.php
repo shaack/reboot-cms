@@ -8,5 +8,8 @@ namespace Shaack\Reboot;
 
 class Template
 {
+    public function __construct($article)
+    {
 
+    }
 }

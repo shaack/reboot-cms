@@ -7,6 +7,7 @@
 
 namespace Shaack\Reboot;
 
+use Page;
 use Symfony\Component\Yaml\Yaml;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -19,6 +20,10 @@ class Reboot
     public $route;
     public $parsedown;
 
+    /**
+     * Reboot constructor.
+     * @param string $uri
+     */
     public function __construct($uri)
     {
         $this->baseDir = dirname(__DIR__);
@@ -31,6 +36,9 @@ class Reboot
         $this->log("route: " . $this->route);
     }
 
+    /**
+     * @param string $message
+     */
     public function log($message)
     {
         if ($this->config->debug) {
@@ -40,7 +48,9 @@ class Reboot
 
     public function render()
     {
-        $page = new Article($this);
-        $page->render($this->route);
+        $article = new Article($this);
+        $template = new Template($this);
+        $page = new Page($template, $article);
+        $page->render($this);
     }
 }
