@@ -62,8 +62,9 @@ If you just want to hide a file for the main navigation, prefix it with `#`, lik
 
 ## ToDos
 
-- render should return a string, not echo
 - render with template
 - parse yaml configuration in articles
 - make navbar module working
+- allow get parameters
+- allow installation in subfolders
 

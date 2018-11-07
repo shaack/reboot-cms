@@ -1,2 +1,4 @@
 # activate logging
 debug: true
+# Wrap for markdown blocks (.md)
+markdown_wrap: <div class="container">|</div>

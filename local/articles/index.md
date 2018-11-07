@@ -6,7 +6,6 @@ contents:
     buttonText: Learn more
     buttonLink: /documentation
 -->
-It uses utility classes for typography and spacing to space content out within the larger container.
 
 <!-- block: markdown -->
 ## Another Markdown CMS with a twist

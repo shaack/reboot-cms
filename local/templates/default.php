@@ -12,7 +12,7 @@
     <link href="/local/assets/style/default.css" rel="stylesheet">
 </head>
 <body>
-<?php $this->renderArticle() ?>
+<?php echo($this->article->render()) ?>
 <script src="/vendor/components/jquery/jquery.slim.js"></script>
 <script src="/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
