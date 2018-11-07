@@ -24,7 +24,6 @@ class Block
     public function render()
     {
         global $reboot;
-        // render template
         ob_start();
         /** @noinspection PhpIncludeInspection */
         include $reboot->baseDir . '/local/blocks/' . $this->name . ".php";

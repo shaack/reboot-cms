@@ -48,7 +48,6 @@ class Article
      */
     public function renderMarkdown($articlePath)
     {
-        global $reboot;
         log("article: " . $articlePath);
         $rawContent = file_get_contents($articlePath);
 
