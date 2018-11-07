@@ -47,3 +47,9 @@ If you just want to hide a file for the main navigation, prefix it with `#`, lik
 
 #### /local/templates
 
+## ToDos
+
+- render with template
+- parse yaml configuration in articles
+- make navbar module working
+
