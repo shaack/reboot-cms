@@ -28,7 +28,7 @@ The `default.php` Template is used, if no other `Template` is defined for an
 
 ### Article
 
-Folder: `/local/tempalates`
+Folder: `/local/articles`
 
 An `Article` contains the **main content** of a `Page`.  
 
@@ -48,16 +48,9 @@ Folder: `/local/blocks`
 
 A `Block` is a mostly horizontal section in an `Article`. 
 
-The default _navigation.php renders a navigation from the existing files in `/local/pages`.
-If you just want to hide a file for the main navigation, prefix it with `#`, like `#legal.php`
-
-#### /local/modules
-
-#### /local/templates
-
 ## ToDos
 
-- render with template
+- extract blocks in markdown files
 - parse yaml configuration in articles
 - make navbar module working
 - allow get parameters
