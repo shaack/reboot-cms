@@ -19,17 +19,18 @@ class Article
 
     public function render($route)
     {
-        // error_log("route: " . $route);
-        $articlePrefix = __DIR__ . '/../local/articles' . $route;
-        // error_log("prefix: " . $prefix);
-        $isMarkdown = file_exists($articlePrefix . ".md");
-        $isPhp = file_exists($articlePrefix . ".php");
-        if($isMarkdown) {
-            $rawContent =  file_get_contents($articlePrefix . ".md");
+        $articlePrefix = $this->reboot->baseDir . '/local/articles' . $route;
+        $this->reboot->log("prefix: " . $articlePrefix);
+        if (file_exists($articlePrefix . ".md")) {
+            // is markdown
+            $rawContent = file_get_contents($articlePrefix . ".md");
             echo $this->reboot->parsedown->parse($rawContent);
-        } else if($isPhp) {
+        } else if (file_exists($articlePrefix . ".php")) {
+            // is php
+            /** @noinspection PhpIncludeInspection */
             include $articlePrefix . ".php";
         } else {
+            // not found
             $this->render("/404");
         }
     }
