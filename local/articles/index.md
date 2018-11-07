@@ -1,13 +1,15 @@
-<!-- rb:slice jumbotron
-contents 
-    headline: "Jumbotron",
-    lead: "This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.",
-    buttonText: "Learn more"
+<!-- 
+block: jumbotron
+contents: 
+    headline: Reboot CMS
+    lead: A Bootstrap concentric, flat file, markdown CMS in PHP.
+    buttonText: Learn more
+    buttonLink: /documentation
 -->
 It uses utility classes for typography and spacing to space content out within the larger container.
 
-<!-- rb:slice standard -->
-## The Standard Module
+<!-- block: markdown -->
+## Another Markdown CMS with a twist
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut 
 labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco 
