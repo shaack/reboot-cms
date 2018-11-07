@@ -52,8 +52,6 @@ A `Block` is a mostly horizontal section in an `Article`.
 
 ## ToDos
 
-- make navbar block working
+- create a footer
 - multi language support
-- allow get parameters
-- allow installation in subfolders
 
