@@ -7,7 +7,7 @@
 
 namespace Shaack\Reboot;
 
-class Page
+class Article
 {
     private $reboot;
 
@@ -20,15 +20,15 @@ class Page
     public function render($route)
     {
         // error_log("route: " . $route);
-        $prefix = __DIR__ . '/../local/pages' . $route;
+        $articlePrefix = __DIR__ . '/../local/articles' . $route;
         // error_log("prefix: " . $prefix);
-        $isMarkdown = file_exists($prefix . ".md");
-        $isPhp = file_exists($prefix . ".php");
+        $isMarkdown = file_exists($articlePrefix . ".md");
+        $isPhp = file_exists($articlePrefix . ".php");
         if($isMarkdown) {
-            $rawContent =  file_get_contents($prefix . ".md");
+            $rawContent =  file_get_contents($articlePrefix . ".md");
             echo $this->reboot->parsedown->parse($rawContent);
         } else if($isPhp) {
-            include $prefix . ".php";
+            include $articlePrefix . ".php";
         } else {
             $this->render("/404");
         }

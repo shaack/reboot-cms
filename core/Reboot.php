@@ -8,7 +8,7 @@
 namespace Shaack\Reboot;
 
 require __DIR__ . '/../vendor/autoload.php';
-require 'Page.php';
+require 'Article.php';
 
 class Reboot
 {
@@ -22,14 +22,14 @@ class Reboot
         $this->config = json_decode($configJson);
         $this->route = rtrim($uri, "/");
         $this->parsedown = new \Parsedown();
-        if(!$this->route || is_dir(__DIR__ . '/../local/pages' . $this->route)) {
+        if(!$this->route || is_dir(__DIR__ . '/../local/articles' . $this->route)) {
             $this->route = $this->route . "/index";
         }
     }
 
     public function render()
     {
-        $page = new Page($this);
+        $page = new Article($this);
         $page->render($this->route);
     }
 }
