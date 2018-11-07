@@ -19,6 +19,7 @@ class Reboot
 {
     public $baseDir;
     public $config;
+    public $uri;
     public $route;
     public $parsedown;
 
@@ -30,11 +31,12 @@ class Reboot
     {
         $this->baseDir = dirname(__DIR__);
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
+        $this->uri = strtok($uri, '?');
         new Logger($this->config['logging']);
         log("---");
-        log("request: " . $uri);
+        log("request: " . $this->uri);
         // log(print_r($this->config, true));
-        $this->route = rtrim($uri, "/");
+        $this->route = rtrim($this->uri, "/");
         $this->parsedown = new \Parsedown();
         if (!$this->route || is_dir($this->baseDir . '/local/articles' . $this->route)) {
             $this->route = $this->route . "/index";

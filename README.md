@@ -52,7 +52,7 @@ A `Block` is a mostly horizontal section in an `Article`.
 
 ## ToDos
 
-- make navbar module working
+- make navbar block working
 - multi language support
 - allow get parameters
 - allow installation in subfolders
