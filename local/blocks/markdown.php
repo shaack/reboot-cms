@@ -7,5 +7,5 @@
 ?>
 
 <div class="container">
-    <?php echo($this->content()) ?>
+    <?= $this->content() ?>
 </div>
