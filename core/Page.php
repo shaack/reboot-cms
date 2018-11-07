@@ -9,29 +9,28 @@ namespace Shaack\Reboot;
 
 class Page
 {
-    private $template;
     private $reboot;
-    private $parsedown;
-    private $slices;
-
-    private $contents;
-    private $parsed;
 
     public function __construct($reboot)
     {
+        /** @var Reboot $reboot */
         $this->reboot = $reboot;
-        $this->parsedown = new \Parsedown();
-        // create slices
-
     }
 
-    public function render()
+    public function render($route)
     {
-
-    }
-
-    private function parsePage($path) {
-        $this->contents = file_get_contents(__DIR__ . '../local/pages/' . $path);
-        $this->parsed = $this->parsedown($this->contents);
+        // error_log("route: " . $route);
+        $prefix = __DIR__ . '/../local/pages' . $route;
+        // error_log("prefix: " . $prefix);
+        $isMarkdown = file_exists($prefix . ".md");
+        $isPhp = file_exists($prefix . ".php");
+        if($isMarkdown) {
+            $rawContent =  file_get_contents($prefix . ".md");
+            echo $this->reboot->parsedown->parse($rawContent);
+        } else if($isPhp) {
+            include $prefix . ".php";
+        } else {
+            $this->render("/404");
+        }
     }
 }
