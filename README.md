@@ -52,9 +52,8 @@ A `Block` is a mostly horizontal section in an `Article`.
 
 ## ToDos
 
-- extract blocks in markdown files
-- parse yaml configuration in articles
 - make navbar module working
+- multi language support
 - allow get parameters
 - allow installation in subfolders
 

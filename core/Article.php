@@ -7,39 +7,34 @@
 
 namespace Shaack\Reboot;
 
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
+
+require "Block.php";
+
 class Article
 {
-    private $reboot;
-
-    /**
-     * Article constructor.
-     * @param Reboot $reboot
-     */
-    public function __construct($reboot)
-    {
-        $this->reboot = $reboot;
-    }
-
     /**
      * @param string $route
      * @return string
      */
     public function render($route = null)
     {
+        global $reboot;
         if (!$route) {
-            $route = $this->reboot->route;
+            $route = $reboot->route;
         }
-        $articlePrefix = $this->reboot->baseDir . '/local/articles' . $route;
+        $articlePrefix = $reboot->baseDir . '/local/articles' . $route;
         if (file_exists($articlePrefix . ".md")) {
             return $this->renderMarkdown($articlePrefix . ".md");
         } else if (file_exists($articlePrefix . ".php")) {
             return $this->renderPHP($articlePrefix . ".php");
         } else {
             // not found
-            $this->reboot->log("article not found (404)");
+            log("article not found (404)");
             http_response_code(404);
-            if (file_exists($this->reboot->baseDir . '/local/articles/404.md') ||
-                file_exists($this->reboot->baseDir . '/local/articles/404.php')) {
+            if (file_exists($reboot->baseDir . '/local/articles/404.md') ||
+                file_exists($reboot->baseDir . '/local/articles/404.php')) {
                 return $this->render("/404");
             } else {
                 return "<h1>404</h1><p>Page not found.</p>";
@@ -53,14 +48,45 @@ class Article
      */
     public function renderMarkdown($articlePath)
     {
-        $this->reboot->log("article: " . $articlePath);
+        global $reboot;
+        log("article: " . $articlePath);
         $rawContent = file_get_contents($articlePath);
-        $html = $this->reboot->parsedown->parse($rawContent);
-        if ($this->reboot->config['markdown_wrap']) {
-            return str_replace("|", $html, $this->reboot->config['markdown_wrap']);
-        } else {
-            return $html;
+
+        // find blocks
+        $offset = 0;
+        $blocks = array();
+        do {
+            preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $rawContent, $matches, 0, $offset);
+            if ($matches) {
+                $offset += strlen($matches[0]) - 4;
+                try {
+                    $blockConfig = Yaml::parse(trim($matches[1]));
+                    $blockContent = $reboot->parsedown->parse(trim($matches[2]));
+                    $blockName = $blockConfig['block'];
+                    log("found block: " . $blockName);
+                    // log("config: " . print_r($blockConfig, true));
+                    // log("content: " . $blockContent);
+                    $block = new Block($blockName, $blockContent, $blockConfig);
+                    $blocks[] = $block;
+                } catch (ParseException $e) {
+                    log("could not parse block config: " . trim($matches[1]));
+                }
+            }
+        } while ($matches);
+
+        if(!count($blocks)) {
+            // interpret whole content as flat file
+            $block = new Block("markdown", $reboot->parsedown->parse($rawContent));
+            $blocks[] = $block;
         }
+
+        // render blocks
+        $html = "";
+        foreach ($blocks as $block) {
+            $html .= $block->render();
+        }
+
+        return $html;
     }
 
     /**
@@ -69,7 +95,7 @@ class Article
      */
     public function renderPHP($articlePath)
     {
-        $this->reboot->log("article: " . $articlePath);
+        log("article: " . $articlePath);
         ob_start();
         /** @noinspection PhpIncludeInspection */
         include $articlePath;

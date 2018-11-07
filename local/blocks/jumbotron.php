@@ -5,14 +5,18 @@
  * License: MIT, see file 'LICENSE'
  */
 
-/**  @var \Shaack\Reboot\Slice $slice */
+/**  @var \Shaack\Reboot\Block $this */
 ?>
-<div class="jumbotron">
-    <h1 class="display-4"><?php $slice->config("headline") ?></h1>
-    <p class="lead"><?php $slice->config("lead") ?></p>
-    <hr class="my-4">
-    <?php $slice->content() ?>
-    <p class="lead">
-        <a class="btn btn-primary btn-lg" href="#" role="button"><?php $slice->config("buttonText") ?></a>
-    </p>
+<div class="container">
+    <div class="jumbotron">
+
+        <h1 class="display-4"><?php echo($this->value("headline")) ?></h1>
+        <p class="lead"><?php echo($this->value("lead")) ?></p>
+        <hr class="my-4">
+        <?php echo($this->content()) ?>
+        <p class="lead">
+            <a class="btn btn-primary btn-lg" href="<?php echo($this->value("buttonLink")) ?>"
+               role="button"><?php echo($this->value("buttonText")) ?></a>
+        </p>
+    </div>
 </div>

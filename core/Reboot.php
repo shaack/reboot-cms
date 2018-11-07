@@ -13,6 +13,7 @@ use Symfony\Component\Yaml\Yaml;
 require __DIR__ . '/../vendor/autoload.php';
 require 'Page.php';
 require 'Article.php';
+require 'utils/Logger.php';
 
 class Reboot
 {
@@ -29,25 +30,16 @@ class Reboot
     {
         $this->baseDir = dirname(__DIR__);
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
-        $this->log("---");
-        $this->log("request: " . $uri);
+        new Logger($this->config['logging']);
+        log("---");
+        log("request: " . $uri);
         // $this->log(print_r($this->config, true));
         $this->route = rtrim($uri, "/");
         $this->parsedown = new \Parsedown();
         if (!$this->route || is_dir($this->baseDir . '/local/articles' . $this->route)) {
             $this->route = $this->route . "/index";
         }
-        $this->log("route: " . $this->route);
-    }
-
-    /**
-     * @param string $message
-     */
-    public function log($message)
-    {
-        if ($this->config['debug']) {
-            error_log($message);
-        }
+        log("route: " . $this->route);
     }
 
     /**
@@ -55,8 +47,8 @@ class Reboot
      */
     public function render()
     {
-        $article = new Article($this);
-        $page = new Page($this, $article);
+        $article = new Article();
+        $page = new Page($article);
         return $page->render();
     }
 }
