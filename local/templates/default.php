@@ -6,7 +6,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Bootstrap Starter Template for Reboot CMS</title>
+    <title>Reboot CMS</title>
 
     <link href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/local/assets/style/default.css" rel="stylesheet">
