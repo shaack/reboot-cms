@@ -52,6 +52,4 @@ A `Block` is a mostly horizontal section in an `Article`.
 
 ## ToDos
 
-- create a footer
 - multi language support
-
