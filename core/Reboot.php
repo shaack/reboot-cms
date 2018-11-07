@@ -13,7 +13,6 @@ use Symfony\Component\Yaml\Yaml;
 require __DIR__ . '/../vendor/autoload.php';
 require 'Page.php';
 require 'Article.php';
-require 'Template.php';
 
 class Reboot
 {
@@ -30,6 +29,9 @@ class Reboot
     {
         $this->baseDir = dirname(__DIR__);
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml', Yaml::PARSE_OBJECT_FOR_MAP);
+        $this->log("---");
+        $this->log("request: " . $uri);
+        // $this->log(print_r($this->config, true));
         $this->route = rtrim($uri, "/");
         $this->parsedown = new \Parsedown();
         if (!$this->route || is_dir($this->baseDir . '/local/articles' . $this->route)) {
@@ -48,11 +50,13 @@ class Reboot
         }
     }
 
+    /**
+     * @return string
+     */
     public function render()
     {
         $article = new Article($this);
-        $template = new Template($this);
-        $page = new Page($this, $template, $article);
+        $page = new Page($this, $article);
         return $page->render();
     }
 }

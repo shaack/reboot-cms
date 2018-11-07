@@ -7,6 +7,6 @@
 
 namespace Shaack\Reboot;
 
-class Module {
+class Block {
 
 }

@@ -7,29 +7,32 @@
 
 class Page
 {
-    private $template;
-    private $article;
     private $reboot;
+    private $article;
 
     /**
      * Page constructor.
      * @param \Shaack\Reboot\Reboot $reboot
-     * @param \Shaack\Reboot\Template $template
      * @param \Shaack\Reboot\Article $article
      */
-    public function __construct($reboot, $template, $article)
+    public function __construct($reboot, $article)
     {
         $this->reboot = $reboot;
-        $this->template = $template;
         $this->article = $article;
     }
 
     /**
-     * @param \Shaack\Reboot\Reboot $reboot
+     * @param string $template
      * @return string
      */
-    public function render()
+    public function render($template = "default")
     {
-        return $this->article->render($this->reboot->route);
+        // render template
+        ob_start();
+        /** @noinspection PhpIncludeInspection */
+        include $this->reboot->baseDir . '/local/templates/' . $template . ".php";
+        $contents = ob_get_contents();
+        ob_end_clean();
+        return $contents;
     }
 }
