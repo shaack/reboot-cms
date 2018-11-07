@@ -8,4 +8,4 @@
 include "core/Reboot.php";
 
 $reboot = new Shaack\Reboot\Reboot($_SERVER['REQUEST_URI']);
-$reboot->render();
+echo($reboot->render());

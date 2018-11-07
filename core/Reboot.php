@@ -11,7 +11,9 @@ use Page;
 use Symfony\Component\Yaml\Yaml;
 
 require __DIR__ . '/../vendor/autoload.php';
+require 'Page.php';
 require 'Article.php';
+require 'Template.php';
 
 class Reboot
 {
@@ -50,7 +52,7 @@ class Reboot
     {
         $article = new Article($this);
         $template = new Template($this);
-        $page = new Page($template, $article);
-        $page->render($this);
+        $page = new Page($this, $template, $article);
+        return $page->render();
     }
 }

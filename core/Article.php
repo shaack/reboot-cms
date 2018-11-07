@@ -24,14 +24,18 @@ class Article
         if (file_exists($articlePrefix . ".md")) {
             // is markdown
             $rawContent = file_get_contents($articlePrefix . ".md");
-            echo $this->reboot->parsedown->parse($rawContent);
+            return $this->reboot->parsedown->parse($rawContent);
         } else if (file_exists($articlePrefix . ".php")) {
             // is php
+            ob_start();
             /** @noinspection PhpIncludeInspection */
             include $articlePrefix . ".php";
+            $contents = ob_get_contents();
+            ob_end_clean();
+            return $contents;
         } else {
             // not found
-            $this->render("/404");
+            return $this->render("/404");
         }
     }
 }
