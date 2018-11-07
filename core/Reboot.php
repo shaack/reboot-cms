@@ -1,7 +1,7 @@
 <?php
 /**
  * Author and copyright: Stefan Haack (https://shaack.com)
- * Repository: https://github.com/shaack/reboot
+ * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  */
 
@@ -28,7 +28,7 @@ class Reboot
     public function __construct($uri)
     {
         $this->baseDir = dirname(__DIR__);
-        $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml', Yaml::PARSE_OBJECT_FOR_MAP);
+        $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
         $this->log("---");
         $this->log("request: " . $uri);
         // $this->log(print_r($this->config, true));
@@ -45,7 +45,7 @@ class Reboot
      */
     public function log($message)
     {
-        if ($this->config->debug) {
+        if ($this->config['debug']) {
             error_log($message);
         }
     }

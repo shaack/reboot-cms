@@ -1,7 +1,7 @@
 <?php
 /**
  * Author and copyright: Stefan Haack (https://shaack.com)
- * Repository: https://github.com/shaack/reboot
+ * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  */
 
@@ -56,8 +56,8 @@ class Article
         $this->reboot->log("article: " . $articlePath);
         $rawContent = file_get_contents($articlePath);
         $html = $this->reboot->parsedown->parse($rawContent);
-        if ($this->reboot->config->markdown_wrap) {
-            return str_replace("|", $html, $this->reboot->config->markdown_wrap);
+        if ($this->reboot->config['markdown_wrap']) {
+            return str_replace("|", $html, $this->reboot->config['markdown_wrap']);
         } else {
             return $html;
         }

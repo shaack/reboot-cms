@@ -7,7 +7,9 @@ of `Blocks`.
 
 ## Install
 
-Install composer and run `./composer.phar install`
+[Install composer](https://getcomposer.org/download/)
+
+and run `./composer.phar install`
 
 ## Main Objects
 
