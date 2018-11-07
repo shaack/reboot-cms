@@ -4,3 +4,9 @@
  * Repository: https://github.com/shaack/reboot
  * License: MIT, see file 'LICENSE'
  */
+
+namespace Shaack\Reboot;
+
+class Module {
+
+}

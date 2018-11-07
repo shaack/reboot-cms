@@ -8,15 +8,15 @@
 namespace Shaack\Reboot;
 
 class Slice {
-    public function config($name) {
 
-    }
+    private $module;
 
-    public function content($name = null) {
-
+    public function __construct($moduleName)
+    {
+        $this->module = new $moduleName;
     }
 
     public function render() {
-
+        $this->module->render();
     }
 }
