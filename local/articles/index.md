@@ -1,9 +1,8 @@
-<!-- rb:slice jumbotron 
-{
-    "headline": "Jumbotron",
-    "lead": "This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.",
-    "buttonText": "Learn more"
-}
+<!-- rb:slice jumbotron
+contents 
+    headline: "Jumbotron",
+    lead: "This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.",
+    buttonText: "Learn more"
 -->
 It uses utility classes for typography and spacing to space content out within the larger container.
 

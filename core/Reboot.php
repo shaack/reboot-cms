@@ -7,23 +7,34 @@
 
 namespace Shaack\Reboot;
 
+use Symfony\Component\Yaml\Yaml;
+
 require __DIR__ . '/../vendor/autoload.php';
 require 'Article.php';
 
 class Reboot
 {
+    public $baseDir;
     public $config;
     public $route;
     public $parsedown;
 
     public function __construct($uri)
     {
-        $configJson = file_get_contents(__DIR__ . '/../local/config.json');
-        $this->config = json_decode($configJson);
+        $this->baseDir = dirname(__DIR__);
+        $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml', Yaml::PARSE_OBJECT_FOR_MAP);
         $this->route = rtrim($uri, "/");
         $this->parsedown = new \Parsedown();
-        if(!$this->route || is_dir(__DIR__ . '/../local/articles' . $this->route)) {
+        if (!$this->route || is_dir($this->baseDir . '/local/articles' . $this->route)) {
             $this->route = $this->route . "/index";
+        }
+        $this->log("route: " . $this->route);
+    }
+
+    public function log($message)
+    {
+        if ($this->config->debug) {
+            error_log($message);
         }
     }
 
