@@ -33,7 +33,7 @@ class Reboot
         new Logger($this->config['logging']);
         log("---");
         log("request: " . $uri);
-        // $this->log(print_r($this->config, true));
+        // log(print_r($this->config, true));
         $this->route = rtrim($uri, "/");
         $this->parsedown = new \Parsedown();
         if (!$this->route || is_dir($this->baseDir . '/local/articles' . $this->route)) {

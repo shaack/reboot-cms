@@ -61,7 +61,7 @@ class Article
                 $offset += strlen($matches[0]) - 4;
                 try {
                     $blockConfig = Yaml::parse(trim($matches[1]));
-                    $blockContent = $reboot->parsedown->parse(trim($matches[2]));
+                    $blockContent = trim($matches[2]);
                     $blockName = $blockConfig['block'];
                     log("found block: " . $blockName);
                     // log("config: " . print_r($blockConfig, true));
@@ -76,7 +76,7 @@ class Article
 
         if(!count($blocks)) {
             // interpret whole content as flat file
-            $block = new Block("markdown", $reboot->parsedown->parse($rawContent));
+            $block = new Block("markdown", $rawContent);
             $blocks[] = $block;
         }
 

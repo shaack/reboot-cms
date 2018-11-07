@@ -40,6 +40,7 @@ class Block
 
     public function content()
     {
-        return $this->content;
+        global $reboot;
+        return $reboot->parsedown->parse($this->content);
     }
 }
