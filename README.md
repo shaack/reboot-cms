@@ -1,42 +1,57 @@
-# reboot
+# Reboot CMS
 
-Reboot CMS, a Bootstrap concentric, flat file, markdown CMS.
+A Bootstrap concentric, flat file, markdown CMS in PHP.
 
-Inspired by [Pico](http://picocms.org) and [Redaxo](https://redaxo.org/)
+Inspired by [Pico](http://picocms.org) and [Redaxo](https://redaxo.org/).
 
-Main idea is, to have a minimal CMS without needing a database like Pico, which has a
-module structure, so it allows to build the page out of slices like Redaxo does.
-
-The default example uses Bootstrap and it was created with using Bootstrap in mind but 
+Main idea is, to have a minimal CMS without needing a database, but with the support
+of `Blocks`.
+ 
+The default example uses Bootstrap and it was created with Bootstrap in mind, but 
 it will also work without Bootstrap.
 
 ## Install
 
 Install composer and run `./composer.phar install`
 
-## File Structure
+## Main Objects
 
-### /core
+In short:
 
-Don`t modify files in this folder, its the Reboot core.
+- `Page` = `Template` + `Article`
+- `Article` = `flat Markdown file` | `Markdown file with Blocks` | `PHP file`
 
-### /vendor
+Articles are auto routet, as they are structured in `/local/articles`.
 
-Composers install dir for external dependencies.
+### Template
 
-### /local
+Folder: `/local/tempalates`
 
-Put all modifications here.
+A `Template` describes how to render a `Page`. `Templates` are written in PHP.
+The `default.php` Template is used, if no other `Template` is defined for an
+`Article`.
 
-#### /local/pages
+### Article
 
-Your page structure. Files created here are created in Markdown or PHP and redered on request.
+Folder: `/local/tempalates`
 
-`index.md` or `index.php` will be shown on requesting `/`
-`NAME.md` or `NAME.php` will be shown on requesting `/NAME`
-`FOLDER/NAME.md` will be shown on requesting `/FOLDER/NAME`
+An `Article` contains the **main content** of a `Page`.  
 
-To hide pages, name them with underscore, like _footer.md, _navigation.php
+It can be a **flat Markdown** file, or can contain multiple `Blocks` or
+also can be a **PHP-File**, where everything is possible.
+
+`Articles` are auto-routed on web-requests:
+
+- `index.md` or `index.php` will be shown on requesting `/`
+- `NAME.md` or `NAME.php` will be shown on requesting `/NAME`
+- `FOLDER/index.md` (or .php) will be shown on requesting `/FOLDER`
+- `FOLDER/NAME.md` (or .php) will be shown on requesting `/FOLDER/NAME`
+
+### Block
+
+Folder: `/local/blocks`
+
+A `Block` is a mostly horizontal section in an `Article`. 
 
 The default _navigation.php renders a navigation from the existing files in `/local/pages`.
 If you just want to hide a file for the main navigation, prefix it with `#`, like `#legal.php`
@@ -47,6 +62,7 @@ If you just want to hide a file for the main navigation, prefix it with `#`, lik
 
 ## ToDos
 
+- render should return a string, not echo
 - render with template
 - parse yaml configuration in articles
 - make navbar module working
