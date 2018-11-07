@@ -22,9 +22,7 @@ Don`t modify files in this folder, its the Reboot core.
 
 ### /vendor
 
-Composers install dir for external dependencies. For now:
-
-- [Parsedown Markdown Parser](http://parsedown.org/)
+Composers install dir for external dependencies.
 
 ### /local
 
