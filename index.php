@@ -7,4 +7,5 @@
 
 include "core/Reboot.php";
 
-new Shaack\Reboot\Reboot();
+$reboot = new Shaack\Reboot\Reboot($_SERVER['REQUEST_URI']);
+$reboot->render();
