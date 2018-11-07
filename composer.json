@@ -3,6 +3,7 @@
     "erusev/parsedown": "^1.7",
     "twbs/bootstrap": "4.1.3",
     "symfony/yaml": "^4.1",
-    "ext-json": "*"
+    "ext-json": "*",
+    "components/jquery": "^3.3"
   }
 }
