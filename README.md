@@ -68,13 +68,10 @@ Markdown files without blocks will render as a flat Markdown Article.
 Folder: `/local/blocks`
 
 A `Block` is a mostly horizontal section in an `Article`. 
+Blocks are written in PHP. They can also be called section templates.
 
-Examples for `Blocks` are 
-- `jumbotron`, renders a Bootstrap Jumbotron
-- `markdown`, renders Mardown
-- `navbar`, renders a Bootstrap Navbar
-
-Example for the "jumbotron" `Block` which was used in the `Article` above.
+The code for the "jumbotron" `Block` which was used in the `Article` above,
+looks like this:
 ``` php
 <div class="container">
     <div class="jumbotron">
