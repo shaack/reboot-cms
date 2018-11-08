@@ -7,7 +7,7 @@ of `Blocks`.
 
 ## Install
 
-[Install composer](https://getcomposer.org/download/)
+Download this repository, [install composer](https://getcomposer.org/download/),
 
 and run `./composer.phar install`
 
