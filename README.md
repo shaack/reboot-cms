@@ -15,8 +15,8 @@ and run `./composer.phar install`
 
 In short:
 
-- `Page` = `Template` and `Article`
-- `Article` = `Markdown file` or `PHP file`
+- `Page` = `Template` (look) + `Article` (content)
+- `Article` = `Markdown file` (with blocks) or `PHP file`
 
 ### Article
 
@@ -34,7 +34,7 @@ also can be a **PHP-File**, where everything is possible.
 - `FOLDER/index.md` (or .php) will be shown on requesting `/FOLDER`
 - `FOLDER/NAME.md` (or .php) will be shown on requesting `/FOLDER/NAME`
 
-Example for a Markdown Article with Blocks:
+Example for a Markdown `Article` with `Blocks`:
 
 ``` markdown
 <!-- 
