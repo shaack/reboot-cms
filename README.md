@@ -56,15 +56,20 @@ tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
 quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea 
 commodo consequat. 
 ```
-This `Article` contains two `Blocks`, jumbotron and markdown.
+This `Article` contains two `Blocks`, "jumbotron" and "markdown". It will render to
+this:
+
+![](https://shaack.com/projekte/assets/img/cms_blocks.png)
+
+Markdown files without blocks will render as a flat Markdown Article.
 
 ### Block
 
 Folder: `/local/blocks`
 
-A `Block` is a mostly horizontal section in an `Article`. It can be seen as a template for an `Article` section. 
+A `Block` is a mostly horizontal section in an `Article`. 
 
-Examples for `Blocks`are 
+Examples for `Blocks` are 
 - `jumbotron`, renders a Bootstrap Jumbotron
 - `markdown`, renders Mardown
 - `navbar`, renders a Bootstrap Navbar
