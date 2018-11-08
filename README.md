@@ -1,4 +1,4 @@
-# Scope CMS
+# Reboot CMS
 
 A Bootstrap concentric, flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org) and [Redaxo](https://redaxo.org/).
 
