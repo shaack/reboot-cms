@@ -74,6 +74,23 @@ Examples for `Blocks` are
 - `markdown`, renders Mardown
 - `navbar`, renders a Bootstrap Navbar
 
+Example for the "jumbotron" `Block` which was used in the `Article` above.
+``` php
+<div class="container">
+    <div class="jumbotron">
+
+        <h1 class="display-4"><?= $this->value("headline") ?></h1>
+        <p class="lead"><?= $this->value("lead") ?></p>
+        <hr class="my-4">
+        <?= $this->content() ?>
+        <p class="lead">
+            <a class="btn btn-primary btn-lg" href="<?= $this->value("buttonLink") ?>"
+               role="button"><?= $this->value("buttonText") ?></a>
+        </p>
+    </div>
+</div>
+```
+
 ### Template
 
 Folder: `/local/tempalates`
