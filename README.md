@@ -2,7 +2,7 @@
 
 A Bootstrap concentric, flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org) and [Redaxo](https://redaxo.org/).
 
-The main idea is, to have a minimal CMS without needing a database, but with the support
+A minimal CMS without needing a database, but with the support
 of `Blocks`.
 
 ## Install
