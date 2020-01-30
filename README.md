@@ -5,10 +5,6 @@ A Bootstrap concentric, flat file, Markdown CMS in PHP, inspired by [Pico](http:
 A minimal CMS without needing a database, but with the support
 of `Blocks`.
 
-## Sites using reboot-cms
-
-- www.wukies.de
-
 ## Install
 
 Download this repository, [install composer](https://getcomposer.org/download/),
