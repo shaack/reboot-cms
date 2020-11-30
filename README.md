@@ -98,8 +98,3 @@ Folder: `/local/tempalates`
 A `Template` describes how to render a `Page`. `Templates` are written in PHP.
 The `default.php` Template is used, if no other `Template` is defined for an
 `Article`.
-
-
-## ToDos
-
-- multi language support
