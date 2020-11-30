@@ -12,7 +12,7 @@ https://www.wukies.de
 
 Download this repository, [install composer](https://getcomposer.org/download/),
 
-and run `./composer.phar install`
+and run `composer.phar install`
 
 ## Main Objects
 
