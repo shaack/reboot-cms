@@ -14,7 +14,7 @@ Download this repository, [install composer](https://getcomposer.org/download/),
 
 and run `composer.phar install`
 
-## Main Objects
+## Documentation
 
 In short:
 
