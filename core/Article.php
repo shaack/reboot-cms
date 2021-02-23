@@ -35,9 +35,9 @@ class Article
             http_response_code(404);
             if (file_exists($reboot->baseDir . '/local/articles/404.md') ||
                 file_exists($reboot->baseDir . '/local/articles/404.php')) {
-                return $this->render("/404");
+                return $this->render("/404"); // put a 404 file in /pages to create your own
             } else {
-                return "<h1>404</h1><p>Page not found.</p>";
+                return "<div class='container'><h1>404</h1><p>Page not found.</p></div>";
             }
         }
     }
@@ -73,7 +73,7 @@ class Article
             }
         } while ($matches);
 
-        if(!count($blocks)) {
+        if (!count($blocks)) {
             // interpret whole content as flat file
             $block = new Block("markdown", $rawContent);
             $blocks[] = $block;
