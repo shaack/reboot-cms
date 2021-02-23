@@ -19,7 +19,7 @@ and run `composer.phar install`
 In short:
 
 - `Page` = `Template` + `Article` (content)
-- `Article` = `Markdown file` (with blocks) or `PHP file`
+- `Article` = `Markdown file` (with blocks) or `PHP file` (where you can do everything)
 
 ### Article
 

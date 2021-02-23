@@ -32,14 +32,23 @@ class Block
         return $contents;
     }
 
+    public function config($name)
+    {
+        return @$this->config[$name];
+    }
+
     public function value($name)
     {
-        return $this->config['values'][$name];
+        return @$this->config['values'][$name];
     }
 
     public function content()
     {
         global $reboot;
-        return $reboot->parsedown->parse($this->content);
+        if($this->content) {
+            return $reboot->parsedown->parse($this->content);
+        } else {
+            return "";
+        }
     }
 }
