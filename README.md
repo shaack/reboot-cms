@@ -2,16 +2,19 @@
 
 A Bootstrap concentric, flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org) and [Redaxo](https://redaxo.org/).
 
-The main idea is, to have a minimal CMS without needing a database, but with the support
+A minimal CMS without needing a database, but with the support
 of `Blocks`.
+
+reboot-cms was used for this webpage:
+https://www.wukies.de 
 
 ## Install
 
 Download this repository, [install composer](https://getcomposer.org/download/),
 
-and run `./composer.phar install`
+and run `composer.phar install`
 
-## Main Objects
+## Documentation
 
 In short:
 
@@ -95,8 +98,3 @@ Folder: `/local/tempalates`
 A `Template` describes how to render a `Page`. `Templates` are written in PHP.
 The `default.php` Template is used, if no other `Template` is defined for an
 `Article`.
-
-
-## ToDos
-
-- multi language support
