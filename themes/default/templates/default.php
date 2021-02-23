@@ -12,7 +12,7 @@ use Shaack\Reboot\Block;
     <title>Reboot CMS</title>
 
     <link href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/local/assets/style/default.css" rel="stylesheet">
+    <link href="/themes/default/assets/style/default.css" rel="stylesheet">
 </head>
 <body>
 <?php

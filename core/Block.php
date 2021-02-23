@@ -26,7 +26,7 @@ class Block
         global $reboot;
         ob_start();
         /** @noinspection PhpIncludeInspection */
-        include $reboot->baseDir . '/local/blocks/' . $this->name . ".php";
+        include $reboot->baseDir . '/themes/' . $reboot->config['theme'] . '/blocks/' . $this->name . ".php";
         $contents = ob_get_contents();
         ob_end_clean();
         return $contents;
