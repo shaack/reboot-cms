@@ -72,8 +72,7 @@ Markdown files without blocks will render as a flat Markdown Article.
 
 Folder: `/local/blocks`
 
-A `Block` is a mostly horizontal section in an `Article`. 
-Blocks are written in PHP.
+A `Block` describes how a Block is rendered. Blocks are written in PHP.
 
 The code for the "jumbotron" `Block` which was used in the `Article` above,
 looks like this:
@@ -97,6 +96,6 @@ looks like this:
 
 Folder: `/local/tempalates`
 
-A `Template` describes how to render a `Page`. `Templates` are written in PHP.
+A `Template` describes how an `Article` is rendered to a `Page`. `Templates` are written in PHP.
 The `default.php` Template is used, if no other `Template` is defined for an
 `Article`.
