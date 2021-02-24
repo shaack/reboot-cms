@@ -5,8 +5,10 @@ A Bootstrap 4 concentric, flat file, Markdown CMS in PHP, inspired by [Pico](htt
 A minimal CMS without needing a database, but with the support
 of `Blocks`.
 
-reboot-cms was used for this webpage:
-https://www.wukies.de 
+### Websites using reboot-cms
+
+- [wukies.de](https://wukies.de)
+- [chesscoin032.com](https://chesscoin032.com)
 
 ## Install
 
