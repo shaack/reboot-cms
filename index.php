@@ -9,4 +9,4 @@ include "core/Reboot.php";
 
 global $reboot;
 $reboot = new Shaack\Reboot\Reboot($_SERVER['REQUEST_URI']);
-echo($reboot->render());
+echo($reboot->renderArticle());

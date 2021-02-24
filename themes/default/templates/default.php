@@ -13,7 +13,7 @@ $navbarConfig = $reboot->config['navbar'];
     <title>Reboot CMS</title>
 
     <link href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/themes/default/assets/style/default.css" rel="stylesheet">
+    <link href="<?= $reboot->themePath() ?>/assets/style/default.css" rel="stylesheet">
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
