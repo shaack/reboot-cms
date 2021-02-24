@@ -1,0 +1,7 @@
+# Website configuration and navigation structure
+
+theme: admin
+navbar:
+  brand: Reboot CMS Admin
+  structure:
+    Dashboard: /

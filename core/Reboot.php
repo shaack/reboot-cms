@@ -25,6 +25,7 @@ class Reboot
     public $uri;
     public $route;
     public $parsedown;
+    public $isAdmin = false;
 
     /**
      * Reboot constructor.
@@ -33,14 +34,18 @@ class Reboot
     public function __construct($uri)
     {
         $this->baseDir = dirname(__DIR__);
-        $this->baseUrl = str_replace("index.php", "", $_SERVER['PHP_SELF']);
-        $this->website = Yaml::parseFile($this->baseDir . '/content/website.yml');
-        $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
         $this->uri = strtok($uri, '?');
+        $this->route = rtrim($this->uri, "/");
+        $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
         new Logger($this->config['logging']);
         log("---");
         log("request: " . $this->uri);
-        $this->route = rtrim($this->uri, "/");
+        if(strpos($this->route, "/" . $this->config['adminPath']) === 0) {
+            $this->isAdmin = true;
+            log("isAdmin = true");
+        }
+        $this->baseUrl = str_replace("index.php", "", $_SERVER['PHP_SELF']);
+        $this->website = Yaml::parseFile($this->baseDir . '/content/website.yml');
         $this->parsedown = new Parsedown();
         if (!$this->route || is_dir($this->baseDir . '/content/articles' . $this->route)) {
             $this->route = $this->route . "/index";
