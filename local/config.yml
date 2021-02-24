@@ -1,9 +1,6 @@
-theme: default
-navbar:
-  brand: Reboot CMS
-  structure:
-    Home: /
-    Documentation: /documentation
+# Local configuration
 
 # activate logging, set to "false" in production
 logging: true
+# the path to the admin interface
+adminPath: /rb-admin

@@ -25,7 +25,7 @@ In short:
 
 ### Article
 
-Folder: `/local/articles`
+Folder: `/content/articles`
 
 An `Article` contains the content of a `Page`.  
 

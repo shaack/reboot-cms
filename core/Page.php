@@ -28,7 +28,7 @@ class Page
         // render template
         ob_start();
         /** @noinspection PhpIncludeInspection */
-        include $reboot->baseDir . '/themes/' . $reboot->config['theme'] . '/templates/' . $template . ".php";
+        include $reboot->baseDir . '/themes/' . $reboot->website['theme'] . '/templates/' . $template . ".php";
         $contents = ob_get_contents();
         ob_end_clean();
         return $contents;

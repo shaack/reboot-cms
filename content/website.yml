@@ -1,0 +1,8 @@
+# Website configuration and navigation structure
+
+theme: bs-default
+navbar:
+  brand: Reboot CMS
+  structure:
+    Home: /
+    Documentation: /documentation

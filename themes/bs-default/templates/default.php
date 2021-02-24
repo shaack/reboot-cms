@@ -1,6 +1,6 @@
 <?php
 global $reboot;
-$navbarConfig = $reboot->config['navbar'];
+$navbarConfig = $reboot->website['navbar'];
 ?>
 <!doctype html>
 <html lang="en">

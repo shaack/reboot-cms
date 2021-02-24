@@ -20,6 +20,7 @@ class Reboot
 {
     public $baseDir;
     public $baseUrl;
+    public $website;
     public $config;
     public $uri;
     public $route;
@@ -33,15 +34,15 @@ class Reboot
     {
         $this->baseDir = dirname(__DIR__);
         $this->baseUrl = str_replace("index.php", "", $_SERVER['PHP_SELF']);
+        $this->website = Yaml::parseFile($this->baseDir . '/content/website.yml');
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
         $this->uri = strtok($uri, '?');
         new Logger($this->config['logging']);
         log("---");
         log("request: " . $this->uri);
-        // log(print_r($this->config, true));
         $this->route = rtrim($this->uri, "/");
         $this->parsedown = new Parsedown();
-        if (!$this->route || is_dir($this->baseDir . '/local/articles' . $this->route)) {
+        if (!$this->route || is_dir($this->baseDir . '/content/articles' . $this->route)) {
             $this->route = $this->route . "/index";
         }
         log("route: " . $this->route);
@@ -59,6 +60,6 @@ class Reboot
 
     public function themePath()
     {
-        return $this->baseUrl . "themes/" . $this->config["theme"];
+        return $this->baseUrl . "themes/" . $this->website["theme"];
     }
 }
