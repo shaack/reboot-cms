@@ -1,9 +1,9 @@
 theme: default
 navbar:
-  brand: Reboot
+  brand: Reboot CMS
   structure:
     Home: /
     Documentation: /documentation
 
-# activate logging
+# activate logging, set to "false" in production
 logging: true

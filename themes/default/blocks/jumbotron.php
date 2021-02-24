@@ -9,7 +9,6 @@
 ?>
 <div class="container">
     <div class="jumbotron">
-
         <h1 class="display-4"><?= $this->value("headline") ?></h1>
         <p class="lead"><?= $this->value("lead") ?></p>
         <hr class="my-4">

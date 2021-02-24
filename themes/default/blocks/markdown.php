@@ -4,6 +4,8 @@
  * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  */
+
+/**  @var \Shaack\Reboot\Block $this */
 ?>
 
 <div class="container">

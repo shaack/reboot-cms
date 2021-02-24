@@ -1,5 +1,6 @@
 <?php
-use Shaack\Reboot\Block;
+global $reboot;
+$navbarConfig = $reboot->config['navbar'];
 ?>
 <!doctype html>
 <html lang="en">
@@ -15,9 +16,28 @@ use Shaack\Reboot\Block;
     <link href="/themes/default/assets/style/default.css" rel="stylesheet">
 </head>
 <body>
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="/"><?php echo $navbarConfig["brand"] ?></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar">
+        <ul class="navbar-nav mr-auto">
+            <?php
+            $structure = $navbarConfig['structure'];
+            foreach ($structure as $label => $path) {
+                ?>
+                <li class="nav-item <?= $reboot->uri == $path ? "active" : "" ?>">
+                    <a class="nav-link" href="<?= $path ?>"><?= $label ?></a>
+                </li>
+                <?php
+            }
+            ?>
+        </ul>
+    </div>
+</nav>
 <?php
-$navbar = new Block("navbar");
-echo($navbar->render());
 echo($this->article->render());
 ?>
 <script src="/vendor/components/jquery/jquery.slim.js"></script>
