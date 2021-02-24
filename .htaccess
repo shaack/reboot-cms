@@ -28,11 +28,7 @@
 
 RewriteEngine On
 
-# Redirect /index.php to /
-RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /.*index\.php
-RewriteRule ^index.php/?(.*)$ $1 [R=301,L]
-
-# Run everything else but real files through index.php
+# Run everything but real files through index.php
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)$ index.php/$1?%{QUERY_STRING} [L]
+RewriteRule ^(.*)$ index.php?/$1 [L]
