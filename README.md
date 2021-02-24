@@ -46,7 +46,7 @@ Example for a Markdown `Article` with `Blocks`:
 block: jumbotron
 values: 
     headline: Reboot CMS
-    lead: A Bootstrap concentric, flat file, markdown CMS in PHP
+    lead: A flat file, markdown CMS in PHP
     buttonText: Learn more
     buttonLink: /documentation
 -->
@@ -64,7 +64,7 @@ commodo consequat.
 This `Article` contains two `Blocks`, "jumbotron" and "markdown". It will render to
 this:
 
-![](https://shaack.com/projekte/assets/img/cms_blocks.png)
+![](https://shaack.com/projekte/assets/img/reboot-cms-jumbotron.png)
 
 Markdown files without blocks will render as a flat Markdown Article.
 
