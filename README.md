@@ -70,7 +70,7 @@ Markdown files without blocks will render as a flat Markdown Article.
 
 ### Block
 
-Folder: `/local/blocks`
+Folder: `/themes/THEME_NAME/blocks`
 
 A `Block` describes how a Block is rendered. Blocks are written in PHP.
 
@@ -94,7 +94,7 @@ looks like this:
 
 ### Template
 
-Folder: `/local/tempalates`
+Folder: `/themes/THEME_NAME/tempalates`
 
 A `Template` describes how an `Article` is rendered to a `Page`. `Templates` are written in PHP.
 The `default.php` Template is used, if no other `Template` is defined for an
