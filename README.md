@@ -1,6 +1,6 @@
 # Reboot CMS
 
-A Bootstrap 4 concentric, flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org) and [Redaxo](https://redaxo.org/).
+A flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org) and [Redaxo](https://redaxo.org/).
 
 A minimal CMS without needing a database, but with the support
 of `Blocks`.

@@ -2,7 +2,7 @@
 block: jumbotron
 values: 
     headline: Reboot CMS
-    lead: A Bootstrap 4 concentric, flat file, markdown CMS in PHP
+    lead: A flat file, markdown CMS in PHP
     buttonText: Learn more
     buttonLink: /documentation
 -->
