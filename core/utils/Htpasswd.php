@@ -22,6 +22,6 @@ class Htpasswd
     }
 
     function validate($username, $password) {
-
+        return false;
     }
 }

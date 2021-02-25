@@ -39,10 +39,6 @@ class Reboot
         new Logger($this->config['logging']);
         log("---");
         log("request: " . $this->uri);
-        if(strpos($this->route, "/" . $this->config['adminPath']) === 0) {
-            $isAdmin = true;
-            log("$isAdmin = true");
-        }
         $this->baseUrl = str_replace("index.php", "", $_SERVER['PHP_SELF']);
         $this->website = Yaml::parseFile($this->baseDir . '/content/website.yml');
         $this->parsedown = new Parsedown();

@@ -1,10 +1,12 @@
 <?php
+use Shaack\Reboot\Article;
+use Shaack\Reboot\Reboot;
+
 /**
  * Author and copyright: Stefan Haack (https://shaack.com)
  * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  */
-
 class Page
 {
     private $article;
@@ -12,8 +14,8 @@ class Page
 
     /**
      * Page constructor.
-     * @param \Shaack\Reboot\Reboot $reboot
-     * @param \Shaack\Reboot\Article $article
+     * @param Reboot $reboot
+     * @param Article $article
      */
     public function __construct($reboot, $article)
     {
