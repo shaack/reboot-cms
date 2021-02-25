@@ -27,7 +27,7 @@ $navbarConfig = $this->reboot->website['navbar'];
             $structure = $navbarConfig['structure'];
             foreach ($structure as $label => $path) {
                 ?>
-                <li class="nav-item <?= $this->reboot->uri == $this->reboot->config['adminPath'] . $path ? "active" : "" ?>">
+                <li class="nav-item <?= $this->reboot->requestUri == $this->reboot->config['adminPath'] . $path ? "active" : "" ?>">
                     <a class="nav-link" href="<?= $this->reboot->baseUrl . $this->reboot->config['adminPath'] . $path ?>"><?= $label ?></a>
                 </li>
                 <?php

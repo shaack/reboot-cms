@@ -15,6 +15,7 @@ require __DIR__ . '/../vendor/autoload.php';
 require 'Page.php';
 require 'Article.php';
 require 'utils/Logger.php';
+require 'admin/AdminSession.php';
 
 class Reboot
 {
@@ -22,10 +23,11 @@ class Reboot
     public $baseUrl;
     public $website;
     public $config;
-    public $uri;
+    public $requestUri;
     public $route;
     public $parsedown;
     public $admin;
+    private $adminSession;
 
     /**
      * Reboot constructor.
@@ -34,18 +36,19 @@ class Reboot
     public function __construct($uri)
     {
         $this->baseDir = dirname(__DIR__);
-        $this->uri = strtok($uri, '?');
-        $this->route = rtrim($this->uri, "/");
+        $this->requestUri = strtok($uri, '?');
+        $this->route = rtrim($this->requestUri, "/");
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
         $this->baseUrl = rtrim(str_replace("index.php", "", $_SERVER['PHP_SELF']), "/");
         new Logger($this->config['logging']);
         log("---");
-        log("request: " . $this->uri);
+        log("request: " . $this->requestUri);
         // log("baseUrl: " . $this->baseUrl);
         if (strpos($this->route, $this->config['adminPath']) === 0) {
             $this->admin = true;
             $this->baseDir = $this->baseDir . "/core/admin";
             $this->route = ltrim($this->route, $this->config['adminPath']);
+            $this->adminSession = new AdminSession($this);
         }
         $this->parsedown = new Parsedown();
         $this->website = Yaml::parseFile($this->baseDir . '/content/website.yml');

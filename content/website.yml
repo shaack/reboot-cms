@@ -1,6 +1,6 @@
 # Website configuration and navigation structure
 
-theme: bs-default
+theme: default-bootstrap
 navbar:
   brand: Reboot CMS
   structure:
