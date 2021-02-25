@@ -1,5 +1,5 @@
 <?php
-/** @var $this Page */
+/** @var $this Template */
 $navbarConfig = $this->reboot->website['navbar'];
 ?>
 <!doctype html>

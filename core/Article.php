@@ -15,7 +15,6 @@ require "Block.php";
 class Article
 {
     private $reboot;
-    public $template = "default";
 
     public function __construct($reboot)
     {
@@ -81,8 +80,8 @@ class Article
         } while ($matches);
 
         if (!count($blocks)) {
-            // interpret whole content as flat file
-            $block = new Block($this->reboot,"markdown", $rawContent);
+            // interpret whole content as flat markdown file
+            $block = new Block($this->reboot, "markdown", $rawContent);
             $blocks[] = $block;
         }
 

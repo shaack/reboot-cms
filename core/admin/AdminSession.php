@@ -12,23 +12,20 @@ class AdminSession
     private $reboot;
 
     /**
-     * AdminSession constructor.
      * @param Reboot $reboot
      */
     public function __construct($reboot)
     {
         $this->reboot = $reboot;
-        if (!isset($_SERVER['PHP_AUTH_USER'])) {
-            header('WWW-Authenticate: Basic realm="My Realm"');
-            header('HTTP/1.0 401 Unauthorized');
-            echo 'Text, der gesendet wird, falls der Benutzer auf Abbrechen drückt';
-            exit;
-        } else {
-            echo "<p>Hallo {$_SERVER['PHP_AUTH_USER']}.</p>";
-            echo "<p>Sie gaben {$_SERVER['PHP_AUTH_PW']} als Passwort ein.</p>";
+        if(!$this->getUser() && $reboot->route !== "/login") {
+            $this->reboot->redirect($this->reboot->config["adminPath"] . "/login");
         }
     }
 
+    /**
+     * @param String $username
+     * @param String $password
+     */
     function login($username, $password)
     {
         $htpasswd = new Htpasswd($this->reboot->baseDir . "/local/.htpasswd");
@@ -45,10 +42,13 @@ class AdminSession
         $_SESSION['ip'] = null;
     }
 
+    /**
+     * @return mixed|null Returns the username, if logged in or null if not
+     */
     function getUser()
     {
-        if ($_SESSION['ip'] == $_SERVER['REMOTE_ADDR']) {
-            return $_SESSION['user'];
+        if (@$_SESSION['ip'] == $_SERVER['REMOTE_ADDR']) {
+            return @$_SESSION['user'];
         } else {
             return null;
         }

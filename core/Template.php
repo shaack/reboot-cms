@@ -7,7 +7,7 @@ use Shaack\Reboot\Reboot;
  * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  */
-class Page
+class Template
 {
     private $article;
     private $reboot;
@@ -31,7 +31,7 @@ class Page
         // render template
         ob_start();
         /** @noinspection PhpIncludeInspection */
-        include $this->reboot->baseDir . '/themes/' . $this->reboot->website['theme'] . '/templates/' . $this->article->template . ".php";
+        include $this->reboot->baseDir . '/themes/' . $this->reboot->website['theme'] . '/template.php';
         $contents = ob_get_contents();
         ob_end_clean();
         return $contents;

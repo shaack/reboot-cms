@@ -6,3 +6,8 @@ navbar:
   structure:
     Home: /
     Documentation: /documentation
+
+# Pages are rendered with the "default" template except these
+
+# templates:
+#   /documentation: plain

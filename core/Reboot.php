@@ -7,12 +7,12 @@
 
 namespace Shaack\Reboot;
 
-use Page;
+use Template;
 use Parsedown;
 use Symfony\Component\Yaml\Yaml;
 
 require __DIR__ . '/../vendor/autoload.php';
-require 'Page.php';
+require 'Template.php';
 require 'Article.php';
 require 'utils/Logger.php';
 require 'admin/AdminSession.php';
@@ -26,7 +26,7 @@ class Reboot
     public $requestUri;
     public $route;
     public $parsedown;
-    public $admin;
+    public $adminInterface;
     private $adminSession;
 
     /**
@@ -45,9 +45,9 @@ class Reboot
         log("request: " . $this->requestUri);
         // log("baseUrl: " . $this->baseUrl);
         if (strpos($this->route, $this->config['adminPath']) === 0) {
-            $this->admin = true;
+            $this->adminInterface = true;
             $this->baseDir = $this->baseDir . "/core/admin";
-            $this->route = ltrim($this->route, $this->config['adminPath']);
+            $this->route = "/" . ltrim($this->route, $this->config['adminPath']);
             $this->adminSession = new AdminSession($this);
         }
         $this->parsedown = new Parsedown();
@@ -64,16 +64,21 @@ class Reboot
     public function renderArticle()
     {
         $article = new Article($this);
-        $template = new Page($this, $article);
-        return $template->render();
+        $page = new Template($this, $article);
+        return $page->render();
     }
 
     public function themePath()
     {
-        if ($this->admin) {
+        if ($this->adminInterface) {
             return $this->baseUrl . "/core/admin/themes/" . $this->website["theme"];
         } else {
             return $this->baseUrl . "themes/" . $this->website["theme"];
         }
+    }
+
+    public function redirect($url) {
+        header("Location: " . $url);
+        exit;
     }
 }
