@@ -1,6 +1,5 @@
 <?php
-global $reboot;
-$navbarConfig = $reboot->website['navbar'];
+$navbarConfig = $this->reboot->website['navbar'];
 ?>
 <!doctype html>
 <html lang="en">
@@ -13,7 +12,7 @@ $navbarConfig = $reboot->website['navbar'];
     <title>Reboot CMS</title>
 
     <link href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= $reboot->themePath() ?>/assets/style/default.css" rel="stylesheet">
+    <link href="<?= $this->reboot->themePath() ?>/assets/style/default.css" rel="stylesheet">
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
@@ -28,7 +27,7 @@ $navbarConfig = $reboot->website['navbar'];
             $structure = $navbarConfig['structure'];
             foreach ($structure as $label => $path) {
                 ?>
-                <li class="nav-item <?= $reboot->uri == $path ? "active" : "" ?>">
+                <li class="nav-item <?= $this->reboot->uri == $path ? "active" : "" ?>">
                     <a class="nav-link" href="<?= $path ?>"><?= $label ?></a>
                 </li>
                 <?php

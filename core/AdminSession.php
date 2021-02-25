@@ -5,7 +5,14 @@
  * License: MIT, see file 'LICENSE'
  */
 
-include "core/Reboot.php";
+class AdminSession
+{
+    private $user = null;
 
-$reboot = new Shaack\Reboot\Reboot($_SERVER['REQUEST_URI']);
-echo($reboot->renderArticle());
+    function login($username, $password) {
+
+    }
+    function getUser() {
+
+    }
+}

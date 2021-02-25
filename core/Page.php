@@ -8,14 +8,17 @@
 class Page
 {
     private $article;
+    private $reboot;
 
     /**
      * Page constructor.
+     * @param \Shaack\Reboot\Reboot $reboot
      * @param \Shaack\Reboot\Article $article
      */
-    public function __construct($article)
+    public function __construct($reboot, $article)
     {
         $this->article = $article;
+        $this->reboot = $reboot;
     }
 
     /**
@@ -24,11 +27,10 @@ class Page
      */
     public function render($template = "default")
     {
-        global $reboot;
         // render template
         ob_start();
         /** @noinspection PhpIncludeInspection */
-        include $reboot->baseDir . '/themes/' . $reboot->website['theme'] . '/templates/' . $template . ".php";
+        include $this->reboot->baseDir . '/themes/' . $this->reboot->website['theme'] . '/templates/' . $template . ".php";
         $contents = ob_get_contents();
         ob_end_clean();
         return $contents;

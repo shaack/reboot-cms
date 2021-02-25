@@ -13,20 +13,21 @@ class Block
     private $name;
     private $content;
     private $config;
+    private $reboot;
 
-    public function __construct($name, $content = "", $config = array())
+    public function __construct($reboot, $name, $content = "", $config = array())
     {
         $this->name = $name;
         $this->content = $content;
         $this->config = $config;
+        $this->reboot = $reboot;
     }
 
     public function render()
     {
-        global $reboot;
         ob_start();
         /** @noinspection PhpIncludeInspection */
-        include $reboot->baseDir . '/themes/' . $reboot->website['theme'] . '/blocks/' . $this->name . ".php";
+        include $this->reboot->baseDir . '/themes/' . $this->reboot->website['theme'] . '/blocks/' . $this->name . ".php";
         $contents = ob_get_contents();
         ob_end_clean();
         return $contents;
@@ -44,9 +45,8 @@ class Block
 
     public function content()
     {
-        global $reboot;
         if($this->content) {
-            return $reboot->parsedown->parse($this->content);
+            return $this->reboot->parsedown->parse($this->content);
         } else {
             return "";
         }

@@ -25,7 +25,6 @@ class Reboot
     public $uri;
     public $route;
     public $parsedown;
-    public $isAdmin = false;
 
     /**
      * Reboot constructor.
@@ -41,8 +40,8 @@ class Reboot
         log("---");
         log("request: " . $this->uri);
         if(strpos($this->route, "/" . $this->config['adminPath']) === 0) {
-            $this->isAdmin = true;
-            log("isAdmin = true");
+            $isAdmin = true;
+            log("$isAdmin = true");
         }
         $this->baseUrl = str_replace("index.php", "", $_SERVER['PHP_SELF']);
         $this->website = Yaml::parseFile($this->baseDir . '/content/website.yml');
@@ -58,8 +57,8 @@ class Reboot
      */
     public function renderArticle()
     {
-        $article = new Article();
-        $page = new Page($article);
+        $article = new Article($this);
+        $page = new Page($this, $article);
         return $page->render();
     }
 

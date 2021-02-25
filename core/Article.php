@@ -14,17 +14,24 @@ require "Block.php";
 
 class Article
 {
+    private $reboot;
+
+    public function __construct($reboot)
+    {
+        $this->reboot = $reboot;
+    }
+
+
     /**
      * @param string $route
      * @return string
      */
     public function render($route = null)
     {
-        global $reboot;
         if (!$route) {
-            $route = $reboot->route;
+            $route = $this->reboot->route;
         }
-        $articlePrefix = $reboot->baseDir . '/content/articles' . $route;
+        $articlePrefix = $this->reboot->baseDir . '/content/articles' . $route;
         if (file_exists($articlePrefix . ".md")) {
             return $this->renderMarkdown($articlePrefix . ".md");
         } else if (file_exists($articlePrefix . ".php")) {
@@ -33,8 +40,8 @@ class Article
             // not found
             log("article not found (404)");
             http_response_code(404);
-            if (file_exists($reboot->baseDir . '/content/articles/404.md') ||
-                file_exists($reboot->baseDir . '/content/articles/404.php')) {
+            if (file_exists($this->reboot->baseDir . '/content/articles/404.md') ||
+                file_exists($this->reboot->baseDir . '/content/articles/404.php')) {
                 return $this->render("/404"); // put a 404 file in /pages to create your own
             } else {
                 return "<div class='container'><h1>404</h1><p>Page not found.</p></div>";
@@ -65,7 +72,7 @@ class Article
                     log("found block: " . $blockName);
                     // log("config: " . print_r($blockConfig, true));
                     // log("content: " . $blockContent);
-                    $block = new Block($blockName, $blockContent, $blockConfig);
+                    $block = new Block($this->reboot, $blockName, $blockContent, $blockConfig);
                     $blocks[] = $block;
                 } catch (ParseException $e) {
                     log("could not parse block config: " . trim($matches[1]));
@@ -75,7 +82,7 @@ class Article
 
         if (!count($blocks)) {
             // interpret whole content as flat file
-            $block = new Block("markdown", $rawContent);
+            $block = new Block($this->reboot,"markdown", $rawContent);
             $blocks[] = $block;
         }
 
