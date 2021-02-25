@@ -16,7 +16,7 @@ $navbarConfig = $this->reboot->website['navbar'];
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="/"><?php echo $navbarConfig["brand"] ?></a>
+    <a class="navbar-brand" href="<?= $this->reboot->baseUrl . $this->reboot->config['adminPath'] ?>/"><?php echo $navbarConfig["brand"] ?></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
             aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -27,8 +27,8 @@ $navbarConfig = $this->reboot->website['navbar'];
             $structure = $navbarConfig['structure'];
             foreach ($structure as $label => $path) {
                 ?>
-                <li class="nav-item <?= $this->reboot->uri == $path ? "active" : "" ?>">
-                    <a class="nav-link" href="<?= $this->baseUrl . $path ?>"><?= $label ?></a>
+                <li class="nav-item <?= $this->reboot->uri == $this->reboot->config['adminPath'] . $path ? "active" : "" ?>">
+                    <a class="nav-link" href="<?= $this->reboot->baseUrl . $this->reboot->config['adminPath'] . $path ?>"><?= $label ?></a>
                 </li>
                 <?php
             }

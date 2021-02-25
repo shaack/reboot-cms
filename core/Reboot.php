@@ -25,6 +25,7 @@ class Reboot
     public $uri;
     public $route;
     public $parsedown;
+    public $admin;
 
     /**
      * Reboot constructor.
@@ -36,12 +37,18 @@ class Reboot
         $this->uri = strtok($uri, '?');
         $this->route = rtrim($this->uri, "/");
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
+        $this->baseUrl = rtrim(str_replace("index.php", "", $_SERVER['PHP_SELF']), "/");
         new Logger($this->config['logging']);
         log("---");
         log("request: " . $this->uri);
-        $this->baseUrl = str_replace("index.php", "", $_SERVER['PHP_SELF']);
-        $this->website = Yaml::parseFile($this->baseDir . '/content/website.yml');
+        // log("baseUrl: " . $this->baseUrl);
+        if (strpos($this->route, $this->config['adminPath']) === 0) {
+            $this->admin = true;
+            $this->baseDir = $this->baseDir . "/core/admin";
+            $this->route = ltrim($this->route, $this->config['adminPath']);
+        }
         $this->parsedown = new Parsedown();
+        $this->website = Yaml::parseFile($this->baseDir . '/content/website.yml');
         if (!$this->route || is_dir($this->baseDir . '/content/articles' . $this->route)) {
             $this->route = $this->route . "/index";
         }
@@ -60,6 +67,10 @@ class Reboot
 
     public function themePath()
     {
-        return $this->baseUrl . "themes/" . $this->website["theme"];
+        if ($this->admin) {
+            return $this->baseUrl . "/core/admin/themes/" . $this->website["theme"];
+        } else {
+            return $this->baseUrl . "themes/" . $this->website["theme"];
+        }
     }
 }

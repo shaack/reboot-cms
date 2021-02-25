@@ -1,6 +1,6 @@
 # Local configuration
 
-# activate logging, set to "false" in production
+# activate logging, set "false" in production
 logging: true
 # the path to the admin interface
-adminPath: rb-admin
+adminPath: /rb-admin
