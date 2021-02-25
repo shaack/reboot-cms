@@ -15,12 +15,12 @@ require "Block.php";
 class Article
 {
     private $reboot;
+    public $template = "default";
 
     public function __construct($reboot)
     {
         $this->reboot = $reboot;
     }
-
 
     /**
      * @param string $route

@@ -64,8 +64,8 @@ class Reboot
     public function renderArticle()
     {
         $article = new Article($this);
-        $page = new Page($this, $article);
-        return $page->render();
+        $template = new Page($this, $article);
+        return $template->render();
     }
 
     public function themePath()

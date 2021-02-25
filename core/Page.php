@@ -24,15 +24,14 @@ class Page
     }
 
     /**
-     * @param string $template
      * @return string
      */
-    public function render($template = "default")
+    public function render()
     {
         // render template
         ob_start();
         /** @noinspection PhpIncludeInspection */
-        include $this->reboot->baseDir . '/themes/' . $this->reboot->website['theme'] . '/templates/' . $template . ".php";
+        include $this->reboot->baseDir . '/themes/' . $this->reboot->website['theme'] . '/templates/' . $this->article->template . ".php";
         $contents = ob_get_contents();
         ob_end_clean();
         return $contents;

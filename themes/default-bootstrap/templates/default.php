@@ -1,4 +1,5 @@
 <?php
+/** @var $this Page */
 $navbarConfig = $this->reboot->website['navbar'];
 ?>
 <!doctype html>
