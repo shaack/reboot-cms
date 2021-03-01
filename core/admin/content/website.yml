@@ -4,4 +4,4 @@ theme: admin
 navbar:
   brand: Reboot CMS
   structure:
-    Dashboard: /
+    Content:

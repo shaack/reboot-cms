@@ -9,9 +9,16 @@ namespace Shaack\Reboot;
 
 require __DIR__ . "/../utils/Htpasswd.php";
 
+/**
+ * Class AdminSession
+ * @package Shaack\Reboot
+ *
+ * Set the backend passwords in /local/.htpasswd
+ */
 class AdminSession
 {
     private $reboot;
+    private $htpasswd;
 
     /**
      * @param Reboot $reboot
@@ -20,21 +27,37 @@ class AdminSession
     {
         session_start();
         $this->reboot = $reboot;
-        if (!$this->getUser() && $reboot->route !== "/login") {
+        $this->htpasswd = new Htpasswd($this->reboot->baseDir . "/../../local/.htpasswd");
+        $user = $this->getUser();
+        if (!$user && $reboot->route !== "/login") {
             $this->reboot->redirect($this->reboot->config["adminPath"] . "/login");
+        } else if ($user) {
+            if (@$_SESSION['checksum'] !== $this->getChecksum()) {
+                $this->logout();
+            }
         }
+    }
+
+    /**
+     * Calculates a checksum for the admin session. Detects, if the .htpasswd was changed, the IP-Address or
+     * the user agent of the user.
+     * @return String md5 checksum
+     */
+    private function getChecksum()
+    {
+        return md5($this->htpasswd->getChecksum() . $_SERVER['REMOTE_ADDR'] . $_SERVER['HTTP_USER_AGENT']);
     }
 
     /**
      * @param String $username
      * @param String $password
+     * @return bool true, if login is valid
      */
     public function login($username, $password)
     {
-        $htpasswd = new Htpasswd($this->reboot->baseDir . "/../../local/.htpasswd");
-        if ($htpasswd->validate($username, $password)) {
+        if ($this->htpasswd->validate($username, $password)) {
             $_SESSION['user'] = $username;
-            $_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
+            $_SESSION['checksum'] = $this->getChecksum();
             return true;
         }
         return false;
@@ -43,7 +66,7 @@ class AdminSession
     public function logout()
     {
         $_SESSION['user'] = null;
-        $_SESSION['ip'] = null;
+        $_SESSION['checksum'] = null;
         $this->reboot->redirect($this->reboot->config["adminPath"] . "/");
     }
 
@@ -52,10 +75,6 @@ class AdminSession
      */
     public function getUser()
     {
-        if (@$_SESSION['ip'] == $_SERVER['REMOTE_ADDR']) {
-            return @$_SESSION['user'];
-        } else {
-            return null;
-        }
+        return $_SESSION['user'];
     }
 }

@@ -1,3 +1,4 @@
-<div class="container">
-    Admin Interface
-</div>
+<?php
+/** @var $this \Shaack\Reboot\Article */
+
+$this->reboot->redirect("/content");

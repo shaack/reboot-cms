@@ -18,6 +18,7 @@ use WhiteHat101\Crypt\APR1_MD5;
 class Htpasswd
 {
     private $htpasswdUsers = array();
+    private $checksum;
 
     public function __construct($filePath)
     {
@@ -27,17 +28,27 @@ class Htpasswd
     private function parseHtpasswd($filePath)
     {
         $lines = file($filePath);
+        $checksum = "";
         foreach ($lines as $lineNum => $line) {
             $line = trim($line);
             if (strpos($line, "#") === false) {
                 $exploded = explode(":", $line);
                 $username = trim($exploded[0]);
-                $apr1Password = trim($exploded[1]);
-                if($username && $apr1Password) {
-                    $this->htpasswdUsers[$username] = $apr1Password;
+                if($username) {
+                    $apr1Password = trim($exploded[1]);
+                    if ($apr1Password) {
+                        $this->htpasswdUsers[$username] = $apr1Password;
+                        $checksum = md5($checksum . $line);
+                    }
                 }
             }
         }
+        $this->checksum = $checksum;
+    }
+
+    function getChecksum()
+    {
+        return $this->checksum;
     }
 
     function validate($username, $password)
