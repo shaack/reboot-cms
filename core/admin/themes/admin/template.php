@@ -1,4 +1,5 @@
 <?php
+/** @var $this Template */
 $navbarConfig = $this->reboot->website['navbar'];
 ?>
 <!doctype html>
@@ -16,25 +17,29 @@ $navbarConfig = $this->reboot->website['navbar'];
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="<?= $this->reboot->baseUrl . $this->reboot->config['adminPath'] ?>/"><?php echo $navbarConfig["brand"] ?></a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
-            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbar">
-        <ul class="navbar-nav mr-auto">
-            <?php
-            $structure = $navbarConfig['structure'];
-            foreach ($structure as $label => $path) {
-                ?>
-                <li class="nav-item <?= $this->reboot->requestUri == $this->reboot->config['adminPath'] . $path ? "active" : "" ?>">
-                    <a class="nav-link" href="<?= $this->reboot->baseUrl . $this->reboot->config['adminPath'] . $path ?>"><?= $label ?></a>
-                </li>
+    <a class="navbar-brand"
+       href="<?= $this->reboot->baseUrl . $this->reboot->config['adminPath'] ?>/"><?php echo $navbarConfig["brand"] ?></a>
+    <?php if ($this->reboot->route !== "/login") { ?>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
+                aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+            <ul class="navbar-nav mr-auto">
                 <?php
-            }
-            ?>
-        </ul>
-    </div>
+                $structure = $navbarConfig['structure'];
+                foreach ($structure as $label => $path) {
+                    ?>
+                    <li class="nav-item <?= $this->reboot->requestUri == $this->reboot->config['adminPath'] . $path ? "active" : "" ?>">
+                        <a class="nav-link"
+                           href="<?= $this->reboot->baseUrl . $this->reboot->config['adminPath'] . $path ?>"><?= $label ?></a>
+                    </li>
+                    <?php
+                }
+                ?>
+            </ul>
+        </div>
+    <?php } ?>
 </nav>
 <?php
 echo($this->article->render());

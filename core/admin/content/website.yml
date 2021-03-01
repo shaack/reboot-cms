@@ -2,6 +2,6 @@
 
 theme: admin
 navbar:
-  brand: Reboot CMS Admin
+  brand: Reboot CMS
   structure:
     Dashboard: /

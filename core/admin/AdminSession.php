@@ -7,6 +7,8 @@
 
 namespace Shaack\Reboot;
 
+require __DIR__ . "/../utils/Htpasswd.php";
+
 class AdminSession
 {
     private $reboot;
@@ -16,8 +18,9 @@ class AdminSession
      */
     public function __construct($reboot)
     {
+        session_start();
         $this->reboot = $reboot;
-        if(!$this->getUser() && $reboot->route !== "/login") {
+        if (!$this->getUser() && $reboot->route !== "/login") {
             $this->reboot->redirect($this->reboot->config["adminPath"] . "/login");
         }
     }
@@ -26,17 +29,18 @@ class AdminSession
      * @param String $username
      * @param String $password
      */
-    function login($username, $password)
+    public function login($username, $password)
     {
-        $htpasswd = new Htpasswd($this->reboot->baseDir . "/local/.htpasswd");
+        $htpasswd = new Htpasswd($this->reboot->baseDir . "/../../local/.htpasswd");
         if ($htpasswd->validate($username, $password)) {
-            session_start();
             $_SESSION['user'] = $username;
             $_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
+            return true;
         }
+        return false;
     }
 
-    function logout()
+    public function logout()
     {
         $_SESSION['user'] = null;
         $_SESSION['ip'] = null;
@@ -45,7 +49,7 @@ class AdminSession
     /**
      * @return mixed|null Returns the username, if logged in or null if not
      */
-    function getUser()
+    public function getUser()
     {
         if (@$_SESSION['ip'] == $_SERVER['REMOTE_ADDR']) {
             return @$_SESSION['user'];

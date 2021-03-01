@@ -14,6 +14,7 @@ require "Block.php";
 
 class Article
 {
+    /** @var Reboot */
     private $reboot;
 
     public function __construct($reboot)

@@ -78,7 +78,12 @@ class Reboot
     }
 
     public function redirect($url) {
+        log("=> redirect: " . $url);
         header("Location: " . $url);
         exit;
+    }
+
+    public function adminLogin($username, $password) {
+        return $this->adminSession->login($username, $password);
     }
 }
