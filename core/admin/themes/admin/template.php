@@ -38,6 +38,16 @@ $navbarConfig = $this->reboot->website['navbar'];
                 }
                 ?>
             </ul>
+            <span class="navbar-text">
+                <?= $this->reboot->adminSession->getUser() ?>
+            </span>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="<?= $this->reboot->baseUrl . $this->reboot->config['adminPath'] ?>/logout" class="nav-link">
+                        Logout
+                    </a>
+                </li>
+            </ul>
         </div>
     <?php } ?>
 </nav>

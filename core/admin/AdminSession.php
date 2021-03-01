@@ -44,6 +44,7 @@ class AdminSession
     {
         $_SESSION['user'] = null;
         $_SESSION['ip'] = null;
+        $this->reboot->redirect($this->reboot->config["adminPath"] . "/");
     }
 
     /**

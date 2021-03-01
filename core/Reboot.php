@@ -27,7 +27,7 @@ class Reboot
     public $route;
     public $parsedown;
     public $adminInterface;
-    private $adminSession;
+    public $adminSession;
 
     /**
      * Reboot constructor.
@@ -81,9 +81,5 @@ class Reboot
         log("=> redirect: " . $url);
         header("Location: " . $url);
         exit;
-    }
-
-    public function adminLogin($username, $password) {
-        return $this->adminSession->login($username, $password);
     }
 }

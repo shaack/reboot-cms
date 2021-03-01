@@ -5,7 +5,7 @@ $username = htmlentities(@$_REQUEST["username"]);
 $password = htmlentities(@$_REQUEST["password"]);
 $error = null;
 if($username) {
-    if ($this->reboot->adminLogin($username, $password)) {
+    if ($this->reboot->adminSession->login($username, $password)) {
         $this->reboot->redirect($this->reboot->config["adminPath"]);
     } else {
         $error = "Login failed, please try again.";

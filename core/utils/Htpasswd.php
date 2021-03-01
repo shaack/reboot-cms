@@ -31,7 +31,11 @@ class Htpasswd
             $line = trim($line);
             if (strpos($line, "#") === false) {
                 $exploded = explode(":", $line);
-                $this->htpasswdUsers[$exploded[0]] = $exploded[1];
+                $username = trim($exploded[0]);
+                $apr1Password = trim($exploded[1]);
+                if($username && $apr1Password) {
+                    $this->htpasswdUsers[$username] = $apr1Password;
+                }
             }
         }
     }
