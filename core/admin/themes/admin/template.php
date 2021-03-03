@@ -1,6 +1,7 @@
 <?php
-/** @var $this Template */
-$navbarConfig = $this->reboot->website['navbar'];
+/** @var $this Shaack\Reboot\Template */
+
+$navbarConfig = $this->reboot->globals['navbar'];
 ?>
 <!doctype html>
 <html lang="en">
@@ -13,7 +14,7 @@ $navbarConfig = $this->reboot->website['navbar'];
     <title>Reboot CMS</title>
 
     <link href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= $this->reboot->themePath() ?>/assets/style/default.css" rel="stylesheet">
+    <link href="/theme/assets/style/default.css" rel="stylesheet">
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">

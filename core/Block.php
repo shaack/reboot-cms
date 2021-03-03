@@ -9,7 +9,6 @@ namespace Shaack\Reboot;
 
 class Block
 {
-
     private $name;
     private $content;
     private $config;
@@ -27,7 +26,7 @@ class Block
     {
         ob_start();
         /** @noinspection PhpIncludeInspection */
-        include $this->reboot->baseDir . '/themes/' . $this->reboot->website['theme'] . '/blocks/' . $this->name . ".php";
+        include $this->reboot->baseDir . '/themes/' . $this->reboot->config['theme'] . '/blocks/' . $this->name . ".php";
         $contents = ob_get_contents();
         ob_end_clean();
         return $contents;

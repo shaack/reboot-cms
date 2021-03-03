@@ -1,6 +1,5 @@
 <?php
-use Shaack\Reboot\Article;
-use Shaack\Reboot\Reboot;
+namespace Shaack\Reboot;
 
 /**
  * Author and copyright: Stefan Haack (https://shaack.com)
@@ -9,7 +8,9 @@ use Shaack\Reboot\Reboot;
  */
 class Template
 {
+    /** @var Article */
     private $article;
+    /** @var Reboot */
     private $reboot;
 
     /**
@@ -31,7 +32,7 @@ class Template
         // render template
         ob_start();
         /** @noinspection PhpIncludeInspection */
-        include $this->reboot->baseDir . '/themes/' . $this->reboot->website['theme'] . '/template.php';
+        include $this->reboot->baseDir . '/themes/' . $this->reboot->config['theme'] . '/template.php';
         $contents = ob_get_contents();
         ob_end_clean();
         return $contents;

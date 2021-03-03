@@ -5,6 +5,8 @@
  * License: MIT, see file 'LICENSE'
  */
 
+// $this->fields(["headline" => "text", "lead" => "text", "buttonLink" => "text", "buttonText" => "text", "content" => "markdown"]);
+
 /**  @var \Shaack\Reboot\Block $this */
 ?>
 <div class="container">

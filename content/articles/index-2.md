@@ -1,11 +1,13 @@
-<!-- 
-block: jumbotron
-values: 
-    headline: Reboot CMS
-    lead: A flat file, markdown CMS in PHP
-    buttonText: Learn more
-    buttonLink: /documentation
--->
+<!-- block: jumbotron -->
+<!-- fields -->
+
+- headline: Reboot CMS
+- lead: A flat file, markdown CMS in PHP
+- buttonText: Learn more
+- buttonLink: /documentation
+
+<!-- markdown -->
+
 The main idea is, to have a minimal CMS without needing a database, but with the support
 of Blocks.
 

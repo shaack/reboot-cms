@@ -1,6 +1,7 @@
 <?php
-/** @var $this Template */
-$navbarConfig = $this->reboot->website['navbar'];
+
+/** @var Shaack\Reboot\Template $this */
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -12,11 +13,12 @@ $navbarConfig = $this->reboot->website['navbar'];
 
     <title>Reboot CMS</title>
 
-    <link href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= $this->reboot->themePath() ?>/assets/style/default.css" rel="stylesheet">
+    <link href="<?= $this->reboot->baseUrl ?>/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?= $this->reboot->baseUrl ?>/theme/assets/style/screen.css" rel="stylesheet">
 </head>
 <body>
-<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+<?php $navbarConfig = $this->reboot->globals['navbar']; ?>
+<nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
     <a class="navbar-brand" href="<?= $this->reboot->baseUrl ?>/"><?php echo $navbarConfig["brand"] ?></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
             aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +42,7 @@ $navbarConfig = $this->reboot->website['navbar'];
 <?php
 echo($this->article->render());
 ?>
-<script src="/vendor/components/jquery/jquery.slim.js"></script>
-<script src="/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= $this->reboot->baseUrl ?>/vendor/components/jquery/jquery.slim.js"></script>
+<script src="<?= $this->reboot->baseUrl ?>/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
