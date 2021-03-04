@@ -7,7 +7,8 @@
 
 /**  @var \Shaack\Reboot\Block $this */
 ?>
-
-<div class="container">
-    <?= $this->content() ?>
-</div>
+<section class="block block-markdown">
+    <div class="container">
+        TODO
+    </div>
+</section>

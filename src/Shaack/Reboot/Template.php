@@ -8,31 +8,28 @@ namespace Shaack\Reboot;
  */
 class Template
 {
-    /** @var Page */
-    private $article;
-    /** @var Reboot */
+    private $page;
     private $reboot;
 
     /**
      * Page constructor.
      * @param Reboot $reboot
-     * @param Page $article
+     * @param Page $page
      */
-    public function __construct($reboot, $article)
+    public function __construct(Reboot $reboot, Page $page)
     {
-        $this->article = $article;
+        $this->page = $page;
         $this->reboot = $reboot;
     }
 
     /**
      * @return string
      */
-    public function render()
+    public function render(): string
     {
-        // render template
         ob_start();
         /** @noinspection PhpIncludeInspection */
-        include $this->reboot->baseDir . '/themes/' . $this->reboot->config['theme'] . '/template.php';
+        include $this->reboot->baseDir . '/themes/' . $this->reboot->theme->getName() . '/template.php';
         $contents = ob_get_contents();
         ob_end_clean();
         return $contents;

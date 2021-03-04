@@ -1,19 +1,24 @@
-<!-- 
-block: jumbotron
-values: 
-    headline: Reboot CMS
-    lead: A flat file, markdown CMS in PHP
-    buttonText: Learn more
-    buttonLink: /documentation
--->
-The main idea is, to have a minimal CMS without a database, but with the **support
-of blocks**.
+---
+title: Reboot CMS
+description: Reboot CMS is a flat file CMS, with the support of blocks.
+author: Stefan Haack
+---
 
-<!-- block: markdown -->
+<!--  jumbotron -->
 
-## This is a markdown block
+# Reboot CMS
 
-This website is made with Reboot CMS. With its blocks feature you can build a page
-out of multiple sections.
+A flat file, markdown CMS in PHP
 
+[Learn more](/documentation)
+
+---
+
+The main idea is, to have a minimal CMS without needing a database, but with the support of blocks.
+
+Another part.
+
+## and headline
+
+[asdsa](/asdasd)
 

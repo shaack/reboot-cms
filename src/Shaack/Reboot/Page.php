@@ -7,6 +7,7 @@
 
 namespace Shaack\Reboot;
 
+use Shaack\Utils\Logger;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -26,7 +27,7 @@ class Page
      * @param string $route
      * @return string
      */
-    public function render($route = null)
+    public function render($route = null): string
     {
         if (!$route) {
             $route = $this->reboot->route;
@@ -38,7 +39,7 @@ class Page
             return $this->renderPHP($articlePrefix . ".php");
         } else {
             // not found
-            log("article not found (404)");
+            Logger::log("article not found (404)");
             http_response_code(404);
             if (file_exists($this->reboot->baseDir . '/content/articles/404.md') ||
                 file_exists($this->reboot->baseDir . '/content/articles/404.php')) {
@@ -50,13 +51,13 @@ class Page
     }
 
     /**
-     * @param $articlePath
+     * @param $pagePath
      * @return string
      */
-    public function renderMarkdown($articlePath)
+    public function renderMarkdown($pagePath): string
     {
-        log("article: " . $articlePath);
-        $rawContent = file_get_contents($articlePath);
+        Logger::log("page: " . $pagePath);
+        $rawContent = file_get_contents($pagePath);
 
         // find blocks
         $offset = 0;
@@ -68,14 +69,12 @@ class Page
                 try {
                     $blockConfig = Yaml::parse(trim($matches[1]));
                     $blockContent = trim($matches[2]);
-                    $blockName = $blockConfig['block'];
-                    log("found block: " . $blockName);
-                    // log("config: " . print_r($blockConfig, true));
-                    // log("content: " . $blockContent);
+                    $blockName = is_string($blockConfig) ? $blockConfig : $blockConfig[0];
+                    Logger::log("found block: " . $blockName);
                     $block = new Block($this->reboot, $blockName, $blockContent, $blockConfig);
                     $blocks[] = $block;
                 } catch (ParseException $e) {
-                    log("could not parse block config: " . trim($matches[1]));
+                    Logger::log("could not parse block config: " . trim($matches[1]));
                 }
             }
         } while ($matches);
@@ -99,9 +98,9 @@ class Page
      * @param $articlePath
      * @return string
      */
-    public function renderPHP($articlePath)
+    public function renderPHP($articlePath): string
     {
-        log("article: " . $articlePath);
+        Logger::log("article: " . $articlePath);
         ob_start();
         /** @noinspection PhpIncludeInspection */
         include $articlePath;

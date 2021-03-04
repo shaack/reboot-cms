@@ -82,7 +82,7 @@ this:
 Markdown files without blocks will render to a flat Markdown page, like in every
 other flat file CMS.
 
-You can define metadata for the page on top in`YAML Front Matter` syntax.
+You can define metadata for the page on top in `YAML Front Matter` syntax.
 
 ```
 ---

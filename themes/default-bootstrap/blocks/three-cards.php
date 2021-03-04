@@ -5,7 +5,10 @@
  * License: MIT, see file 'LICENSE'
  */
 
-require __DIR__ . '/../vendor/autoload.php';
-
-$reboot = new Shaack\Reboot\Reboot($_SERVER['REQUEST_URI'], dirname(__DIR__));
-echo($reboot->render());
+/**  @var \Shaack\Reboot\Block $this */
+?>
+<section class="block block-three-cards">
+    <div class="container">
+        TODO
+    </div>
+</section>

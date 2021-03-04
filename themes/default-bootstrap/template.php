@@ -40,7 +40,7 @@
     </div>
 </nav>
 <?php
-echo($this->article->render());
+echo($this->page->render());
 ?>
 <script src="<?= $this->reboot->baseUrl ?>/vendor/components/jquery/jquery.slim.js"></script>
 <script src="<?= $this->reboot->baseUrl ?>/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

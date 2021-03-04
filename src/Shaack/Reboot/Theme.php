@@ -25,4 +25,9 @@ class Theme
         include $this->reboot->baseDir . '/themes/' . $this->reboot->config['theme'] . '/assets' . $routeInAssets;
         exit();
     }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
 }

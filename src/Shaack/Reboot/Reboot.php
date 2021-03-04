@@ -7,31 +7,30 @@
 
 namespace Shaack\Reboot;
 
-use Parsedown;
+use Shaack\Utils\Logger;
 use Symfony\Component\Yaml\Yaml;
 
 class Reboot
 {
-    public $baseDir;
-    public $baseUrl;
-    public $globals;
-    public $config;
-    public $theme;
-    public $requestUri;
-    public $route;
-    public $parsedown;
+    public $baseDir; // The CMS root
+    public $baseUrl; // the base URL, requests /web
+    public $requestUri; // the request Uri
+    public $route; // the route in /web or content/pages
+    public $globals; // global values / configuration for the website
+    public $config; // local configuration
+    public $theme; // the theme
 
     /**
      * Reboot constructor.
      * @param string $uri
      */
-    public function __construct(string $uri)
+    public function __construct(string $uri, string $baseDir)
     {
-        $this->baseDir = dirname(__DIR__);
         $this->requestUri = strtok($uri, '?');
+        $this->baseDir = $baseDir;
+        $this->baseUrl = rtrim(str_replace("index.php", "", $_SERVER['PHP_SELF']), "/");
         $this->route = rtrim($this->requestUri, "/");
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
-        $this->baseUrl = rtrim(str_replace("index.php", "", $_SERVER['PHP_SELF']), "/");
         $this->theme = new Theme($this, $this->config['theme']);
         if (strpos($this->route, "/theme/assets/") === 0) {
             $this->theme->renderAsset($this->route);
@@ -43,18 +42,18 @@ class Reboot
             } else if($pathInfo['extension'] === "js") {
                 header('Content-type: application/javascript');
             }
+            /** @noinspection PhpIncludeInspection */
             include($this->baseDir . $this->route);
             exit();
         }
-        new Logger($this->config['logging']);
-        log("---");
-        log("request: " . $this->requestUri);
-        $this->parsedown = new Parsedown();
+        Logger::setActive($this->config['logging']);
+        Logger::log("---");
+        Logger::log("request: " . $this->requestUri);
         $this->globals = Yaml::parseFile($this->baseDir . '/content/globals.yml');
         if (!$this->route || is_dir($this->baseDir . '/content/pages' . $this->route)) {
             $this->route = $this->route . "/index";
         }
-        log("route: " . $this->route);
+        Logger::log("route: " . $this->route);
     }
 
     /**
@@ -67,20 +66,9 @@ class Reboot
         return $template->render();
     }
 
-    /*
-    public function themePath()
-    {
-        if ($this->adminInterface) {
-            return $this->baseUrl . "/core/admin/themes/" . $this->config["theme"];
-        } else {
-            return $this->baseUrl . "themes/" . $this->config["theme"];
-        }
-    }
-    */
-
     public function redirect($url)
     {
-        log("=> redirect: " . $url);
+        Logger::log("=> redirect: " . $url);
         header("Location: " . $url);
         exit;
     }
