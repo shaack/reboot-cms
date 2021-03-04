@@ -59,13 +59,14 @@ class Block
 
     public function query($expression)
     {
+        Logger::log("query: " . $expression);
         if(strpos($expression, "(//") !== 0 ) {
             $expression = "//html/body" . $expression;
         }
         $result = $this->xpath->query($expression);
         $ret = "";
         if ($result === false) {
-            Logger::log($expression . " => ERROR");
+            Logger::log("no result");
             $ret = "";
         } else {
             if ($result->length === 1) {

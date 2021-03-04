@@ -15,8 +15,8 @@
             <hr class="my-4">
             <?= $this->query("/hr[1]/following-sibling::*") ?>
             <p>
-                <a class="btn btn-primary btn-lg" href="<?= $this->query("(//a)[1]/@href") ?>"
-                   role="button"><?= $this->query("(//a)[1]/text()") ?></a>
+                <a class="btn btn-primary btn-lg" href="<?= $this->query("/hr[1]/preceding-sibling::*//a[1]/@href") ?>"
+                   role="button"><?= $this->query("/hr[1]/preceding-sibling::*//a[1]/text()") ?></a>
             </p>
         </div>
     </div>
