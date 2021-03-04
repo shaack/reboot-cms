@@ -10,13 +10,6 @@ namespace Shaack\Reboot;
 use Parsedown;
 use Symfony\Component\Yaml\Yaml;
 
-require __DIR__ . '/../vendor/autoload.php';
-require 'Theme.php';
-require 'Template.php';
-require 'Article.php';
-require 'utils/Logger.php';
-require 'admin/AdminSession.php';
-
 class Reboot
 {
     public $baseDir;
@@ -27,8 +20,6 @@ class Reboot
     public $requestUri;
     public $route;
     public $parsedown;
-    public $adminInterface;
-    public $adminSession;
 
     /**
      * Reboot constructor.
@@ -58,16 +49,9 @@ class Reboot
         new Logger($this->config['logging']);
         log("---");
         log("request: " . $this->requestUri);
-        // log("baseUrl: " . $this->baseUrl);
-        if (strpos($this->route, $this->config['adminPath']) === 0) {
-            $this->adminInterface = true;
-            $this->baseDir = $this->baseDir . "/core/admin";
-            $this->route = "/" . ltrim($this->route, $this->config['adminPath']);
-            $this->adminSession = new AdminSession($this);
-        }
         $this->parsedown = new Parsedown();
         $this->globals = Yaml::parseFile($this->baseDir . '/content/globals.yml');
-        if (!$this->route || is_dir($this->baseDir . '/content/articles' . $this->route)) {
+        if (!$this->route || is_dir($this->baseDir . '/content/pages' . $this->route)) {
             $this->route = $this->route . "/index";
         }
         log("route: " . $this->route);
@@ -76,11 +60,11 @@ class Reboot
     /**
      * @return string
      */
-    public function renderArticle()
+    public function render()
     {
-        $article = new Article($this);
-        $page = new Template($this, $article);
-        return $page->render();
+        $page = new Page($this);
+        $template = new Template($this, $page);
+        return $template->render();
     }
 
     /*

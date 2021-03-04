@@ -5,7 +5,7 @@
  * License: MIT, see file 'LICENSE'
  */
 
-include __DIR__ . "/../core/Reboot.php";
+require __DIR__ . '/../vendor/autoload.php';
 
 $reboot = new Shaack\Reboot\Reboot($_SERVER['REQUEST_URI']);
-echo($reboot->renderArticle());
+echo($reboot->render());

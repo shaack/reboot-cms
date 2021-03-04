@@ -8,7 +8,7 @@ namespace Shaack\Reboot;
  */
 class Template
 {
-    /** @var Article */
+    /** @var Page */
     private $article;
     /** @var Reboot */
     private $reboot;
@@ -16,7 +16,7 @@ class Template
     /**
      * Page constructor.
      * @param Reboot $reboot
-     * @param Article $article
+     * @param Page $article
      */
     public function __construct($reboot, $article)
     {

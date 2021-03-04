@@ -12,7 +12,7 @@ use Symfony\Component\Yaml\Yaml;
 
 require "Block.php";
 
-class Article
+class Page
 {
     /** @var Reboot */
     private $reboot;
@@ -31,7 +31,7 @@ class Article
         if (!$route) {
             $route = $this->reboot->route;
         }
-        $articlePrefix = $this->reboot->baseDir . '/content/articles' . $route;
+        $articlePrefix = $this->reboot->baseDir . '/content/pages' . $route;
         if (file_exists($articlePrefix . ".md")) {
             return $this->renderMarkdown($articlePrefix . ".md");
         } else if (file_exists($articlePrefix . ".php")) {

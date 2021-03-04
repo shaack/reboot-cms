@@ -2,7 +2,6 @@
 
 # the used theme
 theme: default-bootstrap
+
 # activate logging, set "false" in production
 logging: true
-# the path to the admin interface
-adminPath: /admin
