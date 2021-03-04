@@ -20,6 +20,7 @@ class Block
     private $xpath;
     private $config;
     private $reboot;
+    private $currentPart;
 
     private static $parsedown;
 
@@ -57,12 +58,14 @@ class Block
         return @$this->config[$name];
     }
 
-    public function query($expression)
+    public function value($expression = null)
     {
         Logger::log("query: " . $expression);
-        if(strpos($expression, "(//") !== 0 ) {
-            $expression = "//html/body" . $expression;
+        if($this->currentPart) {
+
         }
+        // $expression = "/html/body" . $expression;
+
         $result = $this->xpath->query($expression);
         $ret = "";
         if ($result === false) {
@@ -77,11 +80,23 @@ class Block
             } else if ($result instanceof \DOMElement) {
                 $ret = $this->xpath->document->saveXML($result);
             } else {
+                if($result->length === 0) {
+                    $ret = "???";
+                } else {
+                    $ret = "!!!";
+                }
                 Logger::log("ERROR d06492af: Unknown query result " . get_class($result));
             }
             Logger::log($expression . " => " . $ret);
         }
+        $this->currentPart = null;
         return $ret;
+    }
+
+    public function part($number): Block
+    {
+        $this->currentPart = $number;
+        return $this;
     }
 
     public function content()

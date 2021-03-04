@@ -59,17 +59,18 @@ class Reboot
     /**
      * @return string
      */
-    public function render()
+    public function render(): string
     {
         $page = new Page($this);
         $template = new Template($this, $page);
         return $template->render();
     }
-
+/*
     public function redirect($url)
     {
         Logger::log("=> redirect: " . $url);
         header("Location: " . $url);
         exit;
     }
+*/
 }
