@@ -48,7 +48,7 @@ text-image:
 This is done via configuration in the block-comment.
 
 ```html
-&lt;!-- 
+<!-- 
 text-image:
     image-position: left
 -->
@@ -56,4 +56,4 @@ text-image:
 
 --- 
 
-![alt text](dummy.svg "Title Text")
+![alt text](dummy.svg "Title Text")>

@@ -57,13 +57,21 @@ class Page
     private function renderMarkdown($pagePath): string
     {
         Logger::log("page: " . $pagePath);
-        $rawContent = file_get_contents($pagePath);
+        $content = file_get_contents($pagePath);
+
+        // encode code blocks
+        $content = preg_replace_callback('/```(.*?)```/s', function($matches) {
+            return "```" . base64_encode($matches[1]) . "```";
+        }, $content);
+        $content = preg_replace_callback('/`(.*?)`/s', function($matches) {
+            return "`" . base64_encode($matches[1]) . "`";
+        }, $content);
 
         // find blocks
         $offset = 0;
         $blocks = array();
         do {
-            preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $rawContent, $matches, 0, $offset);
+            preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $content, $matches, 0, $offset);
             if ($matches) {
                 $offset += strlen($matches[0]) - 4;
                 try {
@@ -71,17 +79,24 @@ class Page
                     $blockContent = trim($matches[2]);
                     $blockName = is_string($blockConfig) ? $blockConfig : array_keys($blockConfig)[0];
                     Logger::log("found block: " . $blockName);
+                    // unescape code blocks
+                    $blockContent = preg_replace_callback('/```(.*?)```/s', function($matches) {
+                        return "```" . base64_decode($matches[1]) . "```";
+                    }, $blockContent);
+                    $blockContent = preg_replace_callback('/`(.*?)`/s', function($matches) {
+                        return "`" . base64_decode($matches[1]) . "`";
+                    }, $blockContent);
                     $block = new Block($this->reboot, $this, $blockName, $blockContent, $blockConfig);
                     $blocks[] = $block;
                 } catch (ParseException $e) {
-                    Logger::log("could not parse block config: " . trim($matches[1]));
+                    Logger::log("Error: could not parse block config: " . trim($matches[1]));
                 }
             }
         } while ($matches);
 
         if (!count($blocks)) {
             // interpret whole content as flat markdown file
-            $block = new Block($this->reboot, "markdown", $rawContent);
+            $block = new Block($this->reboot, "markdown", $content);
             $blocks[] = $block;
         }
 

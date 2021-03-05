@@ -72,13 +72,15 @@ class Block
             if ($result instanceof \DOMText or $result instanceof \DOMAttr) {
                 $ret = $result->nodeValue;
             } else if ($result instanceof \DOMElement) {
-                $ret = $this->xpath->document->saveXML($result);
+                $ret = $this->xpath->document->saveHTML($result);
             } else if ($result instanceof \DOMNodeList) {
                 if ($result->length === 0) {
                     $ret = "<!-- no result -->";
                 } else {
                     $temp_dom = new DOMDocument();
-                    foreach ($result as $n) $temp_dom->appendChild($temp_dom->importNode($n, true));
+                    foreach ($result as $node) {
+                        $temp_dom->appendChild($temp_dom->importNode($node, true));
+                    }
                     $ret = $temp_dom->saveHTML();
                 }
             } else {
