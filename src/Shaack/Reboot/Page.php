@@ -41,8 +41,8 @@ class Page
             // not found
             Logger::log("article not found (404)");
             http_response_code(404);
-            if (file_exists($this->reboot->getBaseDir() . '/content/articles/404.md') ||
-                file_exists($this->reboot->getBaseDir() . '/content/articles/404.php')) {
+            if (file_exists($this->reboot->getBaseDir() . '/content/pages/404.md') ||
+                file_exists($this->reboot->getBaseDir() . '/content/pages/404.php')) {
                 return $this->render("/404"); // put a 404 file in /pages to create your own
             } else {
                 return "<div class='container'><h1>404</h1><p>Page not found.</p></div>";
