@@ -5,12 +5,9 @@
  * License: MIT, see file 'LICENSE'
  */
 
-/*
- * https://devhints.io/xpath
- */
-
 namespace Shaack\Reboot;
 
+use DOMDocument;
 use Shaack\Utils\Logger;
 
 class Block
@@ -20,7 +17,6 @@ class Block
     private $xpath;
     private $config;
     private $reboot;
-    private $currentPart;
 
     private static $parsedown;
 
@@ -58,19 +54,20 @@ class Block
         return @$this->config[$name];
     }
 
-    public function value($expression = null)
+    public function xpath($expression = null)
     {
         Logger::log("query: " . $expression);
-        if($this->currentPart) {
-
-        }
-        // $expression = "/html/body" . $expression;
-
+        // replace part(n), https://stackoverflow.com/questions/10859703/xpath-select-all-elements-between-two-specific-elements
+        $expression = preg_replace_callback("/part\((\d)\)/", function ($matches) {
+            $partNumber = $matches[1] - 1;
+            return "count(preceding::hr)=$partNumber and not(self::hr)";
+        }, $expression);
+        $expression = "/html/body" . $expression;
         $result = $this->xpath->query($expression);
         $ret = "";
         if ($result === false) {
-            Logger::log("no result");
-            $ret = "";
+            Logger::log("xquery error");
+            $ret = "*xquery error*";
         } else {
             if ($result->length === 1) {
                 $result = $result->item(0);
@@ -79,27 +76,23 @@ class Block
                 $ret = $result->nodeValue;
             } else if ($result instanceof \DOMElement) {
                 $ret = $this->xpath->document->saveXML($result);
-            } else {
-                if($result->length === 0) {
-                    $ret = "???";
+            } else if ($result instanceof \DOMNodeList) {
+                if ($result->length === 0) {
+                    $ret = "<!-- no result -->";
                 } else {
-                    $ret = "!!!";
+                    $temp_dom = new DOMDocument();
+                    foreach ($result as $n) $temp_dom->appendChild($temp_dom->importNode($n, true));
+                    $ret = $temp_dom->saveHTML();
                 }
+            } else {
                 Logger::log("ERROR d06492af: Unknown query result " . get_class($result));
             }
             Logger::log($expression . " => " . $ret);
         }
-        $this->currentPart = null;
         return $ret;
     }
 
-    public function part($number): Block
-    {
-        $this->currentPart = $number;
-        return $this;
-    }
-
-    public function content()
+    public function content(): string
     {
         if ($this->content) {
             return $this::$parsedown->parse($this->content);

@@ -8,16 +8,12 @@ author: Stefan Haack
 
 # Reboot CMS
 
-A flat file, markdown CMS in PHP
-
-[Learn more](/documentation)
+A flat file, markdown CMS with blocks
 
 ---
 
-The main idea is, to have a minimal CMS without needing a database, but with the support of blocks.
+The main idea is, to have a **minimal CMS** without needing a database, but with the support of blocks.
 
-Another part.
+---
 
-## and headline
-
-[asdsa](/asdasd)
+[Learn more](/documentation)

@@ -6,39 +6,26 @@
  */
 
 /** @var \Shaack\Reboot\Block $this */
+
+/*
+ * https://devhints.io/xpath
+ */
 ?>
 <section class="block block-jumbotron">
     <div class="container">
         <div class="jumbotron">
-            <h1 class="display-4"><?= $this->value("/html/body/hr[1]/preceding::h1/text()") ?></h1>
-            <p class="lead"><?= $this->value("/html/body/hr[1]/preceding::p/text()") ?></p>
+            <!-- convert the text of the <h1> in part 1 to a display-4 -->
+            <h1 class="display-4"><?= $this->xpath("/h1[part(1)]/text()") ?></h1>
+            <!-- the lead will be the text of the <p> of part 1 -->
+            <p class="lead"><?= $this->xpath("/p[part(1)]/text()") ?></p>
             <hr class="my-4">
-            <?= $this->value("/html/body/hr[1]/following::*") ?>
+            <!-- print everything in part 2 -->
+            <?= $this->xpath("/*[part(2)]") ?>
             <p>
-                <a class="btn btn-primary btn-lg" href="<?= $this->part(2)->value("/html/body/hr[1]/preceding::a[1]/@href") ?>"
-                   role="button"><?= $this->part(2)->value("/html/body/hr[1]/preceding::a[1]/text()") ?></a>
+                <!-- the link in part 3 will be used as the primary button -->
+                <a class="btn btn-primary btn-lg" href="<?= $this->xpath("//a[part(3)]/@href") ?>"
+                   role="button"><?= $this->xpath("//a[part(3)]/text()") ?></a>
             </p>
         </div>
     </div>
 </section>
-<!--
-TODO
-replace "/part(1)/" with
-"/hr[1]/preceding-sibling::*/"
-
-replace "/part(2)/" with
-"/hr[1]/following-sibling::*/hr[2]/preceding-sibling::*/"
-
-...
-
-so:
-"/hr[1]/preceding-sibling::*//a[1]/@href"
-=> "/part(1)//a[1]/@href"
-
-"/h1[1]/text()" => "/part(1)/h1/text()"
-"/p[1]/text()" => "/part(1)/p/text()"
-
-query => queryValue()
-+ queryList() zum iterieren
-
--->
