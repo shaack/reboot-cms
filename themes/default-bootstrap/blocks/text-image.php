@@ -9,6 +9,6 @@
 ?>
 <section class="block block-text-image">
     <div class="container">
-        TODO
+        TODO text-image
     </div>
 </section>

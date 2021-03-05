@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Dummy image by shaack.com
+License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/
+-->
+<svg width="1024px" height="768px" viewBox="0 0 1024 768" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>dummy</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard">
+            <g id="dummy">
+                <rect id="Rectangle" fill="#D6E1FF" x="0" y="0" width="1024" height="768"></rect>
+                <polygon id="Path" fill="#423F3F" points="0 530.150259 270.527147 272 546.038485 488.326126 688.272987 359.368399 1024 609.757574 1024 768 0 768"></polygon>
+                <circle id="Oval" fill="#FFC700" cx="777" cy="172" r="115"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

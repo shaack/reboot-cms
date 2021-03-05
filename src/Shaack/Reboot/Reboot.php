@@ -12,13 +12,13 @@ use Symfony\Component\Yaml\Yaml;
 
 class Reboot
 {
-    public $baseDir; // The CMS root
-    public $baseUrl; // the base URL, requests /web
-    public $requestUri; // the request Uri
-    public $route; // the route in /web or content/pages
-    public $globals; // global values / configuration for the website
-    public $config; // local configuration
-    public $theme; // the theme
+    public $baseDir; // The CMS root in file system
+    public $baseUrl; // the base URL, requests got to `/web` and sub folders
+    public $requestUri; // the request uri
+    public $route; // the route in `/web` or `/content/pages`
+    public $globals; // global values, defined in `/content/globals.yml`
+    public $config; // local configuration, defined in `/local/config.yml`
+    public $theme; // the  current theme
 
     /**
      * Reboot constructor.
@@ -65,12 +65,12 @@ class Reboot
         $template = new Template($this, $page);
         return $template->render();
     }
-/*
+
     public function redirect($url)
     {
         Logger::log("=> redirect: " . $url);
         header("Location: " . $url);
         exit;
     }
-*/
+
 }

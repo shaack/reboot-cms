@@ -9,6 +9,6 @@
 ?>
 <section class="block block-markdown">
     <div class="container">
-        TODO
+        <?= $this->content() ?>
     </div>
 </section>

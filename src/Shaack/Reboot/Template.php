@@ -12,7 +12,7 @@ class Template
     private $reboot;
 
     /**
-     * Page constructor.
+     * Template constructor.
      * @param Reboot $reboot
      * @param Page $page
      */

@@ -69,7 +69,7 @@ class Page
                 try {
                     $blockConfig = Yaml::parse(trim($matches[1]));
                     $blockContent = trim($matches[2]);
-                    $blockName = is_string($blockConfig) ? $blockConfig : $blockConfig[0];
+                    $blockName = is_string($blockConfig) ? $blockConfig : array_keys($blockConfig)[0];
                     Logger::log("found block: " . $blockName);
                     $block = new Block($this->reboot, $blockName, $blockContent, $blockConfig);
                     $blocks[] = $block;
