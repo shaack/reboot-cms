@@ -56,7 +56,7 @@ class Page
      */
     private function renderMarkdown($pagePath): string
     {
-        Logger::log("page: " . $pagePath);
+        Logger::log("Markdown Page: " . $pagePath);
         $content = file_get_contents($pagePath);
 
         // encode code blocks
@@ -103,7 +103,7 @@ class Page
 
         if (!count($blocks)) {
             // interpret whole content as flat markdown file
-            $block = new Block($this->reboot, "markdown", $content);
+            $block = new Block($this->reboot, $this, "text", $content);
             $blocks[] = $block;
         }
 
@@ -122,13 +122,19 @@ class Page
      */
     private function renderPHP($articlePath): string
     {
-        Logger::log("article: " . $articlePath);
-        ob_start();
-        /** @noinspection PhpIncludeInspection */
-        include $articlePath;
-        $contents = ob_get_contents();
-        ob_end_clean();
-        return $contents;
+        Logger::log("PHP Page: " . $articlePath);
+        return renderPHPPage($this->reboot, $this, $articlePath);
     }
 
 }
+
+/** @noinspection PhpUnusedParameterInspection */
+function renderPHPPage(Reboot $reboot, Page $page, string $path) {
+    ob_start();
+    /** @noinspection PhpIncludeInspection */
+    include $path;
+    $contents = ob_get_contents();
+    ob_end_clean();
+    return $contents;
+}
+

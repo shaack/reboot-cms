@@ -4,10 +4,7 @@ description: Reboot CMS is a flat file CMS, with the support of blocks.
 author: Stefan Haack
 ---
 
-<!--  
-jumbotron:
-    test: 123
--->
+<!-- jumbotron -->
 
 # Reboot CMS
 
@@ -51,7 +48,28 @@ text-image:
 
 ![alt text](dummy.svg "Title Text")>
 
-<!-- markdown -->
+<!-- three-columns -->
+
+### the
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est.
+
+---
+
+### three-colums
+
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute
+iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+
+---
+
+### block
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+aliqua.
+
+<!-- text -->
 
 ## This is a text block
 

@@ -46,7 +46,7 @@ class Block
         return renderBlock($this->reboot, $this->page, $this);
     }
 
-    public function getConfig()
+    public function getConfig(): ?array
     {
         return $this->config;
     }
