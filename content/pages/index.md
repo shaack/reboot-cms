@@ -19,19 +19,12 @@ The main idea is, to have a **minimal CMS** without needing a database, but with
 ---
 [Learn more](/documentation)
 
-<!-- markdown -->
-
-## This is just a markdown block
-
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-aliqua. Ut enim ad minim veniam.
-
 <!-- text-image -->
 
 ## The text-image block
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+The gray block above was a jumbotron block. This one is a text-image block, it contains two parts.
+In the markdown content source, parts are separated by `---`.
 
 ---
 
@@ -43,9 +36,9 @@ text-image:
     image-position: left
 -->
 
-## The text-image block can also display the image on the left side
+## Configure blocks in the block comment
 
-This is done via configuration in the block-comment.
+The text-image block can also display the image to the left.
 
 ```html
 <!-- 
@@ -57,3 +50,18 @@ text-image:
 --- 
 
 ![alt text](dummy.svg "Title Text")>
+
+<!-- markdown -->
+
+## This is a text block
+
+A text block contains just one markdown part.
+
+### This is a h3 in a text block
+
+It can contain
+
+- [links](https://www.chessmail.de)
+- and lists
+
+and everything else in markdown.

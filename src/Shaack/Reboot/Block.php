@@ -46,9 +46,9 @@ class Block
         return renderBlock($this->reboot, $this->page, $this);
     }
 
-    public function config($name)
+    public function getConfig()
     {
-        return @$this->config[$name];
+        return $this->config;
     }
 
     public function xpath($expression = null)

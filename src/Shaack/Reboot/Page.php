@@ -77,7 +77,14 @@ class Page
                 try {
                     $blockConfig = Yaml::parse(trim($matches[1]));
                     $blockContent = trim($matches[2]);
-                    $blockName = is_string($blockConfig) ? $blockConfig : array_keys($blockConfig)[0];
+                    $blockName = null;
+                    if(is_string($blockConfig)) {
+                        $blockName = $blockConfig;
+                        $blockConfig = [];
+                    } else {
+                        $blockName = array_keys($blockConfig)[0];
+                        $blockConfig = $blockConfig[$blockName];
+                    }
                     Logger::log("found block: " . $blockName);
                     // unescape code blocks
                     $blockContent = preg_replace_callback('/```(.*?)```/s', function($matches) {

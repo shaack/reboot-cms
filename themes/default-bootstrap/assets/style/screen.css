@@ -6,3 +6,8 @@ body {
 .block {
     margin-bottom: 2rem;
 }
+
+pre {
+    background-color: #f4f4f4;
+    padding: 1rem;
+}
