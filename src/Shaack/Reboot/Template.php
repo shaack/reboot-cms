@@ -27,11 +27,16 @@ class Template
      */
     public function render(): string
     {
-        ob_start();
-        /** @noinspection PhpIncludeInspection */
-        include $this->reboot->baseDir . '/themes/' . $this->reboot->theme->getName() . '/template.php';
-        $contents = ob_get_contents();
-        ob_end_clean();
-        return $contents;
+        return renderTemplate($this->reboot, $this->page);
     }
+}
+
+/** @noinspection PhpUnusedParameterInspection */
+function renderTemplate(Reboot $reboot, Page $page) {
+    ob_start();
+    /** @noinspection PhpIncludeInspection */
+    include $reboot->getBaseDir() . '/themes/' . $reboot->getTheme()->getName() . '/template.php';
+    $contents = ob_get_contents();
+    ob_end_clean();
+    return $contents;
 }

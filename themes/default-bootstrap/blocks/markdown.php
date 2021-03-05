@@ -5,10 +5,10 @@
  * License: MIT, see file 'LICENSE'
  */
 
-/**  @var \Shaack\Reboot\Block $this */
+/**  @var \Shaack\Reboot\Block $block */
 ?>
 <section class="block block-markdown">
     <div class="container">
-        <?= $this->content() ?>
+        <?= $block->content() ?>
     </div>
 </section>

@@ -1,6 +1,7 @@
 <?php
 
-/** @var Shaack\Reboot\Template $this */
+/** @var Shaack\Reboot\Reboot $reboot */
+/** @var Shaack\Reboot\Page $page */
 
 ?>
 <!doctype html>
@@ -13,15 +14,15 @@
 
     <title>Reboot CMS</title>
 
-    <link href="<?= $this->reboot->baseUrl ?>/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= $this->reboot->baseUrl ?>/theme/assets/style/screen.css" rel="stylesheet">
+    <link href="<?= $reboot->getBaseUrl() ?>/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?= $reboot->getBaseUrl() ?>/theme/assets/style/screen.css" rel="stylesheet">
 </head>
 <body>
-<?php $navbarConfig = $this->reboot->globals['navbar']; ?>
+<?php $navbarConfig = $reboot->getGlobals()['navbar']; ?>
 <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
-    <a class="navbar-brand" href="<?= $this->reboot->baseUrl ?>/"><?php echo $navbarConfig["brand"] ?></a>
+    <a class="navbar-brand" href="<?= $reboot->getBaseUrl() ?>/"><?php echo $navbarConfig["brand"] ?></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
-            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbar">
@@ -30,8 +31,8 @@
             $structure = $navbarConfig['structure'];
             foreach ($structure as $label => $path) {
                 ?>
-                <li class="nav-item <?= $this->reboot->requestUri == $path ? "active" : "" ?>">
-                    <a class="nav-link" href="<?= $this->reboot->baseUrl . $path ?>"><?= $label ?></a>
+                <li class="nav-item <?= $reboot->getRequestUri() == $path ? "active" : "" ?>">
+                    <a class="nav-link" href="<?= $reboot->getBaseUrl() . $path ?>"><?= $label ?></a>
                 </li>
                 <?php
             }
@@ -40,9 +41,9 @@
     </div>
 </nav>
 <?php
-echo($this->page->render());
+echo($page->render());
 ?>
-<script src="<?= $this->reboot->baseUrl ?>/vendor/components/jquery/jquery.slim.js"></script>
-<script src="<?= $this->reboot->baseUrl ?>/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= $reboot->getBaseUrl() ?>/vendor/components/jquery/jquery.slim.js"></script>
+<script src="<?= $reboot->getBaseUrl() ?>/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

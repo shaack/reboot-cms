@@ -12,17 +12,18 @@ use Symfony\Component\Yaml\Yaml;
 
 class Reboot
 {
-    public $baseDir; // The CMS root in file system
-    public $baseUrl; // the base URL, requests got to `/web` and sub folders
-    public $requestUri; // the request uri
-    public $route; // the route in `/web` or `/content/pages`
-    public $globals; // global values, defined in `/content/globals.yml`
-    public $config; // local configuration, defined in `/local/config.yml`
-    public $theme; // the  current theme
+    private $baseDir; // The CMS root in file system
+    private $baseUrl; // the base URL, requests got to `/web` and sub folders
+    private $requestUri; // the request uri
+    private $route; // the route in `/web` or `/content/pages`
+    private $globals; // global values, defined in `/content/globals.yml`
+    private $config; // local configuration, defined in `/local/config.yml`
+    private $theme; // the  current theme
 
     /**
-     * Reboot constructor.
+     * Reboot constructor
      * @param string $uri
+     * @param string $baseDir
      */
     public function __construct(string $uri, string $baseDir)
     {
@@ -54,23 +55,83 @@ class Reboot
             $this->route = $this->route . "/index";
         }
         Logger::log("route: " . $this->route);
+        echo($this->render());
     }
 
     /**
      * @return string
      */
-    public function render(): string
+    private function render(): string
     {
         $page = new Page($this);
         $template = new Template($this, $page);
         return $template->render();
     }
 
+    /**
+     * @param $url
+     */
     public function redirect($url)
     {
         Logger::log("=> redirect: " . $url);
         header("Location: " . $url);
         exit;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBaseDir(): string
+    {
+        return $this->baseDir;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBaseUrl(): string
+    {
+        return $this->baseUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequestUri(): string
+    {
+        return $this->requestUri;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRoute(): string
+    {
+        return $this->route;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGlobals()
+    {
+        return $this->globals;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
+     * @return Theme
+     */
+    public function getTheme(): Theme
+    {
+        return $this->theme;
     }
 
 }

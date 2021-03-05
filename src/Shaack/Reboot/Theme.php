@@ -22,7 +22,8 @@ class Theme
     {
         $routeInAssets = str_replace("/theme/assets", "", $route);
         header('Content-type: text/css');
-        include $this->reboot->baseDir . '/themes/' . $this->reboot->config['theme'] . '/assets' . $routeInAssets;
+        /** @noinspection PhpIncludeInspection */
+        include $this->reboot->getBaseDir() . '/themes/' . $this->reboot->getConfig()['theme'] . '/assets' . $routeInAssets;
         exit();
     }
 

@@ -30,9 +30,9 @@ class Page
     public function render($route = null): string
     {
         if (!$route) {
-            $route = $this->reboot->route;
+            $route = $this->reboot->getRoute();
         }
-        $articlePrefix = $this->reboot->baseDir . '/content/pages' . $route;
+        $articlePrefix = $this->reboot->getBaseDir() . '/content/pages' . $route;
         if (file_exists($articlePrefix . ".md")) {
             return $this->renderMarkdown($articlePrefix . ".md");
         } else if (file_exists($articlePrefix . ".php")) {
@@ -41,8 +41,8 @@ class Page
             // not found
             Logger::log("article not found (404)");
             http_response_code(404);
-            if (file_exists($this->reboot->baseDir . '/content/articles/404.md') ||
-                file_exists($this->reboot->baseDir . '/content/articles/404.php')) {
+            if (file_exists($this->reboot->getBaseDir() . '/content/articles/404.md') ||
+                file_exists($this->reboot->getBaseDir() . '/content/articles/404.php')) {
                 return $this->render("/404"); // put a 404 file in /pages to create your own
             } else {
                 return "<div class='container'><h1>404</h1><p>Page not found.</p></div>";
@@ -54,7 +54,7 @@ class Page
      * @param $pagePath
      * @return string
      */
-    public function renderMarkdown($pagePath): string
+    private function renderMarkdown($pagePath): string
     {
         Logger::log("page: " . $pagePath);
         $rawContent = file_get_contents($pagePath);
@@ -71,7 +71,7 @@ class Page
                     $blockContent = trim($matches[2]);
                     $blockName = is_string($blockConfig) ? $blockConfig : array_keys($blockConfig)[0];
                     Logger::log("found block: " . $blockName);
-                    $block = new Block($this->reboot, $blockName, $blockContent, $blockConfig);
+                    $block = new Block($this->reboot, $this, $blockName, $blockContent, $blockConfig);
                     $blocks[] = $block;
                 } catch (ParseException $e) {
                     Logger::log("could not parse block config: " . trim($matches[1]));
@@ -98,7 +98,7 @@ class Page
      * @param $articlePath
      * @return string
      */
-    public function renderPHP($articlePath): string
+    private function renderPHP($articlePath): string
     {
         Logger::log("article: " . $articlePath);
         ob_start();

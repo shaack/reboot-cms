@@ -17,10 +17,11 @@ class Block
     private $xpath;
     private $config;
     private $reboot;
+    private $page;
 
     private static $parsedown;
 
-    public function __construct($reboot, $name, $content = "", $config = array())
+    public function __construct($reboot, $page, $name, $content = "", $config = array())
     {
         if (!$this::$parsedown) {
             $this::$parsedown = new \Parsedown();
@@ -29,9 +30,10 @@ class Block
         $this->content = $content;
         $this->config = $config;
         $this->reboot = $reboot;
+        $this->page = $page;
 
         $html = $this::$parsedown->parse($this->content);
-        $document = new \DOMDocument();
+        $document = new DOMDocument();
         $document->loadHTML($html);
         $this->xpath = new \DOMXPath($document);
     }
@@ -41,12 +43,7 @@ class Block
         Logger::log("");
         Logger::log("Rendering Block " . $this->name);
         Logger::log($this->xpath->document->saveHTML());
-        ob_start();
-        /** @noinspection PhpIncludeInspection */
-        include $this->reboot->baseDir . '/themes/' . $this->reboot->config['theme'] . '/blocks/' . $this->name . ".php";
-        $contents = ob_get_contents();
-        ob_end_clean();
-        return $contents;
+        return renderBlock($this->reboot, $this->page, $this);
     }
 
     public function config($name)
@@ -100,4 +97,22 @@ class Block
             return "";
         }
     }
+
+    /**
+     * @return mixed
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+}
+
+/** @noinspection PhpUnusedParameterInspection */
+function renderBlock(Reboot $reboot, Page $page, Block $block) {
+    ob_start();
+    /** @noinspection PhpIncludeInspection */
+    include $reboot->getBaseDir() . '/themes/' . $reboot->getConfig()['theme'] . '/blocks/' . $block->getName() . ".php";
+    $contents = ob_get_contents();
+    ob_end_clean();
+    return $contents;
 }
