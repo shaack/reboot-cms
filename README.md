@@ -144,7 +144,7 @@ $imagePosition = $block->getConfig()["image-position"];
                 <?= $block->xpath("/*[part(1)]") ?>
             </div>
             <div class="col-md-5">
-                <!-- using attributes of the link in part 2 -->
+                <!-- using attributes of the image in part 2 -->
                 <img class="img-fluid" src="/media/<?= $block->xpath("//img[part(2)]/@src") ?>"
                      alt="<?= $block->xpath("//img[part(2)]/@alt") ?>"
                      title="<?= $block->xpath("//img[part(2)]/@title") ?>"/>
@@ -156,6 +156,30 @@ $imagePosition = $block->getConfig()["image-position"];
 
 Elements in the markdown are queried and used as values for the block. The query syntax
 is [Xpath](https://devhints.io/xpath) with the addition of the `part(n)` function.
+
+Another example, the "jumbotron" `Block`:
+
+```php
+?>
+<section class="block block-jumbotron">
+    <div class="container">
+        <div class="jumbotron">
+            <!-- use the text of the <h1> in part 1 for the display-4 -->
+            <h1 class="display-4"><?= $block->xpath("/h1[part(1)]/text()") ?></h1>
+            <!-- the lead will be the text of the <p> in part 1 -->
+            <p class="lead"><?= $block->xpath("/p[part(1)]/text()") ?></p>
+            <hr class="my-4">
+            <!-- print everything from part 2 -->
+            <?= $block->xpath("/*[part(2)]") ?>
+            <p>
+                <!-- the link in part 3 will be used as the primary button -->
+                <a class="btn btn-primary btn-lg" href="<?= $block->xpath("//a[part(3)]/@href") ?>"
+                   role="button"><?= $block->xpath("//a[part(3)]/text()") ?></a>
+            </p>
+        </div>
+    </div>
+</section>
+```
 
 ### Template
 

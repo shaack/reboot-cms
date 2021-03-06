@@ -14,12 +14,12 @@
 <section class="block block-jumbotron">
     <div class="container">
         <div class="jumbotron">
-            <!-- convert the text of the <h1> in part 1 to a display-4 -->
+            <!-- use the text of the <h1> in part 1 for the display-4 -->
             <h1 class="display-4"><?= $block->xpath("/h1[part(1)]/text()") ?></h1>
-            <!-- the lead will be the text of the <p> of part 1 -->
+            <!-- the lead will be the text of the <p> in part 1 -->
             <p class="lead"><?= $block->xpath("/p[part(1)]/text()") ?></p>
             <hr class="my-4">
-            <!-- print everything in part 2 -->
+            <!-- print everything from part 2 -->
             <?= $block->xpath("/*[part(2)]") ?>
             <p>
                 <!-- the link in part 3 will be used as the primary button -->
