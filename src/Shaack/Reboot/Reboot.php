@@ -13,12 +13,12 @@ use Symfony\Component\Yaml\Yaml;
 class Reboot
 {
     private $baseDir; // The CMS root in file system
-    private $baseUrl; // the base URL, requests got to `/web` and sub folders
-    private $requestUri; // the request uri
-    private $route; // the route in `/web` or `/content/pages`
-    private $globals; // global values, defined in `/content/globals.yml`
-    private $config; // local configuration, defined in `/local/config.yml`
-    private $theme; // the  current theme
+    private $baseUrl; // The base URL, requests got to `/web` and sub folders
+    private $requestUri; // The current request uri
+    private $route; // The route in `/web` or `/content/pages`
+    private $globals; // Global values, defined in `/content/globals.yml`
+    private $config; // Local configuration, defined in `/local/config.yml`
+    private $theme; // The  current theme
 
     /**
      * Reboot constructor
@@ -79,6 +79,7 @@ class Reboot
     }
 
     /**
+     * The CMS root in file system
      * @return string
      */
     public function getBaseDir(): string
@@ -87,6 +88,7 @@ class Reboot
     }
 
     /**
+     * The base URL, requests got to `/web` and sub folders
      * @return string
      */
     public function getBaseUrl(): string
@@ -95,6 +97,7 @@ class Reboot
     }
 
     /**
+     * The current request uri
      * @return string
      */
     public function getRequestUri(): string
@@ -103,6 +106,7 @@ class Reboot
     }
 
     /**
+     * The route in `/web` or `/content/pages`
      * @return string
      */
     public function getRoute(): string
@@ -111,22 +115,25 @@ class Reboot
     }
 
     /**
-     * @return mixed
+     * Global values, defined in `/content/globals.yml`
+     * @return array
      */
-    public function getGlobals()
+    public function getGlobals(): array
     {
         return $this->globals;
     }
 
     /**
-     * @return mixed
+     * Local configuration, defined in `/local/config.yml`
+     * @return array
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->config;
     }
 
     /**
+     * The  current theme
      * @return Theme
      */
     public function getTheme(): Theme

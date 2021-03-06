@@ -18,6 +18,10 @@ class Theme
         $this->name = $name;
     }
 
+    /**
+     * Used to render assets out of `/themes/THEME_NAME/assets`
+     * @param string $route
+     */
     public function renderAsset(string $route)
     {
         $routeInAssets = str_replace("/theme/assets", "", $route);
@@ -27,6 +31,9 @@ class Theme
         exit();
     }
 
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return $this->name;

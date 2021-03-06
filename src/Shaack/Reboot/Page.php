@@ -11,23 +11,25 @@ use Shaack\Utils\Logger;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
-require "Block.php";
-
 class Page
 {
     /** @var Reboot */
     private $reboot;
 
-    public function __construct($reboot)
+    /**
+     * Page constructor.
+     * @param Reboot $reboot
+     */
+    public function __construct(Reboot $reboot)
     {
         $this->reboot = $reboot;
     }
 
     /**
-     * @param string $route
+     * @param string|null $route
      * @return string
      */
-    public function render($route = null): string
+    public function render(string $route = null): string
     {
         if (!$route) {
             $route = $this->reboot->getRoute();
@@ -51,10 +53,10 @@ class Page
     }
 
     /**
-     * @param $pagePath
+     * @param string $pagePath
      * @return string
      */
-    private function renderMarkdown($pagePath): string
+    private function renderMarkdown(string $pagePath): string
     {
         Logger::log("Markdown Page: " . $pagePath);
         $content = file_get_contents($pagePath);

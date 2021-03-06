@@ -21,7 +21,14 @@ class Block
 
     private static $parsedown;
 
-    public function __construct($reboot, $page, $name, $content = "", $config = array())
+    /**
+     * @param Reboot $reboot
+     * @param Page $page
+     * @param string $name
+     * @param string $content
+     * @param array $config
+     */
+    public function __construct(Reboot $reboot, Page $page, string $name, string $content = "", array $config = [])
     {
         if (!$this::$parsedown) {
             $this::$parsedown = new \Parsedown();
@@ -38,7 +45,10 @@ class Block
         $this->xpath = new \DOMXPath($document);
     }
 
-    public function render()
+    /**
+     * @return string
+     */
+    public function render(): string
     {
         Logger::log("");
         Logger::log("Rendering Block " . $this->name);
@@ -46,12 +56,20 @@ class Block
         return renderBlock($this->reboot, $this->page, $this);
     }
 
-    public function getConfig(): ?array
+    /**
+     * @return array
+     */
+    public function getConfig(): array
     {
         return $this->config;
     }
 
-    public function xpath($expression = null)
+    /**
+     * Queries a value or a part in the markdown to use it in the block template
+     * @param string $expression
+     * @return string
+     */
+    public function xpath(string $expression): string
     {
         Logger::log("query: " . $expression);
         // replace part(n), https://stackoverflow.com/questions/10859703/xpath-select-all-elements-between-two-specific-elements
@@ -91,6 +109,10 @@ class Block
         return $ret;
     }
 
+    /**
+     * Return all content parsed to HTML
+     * @return string
+     */
     public function content(): string
     {
         if ($this->content) {
@@ -101,9 +123,9 @@ class Block
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }

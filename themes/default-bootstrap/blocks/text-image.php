@@ -10,7 +10,7 @@
 /*
  * This one demonstrates the usage of a block configuration.
  */
-$imagePosition = $block->getConfig()["image-position"];
+$imagePosition = @$block->getConfig()["image-position"];
 ?>
 <section class="block block-text-image">
     <div class="container">
