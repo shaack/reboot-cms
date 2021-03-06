@@ -12,7 +12,7 @@
  */
 
 // read the configuration
-$imagePosition = $block->getConfig()["image-position"];
+$imagePosition = @$block->getConfig()["image-position"];
 ?>
 <section class="block block-text-image">
     <div class="container">

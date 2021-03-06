@@ -134,7 +134,7 @@ The code for the "text-image" `Block` which was used in the page above, looks li
 
 ```php
 // read the configuration
-$imagePosition = $block->getConfig()["image-position"];
+$imagePosition = @$block->getConfig()["image-position"];
 ?>
 <section class="block block-text-image">
     <div class="container">
