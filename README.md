@@ -1,28 +1,37 @@
 # Reboot CMS
 
-A flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org) and [Redaxo](https://redaxo.org/).
+A flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org), [Redaxo](https://redaxo.org/) and
+[Craft CMS](https://craftcms.com/).
 
-A minimal CMS without needing a database, but with the support
-of `Blocks`.
+Reboot CMS is a minimal CMS without needing a database, but with the support of `Blocks`.
 
-### Websites using reboot-cms
+## Why another CMS?
+
+I developed Reboot CMS because I didn't find a CMS that works with flat markdown files but allows easy use of blocks.
+
+Reboot CMS is very small and is currently under massive development. I know of two sites so far where Reboot CMS is
+already in use. Try it out, the pages are delivered extremely fast, the code is excellent, as with all my projects.
+
+## Websites using reboot-cms
 
 - [wukies.de](https://wukies.de)
 - [chesscoin032.com](https://chesscoin032.com)
 
 ## Install
 
-Download this repository, [install composer](https://getcomposer.org/download/),
-and run `composer.phar install`.
+1. Download the [repository](https://github.com/shaack/reboot-cms),
+2. [install composer](https://getcomposer.org/download/), run `composer.phar install` in
+the root directory.
+3. Configure `/web` as the root folder in your webserver.
 
-Configure `/web` as the root folder in your webserver.
+done.
 
 ## Documentation
 
-**In a Nutshell**
+#### In a Nutshell
 
-- A `Page` is a 
-    - `Markdown file` (flat or with blocks) or a 
+- A `Page` is a
+    - `Markdown file` (flat or with blocks) or a
     - `PHP file` (where you can do everything)
 - A `Block` renders a block
 - A `Template` renders the `Page`
@@ -31,10 +40,7 @@ Configure `/web` as the root folder in your webserver.
 
 Folder: `/content/pages`
 
-A `Page` contains the content of a webpage.  
-
-It can be a **flat Markdown** file, can contain **multiple Blocks** or
-also can be a **PHP-File**, where everything is possible.
+A `Page` can be a **flat Markdown** file, can contain **multiple Blocks** or also can be a **PHP-File**.
 
 Pages are auto-routed on web-requests:
 
@@ -45,54 +51,82 @@ Pages are auto-routed on web-requests:
 
 Example for a Markdown `Page` with `Blocks`:
 
-``` markdown
+```markdown
 ---
-title: Reboot CMS
-author: shaack.com
-date: 2021-03-04
+title: Reboot CMS 
+description: Reboot CMS is a flat file CMS, with the support of blocks. 
+author: Stefan Haack (shaack.com)
 ---
 
 <!-- jumbotron -->
 
 # Reboot CMS
 
-A flat file, markdown CMS in PHP
+A flat file, markdown CMS with blocks
+
+---
+The main idea is, to have a **minimal CMS** without needing a database, but with the support of blocks.
+
+---
+[Learn more](/documentation)
+
+<!-- text-image -->
+
+## The text-image block
+
+The gray block above was a jumbotron block. This one is a text-image block, it contains two parts. Parts are separated
+by `---`.
+
+---
+
+![alt text](dummy.svg "Title Text")
+
+<!-- 
+text-image:
+    image-position: left
+-->
+
+## Configure blocks in the block comment
+
+The text-image block can also display the image to the left.
 
 --- 
 
-The main idea is, to have a minimal CMS without needing a database, but with the support
-of blocks.
+![alt text](dummy.svg "Title Text")>
 
-[Learn more](/documentation)
+<!-- three-columns -->
 
-<!-- markdown -->
+### the
 
-## This is a markdown block
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est.
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod 
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea 
-commodo consequat. 
-```
-This `Page` contains two `Block`s, "jumbotron" and "markdown". It will render to
-this:
-
-![](https://shaack.com/projekte/assets/img/reboot-cms-jumbotron.png)
-
-Markdown files without blocks will render to a flat Markdown page, like in every
-other flat file CMS.
-
-You can define metadata for the page on top in `YAML Front Matter` syntax.
-
-```
 ---
-title: My new Webpage
-description: Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-author: shaack.com
-date: 2021-03-04
-# ... more meta data in YAML, as you like
+
+### three-colums
+
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute
+iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+
 ---
+
+### block
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+aliqua.
+
 ```
+
+This `Page` contains 3 `Block` types, "jumbotron", "text-image" and "three-columns". It will render to this:
+
+![](https://shaack.com/projekte/assets/img/reboot-cms-index.png)
+
+Blocks can be configured in the block comment. With this configuration, the `text-image`
+block allows to display the image to the left side in desktop view.
+
+Markdown files without blocks will render to a flat Markdown page like in every other flat file CMS.
+
+You can define metadata for the page on top of the file in `YAML Front Matter` syntax.
 
 ### Block
 
@@ -100,30 +134,35 @@ Folder: `/themes/THEME_NAME/blocks`
 
 A `Block` describes how a block is rendered. Blocks are written in PHP.
 
-The code for the "jumbotron" `Block` which was used in the `Page` above,
-looks like this:
-``` php
-<div class="container">
-    <div class="jumbotron">
+The code for the "text-image" `Block` which was used in the page above, looks like this:
 
-        <h1 class="display-4"><?= $this->query("/h1[1]/text()") ?></h1>
-        <p class="lead"><?= $this->query("/p[1]/text()") ?></p>
-        <hr class="my-4">
-        <?= $this->query("/hr/following-sibling::*") ?>
-        <p class="lead">
-            <a class="btn btn-primary btn-lg" href="<?= $this->value("/a[1]/@href") ?>"
-               role="button"><?= $this->value("/a[1]/text()") ?></a>
-        </p>
+```php
+// read the configuration
+$imagePosition = $block->getConfig()["image-position"];
+?>
+<section class="block block-text-image">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7 <?= $imagePosition === "left" ? "order-md-1" : "" ?>">
+                <!-- all text from part 1 (xpath statement) -->
+                <?= $block->xpath("/*[part(1)]") ?>
+            </div>
+            <div class="col-md-5">
+                <!-- using attributes of the link in part 2 -->
+                <img class="img-fluid" src="/media/<?= $block->xpath("//img[part(2)]/@src") ?>"
+                     alt="<?= $block->xpath("//img[part(2)]/@alt") ?>"
+                     title="<?= $block->xpath("//img[part(2)]/@title") ?>"/>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 ```
 
 Elements in the markdown are queried and used as values for the block. The query syntax
-is [Xpath](https://devhints.io/xpath).
+is [Xpath](https://devhints.io/xpath) with the addition of the `part(n)` function.
 
 ### Template
 
 Folder: `/themes/THEME_NAME`
 
-`Templates` are written in PHP. The `template.php` Template is used, if no other `Template` is defined for a
-`Page`.
+`Templates` are written in PHP. The `template.php` Template is used per default.

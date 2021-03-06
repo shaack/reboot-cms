@@ -21,12 +21,11 @@ The main idea is, to have a **minimal CMS** without needing a database, but with
 ## The text-image block
 
 The gray block above was a jumbotron block. This one is a text-image block, it contains two parts.
-In the markdown content source, parts are separated by `---`.
+Parts are separated by `---`.
 
 ---
 
 ![alt text](dummy.svg "Title Text")
-
 
 <!-- 
 text-image:
