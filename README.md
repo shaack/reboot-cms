@@ -19,14 +19,15 @@ already in use. Try it out, the pages are delivered extremely fast, the code is 
 
 ## Install
 
-1. Download the [repository](https://github.com/shaack/reboot-cms)
-2. [Install composer](https://getcomposer.org/download/) and run `composer.phar install` in
-the root directory. This will install the dependencies in the `/vendor` folder.
+1. Download the [Reboot CMS repository](https://github.com/shaack/reboot-cms).
+2. [Install Composer](https://getcomposer.org/download/) and run `composer install` in
+the root directory of Reboot CMS. This will install the dependencies in the `/vendor` folder.
+3. Upload the files to the server, (if you don't have the CMS installed directly on the server).
 
 Done!
    
-3. Optional: Configure `/web` as the root folder. This is only necessary, if you want a higher (enterprise) level of
-  security. The root folder is protected via .htaccess. See also: 
+4. Optional: Configure `/web` as the root folder. This is only necessary, if you want a higher (enterprise) level of
+  security or if you installed the CMS not in the web root. See also: 
      https://stackoverflow.com/questions/17891251/how-to-protect-configuration-file-in-php/17891335 
 
 ## Documentation
