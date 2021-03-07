@@ -30,6 +30,9 @@ class Reboot
         $this->requestUri = strtok($uri, '?');
         $this->baseDir = $baseDir;
         $this->baseUrl = rtrim(str_replace("index.php", "", $_SERVER['PHP_SELF']), "/");
+        if (substr($this->baseUrl, 0, 4) == "/web") {
+            $this->baseUrl = substr($this->baseUrl, 4);
+        }
         $this->route = rtrim($this->requestUri, "/");
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
         $this->theme = new Theme($this, $this->config['theme']);

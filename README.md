@@ -19,12 +19,15 @@ already in use. Try it out, the pages are delivered extremely fast, the code is 
 
 ## Install
 
-1. Download the [repository](https://github.com/shaack/reboot-cms),
-2. [install composer](https://getcomposer.org/download/), run `composer.phar install` in
-the root directory.
-3. Configure `/web` as the root folder in your webserver.
+1. Download the [repository](https://github.com/shaack/reboot-cms)
+2. [Install composer](https://getcomposer.org/download/) and run `composer.phar install` in
+the root directory. This will install the dependencies in the `/vendor` folder.
 
-done.
+Done!
+   
+3. Optional: Configure `/web` as the root folder. This is only necessary, if you want a higher (enterprise) level of
+  security. The root folder is protected via .htaccess. See also: 
+     https://stackoverflow.com/questions/17891251/how-to-protect-configuration-file-in-php/17891335 
 
 ## Documentation
 
