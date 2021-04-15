@@ -15,7 +15,7 @@ class Reboot
     private $baseDir; // The CMS root in file system
     private $contentDir; // The path to the `content` folder
     private $baseUrl; // The base URL, requests got to `/web` and sub folders
-    private $requestUri; // The current request uri
+    private $request; // The current request, contains ["path"] and ["query"]
     private $route; // The route in `/content/pages` (…or `/web`)
     private $globals; // Global values, defined in `/content/globals.yml`
     private $config; // Local configuration, defined in `/local/config.yml`
@@ -29,7 +29,7 @@ class Reboot
      */
     public function __construct(string $uri, string $baseDir)
     {
-        $this->requestUri = strtok($uri, '?');
+        $this->request = new Request($uri);
         $this->baseDir = $baseDir;
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
         Logger::setLevel($this->config['logLevel']);
@@ -37,11 +37,11 @@ class Reboot
         if (substr($this->baseUrl, 0, 4) == "/web") {
             $this->baseUrl = substr($this->baseUrl, 4);
         }
-        $this->route = rtrim($this->requestUri, "/");
+        $this->route = rtrim($this->request->getPath(), "/");
+        $this->adminSession = new AdminSession($this);
         if (strpos($this->route, $this->config['adminPath']) === 0) {
             $this->contentDir = $this->baseDir . "/core/admin";
-            $this->route = "/" . ltrim($this->requestUri, $this->config['adminPath']);
-            $this->adminSession = new AdminSession($this);
+            $this->route = "/" . ltrim($this->request->getPath(), $this->config['adminPath']);
         } else {
             $this->contentDir = $this->baseDir . "/content";
         }
@@ -66,7 +66,7 @@ class Reboot
             exit();
         }
         Logger::info("---");
-        Logger::info("request: " . $this->requestUri);
+        Logger::info("path: " . $this->request->getPath());
         $this->globals = Yaml::parseFile($this->contentDir . '/globals.yml');
         if (!$this->route || is_dir($this->contentDir . '/pages' . $this->route)) {
             $this->route = $this->route . "/index";
@@ -124,11 +124,11 @@ class Reboot
 
     /**
      * The current request uri
-     * @return string
+     * @return Request
      */
-    public function getRequestUri(): string
+    public function getRequest(): Request
     {
-        return $this->requestUri;
+        return $this->request;
     }
 
     /**

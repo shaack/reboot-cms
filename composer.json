@@ -7,11 +7,12 @@
     "symfony/yaml": "^4.1",
     "ext-json": "*",
     "components/jquery": "^3.3",
-    "whitehat101/apr1-md5": "~1.0"
+    "whitehat101/apr1-md5": "~1.0",
+    "ext-fileinfo": "*"
   },
   "autoload": {
     "psr-4": {
-      "": "core/"
+      "": "core/src/"
     }
   }
 }

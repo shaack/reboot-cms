@@ -38,4 +38,7 @@ class Logger
     static function error(string $message) {
         Logger::log("ERROR: " . $message, 2);
     }
+    static function tmp(string $message) {
+        Logger::log("TMP:   " . $message, 3);
+    }
 }

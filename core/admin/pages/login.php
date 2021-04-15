@@ -3,7 +3,6 @@
 use Shaack\Utils\Logger;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
-/** @var \Shaack\Reboot\Page $page */
 
 $username = htmlentities(@$_REQUEST["username"]);
 $password = htmlentities(@$_REQUEST["password"]);
