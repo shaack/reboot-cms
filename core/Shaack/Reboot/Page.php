@@ -41,7 +41,7 @@ class Page
             return $this->renderPHP($articlePrefix . ".php");
         } else {
             // not found
-            Logger::log("article not found (404)");
+            Logger::error("article not found (404)");
             http_response_code(404);
             if (file_exists($this->reboot->getContentDir() . '/pages/404.md') ||
                 file_exists($this->reboot->getContentDir() . '/pages/404.php')) {
@@ -58,7 +58,7 @@ class Page
      */
     private function renderMarkdown(string $pagePath): string
     {
-        Logger::log("Markdown Page: " . $pagePath);
+        Logger::info("Markdown Page: " . $pagePath);
         $content = file_get_contents($pagePath);
 
         // encode code blocks
@@ -87,7 +87,7 @@ class Page
                         $blockName = array_keys($blockConfig)[0];
                         $blockConfig = $blockConfig[$blockName];
                     }
-                    Logger::log("found block: " . $blockName);
+                    Logger::info("found block: " . $blockName);
                     // unescape code blocks
                     $blockContent = preg_replace_callback('/```(.*?)```/s', function($matches) {
                         return "```" . base64_decode($matches[1]) . "```";
@@ -98,7 +98,7 @@ class Page
                     $block = new Block($this->reboot, $this, $blockName, $blockContent, $blockConfig);
                     $blocks[] = $block;
                 } catch (ParseException $e) {
-                    Logger::log("Error: could not parse block config: " . trim($matches[1]));
+                    Logger::error("Error: could not parse block config: " . trim($matches[1]));
                 }
             }
         } while ($matches);
@@ -124,7 +124,7 @@ class Page
      */
     private function renderPHP($articlePath): string
     {
-        Logger::log("PHP Page: " . $articlePath);
+        Logger::info("PHP Page: " . $articlePath);
         return renderPHPPage($this->reboot, $this, $articlePath);
     }
 

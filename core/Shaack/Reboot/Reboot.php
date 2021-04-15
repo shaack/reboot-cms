@@ -31,16 +31,17 @@ class Reboot
         $this->requestUri = strtok($uri, '?');
         $this->baseDir = $baseDir;
         $this->config = Yaml::parseFile($this->baseDir . '/local/config.yml');
+        Logger::setLevel($this->config['logLevel']);
         $this->baseUrl = rtrim(str_replace("index.php", "", $_SERVER['PHP_SELF']), "/");
         if (substr($this->baseUrl, 0, 4) == "/web") {
             $this->baseUrl = substr($this->baseUrl, 4);
         }
-        if (strpos("" . $this->route, "" . $this->config['adminPath']) === 0) {
+        $this->route = rtrim($this->requestUri, "/");
+        if (strpos($this->route, $this->config['adminPath']) === 0) {
             $this->contentDir = $this->baseDir . "/core/admin";
         } else {
             $this->contentDir = $this->baseDir . "/content";
         }
-        $this->route = rtrim($this->requestUri, "/");
         $this->theme = new Theme($this, $this->config['theme']);
         if (strpos($this->route, "/theme/assets/") === 0) {
             $this->theme->renderAsset($this->route);
@@ -54,21 +55,20 @@ class Reboot
             } else if($pathInfo['extension'] === "map") { // .css.map
                 header('Content-type: application/json');
             } else {
-                Logger::log("b128 - Unknown content type for " . $pathInfo['extension']);
+                Logger::error("b128 - Unknown content type for " . $pathInfo['extension']);
                 exit();
             }
             /** @noinspection PhpIncludeInspection */
             include($this->baseDir . $this->route);
             exit();
         }
-        Logger::setActive($this->config['logging']);
-        Logger::log("---");
-        Logger::log("request: " . $this->requestUri);
+        Logger::info("---");
+        Logger::info("request: " . $this->requestUri);
         $this->globals = Yaml::parseFile($this->contentDir . '/globals.yml');
         if (!$this->route || is_dir($this->contentDir . '/pages' . $this->route)) {
             $this->route = $this->route . "/index";
         }
-        Logger::log("route: " . $this->route);
+        Logger::info("route: " . $this->route);
         echo($this->render());
     }
 
@@ -87,7 +87,7 @@ class Reboot
      */
     public function redirect($url)
     {
-        Logger::log("=> redirect: " . $url);
+        Logger::info("=> redirect: " . $url);
         header("Location: " . $url);
         exit;
     }

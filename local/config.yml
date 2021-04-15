@@ -3,8 +3,8 @@
 # the used theme
 theme: default-bootstrap
 
-# activate logging, set "false" in production
-logging: true
+# 0 = debug, 1 = info, 2 = error
+logLevel: 1
 
 # the path to the admin site
 adminPath: /admin

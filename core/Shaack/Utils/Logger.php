@@ -9,23 +9,33 @@ namespace Shaack\Utils;
 
 class Logger
 {
-    private static $active;
+    private static $level = 1;
 
-    static function setActive($active) {
-        Logger::$active = $active;
+    static function setLevel($level) {
+        Logger::$level = $level;
     }
 
     /**
      * @param string $message
+     * @param int $level
      */
-    static function log(string $message)
+    static private function log(string $message, int $level = 1)
     {
-        if (Logger::$active) {
+        if (Logger::$level <= $level) {
             if (is_string($message)) {
                 error_log($message);
             } else {
                 error_log(print_r($message, true));
             }
         }
+    }
+    static function debug(string $message) {
+        Logger::log("DEBUG: " . $message, 0);
+    }
+    static function info(string $message) {
+        Logger::log("INFO:  " . $message, 1);
+    }
+    static function error(string $message) {
+        Logger::log("ERROR: " . $message, 2);
     }
 }

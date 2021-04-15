@@ -50,9 +50,9 @@ class Block
      */
     public function render(): string
     {
-        Logger::log("");
-        Logger::log("Rendering Block " . $this->name);
-        Logger::log($this->xpath->document->saveHTML());
+        Logger::debug("");
+        Logger::debug("Rendering Block " . $this->name);
+        Logger::debug($this->xpath->document->saveHTML());
         return renderBlock($this->reboot, $this->page, $this);
     }
 
@@ -71,7 +71,7 @@ class Block
      */
     public function xpath(string $expression): string
     {
-        Logger::log("query: " . $expression);
+        Logger::debug("query: " . $expression);
         // replace part(n), https://stackoverflow.com/questions/10859703/xpath-select-all-elements-between-two-specific-elements
         $expression = preg_replace_callback("/part\((\d)\)/", function ($matches) {
             $partNumber = $matches[1] - 1;
@@ -81,7 +81,7 @@ class Block
         $result = $this->xpath->query($expression);
         $ret = "";
         if ($result === false) {
-            Logger::log("xquery error");
+            Logger::error("xquery error");
             $ret = "*xquery error*";
         } else {
             if ($result->length === 1) {
@@ -102,9 +102,9 @@ class Block
                     $ret = $temp_dom->saveHTML();
                 }
             } else {
-                Logger::log("ERROR d06492af: Unknown query result " . get_class($result));
+                Logger::error("(72a2) Unknown query result " . get_class($result));
             }
-            Logger::log($expression . " => " . $ret);
+            Logger::debug($expression . " => " . $ret);
         }
         return $ret;
     }
