@@ -14,9 +14,12 @@
     <meta name="author" content="">
 
     <title>Reboot CMS</title>
-
+    <?php if($reboot->getAdminSession()->getUser()) { ?>
+        <link href="/theme/assets/scripts/simplemde-markdown-editor/simplemde.min.css" rel="stylesheet">
+    <?php } ?>
     <link href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/theme/assets/style/screen.css" rel="stylesheet">
+
 </head>
 <body>
 <?php $navbarConfig = $reboot->getGlobals()['navbar']; ?>
@@ -58,12 +61,16 @@
 <?php
 echo($page->render());
 ?>
-<script src="<?= $reboot->getBaseUrl() ?>/vendor/components/jquery/jquery.js"></script>
-<script src="<?= $reboot->getBaseUrl() ?>/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/vendor/components/jquery/jquery.js"></script>
+<script src="/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<?php if($reboot->getAdminSession()->getUser()) { ?>
+<script src="/theme/assets/scripts/simplemde-markdown-editor/simplemde.min.js"></script>
 <script>
     setTimeout(function() {
-        $(".fade-out").fadeOut(1000);
+        $(".fade-out").fadeOut(250);
     }, 1000)
+    var simplemde = new SimpleMDE();
 </script>
+<?php } ?>
 </body>
 </html>

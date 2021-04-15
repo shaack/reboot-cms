@@ -42,6 +42,7 @@ class Reboot
         if (strpos($this->route, $this->config['adminPath']) === 0) {
             $this->contentDir = $this->baseDir . "/core/admin";
             $this->route = "/" . ltrim($this->request->getPath(), $this->config['adminPath']);
+            $this->adminSession->checkPermission($this->route);
         } else {
             $this->contentDir = $this->baseDir . "/content";
         }

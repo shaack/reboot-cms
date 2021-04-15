@@ -24,7 +24,7 @@ The gray block above was a jumbotron block. This one is a text-image block, it c
 Parts are separated by `---`.
 
 ---
-![alt text](dummy.svg "Title Text")
+![alt text](/media/dummy.svg "Title Text")
 
 <!-- 
 text-image:
@@ -43,7 +43,7 @@ text-image:
 ```
 
 ---
-![alt text](dummy.svg "Title Text")>
+![alt text](/media/dummy.svg "Title Text")>
 
 <!-- three-columns -->
 

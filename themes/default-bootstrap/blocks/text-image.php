@@ -23,7 +23,7 @@ $imagePosition = @$block->getConfig()["image-position"];
             </div>
             <div class="col-md-5">
                 <!-- using attributes of the image in part 2 -->
-                <img class="img-fluid" src="/media/<?= $block->xpath("//img[part(2)]/@src") ?>"
+                <img class="img-fluid" src="<?= $block->xpath("//img[part(2)]/@src") ?>"
                      alt="<?= $block->xpath("//img[part(2)]/@alt") ?>"
                      title="<?= $block->xpath("//img[part(2)]/@title") ?>"/>
             </div>

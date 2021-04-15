@@ -29,10 +29,14 @@ class AdminSession
         session_start();
         $this->reboot = $reboot;
         $this->htpasswd = new Htpasswd($this->reboot->getBaseDir() . "/local/.htpasswd");
+    }
+
+    public function checkPermission($route)
+    {
         $user = $this->getUser();
-        if (!$user && $reboot->getRoute() !== "/login") {
+        if (!$user && $route !== "/login") {
             Logger::info("not logged in");
-            Logger::info("user: " . $user . ", route: " . $reboot->getRoute());
+            Logger::info("user: " . $user . ", route: " . $route);
             $this->reboot->redirect($this->reboot->getConfig()["adminPath"] . "/login");
         } else if ($user) {
             if (@$_SESSION['checksum'] !== $this->getChecksum()) {
