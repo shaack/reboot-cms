@@ -1,7 +1,5 @@
 # Website global values, like the navigation structure
 
 navbar:
-  brand: Reboot CMS
+  brand: Reboot CMS / Admin
   structure:
-    Home: /
-    Documentation: /documentation

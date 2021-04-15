@@ -41,7 +41,7 @@ class Page
             return $this->renderPHP($articlePrefix . ".php");
         } else {
             // not found
-            Logger::error("article not found (404)");
+            Logger::error("article not found (404): " . $articlePrefix);
             http_response_code(404);
             if (file_exists($this->reboot->getContentDir() . '/pages/404.md') ||
                 file_exists($this->reboot->getContentDir() . '/pages/404.php')) {

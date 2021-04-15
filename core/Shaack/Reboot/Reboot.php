@@ -20,6 +20,7 @@ class Reboot
     private $globals; // Global values, defined in `/content/globals.yml`
     private $config; // Local configuration, defined in `/local/config.yml`
     private $theme; // The  current theme
+    private $adminSession;
 
     /**
      * Reboot constructor
@@ -39,6 +40,8 @@ class Reboot
         $this->route = rtrim($this->requestUri, "/");
         if (strpos($this->route, $this->config['adminPath']) === 0) {
             $this->contentDir = $this->baseDir . "/core/admin";
+            $this->route = "/" . ltrim($this->requestUri, $this->config['adminPath']);
+            $this->adminSession = new AdminSession($this);
         } else {
             $this->contentDir = $this->baseDir . "/content";
         }
@@ -162,6 +165,11 @@ class Reboot
     public function getTheme(): Theme
     {
         return $this->theme;
+    }
+
+    public function getAdminSession(): AdminSession
+    {
+        return $this->adminSession;
     }
 
 }

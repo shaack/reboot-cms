@@ -29,12 +29,14 @@
         <ul class="navbar-nav mr-auto">
             <?php
             $structure = $navbarConfig['structure'];
-            foreach ($structure as $label => $path) {
-                ?>
-                <li class="nav-item <?= $reboot->getRequestUri() == $path ? "active" : "" ?>">
-                    <a class="nav-link" href="<?= $reboot->getBaseUrl() . $path ?>"><?= $label ?></a>
-                </li>
-                <?php
+            if ($structure) {
+                foreach ($structure as $label => $path) {
+                    ?>
+                    <li class="nav-item <?= $reboot->getRequestUri() == $path ? "active" : "" ?>">
+                        <a class="nav-link" href="<?= $reboot->getBaseUrl() . $path ?>"><?= $label ?></a>
+                    </li>
+                    <?php
+                }
             }
             ?>
         </ul>
