@@ -58,7 +58,12 @@
 <?php
 echo($page->render());
 ?>
-<script src="<?= $reboot->getBaseUrl() ?>/vendor/components/jquery/jquery.slim.js"></script>
+<script src="<?= $reboot->getBaseUrl() ?>/vendor/components/jquery/jquery.js"></script>
 <script src="<?= $reboot->getBaseUrl() ?>/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    setTimeout(function() {
+        $(".fade-out").fadeOut(1000);
+    }, 1000)
+</script>
 </body>
 </html>

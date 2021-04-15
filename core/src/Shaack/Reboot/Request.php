@@ -18,6 +18,7 @@ class Request
         } else {
             $this->queryParams = [];
         }
+        $this->queryParams = array_merge($this->queryParams, @$_POST);
         $this->path = $parsed["path"];
     }
 
@@ -29,7 +30,7 @@ class Request
     public function getParam($name)
     {
         if (array_key_exists($name, $this->queryParams)) {
-            return $name;
+            return $this->queryParams[$name];
         } else {
             return null;
         }

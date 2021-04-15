@@ -77,15 +77,15 @@ class Page
             if ($matches) {
                 $offset += strlen($matches[0]) - 4;
                 try {
-                    $blockConfig = Yaml::parse(trim($matches[1]));
+                    $blockProps = Yaml::parse(trim($matches[1]));
                     $blockContent = trim($matches[2]);
                     $blockName = null;
-                    if(is_string($blockConfig)) {
-                        $blockName = $blockConfig;
-                        $blockConfig = [];
+                    if(is_string($blockProps)) {
+                        $blockName = $blockProps;
+                        $blockProps = [];
                     } else {
-                        $blockName = array_keys($blockConfig)[0];
-                        $blockConfig = $blockConfig[$blockName];
+                        $blockName = array_keys($blockProps)[0];
+                        $blockProps = $blockProps[$blockName];
                     }
                     Logger::info("found block: " . $blockName);
                     // unescape code blocks
@@ -95,7 +95,7 @@ class Page
                     $blockContent = preg_replace_callback('/`(.*?)`/s', function($matches) {
                         return "`" . base64_decode($matches[1]) . "`";
                     }, $blockContent);
-                    $block = new Block($this->reboot, $this, $blockName, $blockContent, $blockConfig);
+                    $block = new Block($this->reboot, $this, $blockName, $blockContent, $blockProps);
                     $blocks[] = $block;
                 } catch (ParseException $e) {
                     Logger::error("Error: could not parse block config: " . trim($matches[1]));

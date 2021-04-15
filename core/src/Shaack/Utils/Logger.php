@@ -29,16 +29,16 @@ class Logger
             }
         }
     }
-    static function debug(string $message) {
+    static function debug($message) {
         Logger::log("DEBUG: " . $message, 0);
     }
-    static function info(string $message) {
+    static function info($message) {
         Logger::log("INFO:  " . $message, 1);
     }
-    static function error(string $message) {
+    static function error($message) {
         Logger::log("ERROR: " . $message, 2);
     }
-    static function tmp(string $message) {
+    static function tmp($message) {
         Logger::log("TMP:   " . $message, 3);
     }
 }
