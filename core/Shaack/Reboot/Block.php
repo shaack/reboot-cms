@@ -93,7 +93,7 @@ class Block
                 $ret = $this->xpath->document->saveHTML($result);
             } else if ($result instanceof \DOMNodeList) {
                 if ($result->length === 0) {
-                    $ret = "<!-- no result -->";
+                    $ret = "<!-- no result for expression: " . $expression . " -->";
                 } else {
                     $temp_dom = new DOMDocument();
                     foreach ($result as $node) {
@@ -110,7 +110,7 @@ class Block
     }
 
     /**
-     * Return all content parsed to HTML
+     * Return all pages parsed to HTML
      * @return string
      */
     public function content(): string

@@ -1,4 +1,6 @@
 {
+  "name": "shaack/reboot-cms",
+  "description": "A nice flat file CMS. See https://github.com/shaack/reboot-cms",
   "require": {
     "erusev/parsedown": "^1.7",
     "twbs/bootstrap": "4.1.3",
@@ -9,7 +11,7 @@
   },
   "autoload": {
     "psr-4": {
-      "": "src/"
+      "": "core/"
     }
   }
 }

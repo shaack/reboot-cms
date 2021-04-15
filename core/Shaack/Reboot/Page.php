@@ -34,7 +34,7 @@ class Page
         if (!$route) {
             $route = $this->reboot->getRoute();
         }
-        $articlePrefix = $this->reboot->getBaseDir() . '/content/pages' . $route;
+        $articlePrefix = $this->reboot->getContentDir() . '/pages' . $route;
         if (file_exists($articlePrefix . ".md")) {
             return $this->renderMarkdown($articlePrefix . ".md");
         } else if (file_exists($articlePrefix . ".php")) {
@@ -43,8 +43,8 @@ class Page
             // not found
             Logger::log("article not found (404)");
             http_response_code(404);
-            if (file_exists($this->reboot->getBaseDir() . '/content/pages/404.md') ||
-                file_exists($this->reboot->getBaseDir() . '/content/pages/404.php')) {
+            if (file_exists($this->reboot->getContentDir() . '/pages/404.md') ||
+                file_exists($this->reboot->getContentDir() . '/pages/404.php')) {
                 return $this->render("/404"); // put a 404 file in /pages to create your own
             } else {
                 return "<div class='container'><h1>404</h1><p>Page not found.</p></div>";
@@ -104,7 +104,7 @@ class Page
         } while ($matches);
 
         if (!count($blocks)) {
-            // interpret whole content as flat markdown file
+            // interpret whole pages as flat markdown file
             $block = new Block($this->reboot, $this, "text", $content);
             $blocks[] = $block;
         }
