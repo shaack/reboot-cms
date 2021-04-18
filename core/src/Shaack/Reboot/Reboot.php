@@ -38,6 +38,7 @@ class Reboot
             $this->baseUrl = substr($this->baseUrl, 4);
         }
         $this->route = rtrim($this->request->getPath(), "/");
+        // $this->route = str_replace("")
         $this->adminSession = new AdminSession($this);
         if (strpos($this->route, $this->config['adminPath']) === 0) {
             $this->contentDir = $this->baseDir . "/core/admin";
@@ -67,7 +68,11 @@ class Reboot
             exit();
         }
         Logger::info("---");
-        Logger::info("path: " . $this->request->getPath());
+        Logger::debug("baseDir: " . $this->baseDir);
+        Logger::debug("baseUrl: " . $this->baseUrl);
+        Logger::debug("route (pre): " . $this->route);
+        Logger::info("contentDir: " . $this->contentDir);
+        Logger::info("request->getPath(): " . $this->request->getPath());
         $this->globals = Yaml::parseFile($this->contentDir . '/globals.yml');
         if (!$this->route || is_dir($this->contentDir . '/pages' . $this->route)) {
             $this->route = $this->route . "/index";

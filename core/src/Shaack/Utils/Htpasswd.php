@@ -27,7 +27,6 @@ class Htpasswd
 
     private function parseHtpasswd($filePath)
     {
-        Logger::debug("parseHtpasswd " . $filePath);
         $lines = file($filePath);
         $checksum = "";
         foreach ($lines as $lineNum => $line) {

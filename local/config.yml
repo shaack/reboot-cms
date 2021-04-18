@@ -4,7 +4,7 @@
 theme: default-bootstrap
 
 # 0 = debug, 1 = info, 2 = error
-logLevel: 1
+logLevel: 0
 
 # the path to the admin site
 adminPath: /admin
