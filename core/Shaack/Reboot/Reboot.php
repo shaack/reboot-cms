@@ -38,14 +38,9 @@ class Reboot
 
     private function createSiteInstance($webPath): Site
     {
-        foreach ($this->config["sites"] as $siteMeta) {
-            $siteWebPath = $siteMeta['webPath'];
+        foreach ($this->config["sites"] as $siteName => $siteWebPath) {
             if (substr($webPath, 0, strlen($siteWebPath)) === $siteWebPath) {
-                if ($siteMeta['controller']) {
-                    return new $siteMeta['controller']($this, $siteMeta);
-                } else {
-                    return new Site($this, $siteMeta);
-                }
+                return new Site($this, $siteName, $siteWebPath);
             }
         }
         throw new Exception("site not found with webPath: " . $webPath);

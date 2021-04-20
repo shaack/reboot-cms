@@ -2,14 +2,12 @@
   "name": "shaack/reboot-cms",
   "description": "A nice flat file CMS. See https://github.com/shaack/reboot-cms",
   "require": {
-    "erusev/parsedown": "^1.7",
-    "twbs/bootstrap": "4.1.3",
-    "symfony/yaml": "^4.1",
     "ext-json": "*",
-    "components/jquery": "^3.3",
-    "whitehat101/apr1-md5": "~1.0",
     "ext-fileinfo": "*",
-    "ext-dom": "*"
+    "ext-dom": "*",
+    "erusev/parsedown": "^1.7",
+    "symfony/yaml": "^4.1",
+    "whitehat101/apr1-md5": "~1.0"
   },
   "autoload": {
     "psr-4": {

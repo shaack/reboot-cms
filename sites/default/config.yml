@@ -1,6 +1,5 @@
 # Websites global values, like the theme and the navigation structure
 
-theme: "default"
 navbar:
   brand: Reboot CMS
   structure:

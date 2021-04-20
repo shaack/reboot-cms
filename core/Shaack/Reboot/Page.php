@@ -15,7 +15,6 @@ class Page
 {
     private $reboot;
     private $site;
-    // private $route;
 
     /**
      * Page constructor.
@@ -50,6 +49,7 @@ class Page
                 file_exists($this->site->getFsPath() . '/pages/404.php')) {
                 return $this->render("/404"); // put a 404 file in /pages to create your own
             }
+            return "";
         }
     }
 
@@ -96,7 +96,7 @@ class Page
                     $blockContent = preg_replace_callback('/`(.*?)`/s', function($matches) {
                         return "`" . base64_decode($matches[1]) . "`";
                     }, $blockContent);
-                    $block = new Block($this->reboot, $this->site, $this, $blockName, $blockContent, $blockProps);
+                    $block = new Block($this->site, $blockName, $blockContent, $blockProps);
                     $blocks[] = $block;
                 } catch (ParseException $e) {
                     Logger::error("Error: could not parse block config: " . trim($matches[1]));
@@ -106,7 +106,7 @@ class Page
 
         if (!count($blocks)) {
             // interpret whole pages as flat markdown file
-            $block = new Block($this->reboot, $this->site, $this, "text", $content);
+            $block = new Block($this->site, "text", $content);
             $blocks[] = $block;
         }
 
@@ -126,13 +126,13 @@ class Page
     private function renderPHP($articlePath): string
     {
         Logger::info("PHP Page: " . $articlePath);
-        return renderPHPPage($this->reboot, $this, $articlePath);
+        return renderPHPPage($this->reboot, $this->site, $this, $articlePath);
     }
 
 }
 
 /** @noinspection PhpUnusedParameterInspection */
-function renderPHPPage(Reboot $reboot, Page $page, string $path) {
+function renderPHPPage(Reboot $reboot, Site $site, Page $page, string $path) {
     ob_start();
     /** @noinspection PhpIncludeInspection */
     include $path;

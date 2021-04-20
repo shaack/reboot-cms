@@ -17,15 +17,15 @@ class Site
     /**
      * AdminSite constructor.
      * @param $reboot Reboot
-     * @param $siteMeta array
+     * @param string $siteName
+     * @param string $siteWebPath
      */
-    public function __construct(Reboot $reboot, array $siteMeta)
+    public function __construct(Reboot $reboot, string $siteName, string $siteWebPath)
     {
         $this->reboot = $reboot;
-        $this->fsPath = $this->reboot->getBaseFsPath() . $siteMeta["fsPath"];
-        $this->webPath = $this->reboot->getBaseWebPath() . $siteMeta["webPath"];
+        $this->fsPath = $this->reboot->getBaseFsPath() . "/sites/" . $siteName;
+        $this->webPath = $this->reboot->getBaseWebPath() . $siteWebPath;
         $this->config = Yaml::parseFile($this->fsPath . '/config.yml');
-        Logger::debug("site->fsPath: [baseFsPath]" . $siteMeta["fsPath"]);
         Logger::debug("site->webPath: " . $this->webPath);
     }
 

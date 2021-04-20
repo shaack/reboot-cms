@@ -16,31 +16,25 @@ class Block
     private $content;
     private $xpath;
     private $config;
-    private $reboot;
     private $site;
-    private $page;
 
     private static $parsedown;
 
     /**
-     * @param Reboot $reboot
      * @param Site $site
-     * @param Page $page
      * @param string $name
      * @param string $content
      * @param array $config
      */
-    public function __construct(Reboot $reboot, Site $site, Page $page, string $name, string $content = "", array $config = [])
+    public function __construct(Site $site, string $name, string $content = "", array $config = [])
     {
         if (!$this::$parsedown) {
             $this::$parsedown = new \Parsedown();
         }
+        $this->site = $site;
         $this->name = $name;
         $this->content = $content;
         $this->config = $config;
-        $this->reboot = $reboot;
-        $this->site = $site;
-        $this->page = $page;
 
         $html = $this::$parsedown->parse($this->content);
         $document = new DOMDocument();
@@ -56,7 +50,7 @@ class Block
         Logger::debug("");
         Logger::debug("Rendering Block " . $this->name);
         Logger::debug($this->xpath->document->saveHTML());
-        return renderBlock($this->reboot, $this->site, $this->page, $this);
+        return renderBlock($this->site, $this);
     }
 
     /**
@@ -134,8 +128,7 @@ class Block
     }
 }
 
-/** @noinspection PhpUnusedParameterInspection */
-function renderBlock(Reboot $reboot, Site $site, Page $page, Block $block) {
+function renderBlock(Site $site, Block $block) {
     ob_start();
     /** @noinspection PhpIncludeInspection */
     include $site->getFsPath() . '/blocks/' . $block->getName() . ".php";

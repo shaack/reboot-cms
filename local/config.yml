@@ -1,14 +1,10 @@
 # Local configuration
-# the websites, admin and default
-sites:
-  "admin":
-    webPath: "/admin"
-    fsPath: "/sites/admin"
-    controller: "\\Shaack\\Reboot\\AdminSite"
-  "default":
-    webPath: ""
-    fsPath: "/sites/default"
-    controller: "\\Shaack\\Reboot\\Site"
 
-# 0 = debug, 1 = info, 2 = error
+# the websites, admin and default
+# `NAME: WEB_PATH`
+sites:
+  admin: "/admin"
+  default: ""
+
+# 0 = debug, 1 = info, 2 = error, set to "2" in production
 logLevel: 0
