@@ -1,10 +1,5 @@
 # Local configuration
 
-# the websites, admin and default
-# `NAME: WEB_PATH`
-sites:
-  admin: "/admin"
-  default: ""
-
-# 0 = debug, 1 = info, 2 = error, set to "2" in production
+# The `Logger` logs as the standard PHP error_log
+# 0 = debug, 1 = info, 2 = error, set to "2" in running production
 logLevel: 0

@@ -26,7 +26,7 @@ class Site
         $this->fsPath = $this->reboot->getBaseFsPath() . "/sites/" . $siteName;
         $this->webPath = $this->reboot->getBaseWebPath() . $siteWebPath;
         $this->config = Yaml::parseFile($this->fsPath . '/config.yml');
-        Logger::debug("site->webPath: " . $this->webPath);
+        Logger::debug("default->webPath: " . $this->webPath);
     }
 
     /**

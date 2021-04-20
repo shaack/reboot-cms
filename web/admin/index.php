@@ -5,6 +5,6 @@
  * License: MIT, see file 'LICENSE'
  */
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../../vendor/autoload.php';
 
-$reboot = new Shaack\Reboot\Reboot(dirname(__DIR__), "default");
+$reboot = new Shaack\Reboot\Reboot(dirname(dirname(__DIR__)), "admin");

@@ -20,30 +20,26 @@ class Reboot
     /**
      * Reboot constructor
      * @param string $baseDir
+     * @param string $siteName
      * @throws Exception
      */
-    public function __construct(string $baseDir)
+    public function __construct(string $baseDir, string $siteName)
     {
         $this->baseFsPath = $baseDir;
         $this->config = Yaml::parseFile($this->baseFsPath . '/local/config.yml');
         Logger::setLevel($this->config['logLevel']);
         Logger::debug("------------------------------------------------------------------");
-        $this->baseWebPath = preg_replace('/(\/web)?\/index\.php$/', '', $_SERVER['PHP_SELF']);
+        $this->baseWebPath = preg_replace('/(\/web)?(\/admin)?\/index\.php$/', '', $_SERVER['PHP_SELF']);
         Logger::debug("reboot->baseFsPath: " . $this->baseFsPath);
         Logger::debug("reboot->baseWebPath: " . $this->baseWebPath);
+        $site = $this->createSiteInstance($siteName);
         $request = new Request($this->baseWebPath, $_SERVER["REQUEST_URI"], $_POST);
-        $site = $this->createSiteInstance($request->getPath());
         echo $site->render($request);
     }
 
-    private function createSiteInstance($webPath): Site
+    private function createSiteInstance($siteName): Site
     {
-        foreach ($this->config["sites"] as $siteName => $siteWebPath) {
-            if (substr($webPath, 0, strlen($siteWebPath)) === $siteWebPath) {
-                return new Site($this, $siteName, $siteWebPath);
-            }
-        }
-        throw new Exception("site not found with webPath: " . $webPath);
+        return new Site($this, $siteName, "");
     }
 
     // Public API
