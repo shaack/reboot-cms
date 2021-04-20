@@ -10,6 +10,7 @@ use Symfony\Component\Yaml\Yaml;
 class Site
 {
     private $reboot;
+    private $name;
     private $fsPath; // The path to the `sites` folder, relative to $baseFsPath
     private $webPath; // The web path $domain . $baseUrl . $webPath
     private $config; // Global values for all pages in a sites folder (`/sites/config.yml`)
@@ -23,10 +24,12 @@ class Site
     public function __construct(Reboot $reboot, string $siteName, string $siteWebPath)
     {
         $this->reboot = $reboot;
+        $this->name = $siteName;
         $this->fsPath = $this->reboot->getBaseFsPath() . "/sites/" . $siteName;
         $this->webPath = $this->reboot->getBaseWebPath() . $siteWebPath;
         $this->config = Yaml::parseFile($this->fsPath . '/config.yml');
-        Logger::debug("default->webPath: " . $this->webPath);
+        Logger::debug("site->name: " . $siteName);
+        Logger::debug("site->webPath: " . $this->webPath);
     }
 
     /**

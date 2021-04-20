@@ -15,7 +15,7 @@
     <meta name="author" content="">
 
     <title>Reboot CMS</title>
-    <link href="/assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/admin/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/assets/styles/screen.css" rel="stylesheet">
 </head>
 <body>
@@ -46,7 +46,7 @@
 <?php
 echo($page->render($request->getPath()));
 ?>
-<script src="/assets/vendor/jquery/jquery.min.js"></script>
-<script src="/assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/admin/vendor/jquery/jquery.min.js"></script>
+<script src="/admin/vendor/bootstrap/bootstrap.bundle.min.js"></script>
 </body>
 </html>
