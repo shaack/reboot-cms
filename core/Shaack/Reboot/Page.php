@@ -13,41 +13,42 @@ use Symfony\Component\Yaml\Yaml;
 
 class Page
 {
-    /** @var Reboot */
     private $reboot;
+    private $site;
+    // private $route;
 
     /**
      * Page constructor.
      * @param Reboot $reboot
+     * @param Site $site
      */
-    public function __construct(Reboot $reboot)
+    public function __construct(Reboot $reboot, Site $site)
     {
         $this->reboot = $reboot;
+        $this->site = $site;
     }
 
     /**
-     * @param string|null $route
+     * @param string $path
      * @return string
      */
-    public function render(string $route = null): string
+    public function render(string $path): string
     {
-        if (!$route) {
-            $route = $this->reboot->getRoute();
+        $pagePrefix = $this->site->getFsPath() . '/pages' . $path;
+        if(is_dir($pagePrefix)) {
+            $pagePrefix .= "/index";
         }
-        $articlePrefix = $this->reboot->getContentDir() . '/pages' . $route;
-        if (file_exists($articlePrefix . ".md")) {
-            return $this->renderMarkdown($articlePrefix . ".md");
-        } else if (file_exists($articlePrefix . ".php")) {
-            return $this->renderPHP($articlePrefix . ".php");
+        if (file_exists($pagePrefix . ".md")) {
+            return $this->renderMarkdown($pagePrefix . ".md");
+        } else if (file_exists($pagePrefix . ".php")) {
+            return $this->renderPHP($pagePrefix . ".php");
         } else {
             // not found
-            Logger::error("article not found (404): " . $articlePrefix);
+            Logger::error("page not found (404): " . $pagePrefix);
             http_response_code(404);
-            if (file_exists($this->reboot->getContentDir() . '/pages/404.md') ||
-                file_exists($this->reboot->getContentDir() . '/pages/404.php')) {
+            if (file_exists($this->site->getFsPath() . '/pages/404.md') ||
+                file_exists($this->site->getFsPath() . '/pages/404.php')) {
                 return $this->render("/404"); // put a 404 file in /pages to create your own
-            } else {
-                return "<div class='container'><h1>404</h1><p>Page not found.</p></div>";
             }
         }
     }
@@ -95,7 +96,7 @@ class Page
                     $blockContent = preg_replace_callback('/`(.*?)`/s', function($matches) {
                         return "`" . base64_decode($matches[1]) . "`";
                     }, $blockContent);
-                    $block = new Block($this->reboot, $this, $blockName, $blockContent, $blockProps);
+                    $block = new Block($this->reboot, $this->site, $this, $blockName, $blockContent, $blockProps);
                     $blocks[] = $block;
                 } catch (ParseException $e) {
                     Logger::error("Error: could not parse block config: " . trim($matches[1]));
@@ -105,7 +106,7 @@ class Page
 
         if (!count($blocks)) {
             // interpret whole pages as flat markdown file
-            $block = new Block($this->reboot, $this, "text", $content);
+            $block = new Block($this->reboot, $this->site, $this, "text", $content);
             $blocks[] = $block;
         }
 

@@ -7,4 +7,4 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$reboot = new Shaack\Reboot\Reboot($_SERVER['REQUEST_URI'], dirname(__DIR__));
+$reboot = new Shaack\Reboot\Reboot(dirname(__DIR__));

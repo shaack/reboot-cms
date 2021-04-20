@@ -8,11 +8,12 @@
     "ext-json": "*",
     "components/jquery": "^3.3",
     "whitehat101/apr1-md5": "~1.0",
-    "ext-fileinfo": "*"
+    "ext-fileinfo": "*",
+    "ext-dom": "*"
   },
   "autoload": {
     "psr-4": {
-      "": "core/src/"
+      "": "core/"
     }
   }
 }

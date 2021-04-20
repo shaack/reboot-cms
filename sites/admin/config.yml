@@ -1,0 +1,6 @@
+# AdminSite global values, like the navigation structure
+
+theme: "admin"
+navbar:
+  brand: Reboot CMS / Administration
+  structure: # No navigation in the admin interface for now

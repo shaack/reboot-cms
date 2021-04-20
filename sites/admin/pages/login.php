@@ -10,7 +10,7 @@ $error = null;
 if($username) {
     if ($reboot->getAdminSession()->login($username, $password)) {
         Logger::info("Login success " . $username);
-        $reboot->redirect($reboot->getConfig()["adminPath"] . "/content");
+        $reboot->redirect($reboot->getConfig()["adminPath"] . "/sites");
     } else {
         Logger::error("Login failed " . $username);
         $error = "Login failed, please try again.";

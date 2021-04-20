@@ -2,4 +2,4 @@
 
 /** @var \Shaack\Reboot\Reboot $reboot */
 
-$reboot->redirect("/admin/content");
+$reboot->redirect("/admin/sites");

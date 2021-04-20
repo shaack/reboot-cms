@@ -7,7 +7,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <base href="<?= $reboot->getBaseUrl() ?>"/>
+    <base href="<?= $reboot->getBaseWebPath() ?>"/>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
@@ -15,7 +15,7 @@
 
     <title>Reboot CMS</title>
     <?php if($reboot->getAdminSession()->getUser()) { ?>
-        <link href="/theme/assets/scripts/simplemde-markdown-editor/simplemde.min.css" rel="stylesheet">
+        <link href="/vendor/simplemde-markdown-editor/simplemde.min.css" rel="stylesheet">
     <?php } ?>
     <link href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/theme/assets/style/screen.css" rel="stylesheet">
@@ -37,7 +37,7 @@
                 foreach ($structure as $label => $path) {
                     ?>
                     <li class="nav-item <?= $reboot->getRequest()->getPath() == $path ? "active" : "" ?>">
-                        <a class="nav-link" href="<?= $reboot->getBaseUrl() . $path ?>"><?= $label ?></a>
+                        <a class="nav-link" href="<?= $reboot->getBaseWebPath() . $path ?>"><?= $label ?></a>
                     </li>
                     <?php
                 }

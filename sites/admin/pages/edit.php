@@ -3,8 +3,8 @@
 
 use Shaack\Utils\FileSystem;
 
-$pagesDir = $reboot->getBaseDir() . "/content/pages";
-$globalsPath = $reboot->getBaseDir() . "/content/globals.yml";;
+$pagesDir = $reboot->getBaseFsPath() . "/sites/pages";
+$globalsPath = $reboot->getBaseFsPath() . "/sites/config.yml";;
 ?>
 <!--<link href="/vendor/twbs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"> -->
 <div class="container-fluid">
@@ -47,7 +47,7 @@ $globalsPath = $reboot->getBaseDir() . "/content/globals.yml";;
                               style="height: calc(100vh - 240px)"><?= file_get_contents($edit) ?></textarea>
                     </div>
                     <button class="btn btn-primary">Save</button>
-                    <?= $edited !== null ? "<span class='ml-2 text-info fade-out'>content saved…</span>" : "" ?>
+                    <?= $edited !== null ? "<span class='ml-2 text-info fade-out'>sites saved…</span>" : "" ?>
                 </form>
             <?php } ?>
         </div>

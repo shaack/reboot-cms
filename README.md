@@ -190,3 +190,28 @@ Another example, the "jumbotron" `Block`:
 Folder: `/themes/THEME_NAME`
 
 `Templates` are written in PHP. The `template.php` Template is used per default.
+
+## Objects
+
+### `Reboot`
+
+The CMS Server
+
+- `$baseFsPath` The base path to the CMS in the file system
+- `$baseWebPath` The base URL, without protocol and domain
+- `$config` The /local/config.yml
+
+### `Site`
+
+The Website, default or admin
+
+- `$fsPath` The path to the content folder in the file system
+- `$webPath` The path to the content folder from the web
+- `$config` The $fsPath/config.yml
+- `$theme` The websites theme
+
+### `Page`
+
+A page rendered by the CMS.
+
+

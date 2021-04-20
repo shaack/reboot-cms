@@ -7,6 +7,6 @@ use Shaack\Reboot\Block;
 
 // This loads the README.md an renders it a a `text` block.
 
-$content = file_get_contents($reboot->getBaseDir() . "/README.md");
+$content = file_get_contents($reboot->getBaseFsPath() . "/README.md");
 $block = new Block($reboot, $page, "text", $content);
 echo($block->render());

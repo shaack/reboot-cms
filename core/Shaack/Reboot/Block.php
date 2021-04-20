@@ -17,18 +17,20 @@ class Block
     private $xpath;
     private $config;
     private $reboot;
+    private $site;
     private $page;
 
     private static $parsedown;
 
     /**
      * @param Reboot $reboot
+     * @param Site $site
      * @param Page $page
      * @param string $name
      * @param string $content
      * @param array $config
      */
-    public function __construct(Reboot $reboot, Page $page, string $name, string $content = "", array $config = [])
+    public function __construct(Reboot $reboot, Site $site, Page $page, string $name, string $content = "", array $config = [])
     {
         if (!$this::$parsedown) {
             $this::$parsedown = new \Parsedown();
@@ -37,6 +39,7 @@ class Block
         $this->content = $content;
         $this->config = $config;
         $this->reboot = $reboot;
+        $this->site = $site;
         $this->page = $page;
 
         $html = $this::$parsedown->parse($this->content);
@@ -53,7 +56,7 @@ class Block
         Logger::debug("");
         Logger::debug("Rendering Block " . $this->name);
         Logger::debug($this->xpath->document->saveHTML());
-        return renderBlock($this->reboot, $this->page, $this);
+        return renderBlock($this->reboot, $this->site, $this->page, $this);
     }
 
     /**
@@ -132,10 +135,10 @@ class Block
 }
 
 /** @noinspection PhpUnusedParameterInspection */
-function renderBlock(Reboot $reboot, Page $page, Block $block) {
+function renderBlock(Reboot $reboot, Site $site, Page $page, Block $block) {
     ob_start();
     /** @noinspection PhpIncludeInspection */
-    include $reboot->getBaseDir() . '/themes/' . $reboot->getConfig()['theme'] . '/blocks/' . $block->getName() . ".php";
+    include $site->getFsPath() . '/blocks/' . $block->getName() . ".php";
     $contents = ob_get_contents();
     ob_end_clean();
     return $contents;
