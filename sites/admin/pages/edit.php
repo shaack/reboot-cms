@@ -24,7 +24,7 @@ $pagesDir = $defaultSite->getFsPath() . "/pages";
                             $editable = true;
                         }
                         ?>
-                        <li><a href="?edit=<?= urlencode($page["name"]) ?>"><?= $name ?></a></li>
+                        <li><a href="/admin/edit?edit=<?= urlencode($page["name"]) ?>"><?= $name ?></a></li>
                         <?php
                     }
                 }
