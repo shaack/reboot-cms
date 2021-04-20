@@ -9,11 +9,11 @@ use Symfony\Component\Yaml\Yaml;
 
 class Site
 {
-    private $reboot;
-    private $name;
-    private $fsPath; // The path to the `sites` folder, relative to $baseFsPath
-    private $webPath; // The web path $domain . $baseUrl . $webPath
-    private $config; // Global values for all pages in a sites folder (`/sites/config.yml`)
+    protected $reboot;
+    protected $name;
+    protected $fsPath; // The path to the `sites` folder, relative to $baseFsPath
+    protected $webPath; // The web path $domain . $baseUrl . $webPath
+    protected $config; // Global values for all pages in a sites folder (`/sites/config.yml`)
 
     /**
      * AdminSite constructor.
@@ -30,6 +30,7 @@ class Site
         $this->config = Yaml::parseFile($this->fsPath . '/config.yml');
         Logger::debug("site->name: " . $siteName);
         Logger::debug("site->webPath: " . $this->webPath);
+        Logger::debug("site->fsPath: " . $this->fsPath);
     }
 
     /**
@@ -64,6 +65,14 @@ class Site
     public function getConfig()
     {
         return $this->config;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
     }
 
 }

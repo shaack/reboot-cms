@@ -37,15 +37,14 @@ class Reboot
         } else {
             $extensionPath = $this->getBaseFsPath() . "/sites/" . $siteName . "/SiteExtension.php";
             if(file_exists($extensionPath)) {
-                Logger::tmp("FILE EXISTS");
+                Logger::info("Found SiteExtension.php, loading");
                 require $extensionPath;
                 $site = new SiteExtension($this, $siteName, "/" . $siteName);
             } else {
-                Logger::tmp("FILE DONT EXISTS " . $extensionPath);
                 $site = new Site($this, $siteName, "/" . $siteName);
             }
         }
-        $request = new Request($this->baseWebPath, $_SERVER["REQUEST_URI"], $_POST);
+        $request = new Request($this->baseWebPath, $_SERVER["REQUEST_URI"], $_POST, $site);
         echo $site->render($request);
     }
 

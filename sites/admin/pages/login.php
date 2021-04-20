@@ -3,14 +3,15 @@
 use Shaack\Utils\Logger;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
+/** @var \Shaack\Reboot\SiteExtension $site */
 
 $username = htmlentities(@$_REQUEST["username"]);
 $password = htmlentities(@$_REQUEST["password"]);
 $error = null;
 if($username) {
-    if ($reboot->getAdminSession()->login($username, $password)) {
+    if ($site->login($username, $password)) {
         Logger::info("Login success " . $username);
-        $reboot->redirect($reboot->getConfig()["adminPath"] . "/sites");
+        $reboot->redirect("/" . $site->getName() . "/edit");
     } else {
         Logger::error("Login failed " . $username);
         $error = "Login failed, please try again.";

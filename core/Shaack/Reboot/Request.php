@@ -10,12 +10,18 @@ class Request
     private $paramsGet; // http get query params as array
     private $paramsPost; // http post params
 
-    public function __construct($baseWebPath, $requestUri, $post)
+    public function __construct($baseWebPath, $requestUri, $post, Site $site)
     {
         $parsed = parse_url($requestUri);
         $this->path = rtrim($parsed["path"], "/");
         if (substr($this->path, 0, strlen($baseWebPath)) == $baseWebPath) {
             $this->path = substr($this->path, strlen($baseWebPath));
+        }
+        if($site->getName() !== "default") {
+            $siteRelPath = "/" . $site->getName();
+            if (substr($this->path, 0, strlen($siteRelPath)) == $siteRelPath) {
+                $this->path = substr($this->path, strlen($siteRelPath));
+            }
         }
         if (array_key_exists("query", $parsed)) {
             parse_str($parsed["query"], $this->paramsGet);

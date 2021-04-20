@@ -28,19 +28,26 @@ class Page
     }
 
     /**
-     * @param string $path
+     * @param string|request $pathOrRequest
      * @return string
      */
-    public function render(string $path): string
+    public function render($pathOrRequest): string
     {
+        $path = $pathOrRequest;
+        $request = null;
+        if($pathOrRequest instanceof Request) {
+            $path = $pathOrRequest->getPath();
+            $request = $pathOrRequest;
+        }
         $pagePrefix = $this->site->getFsPath() . '/pages' . $path;
+
         if(is_dir($pagePrefix)) {
             $pagePrefix .= "/index";
         }
         if (file_exists($pagePrefix . ".md")) {
             return $this->renderMarkdown($pagePrefix . ".md");
         } else if (file_exists($pagePrefix . ".php")) {
-            return $this->renderPHP($pagePrefix . ".php");
+            return $this->renderPHP($pagePrefix . ".php", $request);
         } else {
             // not found
             Logger::error("page not found (404): " . $pagePrefix);
@@ -121,18 +128,19 @@ class Page
 
     /**
      * @param $articlePath
+     * @param $request
      * @return string
      */
-    private function renderPHP($articlePath): string
+    private function renderPHP($articlePath, $request): string
     {
         Logger::info("PHP Page: " . $articlePath);
-        return renderPHPPage($this->reboot, $this->site, $this, $articlePath);
+        return renderPHPPage($this->reboot, $this->site, $this, $request, $articlePath);
     }
 
 }
 
 /** @noinspection PhpUnusedParameterInspection */
-function renderPHPPage(Reboot $reboot, Site $site, Page $page, string $path) {
+function renderPHPPage(Reboot $reboot, Site $site, Page $page, Request $request, string $path) {
     ob_start();
     /** @noinspection PhpIncludeInspection */
     include $path;

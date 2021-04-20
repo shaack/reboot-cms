@@ -1,4 +1,4 @@
 <?php
-    /** @var \Shaack\Reboot\Reboot $reboot */
+    /** @var \Shaack\Reboot\SiteExtension $site */
 
-    $reboot->getAdminSession()->logout();
+    $site->logout();
