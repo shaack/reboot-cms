@@ -28,7 +28,7 @@ class Reboot
         $this->baseFsPath = $baseDir;
         $this->config = Yaml::parseFile($this->baseFsPath . '/local/config.yml');
         Logger::setLevel($this->config['logLevel']);
-        Logger::debug("------------------------------------------------------------------");
+        Logger::info("--- " . $_SERVER["REQUEST_URI"]);
         $this->baseWebPath = preg_replace('/(\/web)?(\/admin)?\/index\.php$/', '', $_SERVER['PHP_SELF']);
         Logger::debug("reboot->baseFsPath: " . $this->baseFsPath);
         Logger::debug("reboot->baseWebPath: " . $this->baseWebPath);

@@ -130,9 +130,15 @@ class Block
 
 function renderBlock(Site $site, Block $block) {
     ob_start();
-    /** @noinspection PhpIncludeInspection */
-    include $site->getFsPath() . '/blocks/' . $block->getName() . ".php";
-    $contents = ob_get_contents();
-    ob_end_clean();
-    return $contents;
+    $blockFilePath = $site->getFsPath() . '/blocks/' . $block->getName() . ".php";
+    if(!file_exists($blockFilePath)) {
+        Logger::error("Block not found at: " . $blockFilePath);
+        return "<span class='text-danger'>Block not found: \"" . $block->getName() . "\"</span><br/>";
+    } else {
+        /** @noinspection PhpIncludeInspection */
+        include $blockFilePath;
+        $contents = ob_get_contents();
+        ob_end_clean();
+        return $contents;
+    }
 }

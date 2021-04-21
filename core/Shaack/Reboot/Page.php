@@ -45,8 +45,10 @@ class Page
             $pagePrefix .= "/index";
         }
         if (file_exists($pagePrefix . ".md")) {
+            Logger::info("Markdown page: " . $path);
             return $this->renderMarkdown($pagePrefix . ".md");
         } else if (file_exists($pagePrefix . ".php")) {
+            Logger::info("PHP page: " . $path);
             return $this->renderPHP($pagePrefix . ".php", $request);
         } else {
             // not found
@@ -66,7 +68,6 @@ class Page
      */
     private function renderMarkdown(string $pagePath): string
     {
-        Logger::info("Markdown Page: " . $pagePath);
         $content = file_get_contents($pagePath);
 
         // encode code blocks
@@ -95,7 +96,7 @@ class Page
                         $blockName = array_keys($blockProps)[0];
                         $blockProps = $blockProps[$blockName];
                     }
-                    Logger::info("found block: " . $blockName);
+                    Logger::debug("found block: " . $blockName);
                     // unescape code blocks
                     $blockContent = preg_replace_callback('/```(.*?)```/s', function($matches) {
                         return "```" . base64_decode($matches[1]) . "```";
@@ -113,8 +114,15 @@ class Page
 
         if (!count($blocks)) {
             // interpret whole pages as flat markdown file
+            Logger::info("No blocks found, rendering as flat markdown file");
             $block = new Block($this->site, "text", $content);
             $blocks[] = $block;
+        } else {
+            $blockNames = [];
+            foreach ($blocks as $block) {
+                $blockNames[] = $block->getName();
+            }
+            Logger::info("Blocks: " . join(", ", $blockNames));
         }
 
         // render blocks
@@ -133,7 +141,6 @@ class Page
      */
     private function renderPHP($articlePath, $request): string
     {
-        Logger::info("PHP Page: " . $articlePath);
         return renderPHPPage($this->reboot, $this->site, $this, $request, $articlePath);
     }
 
