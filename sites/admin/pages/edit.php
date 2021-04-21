@@ -11,6 +11,9 @@ $pagesDir = $defaultSite->getFsPath() . "/pages";
 $editPageName = $request->getParam("page");
 $editable = false;
 $pages = FileSystem::getFileList($pagesDir, true);
+usort($pages, function($a, $b) {
+    return $a['name'] >= $b['name'];
+});
 if($editPageName) {
     Logger::debug("Editing page " . $editPageName);
 }
@@ -18,19 +21,19 @@ if($editPageName) {
 <div class="container-fluid">
     <div class="row">
         <div class="col-auto">
-            <ul class="list-unstyled">
+            <nav class="nav nav-compact flex-column">
                 <?php
                 foreach ($pages as $page) {
                     if ($page["type"] != "text/x-php" && ($page["type"] == "text/plain" || $page["type"] == "application/x-empty")) {
                         $name = str_replace($pagesDir, "", $page["name"]);
-                        // Logger::tmp($editPageName . " // " . $page["name"]);
+                        $active = false;
                         if ($editPageName && $name == $editPageName) {
                             $editable = true;
+                            $active = true;
                         }
                         ?>
-                        <li><!--suppress HtmlUnknownTarget -->
-                            <a href="/admin/edit?page=<?= urlencode($name) ?>"><?= $name ?></a>
-                        </li>
+                        <!--suppress HtmlUnknownTarget -->
+                        <a class="nav-link<?= $active ? " active" : "" ?>" href="/admin/edit?page=<?= urlencode($name) ?>"><?= $name ?></a>
                         <?php
                     }
                 }
@@ -39,7 +42,7 @@ if($editPageName) {
                     $editPageName = null;
                 }
                 ?>
-            </ul>
+            </nav>
         </div>
         <div class="col">
             <?php if ($editPageName) {

@@ -1,0 +1,32 @@
+body {
+    margin-top: 6rem;
+    /* margin-bottom: 6rem; */
+}
+
+.block {
+    margin-bottom: 2rem;
+}
+
+pre {
+    background-color: #f4f4f4;
+    padding: 1rem;
+}
+
+.CodeMirror {
+    height: calc(100vh - 260px);
+}
+
+.CodeMirror-fullscreen.CodeMirror  {
+    height: auto;
+}
+
+.nav.flex-column.nav-compact {
+    .nav-link {
+        padding-top: 1px;
+        padding-bottom: 1px;
+        &.active {
+            background-color: #007bff;
+            color: #fff;
+        }
+    }
+}

@@ -8,7 +8,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <base href="<?= $site->getWebPath() ?>"/>
+    <!-- <base href="<?= $site->getWebPath() ?>"/> -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
@@ -23,7 +23,7 @@
 <body>
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
 <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
-    <a class="navbar-brand" href="/"><?php echo $navbarConfig["brand"] ?></a>
+    <a class="navbar-brand" href="/admin/edit"><?php echo $navbarConfig["brand"] ?></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
             aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -68,7 +68,7 @@ echo($page->render($request));
     setTimeout(function () {
         $(".fade-out").fadeOut(250);
     }, 1000)
-    var simplemde = new SimpleMDE();
+    var simplemde = new SimpleMDE({"promptURLs": true});
 </script>
 </body>
 </html>
