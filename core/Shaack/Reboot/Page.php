@@ -39,27 +39,33 @@ class Page
             $path = $pathOrRequest->getPath();
             $request = $pathOrRequest;
         }
-        $pagePrefix = $this->site->getFsPath() . '/pages' . $path;
+        $requestedFsPath = $this->site->getFsPath() . '/pages' . $path;
 
-        if(is_dir($pagePrefix)) {
-            $pagePrefix .= "/index";
+        if(is_dir($requestedFsPath)) {
+            $requestedFsPath .= "/index";
         }
-        if (file_exists($pagePrefix . ".md")) {
-            Logger::info("Markdown page: " . $path);
-            return $this->renderMarkdown($pagePrefix . ".md");
-        } else if (file_exists($pagePrefix . ".php")) {
-            Logger::info("PHP page: " . $path);
-            return $this->renderPHP($pagePrefix . ".php", $request);
-        } else {
-            // not found
-            Logger::error("page not found (404): " . $pagePrefix);
-            http_response_code(404);
-            if (file_exists($this->site->getFsPath() . '/pages/404.md') ||
-                file_exists($this->site->getFsPath() . '/pages/404.php')) {
-                return $this->render("/404"); // put a 404 file in /pages to create your own
+        $pathInfo = pathinfo($path);
+        if(!array_key_exists("extension", $pathInfo)) {
+            if (file_exists($requestedFsPath . ".md")) {
+                Logger::info("Markdown page: " . $path);
+                return $this->renderMarkdown($requestedFsPath . ".md");
+            } else if (file_exists($requestedFsPath . ".php")) {
+                Logger::info("PHP page: " . $path);
+                return $this->renderPHP($requestedFsPath . ".php", $request);
+            } else {
+                // not found
+                Logger::error("page not found (404): " . $requestedFsPath);
+                http_response_code(404);
+                if (file_exists($this->site->getFsPath() . '/pages/404.md') ||
+                    file_exists($this->site->getFsPath() . '/pages/404.php')) {
+                    return $this->render("/404"); // put a 404 file in /pages to create your own
+                }
+                return "";
             }
-            return "";
         }
+        http_response_code(404);
+        Logger::error("[404] " . $path);
+        return "";
     }
 
     /**
