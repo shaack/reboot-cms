@@ -1,6 +1,6 @@
 body {
     margin-top: 6rem;
-    margin-bottom: 6rem;
+    /* margin-bottom: 6rem; */
 }
 
 .block {
@@ -10,4 +10,13 @@ body {
 pre {
     background-color: #f4f4f4;
     padding: 1rem;
+}
+
+.CodeMirror,
+.CodeMirror-scroll {
+    height: calc(100vh - 260px);
+}
+
+.CodeMirror-fullscreen.CodeMirror, .CodeMirror-fullscreen .CodeMirror-scroll  {
+    height: auto;
 }

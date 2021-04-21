@@ -17,7 +17,7 @@
     <title>Reboot CMS / Administration</title>
     <link href="/admin/vendor/simplemde-markdown-editor/simplemde.min.css" rel="stylesheet">
     <link href="/admin/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link href="/assets/styles/screen.css" rel="stylesheet">
+    <link href="/admin/assets/screen.css" rel="stylesheet">
 
 </head>
 <body>
@@ -49,6 +49,7 @@
         </span>
             <ul class="navbar-nav">
                 <li class="nav-item">
+                    <!--suppress HtmlUnknownTarget -->
                     <a href="/admin/logout" class="btn btn-outline-secondary">
                         Logout
                     </a>

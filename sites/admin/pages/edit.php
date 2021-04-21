@@ -4,31 +4,38 @@
 /** @var \Shaack\Reboot\Request $request */
 
 use Shaack\Utils\FileSystem;
+use Shaack\Utils\Logger;
 
 $defaultSite = $site->getDefaultSite();
 $pagesDir = $defaultSite->getFsPath() . "/pages";
-// $globalsPath = $site->getFsPath() . "/sites/config.yml";;
+$editPageName = $request->getParam("page");
+$editable = false;
+$pages = FileSystem::getFileList($pagesDir, true);
+if($editPageName) {
+    Logger::debug("Editing page " . $editPageName);
+}
 ?>
 <div class="container-fluid">
     <div class="row">
         <div class="col-auto">
             <ul class="list-unstyled">
                 <?php
-                $editPageName = $request->getParam("edit");
-                $editable = false;
-                $pages = FileSystem::getFileList($pagesDir, true);
                 foreach ($pages as $page) {
                     if ($page["type"] != "text/x-php" && ($page["type"] == "text/plain" || $page["type"] == "application/x-empty")) {
                         $name = str_replace($pagesDir, "", $page["name"]);
-                        if ($editPageName && $page["name"] == $editPageName) {
+                        // Logger::tmp($editPageName . " // " . $page["name"]);
+                        if ($editPageName && $name == $editPageName) {
                             $editable = true;
                         }
                         ?>
-                        <li><a href="/admin/edit?edit=<?= urlencode($page["name"]) ?>"><?= $name ?></a></li>
+                        <li><!--suppress HtmlUnknownTarget -->
+                            <a href="/admin/edit?page=<?= urlencode($name) ?>"><?= $name ?></a>
+                        </li>
                         <?php
                     }
                 }
-                if (!$editable) {
+                if (!$editable && $editPageName) {
+                    Logger::error("" . $editPageName . " is not editable.");
                     $editPageName = null;
                 }
                 ?>
@@ -36,21 +43,20 @@ $pagesDir = $defaultSite->getFsPath() . "/pages";
         </div>
         <div class="col">
             <?php if ($editPageName) {
-                $name = str_replace($pagesDir, "", $editPageName);
+                $fullPath = $defaultSite->getFsPath() . "/pages" . $editPageName;
+                Logger::tmp("fullPath: " . $fullPath);
                 $edited = $request->getParam("edited");
-                if($edited !== null) {
-                    Logger::tmp("editPageName: " . $editPageName);
-                    // file_put_contents($defaultSite->getFsPath() . $editPageName, $edited);
+                if ($edited !== null) {
+                    file_put_contents($fullPath, $edited);
                 }
                 ?>
-                <h2><?= $name ?></h2>
-                <form method="post">
-                    <div class="form-group">
+                <!--suppress HtmlUnknownTarget -->
+                <form method="post" action="/admin/edit?page=<?= urlencode($editPageName) ?>">
+                    <!--suppress HtmlFormInputWithoutLabel -->
                     <textarea name="edited" class="form-control"
-                              style="height: calc(100vh - 240px)"><?= file_get_contents($editPageName) ?></textarea>
-                    </div>
+                              style="height: calc(100vh - 240px)"><?= file_get_contents($fullPath) ?></textarea>
                     <button class="btn btn-primary">Save</button>
-                    <?= $edited !== null ? "<span class='ml-2 text-info fade-out'>sites saved…</span>" : "" ?>
+                    <?= $edited !== null ? "<span class='ml-2 text-info fade-out'>Page saved…</span>" : "" ?>
                 </form>
             <?php } ?>
         </div>
