@@ -60,12 +60,10 @@ class Request
         return null;
     }
 
-    /**
-     * The route in `/web` or `/sites/pages`
-     * @return string
-     */
-    public function getRoute(): string
+    public function __toString()
     {
-        return $this->route;
+        return "[Request], path: " . $this->getPath();
     }
+
+
 }

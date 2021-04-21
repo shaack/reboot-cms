@@ -2,4 +2,4 @@
 
 # The `Logger` logs as the standard PHP error_log
 # 0 = debug, 1 = info, 2 = error, set to "2" in running production
-logLevel: 0
+logLevel: 1

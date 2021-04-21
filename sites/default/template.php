@@ -44,7 +44,7 @@
     </div>
 </nav>
 <?php
-echo($page->render($request->getPath()));
+echo($page->render($request));
 ?>
 <script src="/admin/vendor/jquery/jquery.min.js"></script>
 <script src="/admin/vendor/bootstrap/bootstrap.bundle.min.js"></script>

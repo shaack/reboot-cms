@@ -47,7 +47,6 @@ if($editPageName) {
         <div class="col">
             <?php if ($editPageName) {
                 $fullPath = $defaultSite->getFsPath() . "/pages" . $editPageName;
-                Logger::tmp("fullPath: " . $fullPath);
                 $edited = $request->getParam("edited");
                 if ($edited !== null) {
                     file_put_contents($fullPath, $edited);
