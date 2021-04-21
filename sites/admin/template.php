@@ -23,6 +23,7 @@
 <body>
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
 <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+    <!--suppress HtmlUnknownTarget -->
     <a class="navbar-brand" href="/admin/edit"><?php echo $navbarConfig["brand"] ?></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
             aria-expanded="false" aria-label="Toggle navigation">
@@ -68,7 +69,7 @@ echo($page->render($request));
     setTimeout(function () {
         $(".fade-out").fadeOut(250);
     }, 1000)
-    var simplemde = new SimpleMDE({"promptURLs": true});
+    var simplemde = new SimpleMDE({promptURLs: true, spellChecker: false});
 </script>
 </body>
 </html>
