@@ -4,4 +4,4 @@ navbar:
   brand: Reboot CMS
   structure: # No navigation in the admin interface for now
     Edit Pages: /pages
-    Configuration: /config
+    Site Configuration: /config

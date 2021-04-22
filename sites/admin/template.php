@@ -14,7 +14,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Reboot CMS / Administration</title>
+    <title>Reboot CMS / Admin</title>
     <link href="/admin/vendor/simplemde-markdown-editor/simplemde.min.css" rel="stylesheet">
     <link href="/admin/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/admin/assets/screen.css" rel="stylesheet">

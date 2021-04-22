@@ -1,5 +1,3 @@
-# Websites global values, like the theme and the navigation structure
-
 navbar:
   brand: Reboot CMS
   structure:
