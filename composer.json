@@ -1,6 +1,18 @@
 {
   "name": "shaack/reboot-cms",
   "version": "2.3.1",
+  "authors": [
+    {
+      "name": "shaack",
+      "homepage": "https://shaack.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/shaack/reboot-cms"
+    }
+  ],
   "description": "A nice flat file CMS. See https://github.com/shaack/reboot-cms",
   "require": {
     "ext-json": "*",
@@ -14,5 +26,6 @@
     "psr-4": {
       "": "core/"
     }
-  }
+  },
+  "keywords": ["cms", "flat file","php", "bootstrap", "markdown"]
 }
