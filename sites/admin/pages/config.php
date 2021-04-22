@@ -12,7 +12,7 @@ if($configuration) {
 $configFile = file_get_contents($configPath);
 ?>
 
-<div class="container">
+<div class="container-fluid">
     <h1>Site configuration</h1>
     <!--suppress HtmlUnknownTarget -->
     <form method="post" action="/admin/config">

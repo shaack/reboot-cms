@@ -32,4 +32,7 @@ textarea.simple-edit {
 .col-sidebar {
   overflow: scroll; }
 
+.container-fluid {
+  max-width: 1200px; }
+
 /*# sourceMappingURL=screen.css.map */

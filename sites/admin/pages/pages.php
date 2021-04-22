@@ -20,7 +20,7 @@ if($editPageName) {
     Logger::debug("Editing page " . $editPageName);
 }
 ?>
-<div class="container">
+<div class="container-fluid">
     <div class="row">
         <div class="col-md-3 col-sidebar order-md-0 order-1 mt-4 mt-md-0">
             <nav class="nav nav-compact flex-column">
