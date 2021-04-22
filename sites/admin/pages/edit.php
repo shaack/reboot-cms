@@ -6,6 +6,8 @@
 use Shaack\Utils\FileSystem;
 use Shaack\Utils\Logger;
 
+// TODO put more functions in business logic "SiteExtension.php"
+
 $defaultSite = $site->getDefaultSite();
 $pagesDir = $defaultSite->getFsPath() . "/pages";
 $editPageName = $request->getParam("page");
@@ -24,8 +26,10 @@ if($editPageName) {
             <nav class="nav nav-compact flex-column">
                 <?php
                 foreach ($pages as $page) {
-                    if ($page["type"] != "text/x-php" && ($page["type"] == "text/plain" || $page["type"] == "application/x-empty")) {
-                        $name = str_replace($pagesDir, "", $page["name"]);
+                    $pagePathInfo = pathinfo($page["name"]);
+                    $name = str_replace($pagesDir, "", $page["name"]);
+                    // TODO configure, what is allowed
+                    if (array_key_exists("extension", $pagePathInfo) && $pagePathInfo["extension"] == "md") {
                         $active = false;
                         if ($editPageName && $name == $editPageName) {
                             $editable = true;
@@ -35,6 +39,8 @@ if($editPageName) {
                         <!--suppress HtmlUnknownTarget -->
                         <a class="nav-link<?= $active ? " active" : "" ?>" href="/admin/edit?page=<?= urlencode($name) ?>"><?= $name ?></a>
                         <?php
+                    } else {
+                        Logger::debug("Page " . $name . " not editable. type: " . $page["type"]);
                     }
                 }
                 if (!$editable && $editPageName) {
