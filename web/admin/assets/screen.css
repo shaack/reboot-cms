@@ -22,4 +22,7 @@ pre {
     background-color: #007bff;
     color: #fff; }
 
+textarea.simple-edit {
+  font-family: monospace; }
+
 /*# sourceMappingURL=screen.css.map */

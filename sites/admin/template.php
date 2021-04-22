@@ -24,7 +24,7 @@
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
 <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
     <!--suppress HtmlUnknownTarget -->
-    <a class="navbar-brand" href="/admin/edit"><?php echo $navbarConfig["brand"] ?></a>
+    <a class="navbar-brand" href="/admin/pages"><?php echo $navbarConfig["brand"] ?></a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
             aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -69,7 +69,10 @@ echo($page->render($request));
     setTimeout(function () {
         $(".fade-out").fadeOut(250);
     }, 1000)
-    var simplemde = new SimpleMDE({promptURLs: true, spellChecker: false});
+    let editors = $("textarea.markdown")
+    for (const editor of editors) {
+        editor.simpleMDE = new SimpleMDE({element: editor, promptURLs: true, spellChecker: false})
+    }
 </script>
 </body>
 </html>

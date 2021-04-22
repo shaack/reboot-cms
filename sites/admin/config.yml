@@ -1,5 +1,7 @@
 # AdminSite global values, like the navigation structure
 
 navbar:
-  brand: Reboot CMS / Administration
+  brand: Reboot CMS
   structure: # No navigation in the admin interface for now
+    Edit Pages: /pages
+    Configuration: /config

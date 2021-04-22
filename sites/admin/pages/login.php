@@ -11,7 +11,7 @@ $error = null;
 if($username) {
     if ($site->login($username, $password)) {
         Logger::info("Login success " . $username);
-        $reboot->redirect("/" . $site->getName() . "/edit");
+        $reboot->redirect("/" . $site->getName() . "/pages");
     } else {
         Logger::error("Login failed " . $username);
         $error = "Login failed, please try again.";
