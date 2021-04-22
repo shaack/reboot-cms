@@ -1,5 +1,6 @@
 {
   "name": "shaack/reboot-cms",
+  "version": "2.3.1",
   "description": "A nice flat file CMS. See https://github.com/shaack/reboot-cms",
   "require": {
     "ext-json": "*",
