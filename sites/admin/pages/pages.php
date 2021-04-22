@@ -20,9 +20,9 @@ if($editPageName) {
     Logger::debug("Editing page " . $editPageName);
 }
 ?>
-<div class="container-fluid">
+<div class="container">
     <div class="row">
-        <div class="col-auto">
+        <div class="col-md-3 col-sidebar order-md-0 order-1 mt-4 mt-md-0">
             <nav class="nav nav-compact flex-column">
                 <?php
                 foreach ($pages as $page) {
@@ -50,7 +50,7 @@ if($editPageName) {
                 ?>
             </nav>
         </div>
-        <div class="col">
+        <div class="col-md-9 order-md-1 order-0">
             <?php if ($editPageName) {
                 $fullPath = $defaultSite->getFsPath() . "/pages" . $editPageName;
                 $edited = $request->getParam("edited");

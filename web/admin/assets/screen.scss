@@ -1,6 +1,6 @@
 body {
-    margin-top: 6rem;
-    /* margin-bottom: 6rem; */
+    margin-top: 5rem;
+    margin-bottom: 2rem;
 }
 
 .block {
@@ -13,7 +13,7 @@ pre {
 }
 
 .CodeMirror {
-    height: calc(100vh - 260px);
+    height: calc(100vh - 280px);
 }
 
 .CodeMirror-fullscreen.CodeMirror  {
@@ -33,4 +33,11 @@ pre {
 
 textarea.simple-edit {
     font-family: monospace;
+    min-height: 160px;
+    height: calc(100vh - 270px);
+}
+
+.col-sidebar {
+    // max-width: 250px;
+    overflow: scroll;
 }

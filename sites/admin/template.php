@@ -46,13 +46,13 @@
                 ?>
             </ul>
             <?php if ($site->getUser()) { ?>
-                <span class="mr-3 navbar-text">
+                <span class="mr-3 navbar-text mt-2 mt-md-0">
             Logged in as <?= $site->getUser() ?>
         </span>
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <!--suppress HtmlUnknownTarget -->
-                        <a href="/admin/logout" class="btn btn-outline-secondary">
+                        <a href="/admin/logout" class="btn btn-outline-secondary mt-1 mt-md-0 mb-2 mb-md-0">
                             Logout
                         </a>
                     </li>

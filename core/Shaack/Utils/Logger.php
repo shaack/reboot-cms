@@ -12,7 +12,11 @@ class Logger
     private static $level = 1;
 
     static function setLevel($level) {
-        Logger::$level = $level;
+        self::$level = $level;
+    }
+
+    static function getLevel() {
+        return self::$level;
     }
 
     /**
@@ -21,8 +25,8 @@ class Logger
      */
     static private function log(string $message, int $level = 1)
     {
-        if (Logger::$level <= $level) {
-            if (is_string($message)) {
+        if (self::$level <= $level) {
+            if (is_string($message) || is_numeric($message)) {
                 error_log($message);
             } else {
                 error_log(print_r($message, true));
@@ -30,15 +34,15 @@ class Logger
         }
     }
     static function debug($message) {
-        Logger::log("DEBUG: " . $message, 0);
+        self::log("DEBUG: " . $message, 0);
     }
     static function info($message) {
-        Logger::log("INFO:  " . $message, 1);
+        self::log("INFO:  " . $message, 1);
     }
     static function error($message) {
-        Logger::log("ERROR: " . $message, 2);
+        self::log("ERROR: " . $message, 2);
     }
     static function tmp($message) {
-        Logger::log("TMP:   " . $message, 3);
+        self::log("TMP:   " . $message, 3);
     }
 }

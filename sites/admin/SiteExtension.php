@@ -35,12 +35,12 @@ class SiteExtension extends Site
      * the user agent of the user.
      * @return String md5 checksum
      */
-    private function getChecksum()
+    private function getChecksum(): string
     {
-        return md5($this->htpasswd->getChecksum() . $_SERVER['REMOTE_ADDR'] . $_SERVER['HTTP_USER_AGENT']);
+        return md5($this->htpasswd->getChecksum() . $_SERVER['REMOTE_ADDR'] . $_SERVER['HTTP_ACCEPT_LANGUAGE']);
     }
 
-    public function getDefaultSite()
+    public function getDefaultSite(): Site
     {
         return new Site($this->reboot, "default", "");
     }

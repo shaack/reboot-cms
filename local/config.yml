@@ -1,5 +1,6 @@
 # Local configuration
 
 # The `Logger` logs as the standard PHP error_log
-# 0 = debug, 1 = info, 2 = error, set to "2" in running production
-logLevel: 1
+# 0 = debug, 1 = info, 2 = error
+
+logLevel: 1 # <= set '2' in production
