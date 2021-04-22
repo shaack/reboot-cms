@@ -1,6 +1,6 @@
 <?php
 
-/** @var Shaack\Reboot\Site $site */
+/** @var Shaack\Reboot\SiteExtension $site */
 /** @var Shaack\Reboot\Page $page */
 /** @var Shaack\Reboot\Request $request */
 
@@ -25,39 +25,41 @@
 <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
     <!--suppress HtmlUnknownTarget -->
     <a class="navbar-brand" href="/admin/pages"><?php echo $navbarConfig["brand"] ?></a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
-            aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbar">
-        <ul class="navbar-nav mr-auto">
-            <?php
-            $structure = $navbarConfig['structure'];
-            if ($structure) {
-                foreach ($structure as $label => $path) {
-                    ?>
-                    <li class="nav-item <?= $request->getPath() == $path ? "active" : "" ?>">
-                        <a class="nav-link" href="<?= $site->getWebPath() . $path ?>"><?= $label ?></a>
-                    </li>
-                    <?php
+    <?php if ($site->getUser()) { ?>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+            <ul class="navbar-nav mr-auto">
+                <?php
+                $structure = $navbarConfig['structure'];
+                if ($structure) {
+                    foreach ($structure as $label => $path) {
+                        ?>
+                        <li class="nav-item <?= $request->getPath() == $path ? "active" : "" ?>">
+                            <a class="nav-link" href="<?= $site->getWebPath() . $path ?>"><?= $label ?></a>
+                        </li>
+                        <?php
+                    }
                 }
-            }
-            ?>
-        </ul>
-        <?php if ($site->getUser()) { ?>
-            <span class="mr-3 navbar-text">
+                ?>
+            </ul>
+            <?php if ($site->getUser()) { ?>
+                <span class="mr-3 navbar-text">
             Logged in as <?= $site->getUser() ?>
         </span>
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <!--suppress HtmlUnknownTarget -->
-                    <a href="/admin/logout" class="btn btn-outline-secondary">
-                        Logout
-                    </a>
-                </li>
-            </ul>
-        <?php } ?>
-    </div>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <!--suppress HtmlUnknownTarget -->
+                        <a href="/admin/logout" class="btn btn-outline-secondary">
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            <?php } ?>
+        </div>
+    <?php } ?>
 </nav>
 <?php
 echo($page->render($request));
