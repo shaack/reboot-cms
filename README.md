@@ -19,16 +19,12 @@ already in use. Try it out, the pages are delivered extremely fast, the code is 
 
 ## Install
 
-1. Download the [Reboot CMS repository](https://github.com/shaack/reboot-cms).
-2. [Install Composer](https://getcomposer.org/download/) and run `composer install` in
-the root directory of Reboot CMS. This will install the dependencies in the `/vendor` folder.
-3. Upload the files to the server, (if you don't have the CMS installed directly on the server).
+Download the [Reboot CMS repository](https://github.com/shaack/reboot-cms) and
+install it in your web root.
 
-Done!
-   
-4. Optional: Configure `/web` as the root folder. This is only necessary, if you want a higher (enterprise) level of
-  security or if you installed the CMS not in the web root. See also: 
-     https://stackoverflow.com/questions/17891251/how-to-protect-configuration-file-in-php/17891335 
+This should work out of the box.
+
+Then (**important**), **set the Admin password in `/local/.htpasswd`**
 
 ## Documentation
 
@@ -56,9 +52,8 @@ Example for a Markdown `Page` with `Blocks`:
 
 ```markdown
 ---
-title: Reboot CMS 
-description: Reboot CMS is a flat file CMS, with the support of blocks. 
-author: Stefan Haack (shaack.com)
+title: Reboot CMS description: Reboot CMS is a flat file CMS, with the support of blocks. author: Stefan Haack (
+shaack.com)
 ---
 
 <!-- jumbotron -->
@@ -103,12 +98,14 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
 occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est.
 
 ---
+
 ### three-colums
 
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute
 iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 
 ---
+
 ### block
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
