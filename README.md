@@ -52,8 +52,10 @@ Example for a Markdown `Page` with `Blocks`:
 
 ```markdown
 ---
-title: Reboot CMS description: Reboot CMS is a flat file CMS, with the support of blocks. author: Stefan Haack (
-shaack.com)
+title: Reboot CMS 
+description: Reboot CMS is a flat file CMS, with the support of blocks. 
+author: Stefan Haack (shaack.com)
+
 ---
 
 <!-- jumbotron -->
@@ -66,14 +68,15 @@ A flat file, markdown CMS with blocks
 The main idea is, to have a **minimal CMS** without needing a database, but with the support of blocks.
 
 ---
-[Learn more](/documentation)
+[Learn more](documentation)
 
 <!-- text-image -->
 
 ## The text-image block
 
-The gray block above was a jumbotron block. This one is a text-image block, it contains two parts. Parts are separated
-by `---`.
+The gray block above was a jumbotron block. 
+This one is a text-image block, it contains two parts. 
+Parts are separated by `---`.
 
 ---
 ![alt text](dummy.svg "Title Text")
