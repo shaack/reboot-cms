@@ -180,3 +180,12 @@ Another example, the "jumbotron" `Block`:
     </div>
 </section>
 ```
+
+## Admin interface
+
+You find the admin interface unter `/admin`. The default login is
+```
+user: admin
+pwd: change_me
+```
+You should change the admin password in `local/.htpasswd`. 
