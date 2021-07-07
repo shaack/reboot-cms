@@ -14,7 +14,7 @@ A flat file, markdown CMS with blocks
 The main idea is, to have a **minimal CMS** without needing a database, but with the support of blocks.
 
 ---
-[Learn more](/documentation)
+[Learn more](documentation)
 
 <!-- text-image -->
 ## The text-image block
@@ -23,7 +23,7 @@ The gray block above was a jumbotron block. This one is a text-image block, it c
 Parts are separated by `---`.
 
 ---
-![alt text](/media/dummy.svg "Title Text")
+![alt text](media/dummy.svg "Title Text")
 
 <!-- 
 text-image:
@@ -42,7 +42,7 @@ text-image:
 ```
 
 ---
-![alt text](/media/dummy.svg "Title Text")>
+![alt text](media/dummy.svg "Title Text")>
 
 <!-- three-columns -->
 ### the

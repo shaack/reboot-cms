@@ -21,7 +21,7 @@ class SiteExtension extends Site
         $user = $this->getUser();
         if (!$user && $request->getPath() !== "/login") {
             Logger::info("No user found, redirect to the login");
-            $this->reboot->redirect("/" . $this->name . "/login");
+            $this->reboot->redirect( $this->reboot->getBaseWebPath() . "/" . $this->name . "/login");
         } else if ($user) {
             if (@$_SESSION['checksum'] !== $this->getChecksum()) {
                 $this->logout();
@@ -60,7 +60,7 @@ class SiteExtension extends Site
         Logger::info("logout " . $this->getUser());
         $_SESSION['user'] = null;
         $_SESSION['checksum'] = null;
-        $this->reboot->redirect("/admin");
+        $this->reboot->redirect($this->reboot->getBaseWebPath() . "/admin");
     }
 
     /**

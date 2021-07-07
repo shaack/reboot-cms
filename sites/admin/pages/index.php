@@ -3,4 +3,4 @@
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */
 
-$reboot->redirect("/" . $site->getName() . "/login");
+$reboot->redirect($reboot->getBaseWebPath() . "/" . $site->getName() . "/login");

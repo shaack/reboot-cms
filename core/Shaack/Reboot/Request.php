@@ -16,6 +16,9 @@ class Request
         $this->path = rtrim($parsed["path"], "/");
         if (substr($this->path, 0, strlen($baseWebPath)) == $baseWebPath) {
             $this->path = substr($this->path, strlen($baseWebPath));
+            if(!$this->path) {
+                $this->path = "/";
+            }
         }
         if($site->getName() !== "default") {
             $siteRelPath = "/" . $site->getName();
