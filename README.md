@@ -188,4 +188,4 @@ You find the admin interface unter `/admin`. The default login is
 user: admin
 pwd: change_me
 ```
-You should change the admin password in `local/.htpasswd`. 
+You can and should change the admin password in `local/.htpasswd`. 
