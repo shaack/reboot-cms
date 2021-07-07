@@ -136,6 +136,7 @@ A `Block` describes how a block is rendered. Blocks are written in PHP.
 The code for the "text-image" `Block` which was used in the page above, looks like this:
 
 ```php
+<?php
 // read the configuration
 $imagePosition = @$block->getConfig()["image-position"];
 ?>
@@ -163,7 +164,7 @@ is [Xpath](https://devhints.io/xpath) with the addition of the `part(n)` functio
 Another example, the "jumbotron" `Block`:
 
 ```php
-?>
+<?php /* jumbotron */ ?>
 <section class="block block-jumbotron">
     <div class="container">
         <div class="jumbotron">
