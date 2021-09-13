@@ -37,7 +37,7 @@ if($editPageName) {
                         }
                         ?>
                         <!--suppress HtmlUnknownTarget -->
-                        <a class="nav-link<?= $active ? " active" : "" ?>" href="/admin/pages?page=<?= urlencode($name) ?>"><?= $name ?></a>
+                        <a class="nav-link<?= $active ? " active" : "" ?>" href="pages?page=<?= urlencode($name) ?>"><?= $name ?></a>
                         <?php
                     } else {
                         Logger::debug("Page " . $name . " not editable. type: " . $page["type"]);
@@ -59,7 +59,7 @@ if($editPageName) {
                 }
                 ?>
                 <!--suppress HtmlUnknownTarget -->
-                <form method="post" action="/admin/pages?page=<?= urlencode($editPageName) ?>">
+                <form method="post" action="pages?page=<?= urlencode($editPageName) ?>">
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <textarea name="edited" class="form-control markdown"
                               style="height: calc(100vh - 240px)"><?= file_get_contents($fullPath) ?></textarea>

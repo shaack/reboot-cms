@@ -8,23 +8,23 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <!-- <base href="<?= $site->getWebPath() ?>"/> -->
+    <base href="<?= $site->getWebPath() ?>/"/>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
 
     <title>Reboot CMS / Admin</title>
-    <link href="/admin/vendor/simplemde-markdown-editor/simplemde.min.css" rel="stylesheet">
-    <link href="/admin/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link href="/admin/assets/screen.css" rel="stylesheet">
+    <link href="vendor/simplemde-markdown-editor/simplemde.min.css" rel="stylesheet">
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/screen.css" rel="stylesheet">
 
 </head>
 <body>
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
 <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
     <!--suppress HtmlUnknownTarget -->
-    <a class="navbar-brand" href="/admin/pages"><?php echo $navbarConfig["brand"] ?></a>
+    <a class="navbar-brand" href="pages"><?php echo $navbarConfig["brand"] ?></a>
     <?php if ($site->getUser()) { ?>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
                 aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +52,7 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <!--suppress HtmlUnknownTarget -->
-                        <a href="/admin/logout" class="btn btn-outline-secondary mt-1 mt-md-0 mb-2 mb-md-0">
+                        <a href="logout" class="btn btn-outline-secondary mt-1 mt-md-0 mb-2 mb-md-0">
                             Logout
                         </a>
                     </li>
@@ -64,9 +64,9 @@
 <?php
 echo($page->render($request));
 ?>
-<script src="/admin/vendor/jquery/jquery.min.js"></script>
-<script src="/admin/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/admin/vendor/simplemde-markdown-editor/simplemde.min.js"></script>
+<script src="vendor/jquery/jquery.min.js"></script>
+<script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="vendor/simplemde-markdown-editor/simplemde.min.js"></script>
 <script>
     setTimeout(function () {
         $(".fade-out").fadeOut(250);

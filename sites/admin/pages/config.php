@@ -15,7 +15,7 @@ $configFile = file_get_contents($configPath);
 <div class="container-fluid">
     <h1>Site configuration</h1>
     <!--suppress HtmlUnknownTarget -->
-    <form method="post" action="/admin/config">
+    <form method="post" action="config">
         <div class="form-group">
             <label for="configFile" class="sr-only">Configuration file</label>
             <textarea name="configuration" class="form-control simple-edit" id="configFile"

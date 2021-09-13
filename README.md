@@ -52,8 +52,10 @@ Example for a Markdown `Page` with `Blocks`:
 
 ```markdown
 ---
-title: Reboot CMS description: Reboot CMS is a flat file CMS, with the support of blocks. author: Stefan Haack (
-shaack.com)
+title: Reboot CMS 
+description: Reboot CMS is a flat file CMS, with the support of blocks. 
+author: Stefan Haack (shaack.com)
+
 ---
 
 <!-- jumbotron -->
@@ -66,14 +68,15 @@ A flat file, markdown CMS with blocks
 The main idea is, to have a **minimal CMS** without needing a database, but with the support of blocks.
 
 ---
-[Learn more](/documentation)
+[Learn more](documentation)
 
 <!-- text-image -->
 
 ## The text-image block
 
-The gray block above was a jumbotron block. This one is a text-image block, it contains two parts. Parts are separated
-by `---`.
+The gray block above was a jumbotron block. 
+This one is a text-image block, it contains two parts. 
+Parts are separated by `---`.
 
 ---
 ![alt text](dummy.svg "Title Text")
@@ -133,6 +136,7 @@ A `Block` describes how a block is rendered. Blocks are written in PHP.
 The code for the "text-image" `Block` which was used in the page above, looks like this:
 
 ```php
+<?php
 // read the configuration
 $imagePosition = @$block->getConfig()["image-position"];
 ?>
@@ -160,7 +164,7 @@ is [Xpath](https://devhints.io/xpath) with the addition of the `part(n)` functio
 Another example, the "jumbotron" `Block`:
 
 ```php
-?>
+<?php /* jumbotron */ ?>
 <section class="block block-jumbotron">
     <div class="container">
         <div class="jumbotron">
@@ -180,3 +184,12 @@ Another example, the "jumbotron" `Block`:
     </div>
 </section>
 ```
+
+## Admin interface
+
+You find the admin interface unter `/admin`. The default login is
+```
+user: admin
+pwd: change_me
+```
+You can and should change the admin password in `local/.htpasswd`. 
