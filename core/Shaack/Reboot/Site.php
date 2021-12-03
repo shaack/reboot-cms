@@ -5,6 +5,7 @@ namespace Shaack\Reboot;
 
 
 use Shaack\Utils\Logger;
+use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 class Site
@@ -27,7 +28,12 @@ class Site
         $this->name = $siteName;
         $this->fsPath = $this->reboot->getBaseFsPath() . "/sites/" . $siteName;
         $this->webPath = $this->reboot->getBaseWebPath() . $siteWebPath;
-        $this->config = Yaml::parseFile($this->fsPath . '/config.yml');
+        $file = $this->fsPath . '/config.yml';
+        try {
+            $this->config = Yaml::parseFile($file);
+        } catch (ParseException $e) {
+            error_log("parse exception " . $file);
+        }
         Logger::debug("site->name: " . $siteName);
         Logger::debug("site->webPath: " . $this->webPath);
         Logger::debug("site->fsPath: " . $this->fsPath);
