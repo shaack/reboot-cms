@@ -75,34 +75,35 @@ class Page
     private function renderMarkdown(string $pagePath): string
     {
         $content = file_get_contents($pagePath);
-
-        // find blocks
-        $offset = 0;
+        // remove everything before the first block
+        $offset = strpos($content, "<!--");
         $blocks = array();
-        do {
-            preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $content, $matches, 0, $offset);
-            // var_dump($matches);
-            if ($matches) {
-                $offset += strlen($matches[0]) - 4;
-                try {
-                    $blockProps = Yaml::parse(trim($matches[1]));
-                    $blockContent = trim($matches[2]);
-                    $blockName = null;
-                    if(is_string($blockProps)) {
-                        $blockName = $blockProps;
-                        $blockProps = [];
-                    } else {
-                        $blockName = array_keys($blockProps)[0];
-                        $blockProps = $blockProps[$blockName];
+        if($offset !== false) {
+            // find blocks
+            do {
+                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $content, $matches, 0, $offset);
+                if ($matches) {
+                    $offset += strlen($matches[0]) - 4;
+                    try {
+                        $blockProps = Yaml::parse(trim($matches[1]));
+                        $blockContent = trim($matches[2]);
+                        $blockName = null;
+                        if (is_string($blockProps)) {
+                            $blockName = $blockProps;
+                            $blockProps = [];
+                        } else {
+                            $blockName = array_keys($blockProps)[0];
+                            $blockProps = $blockProps[$blockName];
+                        }
+                        Logger::debug("found block: " . $blockName);
+                        $block = new Block($this->site, $blockName, $blockContent, $blockProps);
+                        $blocks[] = $block;
+                    } catch (ParseException $e) {
+                        Logger::error("Error: could not parse block config: " . trim($matches[1]));
                     }
-                    Logger::debug("found block: " . $blockName);
-                    $block = new Block($this->site, $blockName, $blockContent, $blockProps);
-                    $blocks[] = $block;
-                } catch (ParseException $e) {
-                    Logger::error("Error: could not parse block config: " . trim($matches[1]));
                 }
-            }
-        } while ($matches);
+            } while ($matches);
+        }
 
         if (!count($blocks)) {
             // interpret whole pages as flat markdown file
