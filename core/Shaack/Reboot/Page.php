@@ -76,19 +76,12 @@ class Page
     {
         $content = file_get_contents($pagePath);
 
-        // encode code blocks
-        $content = preg_replace_callback('/```(.*?)```/s', function($matches) {
-            return "```" . base64_encode($matches[1]) . "```";
-        }, $content);
-        $content = preg_replace_callback('/`(.*?)`/s', function($matches) {
-            return "`" . base64_encode($matches[1]) . "`";
-        }, $content);
-
         // find blocks
         $offset = 0;
         $blocks = array();
         do {
             preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $content, $matches, 0, $offset);
+            // var_dump($matches);
             if ($matches) {
                 $offset += strlen($matches[0]) - 4;
                 try {
@@ -103,13 +96,6 @@ class Page
                         $blockProps = $blockProps[$blockName];
                     }
                     Logger::debug("found block: " . $blockName);
-                    // unescape code blocks
-                    $blockContent = preg_replace_callback('/```(.*?)```/s', function($matches) {
-                        return "```" . base64_decode($matches[1]) . "```";
-                    }, $blockContent);
-                    $blockContent = preg_replace_callback('/`(.*?)`/s', function($matches) {
-                        return "`" . base64_decode($matches[1]) . "`";
-                    }, $blockContent);
                     $block = new Block($this->site, $blockName, $blockContent, $blockProps);
                     $blocks[] = $block;
                 } catch (ParseException $e) {
@@ -155,7 +141,6 @@ class Page
 /** @noinspection PhpUnusedParameterInspection */
 function renderPHPPage(Reboot $reboot, Site $site, Page $page, Request $request, string $path) {
     ob_start();
-    /** @noinspection PhpIncludeInspection */
     include $path;
     $contents = ob_get_contents();
     ob_end_clean();
