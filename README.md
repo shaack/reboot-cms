@@ -16,6 +16,7 @@ already in use. Try it out, the pages are delivered extremely fast, the code is 
 
 - [wukies.de](https://wukies.de)
 - [chesscoin032.com](https://chesscoin032.com)
+- [shaack.com](https://shaack.com)
 
 ## Install
 
