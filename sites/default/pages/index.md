@@ -69,7 +69,7 @@ A text block contains just one markdown part.
 
 It can contain
 
-- [links](https://www.chessmail.de)
+- [links](https://shaack.com)
 - and lists
 
 and everything else in markdown.

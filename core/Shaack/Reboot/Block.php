@@ -85,18 +85,16 @@ class Block
                 $result = $result->item(0);
             }
             if ($result instanceof \DOMText or $result instanceof \DOMAttr) {
-                $ret = $result->nodeValue;
+                $ret = utf8_decode($result->nodeValue);
             } else if ($result instanceof \DOMElement) {
-                $ret = $this->xpath->document->saveHTML($result);
+                $ret = utf8_decode($this->xpath->document->saveHTML($result));
             } else if ($result instanceof \DOMNodeList) {
                 if ($result->length === 0) {
                     $ret = "<!-- no result for expression: " . $expression . " -->";
                 } else {
-                    $temp_dom = new DOMDocument();
                     foreach ($result as $node) {
-                        $temp_dom->appendChild($temp_dom->importNode($node, true));
+                        $ret .= utf8_decode($this->xpath->document->saveHTML($node));
                     }
-                    $ret = $temp_dom->saveHTML();
                 }
             } else {
                 Logger::error("(72a2) Unknown query result " . get_class($result));
@@ -135,7 +133,6 @@ function renderBlock(Site $site, Block $block) {
         Logger::error("Block not found at: " . $blockFilePath);
         return "<span class='text-danger'>Block not found: \"" . $block->getName() . "\"</span><br/>";
     } else {
-        /** @noinspection PhpIncludeInspection */
         include $blockFilePath;
         $contents = ob_get_contents();
         ob_end_clean();
