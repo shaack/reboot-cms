@@ -31,10 +31,11 @@ Then (**important**), **set the Admin password in `/local/.htpasswd`**
 
 #### In a Nutshell
 
-- A `Page` can be a
-    - flat `Markdown file` or a
-    - `Markdown file` with multiple `Blocks` or a 
-    - `PHP file` (where you can do everything)
+In reboot CMS, a `Page` can be a
+
+- flat `Markdown file` or a
+- `Markdown file` with multiple `Blocks` or a 
+- `PHP file` (where you can do everything).
 
 ### Page
 
