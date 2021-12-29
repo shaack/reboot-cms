@@ -29,18 +29,11 @@ Then (**important**), **set the Admin password in `/local/.htpasswd`**
 
 ## Documentation
 
-#### In a Nutshell
-
-- A `Page` is a
-    - `Markdown file` (flat or with blocks) or a
-    - `PHP file` (where you can do everything)
-- A `Block` renders a block
-
 ### Page
 
 Folder: `/sites/SITE_NAME/pages`
 
-A `Page` can be a **flat Markdown** file, can contain **multiple Blocks** or also can be a **PHP-File**.
+A `Page` can be a **flat Markdown** file, can contain **Blocks** or also can be a **PHP** file.
 
 Pages are auto-routed on web-requests:
 
