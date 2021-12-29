@@ -7,7 +7,7 @@
 
 /**  @var \Shaack\Reboot\Block $block */
 ?>
-<section class="block block-three-cards">
+<section class="block block-three-columns">
     <div class="container">
         <div class="row">
             <div class="col-md-4">

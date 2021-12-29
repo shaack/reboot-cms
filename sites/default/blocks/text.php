@@ -7,7 +7,7 @@
 
 /**  @var \Shaack\Reboot\Block $block */
 ?>
-<section class="block block-markdown">
+<section class="block block-text">
     <div class="container">
         <?= $block->content() ?>
     </div>
