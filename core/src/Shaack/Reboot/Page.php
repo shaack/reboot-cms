@@ -17,7 +17,6 @@ class Page
     private $site;
 
     /**
-     * Page constructor.
      * @param Reboot $reboot
      * @param Site $site
      */

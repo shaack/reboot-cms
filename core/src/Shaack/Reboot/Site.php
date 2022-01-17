@@ -17,7 +17,6 @@ class Site
     protected $config; // Global values for all pages in a sites folder (`/sites/config.yml`)
 
     /**
-     * AdminSite constructor.
      * @param $reboot Reboot
      * @param string $siteName
      * @param string $siteWebPath

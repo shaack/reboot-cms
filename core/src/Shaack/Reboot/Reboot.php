@@ -18,7 +18,6 @@ class Reboot
     private $config; // Local configuration, defined in `/local/config.yml`
 
     /**
-     * Reboot constructor
      * @param string $baseDir
      * @param string $siteName
      * @throws Exception
