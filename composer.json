@@ -24,7 +24,7 @@
   },
   "autoload": {
     "psr-4": {
-      "": "core/"
+      "": "core/src/"
     }
   },
   "keywords": ["cms", "flat file","php", "bootstrap", "markdown"]

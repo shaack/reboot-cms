@@ -9,5 +9,5 @@ return array(
     'WhiteHat101\\Crypt\\' => array($vendorDir . '/whitehat101/apr1-md5/src'),
     'Symfony\\Polyfill\\Ctype\\' => array($vendorDir . '/symfony/polyfill-ctype'),
     'Symfony\\Component\\Yaml\\' => array($vendorDir . '/symfony/yaml'),
-    '' => array($baseDir . '/core'),
+    '' => array($baseDir . '/core/src'),
 );

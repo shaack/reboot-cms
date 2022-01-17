@@ -38,7 +38,7 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
     );
 
     public static $fallbackDirsPsr4 = array (
-        0 => __DIR__ . '/../..' . '/core',
+        0 => __DIR__ . '/../..' . '/core/src',
     );
 
     public static $prefixesPsr0 = array (
