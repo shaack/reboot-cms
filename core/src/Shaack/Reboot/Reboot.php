@@ -31,10 +31,11 @@ class Reboot
         $this->baseWebPath = preg_replace('/(\/web)?(\/admin)?\/index\.php$/', '', $_SERVER['PHP_SELF']);
         Logger::debug("reboot->baseFsPath: " . $this->baseFsPath);
         Logger::debug("reboot->baseWebPath: " . $this->baseWebPath);
+        $isCore = $siteName === "admin";
         if($siteName === "default") {
             $site = new Site($this, $siteName, "");
         } else {
-            $extensionPath = $this->getBaseFsPath() . "/sites/" . $siteName . "/SiteExtension.php";
+            $extensionPath = $this->getBaseFsPath() . ($isCore ? "/core" : "") . "/sites/" . $siteName . "/SiteExtension.php";
             if(file_exists($extensionPath)) {
                 Logger::info("Found SiteExtension.php, loading");
                 require $extensionPath;

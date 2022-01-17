@@ -25,7 +25,11 @@ class Site
     {
         $this->reboot = $reboot;
         $this->name = $siteName;
-        $this->fsPath = $this->reboot->getBaseFsPath() . "/sites/" . $siteName;
+        if($siteName === "admin") {
+            $this->fsPath = $this->reboot->getBaseFsPath() . "/core/sites/" . $siteName;
+        } else {
+            $this->fsPath = $this->reboot->getBaseFsPath() . "/sites/" . $siteName;
+        }
         $this->webPath = $this->reboot->getBaseWebPath() . $siteWebPath;
         $file = $this->fsPath . '/config.yml';
         try {

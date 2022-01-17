@@ -34,7 +34,7 @@ text-image:
 
 The text-image block can also display the image to the left.
 
-<pre><code>&lt;!-- 
+<pre><code><!-- 
 text-image:
     image-position: left
 --></code></pre>
