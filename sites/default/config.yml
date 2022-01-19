@@ -2,4 +2,5 @@ navbar:
   brand: Reboot CMS
   structure:
     Home: /
+    Testpages: /testpages
     Documentation: /documentation

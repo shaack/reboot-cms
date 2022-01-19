@@ -32,8 +32,14 @@
             $structure = $navbarConfig['structure'];
             if ($structure) {
                 foreach ($structure as $label => $path) {
+                    $active = false;
+                    if($path === "/") {
+                        $active = $request->getPath() === $path;
+                    } else {
+                        $active = substr($request->getPath(), 0, strlen($path)) === $path;
+                    }
                     ?>
-                    <li class="nav-item <?= $request->getPath() == $path ? "active" : "" ?>">
+                    <li class="nav-item <?=  $active ? "active" : "" ?>">
                         <a class="nav-link" href="<?= $site->getWebPath() . $path ?>"><?= $label ?></a>
                     </li>
                     <?php

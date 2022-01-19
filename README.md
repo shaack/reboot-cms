@@ -9,19 +9,20 @@ Reboot CMS is a minimal CMS without needing a database, but with the support of 
 
 I developed Reboot CMS because I didn't find a CMS that works with flat markdown files but allows easy use of blocks.
 
-Reboot CMS is very small and is currently under massive development. I know of two sites so far where Reboot CMS is
-already in use. Try it out, the pages are delivered extremely fast, the code is excellent, as with all my projects.
+Reboot CMS is very small and the pages are delivered extremely fast. My homepage [shaack.com](https://shaack.com), which
+was build with Reboot CMS has a
+[PageSpeed Insights performance scoring of 100](https://pagespeed.web.dev/report?url=https%3A%2F%2Fshaack.com%2F).
 
-## Websites using reboot-cms
+## Websites using Reboot CMS
 
+- [The Reboot CMS demo page](https://shaack.com/projekte/reboot-cms/)
+- [shaack.com](https://shaack.com)
 - [wukies.de](https://wukies.de)
 - [chesscoin032.com](https://chesscoin032.com)
-- [shaack.com](https://shaack.com)
 
 ## Install
 
-Download the [Reboot CMS repository](https://github.com/shaack/reboot-cms) and
-install it in your web root.
+Download the [Reboot CMS repository](https://github.com/shaack/reboot-cms) and install it in your web root.
 
 This should work out of the box.
 
@@ -46,9 +47,8 @@ Example for a Markdown `Page` with `Blocks`:
 
 ```markdown
 ---
-title: Reboot CMS 
-description: Reboot CMS is a flat file CMS, with the support of blocks. 
-author: Stefan Haack (shaack.com)
+title: Reboot CMS description: Reboot CMS is a flat file CMS, with the support of blocks. author: Stefan Haack (
+shaack.com)
 
 ---
 
@@ -68,9 +68,8 @@ The main idea is, to have a **minimal CMS** without needing a database, but with
 
 ## The text-image block
 
-The gray block above was a jumbotron block. 
-This one is a text-image block, it contains two parts. 
-Parts are separated by `---`.
+The gray block above was a jumbotron block. This one is a text-image block, it contains two parts. Parts are separated
+by `---`.
 
 ---
 ![alt text](dummy.svg "Title Text")
@@ -182,8 +181,10 @@ Another example, the "jumbotron" `Block`:
 ## Admin interface
 
 You find the admin interface unter `/admin`. The default login is
+
 ```
 user: admin
 pwd: change_me
 ```
+
 You can and should change the admin password in `local/.htpasswd`. 
