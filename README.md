@@ -47,8 +47,9 @@ Example for a Markdown `Page` with `Blocks`:
 
 ```markdown
 ---
-title: Reboot CMS description: Reboot CMS is a flat file CMS, with the support of blocks. author: Stefan Haack (
-shaack.com)
+title: Reboot CMS 
+description: Reboot CMS is a flat file CMS, with the support of blocks. 
+author: Stefan Haack (shaack.com)
 
 ---
 
@@ -111,7 +112,7 @@ aliqua.
 
 This `Page` contains 3 `Block` types, "jumbotron", "text-image" and "three-columns". It will render to this:
 
-![](https://shaack.com/projekte/assets/img/reboot-cms-index.png)
+![A rendered page](https://shaack.com/projekte/assets/img/reboot-cms-index.png)
 
 Blocks can be configured in the block comment. With this configuration, the `text-image`
 block allows to display the image to the left side in desktop view.
@@ -182,9 +183,27 @@ Another example, the "jumbotron" `Block`:
 
 You find the admin interface unter `/admin`. The default login is
 
-```
-user: admin
-pwd: change_me
+- user: admin
+- pwd: change_me
+
+You can and should change the admin password in `local/.htpasswd` with
+
+```sh 
+cd local
+htpasswd .htpasswd admin
 ```
 
-You can and should change the admin password in `local/.htpasswd`. 
+In the admin interface you can edit markdown pages and set the site configuration in which the navigation structure is
+defined.
+
+### Edit the startpage
+
+![Edit the startpage](https://shaack.com/projekte/assets/img/reboot-cms-admin-edit-index.png)
+
+### Edit a flat markdown page
+
+![Edit a markdown page](https://shaack.com/projekte/assets/img/reboot-cms-admin-page-edit.png)
+
+### Edit the site configuration
+
+![Edit a markdown page](https://shaack.com/projekte/assets/img/reboot-cms-admin-site-configration.png)

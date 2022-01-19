@@ -19,8 +19,8 @@ The main idea is, to have a **minimal CMS** without needing a database, but with
 <!-- text-image -->
 ## The text-image block
 
-The gray block above was a jumbotron block. This one is a text-image block, it contains two parts.
-Parts are separated by `---`.
+The gray block above was a jumbotron block. This one is a text-image block. Blocks are defined in PHP, see the
+[Reboot CMS documentation](documentation)
 
 ---
 ![alt text](media/dummy.svg "Title Text")
