@@ -11,3 +11,7 @@ pre {
     background-color: #f4f4f4;
     padding: 1rem;
 }
+
+body img {
+    max-width: 100%;
+}
