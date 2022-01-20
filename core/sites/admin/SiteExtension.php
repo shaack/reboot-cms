@@ -7,7 +7,7 @@ use Shaack\Utils\Logger;
 
 class SiteExtension extends Site
 {
-    private $htpasswd;
+    private Htpasswd $htpasswd;
 
     public function __construct(Reboot $reboot, string $siteName, string $siteWebPath)
     {
