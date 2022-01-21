@@ -13,7 +13,7 @@
 ?>
 <section class="block block-jumbotron">
     <div class="container">
-        <div class="jumbotron">
+        <div class="bg-light p-5">
             <!-- use the text of the <h1> in part 1 for the display-4 -->
             <h1 class="display-4"><?= $block->xpath("/h1[part(1)]/text()") ?></h1>
             <!-- the lead will be the text of the <p> in part 1 -->
