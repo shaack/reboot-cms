@@ -1,3 +1,5 @@
+# Site configuration, navigation structure
+
 navbar:
   brand: Reboot CMS
   structure:
