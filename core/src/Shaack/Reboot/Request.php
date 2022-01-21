@@ -6,11 +6,11 @@ use Shaack\Utils\Logger;
 
 class Request
 {
-    private $path; // the requestPath, relative to the $baseWebPath
-    private $paramsGet; // http get query params as array
-    private $paramsPost; // http post params
+    private string $path; // the requestPath, relative to the $baseWebPath
+    private array $paramsGet = []; // http post params
+    private array $paramsPost = []; // http post params
 
-    public function __construct($baseWebPath, $requestUri, $post, Site $site)
+    public function __construct(Site $site, string $baseWebPath, string $requestUri, array $post)
     {
         $parsed = parse_url($requestUri);
         $this->path = rtrim($parsed["path"], "/");
@@ -20,18 +20,34 @@ class Request
                 $this->path = "/";
             }
         }
+        $this->paramsPost = $post;
+        // remove site webPath from request path
+        if($site->getWebPath()) {
+            if (substr($this->path, 0, strlen($site->getWebPath())) == $site->getWebPath()) {
+                $this->path = substr($this->path, strlen($site->getWebPath()));
+            }
+        }
+        /*
         if($site->getName() !== "default") {
             $siteRelPath = "/" . $site->getName();
             if (substr($this->path, 0, strlen($siteRelPath)) == $siteRelPath) {
                 $this->path = substr($this->path, strlen($siteRelPath));
             }
         }
+        */
+        /*
         if (array_key_exists("query", $parsed)) {
             parse_str($parsed["query"], $this->paramsGet);
         } else {
             $this->paramsGet = [];
         }
-        $this->paramsPost = array_merge($this->paramsGet, @$post);
+        */
+        if (array_key_exists("query", $parsed)) {
+            parse_str($parsed["query"], $this->paramsGet);
+        } else {
+            $this->paramsGet = [];
+        }
+        // $this->paramsPost = array_merge($this->paramsGet, @$post);
         Logger::debug("request->path: " . $this->path);
     }
 
@@ -48,7 +64,7 @@ class Request
      * @param string|null $method set to "get" or "post" to return only that methods params
      * @return mixed|null
      */
-    public function getParam($name, $method = null)
+    public function getParam(string $name, string $method = null)
     {
         if ($method == null || strtolower($method) == "post") {
             if (array_key_exists($name, $this->paramsPost)) {

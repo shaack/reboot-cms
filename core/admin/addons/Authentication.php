@@ -5,29 +5,35 @@ namespace Shaack\Reboot;
 use Shaack\Utils\Htpasswd;
 use Shaack\Utils\Logger;
 
-class SiteExtension extends Site
+class Authentication extends AddOn
 {
     private Htpasswd $htpasswd;
 
-    public function __construct(Reboot $reboot, string $siteName, string $siteWebPath)
-    {
-        parent::__construct($reboot, $siteName, $siteWebPath);
+    /**
+     * @see AddOn::init()
+     */
+    protected function init() {
         session_start();
-        $this->htpasswd = new Htpasswd($reboot->getBaseFsPath() . "/local/.htpasswd");
+        $this->htpasswd = new Htpasswd($this->reboot->getBaseFsPath() . "/local/.htpasswd");
     }
 
-    public function render(Request $request): string
+    /**
+     * @see AddOn::preRender()
+     */
+    public function preRender(Request $request): bool
     {
         $user = $this->getUser();
         if (!$user && $request->getPath() !== "/login") {
             Logger::info("No user found, redirect to the login");
-            $this->reboot->redirect( $this->reboot->getBaseWebPath() . "/" . $this->name . "/login");
+            $this->reboot->redirect( $this->site->getWebPath() . "/login");
+            return false;
         } else if ($user) {
             if (@$_SESSION['checksum'] !== $this->getChecksum()) {
                 $this->logout();
+                return false;
             }
         }
-        return parent::render($request);
+        return true;
     }
 
     /**
@@ -38,11 +44,6 @@ class SiteExtension extends Site
     private function getChecksum(): string
     {
         return md5($this->htpasswd->getChecksum() . $_SERVER['REMOTE_ADDR'] . $_SERVER['HTTP_ACCEPT_LANGUAGE']);
-    }
-
-    public function getDefaultSite(): Site
-    {
-        return new Site($this->reboot, "default", "");
     }
 
     public function login($username, $password): bool

@@ -1,20 +1,25 @@
 <?php
 /** @var \Shaack\Reboot\Reboot $reboot */
-/** @var \Shaack\Reboot\SiteExtension $site */
+/** @var \Shaack\Reboot\Site $site */
 /** @var \Shaack\Reboot\Request $request */
+/** @var Shaack\Reboot\Admin $admin */
+$admin = $site->getAddOn("Admin");
 
 use Shaack\Utils\FileSystem;
 use Shaack\Utils\Logger;
 
-// TODO put more functions in business logic "SiteExtension.php"
-
-$defaultSite = $site->getDefaultSite();
+$defaultSite = $admin->getDefaultSite();
 $pagesDir = $defaultSite->getFsPath() . "/pages";
 $editPageName = $request->getParam("page");
 $editable = false;
 $pages = FileSystem::getFileList($pagesDir, true);
 usort($pages, function($a, $b) {
-    return $a['name'] >= $b['name'];
+    if($a['name'] == $b['name']) {
+        return 0;
+    } else {
+        return $a['name'] > $b['name'] ? 1 : -1;
+    }
+
 });
 if($editPageName) {
     Logger::debug("Editing page " . $editPageName);

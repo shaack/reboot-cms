@@ -3,15 +3,17 @@
 use Shaack\Utils\Logger;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
-/** @var \Shaack\Reboot\SiteExtension $site */
+/** @var \Shaack\Reboot\Site $site */
+/** @var Shaack\Reboot\Authentication $authentication */
+$authentication = $site->getAddOn("Authentication");
 
 $username = htmlentities(@$_REQUEST["username"]);
 $password = htmlentities(@$_REQUEST["password"]);
 $error = null;
 if($username) {
-    if ($site->login($username, $password)) {
+    if ($authentication->login($username, $password)) {
         Logger::info("Login success " . $username);
-        $reboot->redirect($reboot->getBaseWebPath() . "/" . $site->getName() . "/pages");
+        $reboot->redirect($reboot->getBaseWebPath() . $site->getWebPath() . "/pages");
     } else {
         Logger::error("Login failed " . $username);
         $error = "Login failed, please try again.";

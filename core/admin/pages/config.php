@@ -1,13 +1,14 @@
 <?php
 /** @var \Shaack\Reboot\Reboot $reboot */
-/** @var \Shaack\Reboot\SiteExtension $site */
-
+/** @var \Shaack\Reboot\Site $site */
 /** @var \Shaack\Reboot\Request $request */
+/** @var Shaack\Reboot\Admin $admin */
+$admin = $site->getAddOn("Admin");
 
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
-$defaultSite = $site->getDefaultSite();
+$defaultSite = $admin->getDefaultSite();
 $configuration = $request->getParam("configuration");
 $configPath = $defaultSite->getFsPath() . "/config.yml";
 if ($configuration) {

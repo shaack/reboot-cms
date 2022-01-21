@@ -3,33 +3,27 @@
 
 namespace Shaack\Reboot;
 
-
 use Shaack\Utils\Logger;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 class Site
 {
-    protected $reboot;
-    protected $name;
-    protected $fsPath; // The path to the `sites` folder, relative to $baseFsPath
-    protected $webPath; // The web path $domain . $baseUrl . $webPath
-    protected $config; // Global values for all pages in a sites folder (`/sites/config.yml`)
+    protected Reboot $reboot;
+    protected string $fsPath; // The path to the `site` folder, relative to $baseFsPath
+    protected string $webPath; // The web path $domain . $baseUrl . $webPath
+    protected array $config = []; // Global values for all pages in a site folder (`/site/config.yml`)
+    protected array $addOns = []; // Site addons
 
     /**
      * @param $reboot Reboot
-     * @param string $siteName
+     * @param string $sitePath
      * @param string $siteWebPath
      */
-    public function __construct(Reboot $reboot, string $siteName, string $siteWebPath)
+    public function __construct(Reboot $reboot, string $sitePath, string $siteWebPath)
     {
         $this->reboot = $reboot;
-        $this->name = $siteName;
-        if($siteName === "admin") {
-            $this->fsPath = $this->reboot->getBaseFsPath() . "/core/sites/" . $siteName;
-        } else {
-            $this->fsPath = $this->reboot->getBaseFsPath() . "/sites/" . $siteName;
-        }
+        $this->fsPath = $this->reboot->getBaseFsPath() . $sitePath;
         $this->webPath = $this->reboot->getBaseWebPath() . $siteWebPath;
         $file = $this->fsPath . '/config.yml';
         try {
@@ -37,7 +31,15 @@ class Site
         } catch (ParseException $e) {
             error_log("parse exception " . $file);
         }
-        Logger::debug("site->name: " . $siteName);
+        // addOns
+        if (@$this->config["addons"]) {
+            foreach ($this->config["addons"] as $addOnName) {
+                $addOnPath = $this->getFsPath() . "/addons/" . $addOnName . ".php";
+                require $addOnPath;
+                $className = "\Shaack\Reboot\\" . $addOnName;
+                $this->addOns[$addOnName] = new $className($this->reboot, $this);
+            }
+        }
         Logger::debug("site->webPath: " . $this->webPath);
         Logger::debug("site->fsPath: " . $this->fsPath);
     }
@@ -48,8 +50,18 @@ class Site
      */
     public function render(Request $request): string
     {
+        /** @var AddOn $addOn */
+        foreach ($this->addOns as $addOn) {
+            if (!$addOn->preRender($request)) {
+                return "";
+            }
+        }
         $page = new Page($this->reboot, $this);
-        return renderTemplate($this, $page, $request);
+        $content = renderTemplate($this, $page, $request);
+        foreach ($this->addOns as $addOn) {
+            $content = $addOn->postRender($request, $content);
+        }
+        return $content;
     }
 
     /**
@@ -76,12 +88,9 @@ class Site
         return $this->config;
     }
 
-    /**
-     * @return string
-     */
-    public function getName(): string
+    public function getAddOn($addOnName)
     {
-        return $this->name;
+        return $this->addOns[$addOnName];
     }
 
 }

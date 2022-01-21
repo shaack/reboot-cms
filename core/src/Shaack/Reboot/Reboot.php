@@ -13,16 +13,17 @@ use Symfony\Component\Yaml\Yaml;
 
 class Reboot
 {
-    private $baseFsPath; // the base/root dir of this reboot-cms in the file system, full path
-    private $baseWebPath; // the base url "https://" . [domain] . [baseWebPath}
-    private $config; // Local configuration, defined in `/local/config.yml`
+    private string $baseFsPath; // the base/root dir of this reboot-cms in the file system, full path
+    private string $baseWebPath; // the base url "https://" . [domain] . [baseWebPath}
+    private array $config; // Local configuration, defined in `/local/config.yml`
 
     /**
+     * A path does NOT end with a "/". The root web path is ""
      * @param string $baseDir
-     * @param string $siteName
-     * @throws Exception
+     * @param string $sitePath
+     * @param string $siteWebPath
      */
-    public function __construct(string $baseDir, string $siteName)
+    public function __construct(string $baseDir, string $sitePath, string $siteWebPath = "")
     {
         $this->baseFsPath = $baseDir;
         $this->config = Yaml::parseFile($this->baseFsPath . '/local/config.yml');
@@ -31,20 +32,8 @@ class Reboot
         $this->baseWebPath = preg_replace('/(\/web)?(\/admin)?\/index\.php$/', '', $_SERVER['PHP_SELF']);
         Logger::debug("reboot->baseFsPath: " . $this->baseFsPath);
         Logger::debug("reboot->baseWebPath: " . $this->baseWebPath);
-        $isCore = $siteName === "admin";
-        if($siteName === "default") {
-            $site = new Site($this, $siteName, "");
-        } else {
-            $extensionPath = $this->getBaseFsPath() . ($isCore ? "/core" : "") . "/sites/" . $siteName . "/SiteExtension.php";
-            if(file_exists($extensionPath)) {
-                Logger::info("Found SiteExtension.php, loading");
-                require $extensionPath;
-                $site = new SiteExtension($this, $siteName, "/" . $siteName);
-            } else {
-                $site = new Site($this, $siteName, "/" . $siteName);
-            }
-        }
-        $request = new Request($this->baseWebPath, $_SERVER["REQUEST_URI"], $_POST, $site);
+        $site = new Site($this, $sitePath, $siteWebPath);
+        $request = new Request($site, $this->baseWebPath, $_SERVER["REQUEST_URI"], $_POST);
         echo $site->render($request);
     }
 

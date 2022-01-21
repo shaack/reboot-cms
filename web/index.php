@@ -7,4 +7,4 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$reboot = new Shaack\Reboot\Reboot(dirname(__DIR__), "default");
+$reboot = new Shaack\Reboot\Reboot(dirname(__DIR__), "/site");

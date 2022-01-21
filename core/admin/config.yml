@@ -1,0 +1,8 @@
+# SiteExtension global values, like the navigation structure
+
+navbar:
+  brand: Reboot CMS
+  structure: # No navigation in the admin interface for now
+    Edit Pages: /pages
+    Site Configuration: /config
+addons: [Authentication, Admin]

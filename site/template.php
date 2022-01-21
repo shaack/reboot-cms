@@ -15,8 +15,8 @@
     <meta name="author" content="">
 
     <title>Reboot CMS</title>
-    <link href="admin/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/styles/screen.css" rel="stylesheet">
+    <link href="../web/admin/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="../web/assets/styles/screen.css" rel="stylesheet">
 </head>
 <body>
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
@@ -52,7 +52,7 @@
 <?php
 echo($page->render($request));
 ?>
-<script src="admin/vendor/jquery/jquery.min.js"></script>
-<script src="admin/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../web/admin/vendor/jquery/jquery.min.js"></script>
+<script src="../web/admin/vendor/bootstrap/bootstrap.bundle.min.js"></script>
 </body>
 </html>

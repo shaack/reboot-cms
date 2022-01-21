@@ -23,7 +23,7 @@ The gray block above was a jumbotron block. This one is a text-image block. Bloc
 [Reboot CMS documentation](documentation)
 
 ---
-![alt text](media/dummy.svg "Title Text")
+![alt text](../../web/media/dummy.svg "Title Text")
 
 <!--
 text-image:
@@ -40,7 +40,7 @@ text-image:
 --&gt;</code></pre>
 
 ---
-![alt text](media/dummy.svg "Title Text")>
+![alt text](../../web/media/dummy.svg "Title Text")>
 
 <!-- three-columns -->
 ### the

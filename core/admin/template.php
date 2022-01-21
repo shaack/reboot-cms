@@ -1,9 +1,10 @@
 <?php
 
-/** @var Shaack\Reboot\SiteExtension $site */
+/** @var Shaack\Reboot\Site $site */
 /** @var Shaack\Reboot\Page $page */
 /** @var Shaack\Reboot\Request $request */
-
+/** @var Shaack\Reboot\Authentication $authentication */
+$authentication = $site->getAddOn("Authentication");
 ?>
 <!doctype html>
 <html lang="en">
@@ -25,7 +26,7 @@
 <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
     <!--suppress HtmlUnknownTarget -->
     <a class="navbar-brand" href="pages"><?php echo $navbarConfig["brand"] ?></a>
-    <?php if ($site->getUser()) { ?>
+    <?php if ($authentication->getUser()) { ?>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -45,19 +46,17 @@
                 }
                 ?>
             </ul>
-            <?php if ($site->getUser()) { ?>
-                <span class="mr-3 navbar-text mt-2 mt-md-0">
-            Logged in as <?= $site->getUser() ?>
-        </span>
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <!--suppress HtmlUnknownTarget -->
-                        <a href="logout" class="btn btn-outline-secondary mt-1 mt-md-0 mb-2 mb-md-0">
-                            Logout
-                        </a>
-                    </li>
-                </ul>
-            <?php } ?>
+            <span class="mr-3 navbar-text mt-2 mt-md-0">
+                Logged in as <?= $authentication->getUser() ?>
+            </span>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <!--suppress HtmlUnknownTarget -->
+                    <a href="logout" class="btn btn-outline-secondary mt-1 mt-md-0 mb-2 mb-md-0">
+                        Logout
+                    </a>
+                </li>
+            </ul>
         </div>
     <?php } ?>
 </nav>
