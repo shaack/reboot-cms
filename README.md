@@ -32,7 +32,7 @@ Then (**important**), **set the Admin password in `/local/.htpasswd`**
 
 ### Page
 
-Folder: `/sites/SITE_NAME/pages`
+Folder: `/site/pages`
 
 A `Page` can be a **flat Markdown** file, can contain **Blocks** or also can be a **PHP** file.
 
@@ -123,7 +123,7 @@ You can define metadata for the page on top of the file in `YAML Front Matter` s
 
 ### Block
 
-Folder: `/sites/SITE_NAME/blocks`
+Folder: `/site/blocks`
 
 A `Block` describes how a block is rendered. Blocks are written in PHP.
 
