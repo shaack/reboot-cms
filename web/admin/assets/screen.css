@@ -1,3 +1,38 @@
-body{margin-top:5rem;margin-bottom:2rem}.block{margin-bottom:2rem}pre{background-color:#f4f4f4;padding:1rem}.CodeMirror{height:calc(100vh - 280px)}.CodeMirror-fullscreen.CodeMirror{height:auto}.nav.flex-column.nav-compact .nav-link{padding-top:1px;padding-bottom:1px}.nav.flex-column.nav-compact .nav-link.active{background-color:#007bff;color:#fff}textarea.simple-edit{font-family:monospace;min-height:160px;height:calc(100vh - 270px);white-space:pre;overflow:auto}.col-sidebar{overflow:scroll}.container-fluid{max-width:1400px}
+body {
+  margin-top: 5rem;
+  margin-bottom: 2rem; }
+
+.block {
+  margin-bottom: 2rem; }
+
+pre {
+  background-color: #f4f4f4;
+  padding: 1rem; }
+
+.CodeMirror {
+  height: calc(100vh - 280px); }
+
+.CodeMirror-fullscreen.CodeMirror {
+  height: auto; }
+
+.nav.flex-column.nav-compact .nav-link {
+  padding-top: 1px;
+  padding-bottom: 1px; }
+  .nav.flex-column.nav-compact .nav-link.active {
+    background-color: #007bff;
+    color: #fff; }
+
+textarea.simple-edit {
+  font-family: monospace;
+  min-height: 160px;
+  height: calc(100vh - 270px);
+  white-space: pre;
+  overflow: auto; }
+
+.col-sidebar {
+  overflow: scroll; }
+
+.container-fluid {
+  max-width: 1400px; }
 
 /*# sourceMappingURL=screen.css.map */
