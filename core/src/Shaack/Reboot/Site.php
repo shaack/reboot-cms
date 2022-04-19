@@ -12,7 +12,7 @@ class Site
     protected Reboot $reboot;
     protected string $fsPath; // The path to the `site` folder, relative to $baseFsPath
     protected string $webPath; // The web path $domain . $baseUrl . $webPath
-    protected array $config = []; // Global values for all pages in a site folder (`/site/config.yml`)
+    protected array $config = []; // Global values for all pages in a site folder (`/sites/SITE_NAME/config.yml`)
     protected array $addOns = []; // Site addons
 
     /**
