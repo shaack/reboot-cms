@@ -31,4 +31,4 @@ RewriteEngine On
 # Run everything but real files through index.php
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)$ default/index.php?/$1 [L]
+RewriteRule ^(.*)$ index.php?/$1 [L]
