@@ -6,6 +6,6 @@ class Admin extends AddOn
 {
     public function getDefaultSite(): Site
     {
-        return new Site($this->reboot, "/sites/default", "");
+        return new Site($this->reboot, "/site", "");
     }
 }

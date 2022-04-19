@@ -23,7 +23,7 @@ The gray block above was a jumbotron block. This one is a text-image block. Bloc
 [Reboot CMS documentation](documentation)
 
 ---
-![alt text](../../../web/default/media/dummy.svg "Title Text")
+![alt text](../../web/media/dummy.svg "Title Text")
 
 <!--
 text-image:
@@ -34,13 +34,13 @@ text-image:
 
 The text-image block can also display the image to the left.
 
-<pre><code><!-- 
+<pre><code>&lt;!-- 
 text-image:
     image-position: left
---></code></pre>
+--&gt;</code></pre>
 
 ---
-![alt text](../../../web/default/media/dummy.svg "Title Text")>
+![alt text](../../web/media/dummy.svg "Title Text")>
 
 <!-- three-columns -->
 ### the
