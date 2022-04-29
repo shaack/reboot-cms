@@ -11,13 +11,13 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4">
-                <?= $block->xpath("/*[part(1)]") ?>
+                <?= $block->nodeHtml($block->xpath("/*[part(1)]")) ?>
             </div>
             <div class="col-md-4">
-                <?= $block->xpath("/*[part(2)]") ?>
+                <?= $block->nodeHtml($block->xpath("/*[part(2)]")) ?>
             </div>
             <div class="col-md-4">
-                <?= $block->xpath("/*[part(3)]") ?>
+                <?= $block->nodeHtml($block->xpath("/*[part(3)]")) ?>
             </div>
         </div>
     </div>

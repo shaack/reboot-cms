@@ -7,7 +7,6 @@
 
 namespace Shaack\Reboot;
 
-use DOMDocument;
 use Shaack\Utils\Logger;
 
 class Block
@@ -37,7 +36,7 @@ class Block
         $this->config = $config;
 
         $html = $this::$parsedown->parse($this->content);
-        $document = new DOMDocument();
+        $document = new \DOMDocument();
         $document->loadHTML($html);
         $this->xpath = new \DOMXPath($document);
     }
@@ -64,9 +63,9 @@ class Block
     /**
      * Queries a value or a part in the markdown to use it in the block template
      * @param string $expression
-     * @return string
+     * @return \DOMNode|\DOMNodeList
      */
-    public function xpath(string $expression): string
+    public function xpath(string $expression): \DOMNode|\DOMNodeList
     {
         Logger::debug("query: " . $expression);
         // replace part(n), https://stackoverflow.com/questions/10859703/xpath-select-all-elements-between-two-specific-elements
@@ -75,22 +74,24 @@ class Block
             return "count(preceding::hr)=$partNumber and not(self::hr)";
         }, $expression);
         $expression = "/html/body" . $expression;
-        $result = $this->xpath->query($expression);
-        $ret = "";
+        return $this->xpath->query($expression);
         if ($result === false) {
             Logger::error("xquery error");
             $ret = "*xquery error*";
         } else {
+            /*
             if ($result->length === 1) {
                 $result = $result->item(0);
             }
+            */
+            /*
             if ($result instanceof \DOMText or $result instanceof \DOMAttr) {
                 $ret = utf8_decode($result->nodeValue);
             } else if ($result instanceof \DOMElement) {
                 $ret = utf8_decode($this->xpath->document->saveHTML($result));
             } else if ($result instanceof \DOMNodeList) {
                 if ($result->length === 0) {
-                    $ret = "<!-- no result for expression: " . $expression . " -->";
+                    $ret = "no result for expression: " . $expression;
                 } else {
                     foreach ($result as $node) {
                         $ret .= utf8_decode($this->xpath->document->saveHTML($node));
@@ -99,13 +100,41 @@ class Block
             } else {
                 Logger::error("(72a2) Unknown query result " . get_class($result));
             }
-            Logger::debug($expression . " => " . $ret);
+            */
+            Logger::debug($expression . " => " . $this->nodeHtml($result));
+            return $result;
         }
-        return $ret;
+        return $result;
     }
 
     /**
-     * Return all pages parsed to HTML
+     * return the html content of a node
+     */
+    function nodeHtml(\DOMNode|\DOMNodeList $nodeOrNodeList):string
+    {
+        $html = '';
+        if ($nodeOrNodeList instanceof \DOMText or $nodeOrNodeList instanceof \DOMAttr) {
+            $html .= utf8_decode($nodeOrNodeList->nodeValue);
+        } else if (@$nodeOrNodeList->childNodes) {
+            $children = $nodeOrNodeList->childNodes;
+            foreach ($children as $child) {
+                $html .= $this->nodeHtml($child);
+            }
+        } else if ($nodeOrNodeList instanceof \DOMNodeList) {
+            foreach ($nodeOrNodeList as $node) {
+                // $html .= utf8_decode($this->xpath->document->saveHTML($node));
+                $html .= $this->nodeHtml($node);
+            }
+        } else {
+            $tmp_doc = new DOMDocument();
+            $tmp_doc->appendChild($tmp_doc->importNode($nodeOrNodeList, true));
+            $html .= $tmp_doc->saveHTML();
+        }
+        return $html;
+    }
+
+    /**
+     * Return the whole page, parsed to HTML
      * @return string
      */
     public function content(): string
@@ -126,10 +155,11 @@ class Block
     }
 }
 
-function renderBlock(Site $site, Block $block) {
+function renderBlock(Site $site, Block $block)
+{
     ob_start();
     $blockFilePath = $site->getFsPath() . '/blocks/' . $block->getName() . ".php";
-    if(!file_exists($blockFilePath)) {
+    if (!file_exists($blockFilePath)) {
         Logger::error("Block not found at: " . $blockFilePath);
         return "<span class='text-danger'>Block not found: \"" . $block->getName() . "\"</span><br/>";
     } else {
