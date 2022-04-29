@@ -12,6 +12,7 @@
 
 <section class="block block-text-image">
     <div class="container">
+        <h2><?= $block->nodeHtml($block->xpath("//h2")) ?></h2>
         <div class="card-group">
         <?php
         $images = $block->xpath("//li/img");

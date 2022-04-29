@@ -65,9 +65,11 @@ aliqua.
 
 <!-- cards -->
 
+## The block `cards`
+
 - ![This is](/media/dummy.svg)
 - ![a dynamic list](/media/dummy.svg)
-- ![of cards with images.](/media/dummy.svg)
+- ![of images.](/media/dummy.svg)
 - ![4 is enough.](/media/dummy.svg)
 
 <!-- text -->
