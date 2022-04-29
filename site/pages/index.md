@@ -6,6 +6,7 @@ author: Stefan Haack
 ---
 
 <!-- jumbotron -->
+
 # Reboot CMS
 
 A flat file, markdown CMS with blocks
@@ -17,6 +18,7 @@ The main idea is, to have a **minimal CMS** without needing a database, but with
 [Learn more](documentation)
 
 <!-- text-image -->
+
 ## The text-image block
 
 The gray block above was a jumbotron block. This one is a text-image block. Blocks are defined in PHP, see the
@@ -43,6 +45,7 @@ text-image:
 ![alt text](../../web/media/dummy.svg "Title Text")>
 
 <!-- three-columns -->
+
 ### the
 
 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
