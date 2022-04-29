@@ -79,20 +79,38 @@ class Block
 
     // function nodeListHtml()
 
+
     /**
      * return the html content of a node
      */
-    function nodeHtml(\DOMNode|\DOMNodeList $nodeOrNodeList): string
+    function nodeHtml(\DOMNode|\DOMNodeList $nodeOrNodeList, $descent = true): string
     {
         $html = '';
-        if ($nodeOrNodeList->length === 1) {
+        if (!$descent) {
+            $children = $nodeOrNodeList->childNodes;
+            foreach ($children as $child) {
+                $tmp_doc = new \DOMDocument();
+                $tmp_doc->appendChild($tmp_doc->importNode($child, true));
+                $html .= $tmp_doc->saveHTML();
+            }
+            return $html;
+        }
+        if ($nodeOrNodeList instanceof \DOMNodeList && $nodeOrNodeList->length === 1) {
             $nodeOrNodeList = $nodeOrNodeList->item(0);
         }
         if ($nodeOrNodeList instanceof \DOMText) {
             Logger::debug("nodeHtml is DOMText");
             $html .= $nodeOrNodeList->textContent;
         }
-        if ($nodeOrNodeList instanceof \DOMAttr) {
+        if ($nodeOrNodeList instanceof \DOMNodeList) {
+            Logger::debug("nodeHtml is DOMNodeList");
+            foreach ($nodeOrNodeList as $node) {
+                // $html .= utf8_decode($this->xpath->document->saveHTML($node));
+                $tmp_doc = new \DOMDocument();
+                $tmp_doc->appendChild($tmp_doc->importNode($node, true));
+                $html .= $tmp_doc->saveHTML();
+            }
+        } else if ($nodeOrNodeList instanceof \DOMAttr) {
             Logger::debug("nodeHtml is DOMAttr");
             $html .= $nodeOrNodeList->textContent;
         } else if (@$nodeOrNodeList->childNodes) {
@@ -100,14 +118,6 @@ class Block
             $children = $nodeOrNodeList->childNodes;
             foreach ($children as $child) {
                 $html .= $this->nodeHtml($child);
-            }
-        } else if ($nodeOrNodeList instanceof \DOMNodeList) {
-            Logger::debug("nodeHtml is DOMNodeList");
-            foreach ($nodeOrNodeList as $node) {
-                // $html .= utf8_decode($this->xpath->document->saveHTML($node));
-                $tmp_doc = new \DOMDocument();
-                $tmp_doc->appendChild($tmp_doc->importNode($node, true));
-                $html .= $tmp_doc->saveHTML();
             }
         } else {
             $tmp_doc = new \DOMDocument();

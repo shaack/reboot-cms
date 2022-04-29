@@ -10,7 +10,7 @@
 /** @var \Shaack\Reboot\Block $block */
 ?>
 
-<section class="block block-text-image">
+<section class="block block-cards">
     <div class="container">
         <h2><?= $block->nodeHtml($block->xpath("//h2")) ?></h2>
         <div class="card-group">
