@@ -20,7 +20,9 @@
             <p class="lead"><?= $block->nodeHtml($block->xpath("/p[part(1)]/text()")) ?></p>
             <hr class="my-4">
             <!-- print everything from part 2 -->
-            <?= $block->nodeHtml($block->xpath("/*[part(2)]")) ?>
+            <div class="mb-4">
+                <?= $block->nodeHtml($block->xpath("/*[part(2)]")) ?>
+            </div>
             <p>
                 <!-- the link in part 3 will be used as the primary button -->
                 <a class="btn btn-primary btn-lg" href="<?= $block->nodeHtml($block->xpath("//a[part(3)]/@href")) ?>"

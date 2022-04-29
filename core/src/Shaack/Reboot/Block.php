@@ -75,58 +75,42 @@ class Block
         }, $expression);
         $expression = "/html/body" . $expression;
         return $this->xpath->query($expression);
-        if ($result === false) {
-            Logger::error("xquery error");
-            $ret = "*xquery error*";
-        } else {
-            /*
-            if ($result->length === 1) {
-                $result = $result->item(0);
-            }
-            */
-            /*
-            if ($result instanceof \DOMText or $result instanceof \DOMAttr) {
-                $ret = utf8_decode($result->nodeValue);
-            } else if ($result instanceof \DOMElement) {
-                $ret = utf8_decode($this->xpath->document->saveHTML($result));
-            } else if ($result instanceof \DOMNodeList) {
-                if ($result->length === 0) {
-                    $ret = "no result for expression: " . $expression;
-                } else {
-                    foreach ($result as $node) {
-                        $ret .= utf8_decode($this->xpath->document->saveHTML($node));
-                    }
-                }
-            } else {
-                Logger::error("(72a2) Unknown query result " . get_class($result));
-            }
-            */
-            Logger::debug($expression . " => " . $this->nodeHtml($result));
-            return $result;
-        }
-        return $result;
     }
+
+    // function nodeListHtml()
 
     /**
      * return the html content of a node
      */
-    function nodeHtml(\DOMNode|\DOMNodeList $nodeOrNodeList):string
+    function nodeHtml(\DOMNode|\DOMNodeList $nodeOrNodeList): string
     {
         $html = '';
-        if ($nodeOrNodeList instanceof \DOMText or $nodeOrNodeList instanceof \DOMAttr) {
-            $html .= utf8_decode($nodeOrNodeList->nodeValue);
+        if ($nodeOrNodeList->length === 1) {
+            $nodeOrNodeList = $nodeOrNodeList->item(0);
+        }
+        if ($nodeOrNodeList instanceof \DOMText) {
+            Logger::debug("nodeHtml is DOMText");
+            $html .= $nodeOrNodeList->textContent;
+        }
+        if ($nodeOrNodeList instanceof \DOMAttr) {
+            Logger::debug("nodeHtml is DOMAttr");
+            $html .= $nodeOrNodeList->textContent;
         } else if (@$nodeOrNodeList->childNodes) {
+            Logger::debug("nodeHtml hasChildNodes");
             $children = $nodeOrNodeList->childNodes;
             foreach ($children as $child) {
                 $html .= $this->nodeHtml($child);
             }
         } else if ($nodeOrNodeList instanceof \DOMNodeList) {
+            Logger::debug("nodeHtml is DOMNodeList");
             foreach ($nodeOrNodeList as $node) {
                 // $html .= utf8_decode($this->xpath->document->saveHTML($node));
-                $html .= $this->nodeHtml($node);
+                $tmp_doc = new \DOMDocument();
+                $tmp_doc->appendChild($tmp_doc->importNode($node, true));
+                $html .= $tmp_doc->saveHTML();
             }
         } else {
-            $tmp_doc = new DOMDocument();
+            $tmp_doc = new \DOMDocument();
             $tmp_doc->appendChild($tmp_doc->importNode($nodeOrNodeList, true));
             $html .= $tmp_doc->saveHTML();
         }

@@ -60,7 +60,15 @@ iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatu
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
 aliqua.
 
+<!-- cards -->
+
+- ![This is](/media/dummy.svg)
+- ![a dynamic list](/media/dummy.svg)
+- ![of cards with images.](/media/dummy.svg)
+- ![4 is enough.](/media/dummy.svg)
+
 <!-- text -->
+
 ## This is a text block
 
 A text block contains just one markdown part.
