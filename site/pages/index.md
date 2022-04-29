@@ -19,7 +19,7 @@ The main idea is, to have a **minimal CMS** without needing a database, but with
 
 <!-- text-image -->
 
-## The text-image block
+## The "text-image" block
 
 The gray block above was a jumbotron block. This one is a text-image block. Blocks are defined in PHP, see the
 [Reboot CMS documentation](documentation)
@@ -52,7 +52,7 @@ Duis aute **irure** dolor in *reprehenderit* in voluptate velit esse cillum dolo
 occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est.
 
 ---
-### three-colums
+### "three-colums"
 
 Ut enim ad minim [veniam](/), quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute
 iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
@@ -65,7 +65,7 @@ aliqua.
 
 <!-- cards -->
 
-## The block `cards`
+## The block "cards"
 
 - ![This is](/media/dummy.svg)
 - ![a dynamic list](/media/dummy.svg)
@@ -74,15 +74,14 @@ aliqua.
 
 <!-- text -->
 
-## This is a text block
+## This is the "text" block
 
 A text block contains just one markdown part.
 
-### This is a h3 in a text block
+### This is a h3
 
-It can contain
+Text block can contain 
 
-- [links](https://shaack.com)
-- and lists
-
-and everything else in markdown.
+- lists
+- and [links](https://shaack.com)
+- and **everything else** in markdown.
