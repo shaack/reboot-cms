@@ -34,7 +34,7 @@ text-image:
 
 ## Configure blocks in the block comment
 
-The text-image block can also display the image to the left.
+The `text-image` block can also display the image to the left.
 
 <pre><code>&lt;!-- 
 text-image:
@@ -48,13 +48,13 @@ text-image:
 
 ### the
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+Duis aute **irure** dolor in *reprehenderit* in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
 occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est.
 
 ---
 ### three-colums
 
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute
+Ut enim ad minim [veniam](/), quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute
 iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 
 ---
