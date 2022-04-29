@@ -161,7 +161,7 @@ function renderBlock(Site $site, Block $block)
     $blockFilePath = $site->getFsPath() . '/blocks/' . $block->getName() . ".php";
     if (!file_exists($blockFilePath)) {
         Logger::error("Block not found at: " . $blockFilePath);
-        return "<span class='text-danger'>Block not found: \"" . $block->getName() . "\"</span><br/>";
+        return "<div class='w-100 p-3 border-1 border-top border-bottom text-danger text-center'>Block not found: \"" . $block->getName() . "\"</div>";
     } else {
         include $blockFilePath;
         $contents = ob_get_contents();
