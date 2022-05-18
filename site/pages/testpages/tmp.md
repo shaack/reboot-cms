@@ -8,4 +8,4 @@ text-image:
 The text-image block can also display the image to the left.
 
 ---
-![alt text](../../web/media/dummy.svg "Title Text")>
+![alt text](media/dummy.svg "Title Text")>
