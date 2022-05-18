@@ -18,7 +18,7 @@ $authentication = $site->getAddOn("Authentication");
     <title>Reboot CMS / Admin</title>
     <link href="vendor/simplemde-markdown-editor/simplemde.min.css" rel="stylesheet">
     <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link href="../../web/admin/assets/screen.css" rel="stylesheet">
+    <link href="assets/screen.css" rel="stylesheet">
 
 </head>
 <body>

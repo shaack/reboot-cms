@@ -11,11 +11,11 @@ use Shaack\Utils\Logger;
 
 class Block
 {
-    private $name;
-    private $content;
-    private $xpath;
-    private $config;
-    private $site;
+    private string $name;
+    private string $content;
+    private \DOMXPath $xpath;
+    private array $config;
+    private Site $site;
 
     private static $parsedown;
 
@@ -74,7 +74,14 @@ class Block
             return "count(preceding::hr)=$partNumber and not(self::hr)";
         }, $expression);
         $expression = "/html/body" . $expression;
-        return $this->xpath->query($expression);
+        $nodeOrNodeList = $this->xpath->query($expression);
+        if ($nodeOrNodeList instanceof \DOMNodeList) {
+            Logger::debug("\DOMNodeList found with " . $nodeOrNodeList->length . " entries.");
+            if($nodeOrNodeList->length === 1) {
+                $nodeOrNodeList = $nodeOrNodeList->item(0);
+            }
+        }
+        return $nodeOrNodeList;
     }
 
     // function nodeListHtml()
@@ -94,9 +101,6 @@ class Block
                 $html .= $tmp_doc->saveHTML();
             }
             return $html;
-        }
-        if ($nodeOrNodeList instanceof \DOMNodeList && $nodeOrNodeList->length === 1) {
-            $nodeOrNodeList = $nodeOrNodeList->item(0);
         }
         if ($nodeOrNodeList instanceof \DOMText) {
             Logger::debug("nodeHtml is DOMText");
