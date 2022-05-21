@@ -206,6 +206,6 @@ defined.
 
 ### Edit the site configuration
 
-In the site configuration, you can store for the site global values, like the navigation structure or the content of header elements. The site configuration is written in YAML.
+In the site configuration, you can store global values of the site, like the navigation structure or the content of header elements. The site configuration is written in YAML.
 
 ![Edit a markdown page](https://shaack.com/projekte/assets/img/reboot-cms-admin-site-configration.png)
