@@ -37,7 +37,9 @@ class Block
 
         $html = $this::$parsedown->parse($this->content);
         $document = new \DOMDocument();
-        $document->loadHTML($html);
+        if($html) {
+            $document->loadHTML($html);
+        }
         $this->xpath = new \DOMXPath($document);
     }
 
