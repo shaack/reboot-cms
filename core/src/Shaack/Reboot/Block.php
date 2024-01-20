@@ -111,7 +111,7 @@ class Block
         if ($nodeOrNodeList instanceof \DOMNodeList) {
             Logger::debug("nodeHtml is DOMNodeList");
             foreach ($nodeOrNodeList as $node) {
-                // $html .= utf8_decode($this->xpath->document->saveHTML($node));
+                $html .= utf8_decode($this->xpath->document->saveHTML($node));
                 /*
                 $tmp_doc = new \DOMDocument("1.0", "UTF-8");
                 $tmp_doc->appendChild($tmp_doc->importNode($node, true));
