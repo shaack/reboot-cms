@@ -40,10 +40,19 @@ textarea.simple-edit {
 }
 
 .col-sidebar {
-    // max-width: 250px;
     overflow: scroll;
 }
 
 .container-fluid {
     max-width: 1400px;
+}
+
+.fade-out {
+    animation: fadeOut 1s forwards;
+    animation-delay: 2s;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
 }

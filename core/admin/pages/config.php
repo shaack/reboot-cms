@@ -39,6 +39,6 @@ try {
             </p>
         <?php } ?>
         <button class="btn btn-primary">Save</button>
-        <?= $configuration !== null ? "<span class='ml-2 text-info fade-out'>Configuration saved…</span>" : "" ?>
+        <?= $configuration !== null ? "<span class='ms-2 text-info fade-out'>Configuration saved…</span>" : "" ?>
     </form>
 </div>

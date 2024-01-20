@@ -69,7 +69,7 @@ if($editPageName) {
                     <textarea name="edited" class="form-control markdown"
                               style="height: calc(100vh - 240px)"><?= file_get_contents($fullPath) ?></textarea>
                     <button class="btn btn-primary">Save</button>
-                    <?= $edited !== null ? "<span class='ml-2 text-info fade-out'>Page saved…</span>" : "" ?>
+                    <?= $edited !== null ? "<span class='ms-2 text-info fade-out'>Page saved…</span>" : "" ?>
                 </form>
             <?php } ?>
         </div>
