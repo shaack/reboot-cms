@@ -4,7 +4,6 @@
  * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  */
-
 require __DIR__ . '/../../vendor/autoload.php';
-
-$reboot = new Shaack\Reboot\Reboot(dirname(dirname(__DIR__)), "/core/admin", "/admin");
+$thisDir = dirname($_SERVER['SCRIPT_FILENAME']);
+$reboot = new Shaack\Reboot\Reboot(dirname(dirname($thisDir)), "/core/admin", "/admin");

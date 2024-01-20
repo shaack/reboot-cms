@@ -6,5 +6,5 @@
  */
 
 require __DIR__ . '/../vendor/autoload.php';
-
-$reboot = new Shaack\Reboot\Reboot(dirname(__DIR__), "/site");
+$thisDir = dirname($_SERVER['SCRIPT_FILENAME']);
+$reboot = new Shaack\Reboot\Reboot(dirname($thisDir), "/site");
