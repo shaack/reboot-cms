@@ -82,7 +82,7 @@ class Page
         // parse frontmatter
         $this->config = [];
         $offset = strpos($content, "---");
-        if($offset !== false) {
+        if($offset == 0) {
             $offset += 3;
             $end = strpos($content, "---", $offset);
             if($end !== false) {
