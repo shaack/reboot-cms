@@ -9,7 +9,7 @@ namespace Shaack\Utils;
 
 class Logger
 {
-    private static $level = 1;
+    private static $level = 1; // 0 = debug, 1 = info, 2 = error
 
     static function setLevel($level) {
         self::$level = $level;

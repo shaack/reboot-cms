@@ -36,10 +36,10 @@ text-image:
 
 The `text-image` block can also display the image to the left.
 
-<pre><code>&lt;!-- 
+```
 text-image:
     image-position: left
---&gt;</code></pre>
+```
 
 ---
 ![alt text](media/dummy.svg "Title Text")>
