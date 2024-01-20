@@ -15,6 +15,7 @@ class Page
 {
     private $reboot;
     private $site;
+    private $config = []; // If the page contains frontmatter, it will be stored here after rendering
 
     /**
      * @param Reboot $reboot
@@ -30,7 +31,7 @@ class Page
      * @param string|request $pathOrRequest
      * @return string
      */
-    public function render($pathOrRequest): string
+    public function render(string|request $pathOrRequest): string
     {
         $path = $pathOrRequest;
         $request = null;
@@ -67,13 +68,29 @@ class Page
         return "";
     }
 
+    public function getConfig(): array {
+        return $this->config;
+    }
+
     /**
      * @param string $pagePath
      * @return string
      */
     private function renderMarkdown(string $pagePath): string
     {
-        $content = file_get_contents($pagePath);
+        $content = trim(file_get_contents($pagePath));
+        // parse frontmatter
+        $this->config = [];
+        $offset = strpos($content, "---");
+        if($offset !== false) {
+            $offset += 3;
+            $end = strpos($content, "---", $offset);
+            if($end !== false) {
+                $frontmatter = substr($content, $offset, $end - $offset);
+                $this->config = Yaml::parse($frontmatter);
+                $content = substr($content, $end + 3);
+            }
+        }
         // remove everything before the first block
         $offset = strpos($content, "<!--");
         $blocks = array();

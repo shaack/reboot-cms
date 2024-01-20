@@ -4,6 +4,8 @@
 /** @var Shaack\Reboot\Page $page */
 /** @var Shaack\Reboot\Request $request */
 
+$content = $page->render($request);
+$config = $page->getConfig(); // the frontmatter config
 ?>
 <!doctype html>
 <html lang="en">
@@ -53,7 +55,7 @@
     </div>
 </nav>
 <?php
-echo($page->render($request));
+    echo $content;
 ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
         integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
