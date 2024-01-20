@@ -111,10 +111,12 @@ class Block
         if ($nodeOrNodeList instanceof \DOMNodeList) {
             Logger::debug("nodeHtml is DOMNodeList");
             foreach ($nodeOrNodeList as $node) {
-                // $html .= utf8_decode($this->xpath->document->saveHTML($node));
-                $tmp_doc = new \DOMDocument();
+                $html .= utf8_decode($this->xpath->document->saveHTML($node));
+                /*
+                $tmp_doc = new \DOMDocument("1.0", "UTF-8");
                 $tmp_doc->appendChild($tmp_doc->importNode($node, true));
                 $html .= $tmp_doc->saveHTML();
+                */
             }
         } else if ($nodeOrNodeList instanceof \DOMAttr) {
             Logger::debug("nodeHtml is DOMAttr");
