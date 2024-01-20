@@ -6,14 +6,7 @@ body {
   margin-bottom: 2rem; }
 
 pre {
-  background-color: #f4f4f4;
   padding: 1rem; }
-
-.CodeMirror {
-  height: calc(100vh - 280px); }
-
-.CodeMirror-fullscreen.CodeMirror {
-  height: auto; }
 
 .nav.flex-column.nav-compact .nav-link {
   padding-top: 1px;
@@ -44,5 +37,14 @@ textarea.simple-edit {
     opacity: 1; }
   to {
     opacity: 0; } }
+
+.EasyMDEContainer .CodeMirror {
+  height: calc(100vh - 260px); }
+
+.EasyMDEContainer .CodeMirror-fullscreen.CodeMirror {
+  height: auto; }
+
+.EasyMDEContainer .editor-toolbar button:hover {
+  color: #000; }
 
 /*# sourceMappingURL=screen.css.map */

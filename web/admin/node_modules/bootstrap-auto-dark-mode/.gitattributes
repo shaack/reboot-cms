@@ -1,0 +1,3 @@
+# https://github.com/github/linguist#overrides
+src/bootstrap-auto-dark-mode.js linguist-vendored=false
+index.html linguist-documentation

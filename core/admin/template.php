@@ -7,7 +7,7 @@
 $authentication = $site->getAddOn("Authentication");
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="auto">
 <head>
     <base href="<?= $site->getWebPath() ?>/"/>
     <meta charset="utf-8">
@@ -16,14 +16,14 @@ $authentication = $site->getAddOn("Authentication");
     <meta name="author" content="">
 
     <title>Reboot CMS / Admin</title>
-    <link href="node_modules/simplemde/dist/simplemde.min.css" rel="stylesheet">
+    <link href="node_modules/easymde/dist/easymde.min.css" rel="stylesheet">
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/screen.css" rel="stylesheet">
-
+    <script src="node_modules/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
 </head>
 <body>
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
-<nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+<nav class="navbar navbar-expand-md fixed-top">
     <div class="container-fluid">
         <!--suppress HtmlUnknownTarget -->
         <a class="navbar-brand" href="pages"><?php echo $navbarConfig["brand"] ?></a>
@@ -67,11 +67,11 @@ echo($page->render($request));
 ?>
 <!-- <script src="node_modules/jquery/jquery.min.js"></script> -->
 <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="node_modules/simplemde/dist/simplemde.min.js"></script>
+<script src="node_modules/easymde/dist/easymde.min.js"></script>
 <script>
     let editors = document.querySelectorAll("textarea.markdown")
     for (const editor of editors) {
-        editor.simpleMDE = new SimpleMDE({element: editor, promptURLs: true, spellChecker: false})
+        editor.simpleMDE = new EasyMDE({element: editor, promptURLs: true, spellChecker: false})
     }
 </script>
 </body>

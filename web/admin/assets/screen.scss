@@ -1,3 +1,8 @@
+$white: #ffffff;
+$gray: #f4f4f4;
+$primary: #007bff;
+
+
 body {
     margin-top: 5rem;
     margin-bottom: 2rem;
@@ -8,16 +13,8 @@ body {
 }
 
 pre {
-    background-color: #f4f4f4;
+    // background-color: #f4f4f4;
     padding: 1rem;
-}
-
-.CodeMirror {
-    height: calc(100vh - 280px);
-}
-
-.CodeMirror-fullscreen.CodeMirror  {
-    height: auto;
 }
 
 .nav.flex-column.nav-compact {
@@ -55,4 +52,23 @@ textarea.simple-edit {
 @keyframes fadeOut {
     from { opacity: 1; }
     to { opacity: 0; }
+}
+
+.EasyMDEContainer {
+    .CodeMirror {
+        height: calc(100vh - 260px);
+    }
+
+    .CodeMirror-fullscreen.CodeMirror {
+        height: auto;
+    }
+
+    .editor-toolbar {
+        button {
+            &:hover {
+                color: #000;
+            }
+            // background-color: $light;
+        }
+    }
 }

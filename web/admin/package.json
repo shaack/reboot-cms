@@ -11,6 +11,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "bootstrap": "^5.3.2",
-    "simplemde": "^1.11.2"
+    "bootstrap-auto-dark-mode": "^1.1.0",
+    "easymde": "^2.18.0"
   }
 }
