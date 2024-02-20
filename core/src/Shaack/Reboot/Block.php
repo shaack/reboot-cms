@@ -111,7 +111,12 @@ class Block
         if ($nodeOrNodeList instanceof \DOMNodeList) {
             Logger::debug("nodeHtml is DOMNodeList");
             foreach ($nodeOrNodeList as $node) {
-                $html .= utf8_decode($this->xpath->document->saveHTML($node));
+              
+              /**
+               * Update the utf8_encode Function to mb_convert_encoding because of Deprecation on 8.2
+               * https://wiki.php.net/rfc/remove_utf8_decode_and_utf8_encode
+               */
+                $html .= mb_convert_encoding($this->xpath->document->saveHTML($node), "UTF-8", mb_detect_encoding($this->xpath->document->saveHTML($node)));
                 /*
                 $tmp_doc = new \DOMDocument("1.0", "UTF-8");
                 $tmp_doc->appendChild($tmp_doc->importNode($node, true));
