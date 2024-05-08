@@ -79,6 +79,9 @@ class Page
     private function renderMarkdown(string $pagePath): string
     {
         $content = trim(file_get_contents($pagePath));
+        if(!$content) {
+            return "";
+        }
         // parse frontmatter
         $this->config = [];
         $offset = strpos($content, "---");
