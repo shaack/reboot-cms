@@ -4,7 +4,7 @@
 
 These are:
 
-- [jumbotron](/testpages/blocks/jumbotron) 👍
+- jumbotron 👍
 - cards 👍
 - text 👍
 - text-image 👍

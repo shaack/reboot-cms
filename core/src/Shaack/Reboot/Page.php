@@ -35,17 +35,17 @@ class Page
     {
         $path = $pathOrRequest;
         $request = null;
-        if ($pathOrRequest instanceof Request) {
+        if($pathOrRequest instanceof Request) {
             $path = $pathOrRequest->getPath();
             $request = $pathOrRequest;
         }
         $requestedFsPath = $this->site->getFsPath() . '/pages' . $path;
 
-        if (is_dir($requestedFsPath)) {
+        if(is_dir($requestedFsPath)) {
             $requestedFsPath .= "/index";
         }
         $pathInfo = pathinfo($path);
-        if (!array_key_exists("extension", $pathInfo)) {
+        if(!array_key_exists("extension", $pathInfo)) {
             if (file_exists($requestedFsPath . ".md")) {
                 Logger::info("Markdown page: " . $path);
                 return $this->renderMarkdown($requestedFsPath . ".md");
@@ -68,8 +68,7 @@ class Page
         return "";
     }
 
-    public function getConfig(): array
-    {
+    public function getConfig(): array {
         return $this->config;
     }
 
@@ -83,10 +82,10 @@ class Page
         // parse frontmatter
         $this->config = [];
         $offset = strpos($content, "---");
-        if ($offset == 0) {
+        if($offset == 0) {
             $offset += 3;
             $end = strpos($content, "---", $offset);
-            if ($end !== false) {
+            if($end !== false) {
                 $frontmatter = substr($content, $offset, $end - $offset);
                 $this->config = Yaml::parse($frontmatter);
                 $content = substr($content, $end + 3);
@@ -95,7 +94,7 @@ class Page
         // remove everything before the first block
         $offset = strpos($content, "<!--");
         $blocks = array();
-        if ($offset !== false) {
+        if($offset !== false) {
             // find blocks
             do {
                 preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $content, $matches, 0, $offset);
@@ -157,8 +156,7 @@ class Page
 }
 
 /** @noinspection PhpUnusedParameterInspection */
-function renderPHPPage(Reboot $reboot, Site $site, Page $page, Request $request, string $path)
-{
+function renderPHPPage(Reboot $reboot, Site $site, Page $page, Request $request, string $path) {
     ob_start();
     include $path;
     $contents = ob_get_contents();
