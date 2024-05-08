@@ -71,7 +71,7 @@ echo($page->render($request));
 <script>
     let editors = document.querySelectorAll("textarea.markdown")
     for (const editor of editors) {
-        editor.simpleMDE = new EasyMDE({element: editor, promptURLs: true, spellChecker: false})
+        editor.mde = new EasyMDE({element: editor, promptURLs: true, spellChecker: false})
     }
 </script>
 </body>
