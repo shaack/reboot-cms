@@ -101,7 +101,9 @@ textarea.simple-edit {
     background: var(--bs-body-bg);
 }
 .editor-toolbar.fullscreen {
+    // position: absolute;
     background: var(--bs-body-bg);
+    z-index: 100000;
 }
 
 .editor-preview {
