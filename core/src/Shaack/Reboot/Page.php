@@ -53,18 +53,19 @@ class Page
                 Logger::info("PHP page: " . $path);
                 return $this->renderPHP($requestedFsPath . ".php", $request);
             } else {
-                // not found
-                Logger::error("page not found (404): " . $requestedFsPath);
-                http_response_code(404);
-                if (file_exists($this->site->getFsPath() . '/pages/404.md') ||
-                    file_exists($this->site->getFsPath() . '/pages/404.php')) {
-                    return $this->render("/404"); // put a 404 file in /pages to create your own
-                }
-                return "";
+                return $this->render404($path);
             }
         }
+        return $this->render404($path);
+    }
+
+    public function render404($path) {
+        Logger::info("[404] response for path: " . $path);
         http_response_code(404);
-        Logger::error("[404] " . $path);
+        if (file_exists($this->site->getFsPath() . '/pages/404.md') ||
+            file_exists($this->site->getFsPath() . '/pages/404.php')) {
+            return $this->render("/404"); // put a 404 file in /pages to create your own
+        }
         return "";
     }
 
