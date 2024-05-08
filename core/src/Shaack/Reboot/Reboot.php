@@ -31,7 +31,6 @@ class Reboot
         Logger::debug("Reboot CMS");
         Logger::debug("you should set the loglevel to 2 (error) in production (/local/config.yml)");
         Logger::info("--- " . $_SERVER["REQUEST_URI"]);
-        Logger::tmp("baseDir: $baseDir");
         $this->baseWebPath = preg_replace('/(\/web)?(\/admin)?\/index\.php$/', '', $_SERVER['PHP_SELF']);
         Logger::debug("reboot->baseFsPath: " . $this->baseFsPath);
         Logger::debug("reboot->baseWebPath: " . $this->baseWebPath);

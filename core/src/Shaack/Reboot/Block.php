@@ -37,7 +37,7 @@ class Block
 
         $html = $this::$parsedown->parse($this->content);
         $document = new \DOMDocument();
-        if($html) {
+        if ($html) {
             $document->loadHTML($html);
         }
         $this->xpath = new \DOMXPath($document);
@@ -79,15 +79,12 @@ class Block
         $nodeOrNodeList = $this->xpath->query($expression);
         if ($nodeOrNodeList instanceof \DOMNodeList) {
             Logger::debug("\DOMNodeList found with " . $nodeOrNodeList->length . " entries.");
-            if($nodeOrNodeList->length === 1) {
+            if ($nodeOrNodeList->length === 1) {
                 $nodeOrNodeList = $nodeOrNodeList->item(0);
             }
         }
         return $nodeOrNodeList;
     }
-
-    // function nodeListHtml()
-
 
     /**
      * return the html content of a node
@@ -111,18 +108,13 @@ class Block
         if ($nodeOrNodeList instanceof \DOMNodeList) {
             Logger::debug("nodeHtml is DOMNodeList");
             foreach ($nodeOrNodeList as $node) {
-              
-              /**
-               * Update the utf8_encode Function to mb_convert_encoding because of Deprecation on 8.2
-               * https://wiki.php.net/rfc/remove_utf8_decode_and_utf8_encode
-               */
-                $html .= mb_convert_encoding($this->xpath->document->saveHTML($node), "UTF-8", mb_detect_encoding($this->xpath->document->saveHTML($node)));
-                /*
-                $tmp_doc = new \DOMDocument("1.0", "UTF-8");
-                $tmp_doc->appendChild($tmp_doc->importNode($node, true));
-                $html .= $tmp_doc->saveHTML();
-                */
+                $html .= $this->xpath->document->saveHTML($node);
             }
+            /*
+            foreach ($nodeOrNodeList as $node) {
+                $html .= mb_convert_encoding($this->xpath->document->saveHTML($node), "UTF-8", mb_detect_encoding($this->xpath->document->saveHTML($node)));
+            }
+            */
         } else if ($nodeOrNodeList instanceof \DOMAttr) {
             Logger::debug("nodeHtml is DOMAttr");
             $html .= $nodeOrNodeList->textContent;
@@ -137,6 +129,7 @@ class Block
             $tmp_doc->appendChild($tmp_doc->importNode($nodeOrNodeList, true));
             $html .= $tmp_doc->saveHTML();
         }
+        // $html .= mb_convert_encoding($html, "UTF-8", mb_detect_encoding($html));
         return $html;
     }
 

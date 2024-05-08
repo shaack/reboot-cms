@@ -1,8 +1,8 @@
 <?php return array (
   'root' => 
   array (
-    'pretty_version' => '2.4.1',
-    'version' => '2.4.1.0',
+    'pretty_version' => '2.5.1',
+    'version' => '2.5.1.0',
     'aliases' => 
     array (
     ),
@@ -22,8 +22,8 @@
     ),
     'shaack/reboot-cms' => 
     array (
-      'pretty_version' => '2.4.1',
-      'version' => '2.4.1.0',
+      'pretty_version' => '2.5.1',
+      'version' => '2.5.1.0',
       'aliases' => 
       array (
       ),

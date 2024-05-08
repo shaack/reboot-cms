@@ -25,8 +25,8 @@ class InstalledVersions
 private static $installed = array (
   'root' => 
   array (
-    'pretty_version' => '2.4.1',
-    'version' => '2.4.1.0',
+    'pretty_version' => '2.5.1',
+    'version' => '2.5.1.0',
     'aliases' => 
     array (
     ),
@@ -46,8 +46,8 @@ private static $installed = array (
     ),
     'shaack/reboot-cms' => 
     array (
-      'pretty_version' => '2.4.1',
-      'version' => '2.4.1.0',
+      'pretty_version' => '2.5.1',
+      'version' => '2.5.1.0',
       'aliases' => 
       array (
       ),
