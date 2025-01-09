@@ -17,13 +17,13 @@ $config = $page->getConfig(); // the frontmatter config
     <meta name="author" content="shaack.com">
 
     <title>Reboot CMS</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="./assets/styles/screen.css" rel="stylesheet">
 </head>
-<body>
+<body data-bs-theme="dark">
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
-<nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+<nav class="navbar navbar-expand-md fixed-top bg-dark navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="<?= $site->getWebPath() ?>/"><?php echo $navbarConfig["brand"] ?></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
@@ -44,7 +44,8 @@ $config = $page->getConfig(); // the frontmatter config
                         }
                         ?>
                         <li class="nav-item">
-                            <a class="nav-link <?= $active ? "active" : "" ?>" href="<?= $site->getWebPath() . $path ?>"><?= $label ?></a>
+                            <a class="nav-link <?= $active ? "active" : "" ?>"
+                               href="<?= $site->getWebPath() . $path ?>"><?= $label ?></a>
                         </li>
                         <?php
                     }
@@ -55,10 +56,10 @@ $config = $page->getConfig(); // the frontmatter config
     </div>
 </nav>
 <?php
-    echo $content;
+echo $content;
 ?>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
-        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
 </body>
 </html>

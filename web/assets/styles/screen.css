@@ -8,7 +8,7 @@ body {
 }
 
 pre {
-    background-color: #f8f9fa;
+    background-color: var(--bs-gray-800);
     padding: 1rem;
 }
 
