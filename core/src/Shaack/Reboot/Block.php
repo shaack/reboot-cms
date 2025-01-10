@@ -48,12 +48,11 @@ class Block
     /**
      * @return string
      */
-    public function render(): string
+    public function render(Request $request): string
     {
-        Logger::debug("");
         Logger::debug("Rendering Block " . $this->name);
-        Logger::debug($this->xpath->document->saveHTML());
-        return renderBlock($this->site, $this);
+        // Logger::debug($this->xpath->document->saveHTML());
+        return renderBlock($this->site, $this, $request);
     }
 
     /**
@@ -151,7 +150,7 @@ class Block
     }
 }
 
-function renderBlock(Site $site, Block $block): string
+function renderBlock(Site $site, Block $block, Request $request): string
 {
     $blockName = HttpUtils::sanitizeFileName($block->getName());
     ob_start();

@@ -48,7 +48,7 @@ class Page
         if (!array_key_exists("extension", $pathInfo)) {
             if (file_exists($requestedFsPath . ".md")) {
                 Logger::info("Markdown page: " . $path);
-                return $this->renderMarkdown($requestedFsPath . ".md");
+                return $this->renderMarkdown($requestedFsPath . ".md", $request);
             } else if (file_exists($requestedFsPath . ".php")) {
                 Logger::info("PHP page: " . $path);
                 return $this->renderPHP($requestedFsPath . ".php", $request);
@@ -79,7 +79,7 @@ class Page
      * @param string $pagePath
      * @return string
      */
-    private function renderMarkdown(string $pagePath): string
+    private function renderMarkdown(string $pagePath, Request $request): string
     {
         $content = trim(file_get_contents($pagePath));
         if (!$content) {
@@ -143,7 +143,7 @@ class Page
         // render blocks
         $html = "";
         foreach ($blocks as $block) {
-            $html .= $block->render();
+            $html .= $block->render($request);
         }
 
         return $html;
