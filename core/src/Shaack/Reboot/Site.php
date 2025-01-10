@@ -93,7 +93,6 @@ class Site
     {
         return $this->addOns[$addOnName];
     }
-
 }
 
 /** @noinspection PhpUnusedParameterInspection */
