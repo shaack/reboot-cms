@@ -24,25 +24,10 @@ The main idea is to have a **minimal CMS** without needing a database, but with 
 The gray block above is a "hero" block. This one is a "text-image" block. You can define multiple blocks as you need.
 [Reboot CMS documentation](documentation)
 
+Shipped with this CMS are some default block types, but it is easy to create your own, if you know some PHP.
+
 ---
 ![alt text](media/dummy.svg "Title Text")
-
-<!--
-text-image:
-    image-position: left
--->
-
-## Configure blocks in the block comment
-
-The `text-image` block can also display the image to the left.
-
-```
-text-image:
-    image-position: left
-```
-
----
-![alt text](media/dummy.svg "Title Text")>
 
 <!-- three-columns -->
 
@@ -64,6 +49,23 @@ aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pa
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
 aliqua.
+
+<!--
+text-image:
+    image-position: left
+-->
+
+## Configure blocks in the block comment
+
+The `text-image` block can also display the image to the left.
+
+```
+text-image:
+    image-position: left
+```
+
+---
+![alt text](media/dummy.svg "Title Text")>
 
 <!-- cards -->
 
