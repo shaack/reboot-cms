@@ -42,8 +42,8 @@ class AddOn
     }
 
     /**
-     * Called after the page is rendered. Use it to modify content after rendering. Returns the
-     * modified content of the page.
+     * Called after the page is rendered before displaying it. Use it to modify content after rendering.
+     * Returns the modified content of the page.
      */
     public function postRender(Request $request, string $content): string
     {

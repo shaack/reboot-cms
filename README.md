@@ -206,6 +206,39 @@ defined.
 
 ### Edit the site configuration
 
-In the site configuration, you can store global values of the site, like the navigation structure or the content of header elements. The site configuration is written in YAML.
+In the site configuration, you can store global values of the site, like the navigation structure or the content of
+header elements. The site configuration is written in YAML.
 
 ![Edit a markdown page](https://shaack.com/projekte/assets/img/reboot-cms-admin-site-configration.png)
+
+## AddOns
+
+You can extend the functionality of your site with AddOns in reboot-cms.
+
+AddOns are classes which extend the class [AddOn](core/src/Shaack/Reboot/AddOn.php).
+
+Add an AddOn to your site in the sites config.yml:
+
+```yml
+addons: [ Authentication, AnotherAddOn ]
+```
+
+See also the AddOn [Authentication.php](core/admin/addons/Authentication.php) which is used from the Admin-Backend
+([Admin.php](core/admin/addons/Admin.php) is also an AddOn).
+
+In your AddOn you can overwrite the functions `init()`, `preRender(Request $request)` or/and
+`postRender(Request $request, string $content)`.
+
+### `init(): void`
+
+Called after construction of the AddOn. Use this to initialize data and read configurations.
+
+### `preRender(Request $request): bool`
+
+Called on every request before rendering the page. Return `true`, if you want to render the page or false if you do a
+redirect or deny access.
+
+### `postRender(Request $request, string $content): string`
+
+Called after the page is rendered before displaying it. Use it to modify content after rendering.
+Returns the modified content of the page.
