@@ -8,7 +8,7 @@
 /**  @var \Shaack\Reboot\Block $block */
 ?>
 <section class="block block-three-columns">
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-md-4">
                 <?= $block->nodeHtml($block->xpath("/*[part(1)]")) ?>

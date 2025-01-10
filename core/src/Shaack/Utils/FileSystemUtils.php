@@ -1,14 +1,19 @@
 <?php
+/**
+ * Author and copyright: Stefan Haack (https://shaack.com)
+ * Repository: https://github.com/shaack/reboot-cms
+ * License: MIT, see file 'LICENSE'
+ */
 
 namespace Shaack\Utils;
 
-class FileSystem
+class FileSystemUtils
 {
     static function getFileList($dir, $recurse = false, $depth = false): array
     {
         $directoryStructure = [];
 
-        if (substr($dir, -1) !== "/") {
+        if (!str_ends_with($dir, "/")) {
             $dir .= "/";
         }
 

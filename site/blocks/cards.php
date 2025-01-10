@@ -11,7 +11,7 @@
 ?>
 
 <section class="block block-cards">
-    <div class="container">
+    <div class="container-fluid">
         <h2><?= $block->nodeHtml($block->xpath("//h2")) ?></h2>
         <div class="card-group">
         <?php

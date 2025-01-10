@@ -12,10 +12,10 @@
  */
 ?>
 <section class="block">
-    <div class="container">
+    <div class="container-fluid">
         <div class="card border-0 bg-gradient">
             <div class="card-body">
-                <div class="p-5">
+                <div class="p-xl-5 p-md-4 p-3">
                     <!-- use the text of the <h1> in part 1 for the display-4 -->
                     <h1 class="display-4"><?= $block->nodeHtml($block->xpath("/h1[part(1)]/text()")) ?></h1>
                     <!-- the lead will be the text of the <p> in part 1 -->

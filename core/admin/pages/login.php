@@ -1,6 +1,6 @@
 <?php
 
-use Shaack\Utils\Logger;
+use Shaack\Logger;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */

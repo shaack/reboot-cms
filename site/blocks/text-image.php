@@ -15,7 +15,7 @@
 $imagePosition = @$block->getConfig()["image-position"];
 ?>
 <section class="block block-text-image">
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-md-7 <?= $imagePosition === "left" ? "order-md-1" : "" ?>">
                 <!-- all text from part 1 (xpath statement) -->

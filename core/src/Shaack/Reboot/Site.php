@@ -3,7 +3,7 @@
 
 namespace Shaack\Reboot;
 
-use Shaack\Utils\Logger;
+use Shaack\Logger;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -57,7 +57,7 @@ class Site
             }
         }
         $page = new Page($this->reboot, $this);
-        $content = renderTemplate($this, $page, $request);
+        $content = renderPage($this, $page, $request, $templateName);
         foreach ($this->addOns as $addOn) {
             $content = $addOn->postRender($request, $content);
         }
@@ -96,11 +96,15 @@ class Site
 }
 
 /** @noinspection PhpUnusedParameterInspection */
-function renderTemplate(Site $site, Page $page, Request $request)
+function renderPage(Site $site, Page $page, Request $request): string
 {
+    $templateName = "template";
+    if($page->getConfig()["template"]) {
+        $templateName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $page->getConfig()["template"]);
+    }
     ob_start();
     /** @noinspection PhpIncludeInspection */
-    include $site->getFsPath() . '/template.php';
+    include $site->getFsPath() . '/' . $templateName . '.php';
     $contents = ob_get_contents();
     ob_end_clean();
     return $contents;

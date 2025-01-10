@@ -5,17 +5,19 @@
  * License: MIT, see file 'LICENSE'
  */
 
-namespace Shaack\Utils;
+namespace Shaack;
 
 class Logger
 {
     private static $level = 1; // 0 = debug, 1 = info, 2 = error
 
-    static function setLevel($level) {
+    static function setLevel($level)
+    {
         self::$level = $level;
     }
 
-    static function getLevel() {
+    static function getLevel()
+    {
         return self::$level;
     }
 
@@ -33,16 +35,24 @@ class Logger
             }
         }
     }
-    static function debug($message) {
+
+    static function debug($message)
+    {
         self::log("DEBUG: " . $message, 0);
     }
-    static function info($message) {
+
+    static function info($message)
+    {
         self::log("INFO:  " . $message, 1);
     }
-    static function error($message) {
+
+    static function error($message)
+    {
         self::log("ERROR: " . $message, 2);
     }
-    static function tmp($message) {
+
+    static function tmp($message)
+    {
         self::log("TMP:   " . $message, 3);
     }
 }

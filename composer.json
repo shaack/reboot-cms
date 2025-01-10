@@ -1,6 +1,6 @@
 {
   "name": "shaack/reboot-cms",
-  "version": "2.6.2",
+  "version": "2.7.0",
   "authors": [
     {
       "name": "shaack",
@@ -27,5 +27,11 @@
       "": "core/src/"
     }
   },
-  "keywords": ["cms", "flat file","php", "bootstrap", "markdown"]
+  "keywords": [
+    "cms",
+    "flat file",
+    "php",
+    "bootstrap",
+    "markdown"
+  ]
 }

@@ -7,8 +7,7 @@
 
 namespace Shaack\Reboot;
 
-use Exception;
-use Shaack\Utils\Logger;
+use Shaack\Logger;
 use Symfony\Component\Yaml\Yaml;
 
 class Reboot

@@ -2,8 +2,8 @@
 
 namespace Shaack\Reboot;
 
-use Shaack\Utils\Htpasswd;
-use Shaack\Utils\Logger;
+use Shaack\Htpasswd;
+use Shaack\Logger;
 
 class Authentication extends AddOn
 {

@@ -8,7 +8,7 @@
 /**  @var \Shaack\Reboot\Block $block */
 ?>
 <section class="block block-text">
-    <div class="container">
+    <div class="container-fluid">
         <?= $block->content() ?>
     </div>
 </section>

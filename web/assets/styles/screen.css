@@ -12,6 +12,15 @@ pre {
     padding: 1rem;
 }
 
+.navbar-brand {
+    font-size: 2rem;
+}
+
 body img {
     max-width: 100%;
+}
+
+main {
+    max-width: 1400px;
+    margin: 0 auto;
 }

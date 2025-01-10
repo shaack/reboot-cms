@@ -5,7 +5,7 @@
  * License: MIT, see file 'LICENSE'
  */
 
-namespace Shaack\Utils;
+namespace Shaack;
 
 use WhiteHat101\Crypt\APR1_MD5;
 
@@ -34,7 +34,7 @@ class Htpasswd
             if (strpos($line, "#") === false) {
                 $exploded = explode(":", $line);
                 $username = trim($exploded[0]);
-                if($username) {
+                if ($username) {
                     $apr1Password = trim($exploded[1]);
                     if ($apr1Password) {
                         $this->htpasswdUsers[$username] = $apr1Password;
@@ -54,7 +54,7 @@ class Htpasswd
     function validate($username, $password)
     {
         foreach ($this->htpasswdUsers as $user => $passwordApr1) {
-            if($user === $username) {
+            if ($user === $username) {
                 return APR1_MD5::check($password, $passwordApr1);
             }
         }

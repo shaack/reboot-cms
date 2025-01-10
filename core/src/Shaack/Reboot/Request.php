@@ -2,7 +2,7 @@
 
 namespace Shaack\Reboot;
 
-use Shaack\Utils\Logger;
+use Shaack\Logger;
 
 class Request
 {
@@ -16,13 +16,13 @@ class Request
         $this->path = rtrim($parsed["path"], "/");
         if (substr($this->path, 0, strlen($baseWebPath)) == $baseWebPath) {
             $this->path = substr($this->path, strlen($baseWebPath));
-            if(!$this->path) {
+            if (!$this->path) {
                 $this->path = "/";
             }
         }
         $this->paramsPost = $post;
         // remove site webPath from request path
-        if($site->getWebPath()) {
+        if ($site->getWebPath()) {
             if (substr($this->path, 0, strlen($site->getWebPath())) == $site->getWebPath()) {
                 $this->path = substr($this->path, strlen($site->getWebPath()));
             }

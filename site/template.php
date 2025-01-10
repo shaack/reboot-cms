@@ -25,7 +25,7 @@ $config = $page->getConfig(); // the frontmatter config
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
 <nav class="navbar navbar-expand-md fixed-top bg-dark navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="<?= $site->getWebPath() ?>/"><?php echo $navbarConfig["brand"] ?></a>
+        <a class="navbar-brand me-5" href="<?= $site->getWebPath() ?>/"><?php echo $navbarConfig["brand"] ?></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -55,9 +55,11 @@ $config = $page->getConfig(); // the frontmatter config
         </div>
     </div>
 </nav>
+<main>
 <?php
 echo $content;
 ?>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
