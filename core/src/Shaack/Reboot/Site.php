@@ -104,7 +104,6 @@ function renderPage(Site $site, Page $page, Request $request): string
     }
     $templateName = HttpUtils::sanitizeFileName($templateName);
     ob_start();
-    /** @noinspection PhpIncludeInspection */
     include $site->getFsPath() . '/' . $templateName . '.php';
     $contents = ob_get_contents();
     ob_end_clean();

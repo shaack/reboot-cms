@@ -8,6 +8,7 @@
 namespace Shaack\Reboot;
 
 use Shaack\Logger;
+use Shaack\Utils\HttpUtils;
 
 class Block
 {
@@ -152,8 +153,9 @@ class Block
 
 function renderBlock(Site $site, Block $block)
 {
+    $blockName = HttpUtils::sanitizeFileName($block->getName());
     ob_start();
-    $blockFilePath = $site->getFsPath() . '/blocks/' . $block->getName() . ".php";
+    $blockFilePath = $site->getFsPath() . '/blocks/' . $blockName . ".php";
     if (!file_exists($blockFilePath)) {
         Logger::error("Block not found at: " . $blockFilePath);
         return "<div class='w-100 p-3 border-1 border-top border-bottom text-danger text-center'>Block not found: \"" . $block->getName() . "\"</div>";
