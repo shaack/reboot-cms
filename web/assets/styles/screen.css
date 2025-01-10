@@ -12,8 +12,20 @@ pre {
     padding: 1rem;
 }
 
+nav.navbar .container-fluid {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+nav.navbar.bg-dark {
+    background-color: rgba(20, 20, 20, 0.95) !important;
+    font-size: 1.1rem;
+}
+
 .navbar-brand {
     font-size: 2rem;
+    line-height: 1;
+    font-family: "Verdana", Courier, monospace;
+    padding: 0.6rem 0;
 }
 
 body img {

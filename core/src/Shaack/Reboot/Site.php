@@ -98,13 +98,8 @@ class Site
 /** @noinspection PhpUnusedParameterInspection */
 function renderPage(Site $site, Page $page, Request $request): string
 {
-    $templateName = "template";
-    if(@$page->getConfig()["template"]) {
-        $templateName = $page->getConfig()["template"];
-    }
-    $templateName = HttpUtils::sanitizeFileName($templateName);
     ob_start();
-    include $site->getFsPath() . '/' . $templateName . '.php';
+    include $site->getFsPath() . '/template.php'; // The name is hardcoded for now. Maybe configurable in the future.
     $contents = ob_get_contents();
     ob_end_clean();
     return $contents;
