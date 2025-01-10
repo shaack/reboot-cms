@@ -5,7 +5,7 @@
 /** @var Shaack\Reboot\Request $request */
 
 $content = $page->render($request);
-$config = $page->getConfig(); // the frontmatter config
+$pageConfig = $page->getConfig(); // the frontmatter config
 ?>
 <!doctype html>
 <html lang="en">
@@ -40,7 +40,7 @@ $config = $page->getConfig(); // the frontmatter config
                         if ($path === "/") {
                             $active = $request->getPath() === $path;
                         } else {
-                            $active = substr($request->getPath(), 0, strlen($path)) === $path;
+                            $active = str_starts_with($request->getPath(), $path);
                         }
                         ?>
                         <li class="nav-item">
