@@ -151,7 +151,7 @@ class Block
     }
 }
 
-function renderBlock(Site $site, Block $block)
+function renderBlock(Site $site, Block $block): string
 {
     $blockName = HttpUtils::sanitizeFileName($block->getName());
     ob_start();
