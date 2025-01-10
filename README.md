@@ -112,7 +112,7 @@ aliqua.
 
 This `Page` contains 3 `Block` types, "jumbotron", "text-image" and "three-columns". It will render to this:
 
-![A rendered page](https://shaack.com/projekte/assets/img/reboot-cms-index.png)
+![A rendered page](https://shaack.com/projekte/assets/img/reboot-cms-index-2_8.png)
 
 Blocks can be configured in the block comment. With this configuration, the `text-image`
 block allows to display the image to the left side in desktop view.
