@@ -1,10 +1,8 @@
 <?php
 
-namespace addons;
+namespace Shaack\Reboot;
 
 use Shaack\Logger;
-use Shaack\Reboot\AddOn;
-use Shaack\Reboot\Request;
 
 class ExampleAddOn extends AddOn
 {

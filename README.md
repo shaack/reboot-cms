@@ -53,7 +53,7 @@ author: Stefan Haack (shaack.com)
 
 ---
 
-<!-- jumbotron -->
+<!-- hero -->
 
 # Reboot CMS
 
@@ -69,7 +69,7 @@ The main idea is, to have a **minimal CMS** without needing a database, but with
 
 ## The text-image block
 
-The gray block above was a jumbotron block. This one is a text-image block, it contains two parts. Parts are separated
+The gray block above was a hero block. This one is a text-image block, it contains two parts. Parts are separated
 by `---`.
 
 ---
@@ -155,10 +155,10 @@ $imagePosition = @$block->getConfig()["image-position"];
 Elements in the markdown are queried and used as values for the block. The query syntax
 is [Xpath](https://devhints.io/xpath) with the addition of the `part(n)` function.
 
-Another example, the "jumbotron" `Block`:
+Another example, the "hero" `Block`:
 
 ```php
-<?php /* jumbotron */ ?>
+<?php /* hero */ ?>
 <section class="block block-jumbotron">
     <div class="container">
         <div class="jumbotron">

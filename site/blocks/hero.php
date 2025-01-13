@@ -11,7 +11,7 @@
  * https://devhints.io/xpath
  */
 ?>
-<section class="block">
+<section class="block block-hero">
     <div class="container-fluid">
         <div class="card border-0 bg-gradient">
             <div class="card-body">
