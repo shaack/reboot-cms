@@ -1,17 +1,17 @@
 # Reboot CMS
 
-A flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org), [Redaxo](https://redaxo.org/) and
-[Craft CMS](https://craftcms.com/).
+A flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org), [Redaxo](https://redaxo.org/)
+and [Craft CMS](https://craftcms.com/).
 
-Reboot CMS is a minimal CMS without needing a database, but with the support of `Blocks`.
+Reboot CMS is a minimal CMS without a database, but with the support of **blocks** 🚀.
 
 ## Why another CMS?
 
-I developed Reboot CMS because I didn't find a CMS that works with flat markdown files but allows easy use of blocks.
+I developed Reboot CMS because I couldn't find a CMS that works with flat markdown files but allows easy use of blocks.
 
-Reboot CMS is very small and the pages are delivered extremely fast. My homepage [shaack.com](https://shaack.com), which
-was build with Reboot CMS has a
-[PageSpeed Insights performance scoring of 100](https://pagespeed.web.dev/report?url=https%3A%2F%2Fshaack.com%2F).
+Reboot CMS is very small and the pages are delivered extremely fast. My website [shaack.com](https://shaack.com), built
+with Reboot CMS, has
+a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report?url=https%3A%2F%2Fshaack.com%2F).
 
 ## Websites using Reboot CMS
 
@@ -69,8 +69,8 @@ The main idea is, to have a **minimal CMS** without needing a database, but with
 
 ## The text-image block
 
-The gray block above was a hero block. This one is a text-image block, it contains two parts. Parts are separated
-by `---`.
+The gray block above was a hero block. This one is a text-image block, it contains two parts. Parts are separated by
+`---`.
 
 ---
 ![alt text](dummy.svg "Title Text")
@@ -159,21 +159,28 @@ Another example, the "hero" `Block`:
 
 ```php
 <?php /* hero */ ?>
-<section class="block block-jumbotron">
-    <div class="container">
-        <div class="jumbotron">
-            <!-- use the text of the <h1> in part 1 for the display-4 -->
-            <h1 class="display-4"><?= $block->xpath("/h1[part(1)]/text()") ?></h1>
-            <!-- the lead will be the text of the <p> in part 1 -->
-            <p class="lead"><?= $block->xpath("/p[part(1)]/text()") ?></p>
-            <hr class="my-4">
-            <!-- print everything from part 2 -->
-            <?= $block->xpath("/*[part(2)]") ?>
-            <p>
-                <!-- the link in part 3 will be used as the primary button -->
-                <a class="btn btn-primary btn-lg" href="<?= $block->xpath("//a[part(3)]/@href") ?>"
-                   role="button"><?= $block->xpath("//a[part(3)]/text()") ?></a>
-            </p>
+<section class="block block-hero">
+    <div class="container-fluid">
+        <div class="card border-0 bg-gradient">
+            <div class="card-body">
+                <div class="p-xl-5 p-md-4 p-3">
+                    <!-- use the text of the <h1> in part 1 for the display-4 -->
+                    <h1 class="display-4"><?= $block->nodeHtml($block->xpath("/h1[part(1)]/text()")) ?></h1>
+                    <!-- the lead will be the text of the <p> in part 1 -->
+                    <p class="lead"><?= $block->nodeHtml($block->xpath("/p[part(1)]/text()")) ?></p>
+                    <hr class="my-4">
+                    <!-- print everything from part 2 -->
+                    <div class="mb-4">
+                        <?= $block->nodeHtml($block->xpath("/*[part(2)]")) ?>
+                    </div>
+                    <p>
+                        <!-- the link in part 3 will be used as the primary button -->
+                        <a class="btn btn-primary btn-lg"
+                           href="<?= $block->nodeHtml($block->xpath("//a[part(3)]/@href")) ?>"
+                           role="button"><?= $block->nodeHtml($block->xpath("//a[part(3)]/text()")) ?></a>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -213,21 +220,23 @@ header elements. The site configuration is written in YAML.
 
 ## AddOns
 
-You can extend the functionality of your site with AddOns in reboot-cms.
+In Reboot CMS you can extend the functionality of your site with **AddOns**.
 
 AddOns are classes which extend the class [AddOn](core/src/Shaack/Reboot/AddOn.php).
 
-Add an AddOn to your site in the sites config.yml:
+Add AddOns to your site in the `site/config.yml`:
 
 ```yml
-addons: [ Authentication, AnotherAddOn ]
+addons: [ ExampleAddOn, AnotherAddOn ]
 ```
 
-See also the AddOn [Authentication.php](core/admin/addons/Authentication.php) which is used from the Admin-Backend
-([Admin.php](core/admin/addons/Admin.php) is also an AddOn).
+See also the [ExampleAddOn.php](site/addons/ExampleAddOn.php) which is part of the test site.
+
+The admin, which is itself a Reboot CMS site, uses an [AddOn for Authentication](core/admin/addons/Authentication.php)
+to handle the login session.
 
 In your AddOn you can overwrite the functions `init()`, `preRender(Request $request)` or/and
-`postRender(Request $request, string $content)`.
+`postRender(Request $request, string $content)` to modify the behaviour or content of pages.
 
 ### `init(): void`
 
@@ -240,5 +249,5 @@ redirect or deny access.
 
 ### `postRender(Request $request, string $content): string`
 
-Called after the page is rendered before displaying it. Use it to modify content after rendering.
-Returns the modified content of the page.
+Called after the page is rendered before displaying it. Use it to modify content after rendering. Returns the modified
+content of the page.

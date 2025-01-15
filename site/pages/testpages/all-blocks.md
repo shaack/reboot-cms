@@ -4,25 +4,25 @@
 
 These are:
 
-- jumbotron 👍
-- cards 👍
-- text 👍
-- text-image 👍
-- three-columns 👍
+- hero
+- cards
+- text
+- text-image
+- three-columns
 
 I also added some emojis to test for utf-8 support. 😎
 
-<!-- jumbotron -->
+<!-- hero -->
 
-# Jumbotron
+# Hero
 
-A flat file, markdown CMS with blocks 👍
+This is the "hero" block 👍
 
 ---
 The main idea is, to have a **minimal CMS** without needing a database, but with the support of blocks. 👍
 
 ---
-[Learn more](documentation)
+[Action Button](documentation)
 
 <!-- cards -->
 
@@ -40,7 +40,7 @@ aliqua. 🤨
 
 ## The "text-image" block
 
-The gray block above was a jumbotron block. This one is a text-image block. Blocks are defined in PHP, see the
+This one is a text-image block. Blocks are defined in PHP, see the
 [Reboot CMS documentation](documentation)
 
 👍
