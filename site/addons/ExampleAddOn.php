@@ -20,7 +20,7 @@ class ExampleAddOn extends AddOn
     public function postRender(Request $request, string $content): string
     {
         Logger::info("ExampleAddOn postRender(), " . $request->getPath());
-        return parent::postRender($request, $content); // or return the filtered (modified) content
+        return $content . "\n<!-- This line was added by ExampleAddOn -->";
     }
 
 

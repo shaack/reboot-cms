@@ -1,6 +1,6 @@
 # Site configuration, navigation structure
 
-# addons: ["ExampleAddOn"]
+addons: ["ExampleAddOn"]
 navbar:
   brand: Reboot CMS
   structure:
