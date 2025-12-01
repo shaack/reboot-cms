@@ -7,8 +7,8 @@ use Shaack\Logger;
 /** @var Shaack\Reboot\Authentication $authentication */
 $authentication = $site->getAddOn("Authentication");
 
-$username = htmlentities(@$_REQUEST["username"]);
-$password = htmlentities(@$_REQUEST["password"]);
+$username = htmlspecialchars($_REQUEST["username"] ?? "");
+$password = $_REQUEST["password"] ?? "";
 $error = null;
 if ($username) {
     if ($authentication->login($username, $password)) {
