@@ -25,6 +25,14 @@ textarea.cm-md-editor {
   margin-bottom: 1rem;
 }
 
+.col-sidebar {
+  overflow: scroll;
+}
+
+.container-fluid {
+  max-width: 1400px;
+}
+
 .page-tree {
   margin: 0;
   padding-left: 1rem;
@@ -35,6 +43,7 @@ textarea.cm-md-editor {
 .page-tree li {
   list-style: none;
 }
+
 .page-tree-file {
   display: block;
   padding: 2px 8px;
@@ -51,6 +60,7 @@ textarea.cm-md-editor {
   background-color: #007bff;
   color: #fff;
 }
+
 .page-tree-folder {
   display: block;
   padding: 2px 8px;
@@ -62,19 +72,12 @@ textarea.cm-md-editor {
 .page-tree-folder:hover {
   color: var(--bs-body-color);
 }
+
 .folder-icon {
   display: inline-block;
   width: 0.75em;
   font-size: 0.7em;
   text-align: center;
-}
-
-.col-sidebar {
-  overflow: scroll;
-}
-
-.container-fluid {
-  max-width: 1400px;
 }
 
 .EasyMDEContainer .CodeMirror {
