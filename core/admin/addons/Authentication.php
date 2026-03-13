@@ -22,6 +22,13 @@ class Authentication extends AddOn
      */
     public function preRender(Request $request): bool
     {
+        if ($this->htpasswd->isEmpty()) {
+            if ($request->getPath() !== "/setup") {
+                $this->reboot->redirect($this->site->getWebPath() . "/setup");
+                return false;
+            }
+            return true;
+        }
         $user = $this->getUser();
         if (!$user && $request->getPath() !== "/login") {
             Logger::info("No user found, redirect to the login");

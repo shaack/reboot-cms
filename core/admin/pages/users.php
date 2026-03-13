@@ -105,9 +105,9 @@ $users = $htpasswd->getUsers();
         <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
         <input type="hidden" name="action" value="add">
         <input type="text" name="username" class="form-control form-control-sm" style="width: 200px"
-               placeholder="Username" required pattern="[a-zA-Z0-9_]{1,64}">
+               placeholder="Username" required pattern="[a-zA-Z0-9_]{1,64}" autocomplete="off">
         <input type="password" name="password" class="form-control form-control-sm" style="width: 200px"
-               placeholder="Password" required minlength="8">
+               placeholder="Password" required minlength="8" autocomplete="new-password">
         <button class="btn btn-sm btn-primary">Add User</button>
     </form>
 </div>

@@ -24,7 +24,9 @@ class Htpasswd
     public function __construct($filePath)
     {
         $this->filePath = $filePath;
-        $this->parseHtpasswd($filePath);
+        if (file_exists($filePath)) {
+            $this->parseHtpasswd($filePath);
+        }
     }
 
     private function parseHtpasswd($filePath)
@@ -46,6 +48,11 @@ class Htpasswd
             }
         }
         $this->checksum = $checksum;
+    }
+
+    function isEmpty(): bool
+    {
+        return empty($this->htpasswdUsers);
     }
 
     function getChecksum()
