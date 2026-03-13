@@ -269,34 +269,95 @@ header elements. The site configuration is written in YAML.
 
 ## AddOns
 
-In Reboot CMS you can extend the functionality of your site with **AddOns**.
+In Reboot CMS you can extend the functionality of your site with **AddOns**. AddOns allow you to hook into the request
+lifecycle to add authentication, modify rendered content, inject headers, track analytics, or implement any custom logic.
 
-AddOns are classes which extend the class [AddOn](core/src/Shaack/Reboot/AddOn.php).
+### Creating an AddOn
 
-Add AddOns to your site in the `site/config.yml`:
+An AddOn is a PHP class that extends [`AddOn`](core/src/Shaack/Reboot/AddOn.php). Place your AddOn file in
+`site/addons/` with the class name matching the file name.
 
-```yml
-addons: [ ExampleAddOn, AnotherAddOn ]
+```php
+<?php
+// site/addons/MyAddOn.php
+
+namespace Shaack\Reboot;
+
+use Shaack\Logger;
+
+class MyAddOn extends AddOn
+{
+    protected function init()
+    {
+        // Called once when the AddOn is loaded
+        Logger::info("MyAddOn initialized");
+    }
+
+    public function preRender(Request $request): bool
+    {
+        // Called before page rendering
+        // Return true to continue, false to stop (e.g. after a redirect)
+        return true;
+    }
+
+    public function postRender(Request $request, string $content): string
+    {
+        // Called after page rendering, can modify the HTML output
+        return $content;
+    }
+}
 ```
 
-See also the [ExampleAddOn.php](site/addons/ExampleAddOn.php) which is part of the test site.
+### Registering AddOns
 
-The admin, which is itself a Reboot CMS site, uses an [AddOn for Authentication](core/admin/addons/Authentication.php)
-to handle the login session.
+Register your AddOns in `site/config.yml`. They are loaded and executed in the order listed:
 
-In your AddOn you can overwrite the functions `init()`, `preRender(Request $request)` or/and
-`postRender(Request $request, string $content)` to modify the behaviour or content of pages.
+```yml
+addons: [ MyAddOn, AnotherAddOn ]
+```
 
-### `init(): void`
+### Available Properties
 
-Called after construction of the AddOn. Use this to initialize data and read configurations.
+Inside your AddOn, you have access to:
 
-### `preRender(Request $request): bool`
+- `$this->reboot` — the [`Reboot`](core/src/Shaack/Reboot/Reboot.php) instance (base paths, config, redirects)
+- `$this->site` — the [`Site`](core/src/Shaack/Reboot/Site.php) instance (site config, paths, other addons)
 
-Called on every request before rendering the page. Return `true`, if you want to render the page or false if you do a
-redirect or deny access.
+### Lifecycle Hooks
 
-### `postRender(Request $request, string $content): string`
+#### `init(): void`
 
-Called after the page is rendered before displaying it. Use it to modify content after rendering. Returns the modified
-content of the page.
+Called once after construction of the AddOn. Use this to initialize data, read configurations, or start sessions.
+
+#### `preRender(Request $request): bool`
+
+Called on every request before rendering the page. Use it to:
+
+- **Control access** — check authentication and redirect unauthorized users
+- **Modify request handling** — perform redirects based on request path or parameters
+
+Return `true` to continue rendering the page, or `false` to stop (e.g. after calling `$this->reboot->redirect()`).
+
+#### `postRender(Request $request, string $content): string`
+
+Called after the page is rendered, before the output is sent to the browser. Use it to:
+
+- **Modify HTML output** — inject scripts, stylesheets, or meta tags
+- **Add tracking** — append analytics snippets
+- **Transform content** — search and replace patterns in the rendered HTML
+
+Returns the (possibly modified) content string.
+
+### Accessing AddOns from Pages
+
+You can access a registered AddOn from any page template using:
+
+```php
+$myAddOn = $site->getAddOn("MyAddOn");
+```
+
+### Examples
+
+See the included [ExampleAddOn.php](site/addons/ExampleAddOn.php) for a basic implementation. The admin interface
+itself uses AddOns: [Authentication](core/admin/addons/Authentication.php) for login session handling and
+[Admin](core/admin/addons/Admin.php) for admin-specific functionality.
