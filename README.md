@@ -32,9 +32,38 @@ a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report
 
 Download the [Reboot CMS repository](https://github.com/shaack/reboot-cms) and install it in your web root.
 
+Then install dependencies:
+
+```bash
+composer install
+```
+
 This should work out of the box.
 
 Then (**important**), **set the Admin password in `/local/.htpasswd`**
+
+## Directory Structure
+
+- `core/src/` — Core CMS classes (Reboot, Site, Page, Block, Request, AddOn)
+- `site/` — Site content: `pages/`, `blocks/`, `addons/`, `template.php`, `config.yml`
+- `web/` — Document root (`index.php`, `.htaccess`)
+- `local/` — Local environment config (`config.yml`, `.htpasswd`) — not in git
+- `core/admin/` — Admin interface (itself a Reboot CMS site)
+
+## Configuration
+
+- `site/config.yml` — Site-wide settings: addon registration, navbar with `brand` and `structure`
+- `local/config.yml` — Local settings: `logLevel` (0=debug, 1=info, 2=error)
+
+## Template
+
+The file `site/template.php` is the main HTML template. It receives three variables:
+
+- `$site` — the `Site` object
+- `$page` — the `Page` object
+- `$request` — the `Request` object
+
+Call `$page->render($request)` to render the page content and `$page->getConfig()` to access the YAML front matter.
 
 ## Documentation
 
@@ -50,6 +79,7 @@ Pages are auto-routed on web-requests:
 - `NAME.md` or `NAME.php` will be shown on requesting `/NAME`
 - `FOLDER/index.md` (or .php) will be shown on requesting `/FOLDER`
 - `FOLDER/NAME.md` (or .php) will be shown on requesting `/FOLDER/NAME`
+- `404.md` (or .php) will be used as a custom 404 error page
 
 Example for a Markdown `Page` with `Blocks`:
 
@@ -143,17 +173,17 @@ The code for the "text-image" `Block` which was used in the page above, looks li
 $imagePosition = @$block->getConfig()["image-position"];
 ?>
 <section class="block block-text-image">
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-7 <?= $imagePosition === "left" ? "order-md-1" : "" ?>">
+            <div class="col-md-6 <?= $imagePosition === "left" ? "order-md-1" : "" ?>">
                 <!-- all text from part 1 (xpath statement) -->
-                <?= $block->xpath("/*[part(1)]") ?>
+                <?= $block->nodeHtml($block->xpath("/*[part(1)]")) ?>
             </div>
-            <div class="col-md-5">
+            <div class="col-md-6">
                 <!-- using attributes of the image in part 2 -->
-                <img class="img-fluid" src="/media/<?= $block->xpath("//img[part(2)]/@src") ?>"
-                     alt="<?= $block->xpath("//img[part(2)]/@alt") ?>"
-                     title="<?= $block->xpath("//img[part(2)]/@title") ?>"/>
+                <img class="img-fluid" src="<?= $block->nodeHtml($block->xpath("//img[part(2)]/@src")) ?>"
+                     alt="<?= $block->nodeHtml($block->xpath("//img[part(2)]/@alt")) ?>"
+                     title="<?= $block->nodeHtml($block->xpath("//img[part(2)]/@title")) ?>"/>
             </div>
         </div>
     </div>
@@ -162,6 +192,17 @@ $imagePosition = @$block->getConfig()["image-position"];
 
 Elements in the markdown are queried and used as values for the block. The query syntax
 is [Xpath](https://devhints.io/xpath) with the addition of the `part(n)` function.
+
+Use `$block->content()` to get the full block content as rendered HTML (without XPath querying).
+This is useful for simple blocks like "text":
+
+```php
+<section class="block block-text">
+    <div class="container-fluid">
+        <?= $block->content() ?>
+    </div>
+</section>
+```
 
 Another example, the "hero" `Block`:
 
