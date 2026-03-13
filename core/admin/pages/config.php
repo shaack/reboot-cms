@@ -57,11 +57,11 @@ try {
             </p>
         <?php } ?>
         <?php if ($configSaveError) { ?>
-            <p class="text-danger">
-                Configuration not saved: <?= htmlspecialchars($configSaveError) ?>
-            </p>
+            <script>statusMessage("Configuration not saved: <?= htmlspecialchars($configSaveError, ENT_QUOTES) ?>", "text-bg-danger")</script>
         <?php } ?>
         <button class="btn btn-primary">Save</button>
-        <?= $configuration !== null ? "<span class='ms-2 text-info fade-out'>Configuration saved…</span>" : "" ?>
+        <?php if ($configuration !== null && !$configSaveError) { ?>
+            <script>statusMessage("Configuration saved")</script>
+        <?php } ?>
     </form>
 </div>

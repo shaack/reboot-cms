@@ -17,6 +17,12 @@ $authentication = $site->getAddOn("Authentication");
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/screen.css" rel="stylesheet">
     <script src="node_modules/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
+    <script>
+        window._toastQueue = []
+        function statusMessage(body, toastClass) {
+            window._toastQueue.push({body: body, toastClass: toastClass || "text-bg-success"})
+        }
+    </script>
 </head>
 <body>
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
@@ -64,6 +70,10 @@ echo($page->render($request));
 ?>
 <!-- <script src="node_modules/jquery/jquery.min.js"></script> -->
 <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="node_modules/bootstrap-show-toast/src/bootstrap-show-toast.js"></script>
+<script>
+    window._toastQueue.forEach(function(t) { bootstrap.showToast(t) })
+</script>
 <script type="module">
     import {MdEditor} from "./node_modules/cm-md-editor/src/MdEditor.js"
     document.querySelectorAll("textarea.markdown").forEach(editor => {

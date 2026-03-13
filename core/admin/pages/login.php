@@ -27,9 +27,7 @@ if ($username) {
     <div class="card mx-auto" style="max-width: 32rem; margin-top: 200px;">
         <div class="card-body">
             <?php if ($error) { ?>
-                <div class="alert alert-danger">
-                    <?= $error ?>
-                </div>
+                <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
             <?php } ?>
             <form id="loginForm" class="center-horizontal form-md" method="post">
                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">

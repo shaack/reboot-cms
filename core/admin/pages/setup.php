@@ -47,7 +47,7 @@ if ($username) {
             <h3>Create Admin Account</h3>
             <p class="text-muted">No users found. Create the first admin account to get started.</p>
             <?php if ($error) { ?>
-                <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+                <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
             <?php } ?>
             <form method="post">
                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">

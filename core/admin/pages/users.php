@@ -59,10 +59,10 @@ $users = $htpasswd->getUsers();
     <h1>Users</h1>
 
     <?php if ($error) { ?>
-        <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+        <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>
     <?php if ($success) { ?>
-        <span class="text-info fade-out"><?= htmlspecialchars($success) ?></span>
+        <script>statusMessage("<?= htmlspecialchars($success, ENT_QUOTES) ?>")</script>
     <?php } ?>
 
     <table class="table">

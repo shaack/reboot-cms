@@ -131,7 +131,9 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-outline-secondary ms-2">View Page</a>
-                    <?= $edited !== null ? "<span class='ms-2 text-info fade-out'>Page saved…</span>" : "" ?>
+                    <?php if ($edited !== null) { ?>
+                    <script>statusMessage("Page saved")</script>
+                    <?php } ?>
                 </form>
                 <?php } ?>
             <?php } ?>

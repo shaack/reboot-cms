@@ -31,7 +31,7 @@ if ($action === "update") {
     <h1>Update</h1>
 
     <?php if ($error) { ?>
-        <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+        <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>
     <?php if ($success) { ?>
         <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
