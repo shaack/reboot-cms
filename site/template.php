@@ -8,22 +8,21 @@ $content = $page->render($request);
 $pageConfig = $page->getConfig(); // the frontmatter config
 ?>
 <!doctype html>
-<html lang="<?php echo $page->getConfig()['lang']; ?>">
+<html lang="en">
 <head>
     <base href="<?= $site->getWebPath() ?>/"/>
+    <title><?php echo $page->getConfig()['title']; ?></title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="<?php echo $page->getConfig()['description']; ?>">
     <meta name="author" content="<?php echo $page->getConfig()['author']; ?>">
-
-    <title><?php echo $page->getConfig()['title']; ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="./assets/styles/screen.css" rel="stylesheet">
 </head>
-<body data-bs-theme="<?php echo $page->getConfig()['bootstrap-theme']; ?>">
+<body data-bs-theme="dark">
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
-<nav class="navbar navbar-expand-md fixed-top bg-<?php echo $page->getConfig()['bootstrap-theme']; ?> navbar-<?php echo $page->getConfig()['bootstrap-theme']; ?>">
+<nav class="navbar navbar-expand-md fixed-top bg-dark navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand me-5 text-muted" href="<?= $site->getWebPath() ?>/"><?php echo $navbarConfig["brand"] ?></a>
         <?php if(!@$pageConfig["hide-nav"]) { ?>
