@@ -237,20 +237,12 @@ Another example, the "hero" `Block`:
 
 ## Admin interface
 
-You find the admin interface unter `/admin`. The default login is
+You find the admin interface at `/admin`.
 
-- user: admin
-- pwd: change_me
+If no users exist yet (e.g. on a fresh installation), the admin interface will automatically show a setup page where
+you can create the first admin account. After that, you can log in with the credentials you created.
 
-You can and should change the admin password in `local/.htpasswd` with
-
-```sh 
-cd local
-htpasswd .htpasswd admin
-```
-
-In the admin interface you can edit markdown pages and set the site configuration in which the navigation structure is
-defined.
+In the admin interface you can edit markdown pages, set the site configuration, manage users, and update the CMS.
 
 ### Edit the startpage
 
@@ -266,6 +258,35 @@ In the site configuration, you can store global values of the site, like the nav
 header elements. The site configuration is written in YAML.
 
 ![Edit a markdown page](https://shaack.com/projekte/assets/img/reboot-cms-admin-site-configration.png)
+
+### User management
+
+The "Users" page in the admin interface allows you to manage admin accounts directly from the browser. You can:
+
+- **Add users** — create new admin accounts with a username and password
+- **Change passwords** — update the password for any existing user
+- **Delete users** — remove admin accounts (you cannot delete your own account)
+
+Usernames may contain letters, numbers, and underscores (max 64 characters). Passwords must be at least 8 characters.
+All credentials are stored as APR1-MD5 hashes in `local/.htpasswd`.
+
+You can also manage users via the command line:
+
+```sh
+cd local
+htpasswd .htpasswd admin
+```
+
+### Update
+
+The "Update" page in the admin interface shows the currently installed version and checks for available updates from
+the [GitHub repository](https://github.com/shaack/reboot-cms).
+
+When an update is available, you can apply it directly from the admin interface. The updater downloads the latest
+release and replaces `core/`, `web/admin/`, and `vendor/`. Your site content (`site/`), local configuration (`local/`),
+and entry point (`web/index.php`) are not affected.
+
+It is recommended to make a backup of the project folder before updating.
 
 ## AddOns
 
