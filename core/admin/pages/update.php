@@ -52,7 +52,7 @@ if ($action === "update") {
 
     <?php if ($remoteVersion !== null && $remoteVersion !== $localVersion) { ?>
         <form method="post" action="update"
-              onsubmit="return confirm('Update Reboot CMS to version <?= htmlspecialchars($remoteVersion, ENT_QUOTES) ?>? This will replace core/ and web/admin/.')">
+              onsubmit="return confirm('Update Reboot CMS to version <?= htmlspecialchars($remoteVersion, ENT_QUOTES) ?>? This will replace core/, web/admin/ and vendor/.')">
             <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
             <input type="hidden" name="action" value="update">
             <button class="btn btn-primary">Update to <?= htmlspecialchars($remoteVersion) ?></button>
