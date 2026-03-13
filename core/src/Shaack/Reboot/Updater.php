@@ -104,6 +104,15 @@ class Updater
                 self::copyDirectory($sourceAdmin, $targetAdmin);
             }
 
+            // Replace vendor/
+            $sourceVendor = $sourceDir . "/vendor";
+            $targetVendor = $this->baseFsPath . "/vendor";
+            if (is_dir($sourceVendor)) {
+                Logger::info("Updater: replacing vendor/");
+                self::deleteDirectory($targetVendor);
+                self::copyDirectory($sourceVendor, $targetVendor);
+            }
+
             // Update composer.json version
             $sourceComposer = $sourceDir . "/composer.json";
             if (file_exists($sourceComposer)) {
