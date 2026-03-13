@@ -20,6 +20,14 @@ a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report
 - [wukies.de](https://wukies.de)
 - [chesscoin032.com](https://chesscoin032.com)
 
+## Minimum System Requirements
+
+- **PHP** 8.0 or higher
+- **PHP Extensions:** json, fileinfo, dom
+- **Web Server:** Apache with mod_rewrite (or compatible server)
+- **Composer** for PHP dependency management
+- **No database required** — all content is stored as flat files
+
 ## Install
 
 Download the [Reboot CMS repository](https://github.com/shaack/reboot-cms) and install it in your web root.
