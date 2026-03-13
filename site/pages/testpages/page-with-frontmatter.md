@@ -1,7 +1,6 @@
 ---
 Author: Stefan Haack
 hide-nav: true
-
 ---
 
 # Page with frontmatter
@@ -14,7 +13,6 @@ It looks like this:
 ---
 Author: Stefan Haack
 hide-nav: true
-
 ---
 ```
 
