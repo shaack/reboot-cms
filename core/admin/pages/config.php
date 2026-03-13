@@ -48,7 +48,7 @@ try {
         <div class="form-group">
             <label for="configFile" class="sr-only">Configuration file</label>
             <textarea name="configuration"
-                      class="form-control simple-edit <?= $configHasErrors ? "border-danger" : "" ?>" id="configFile"
+                      class="mb-3 form-control simple-edit <?= $configHasErrors ? "border-danger" : "" ?>" id="configFile"
                       rows="10"><?= $configFile ?></textarea>
         </div>
         <?php if ($configHasErrors) { ?>
