@@ -104,13 +104,16 @@ class Page
                 $content = substr($content, $end + 3);
             }
         }
-        // remove everything before the first block
-        $offset = strpos($content, "<!--");
+        // replace fenced code blocks with same-length placeholder to preserve offsets
+        $contentForBlockSearch = preg_replace_callback('/```[\s\S]*?```/', function ($m) {
+            return str_repeat(" ", strlen($m[0]));
+        }, $content);
+        $offset = strpos($contentForBlockSearch, "<!--");
         $blocks = array();
         if ($offset !== false) {
             // find blocks
             do {
-                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $content, $matches, 0, $offset);
+                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $contentForBlockSearch, $matches, 0, $offset);
                 if ($matches) {
                     $offset += strlen($matches[0]) - 4;
                     try {
