@@ -14,6 +14,7 @@ $authentication = $site->getAddOn("Authentication");
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>Reboot CMS / Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gelasio:wght@700&display=swap" rel="stylesheet">
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/screen.css" rel="stylesheet">
     <script src="node_modules/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
@@ -56,7 +57,7 @@ $authentication = $site->getAddOn("Authentication");
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <!--suppress HtmlUnknownTarget -->
-                        <a href="logout" class="btn btn-outline-secondary mt-1 mt-md-0 mb-2 mb-md-0">
+                        <a href="logout" class="btn btn-outline-secondary btn-sm mt-1 mt-md-0 mb-2 mb-md-0">
                             Logout
                         </a>
                     </li>

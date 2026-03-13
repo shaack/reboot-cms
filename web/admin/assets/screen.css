@@ -33,6 +33,10 @@ textarea.cm-md-editor {
   max-width: 1400px;
 }
 
+.navbar-brand {
+  font-family: "Gelasio", serif;
+}
+
 .page-tree {
   margin: 0;
   padding-left: 1rem;
