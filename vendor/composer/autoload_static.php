@@ -11,11 +11,11 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
     );
 
     public static $prefixLengthsPsr4 = array (
-        'W' => 
+        'W' =>
         array (
             'WhiteHat101\\Crypt\\' => 18,
         ),
-        'S' => 
+        'S' =>
         array (
             'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Component\\Yaml\\' => 23,
@@ -23,15 +23,15 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
     );
 
     public static $prefixDirsPsr4 = array (
-        'WhiteHat101\\Crypt\\' => 
+        'WhiteHat101\\Crypt\\' =>
         array (
             0 => __DIR__ . '/..' . '/whitehat101/apr1-md5/src',
         ),
-        'Symfony\\Polyfill\\Ctype\\' => 
+        'Symfony\\Polyfill\\Ctype\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
         ),
-        'Symfony\\Component\\Yaml\\' => 
+        'Symfony\\Component\\Yaml\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/yaml',
         ),
@@ -42,9 +42,9 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
     );
 
     public static $prefixesPsr0 = array (
-        'P' => 
+        'P' =>
         array (
-            'Parsedown' => 
+            'Parsedown' =>
             array (
                 0 => __DIR__ . '/..' . '/erusev/parsedown',
             ),
