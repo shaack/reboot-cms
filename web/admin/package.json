@@ -10,8 +10,8 @@
   "author": "shaack.com",
   "license": "UNLICENSED",
   "dependencies": {
-    "bootstrap": "^5.3.3",
-    "bootstrap-auto-dark-mode": "^1.1.0",
-    "cm-md-editor": "^2.2.0"
+    "bootstrap": "^5.3.8",
+    "bootstrap-auto-dark-mode": "^1.1.1",
+    "cm-md-editor": "^2.2.1"
   }
 }

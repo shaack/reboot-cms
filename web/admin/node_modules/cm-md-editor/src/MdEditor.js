@@ -341,7 +341,7 @@ export class MdEditor {
     getCurrentLineInfo() {
         const start = this.element.selectionStart
         const text = this.element.value
-        const lineStart = text.lastIndexOf('\n', start - 1) + 1
+        const lineStart = start === 0 ? 0 : text.lastIndexOf('\n', start - 1) + 1
         let lineEnd = text.indexOf('\n', start)
         if (lineEnd === -1) lineEnd = text.length
         const line = text.substring(lineStart, lineEnd)
@@ -354,6 +354,7 @@ export class MdEditor {
     }
 
     toggleHeading(level) {
+        this.element.focus()
         const {lineStart, lineEnd, line} = this.getCurrentLineInfo()
         const prefix = '#'.repeat(level) + ' '
         const headingMatch = line.match(/^(#{1,6}) /)
