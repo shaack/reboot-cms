@@ -6,3 +6,4 @@ navbar:
   structure:
     Edit Pages: /pages
     Site Configuration: /config
+    Users: /users

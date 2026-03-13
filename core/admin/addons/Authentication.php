@@ -71,4 +71,14 @@ class Authentication extends AddOn
     {
         return @$_SESSION['user'];
     }
+
+    public function getHtpasswd(): Htpasswd
+    {
+        return $this->htpasswd;
+    }
+
+    public function refreshChecksum(): void
+    {
+        $_SESSION['checksum'] = $this->getChecksum();
+    }
 }

@@ -19,9 +19,11 @@ class Htpasswd
 {
     private $htpasswdUsers = array();
     private $checksum;
+    private $filePath;
 
     public function __construct($filePath)
     {
+        $this->filePath = $filePath;
         $this->parseHtpasswd($filePath);
     }
 
@@ -59,5 +61,50 @@ class Htpasswd
             }
         }
         return false;
+    }
+
+    function getUsers(): array
+    {
+        return array_keys($this->htpasswdUsers);
+    }
+
+    function addUser(string $username, string $password): void
+    {
+        if (isset($this->htpasswdUsers[$username])) {
+            throw new \InvalidArgumentException("User '$username' already exists");
+        }
+        $this->htpasswdUsers[$username] = APR1_MD5::hash($password);
+        $this->save();
+    }
+
+    function changePassword(string $username, string $password): void
+    {
+        if (!isset($this->htpasswdUsers[$username])) {
+            throw new \InvalidArgumentException("User '$username' does not exist");
+        }
+        $this->htpasswdUsers[$username] = APR1_MD5::hash($password);
+        $this->save();
+    }
+
+    function deleteUser(string $username): void
+    {
+        if (!isset($this->htpasswdUsers[$username])) {
+            throw new \InvalidArgumentException("User '$username' does not exist");
+        }
+        unset($this->htpasswdUsers[$username]);
+        $this->save();
+    }
+
+    private function save(): void
+    {
+        $lines = [];
+        $checksum = "";
+        foreach ($this->htpasswdUsers as $username => $hash) {
+            $line = "$username:$hash";
+            $lines[] = $line;
+            $checksum = md5($checksum . $line);
+        }
+        file_put_contents($this->filePath, implode("\n", $lines) . "\n");
+        $this->checksum = $checksum;
     }
 }
