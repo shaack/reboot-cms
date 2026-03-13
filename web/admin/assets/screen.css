@@ -35,6 +35,9 @@ textarea.cm-md-editor {
 
 .navbar-brand {
   font-family: "Gelasio", serif;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  opacity: 0.8;
 }
 
 .page-tree {
