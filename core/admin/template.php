@@ -16,7 +16,6 @@ $authentication = $site->getAddOn("Authentication");
     <meta name="author" content="">
 
     <title>Reboot CMS / Admin</title>
-    <link href="node_modules/easymde/dist/easymde.min.css" rel="stylesheet">
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/screen.css" rel="stylesheet">
     <script src="node_modules/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
@@ -67,12 +66,11 @@ echo($page->render($request));
 ?>
 <!-- <script src="node_modules/jquery/jquery.min.js"></script> -->
 <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="node_modules/easymde/dist/easymde.min.js"></script>
-<script>
-    let editors = document.querySelectorAll("textarea.markdown")
-    for (const editor of editors) {
-        editor.mde = new EasyMDE({element: editor, promptURLs: true, spellChecker: false})
-    }
+<script type="module">
+    import {MdEditor} from "./node_modules/cm-md-editor/src/MdEditor.js"
+    document.querySelectorAll("textarea.markdown").forEach(editor => {
+        new MdEditor(editor)
+    })
 </script>
 </body>
 </html>

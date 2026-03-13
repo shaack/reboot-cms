@@ -13,7 +13,6 @@ body {
 }
 
 pre {
-    // background-color: #f4f4f4;
     padding: 1rem;
 }
 
@@ -28,12 +27,9 @@ pre {
     }
 }
 
-textarea.simple-edit {
-    font-family: monospace;
-    min-height: 160px;
-    height: calc(100vh - 270px);
-    white-space: pre;
-    overflow: auto;
+textarea.cm-md-editor {
+    height: calc(100vh - 200px);
+    margin-bottom: 1rem;
 }
 
 .col-sidebar {

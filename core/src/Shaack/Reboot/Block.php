@@ -48,7 +48,7 @@ class Block
     /**
      * @return string
      */
-    public function render(Request $request): string
+    public function render(?Request $request): string
     {
         Logger::debug("Rendering Block " . $this->name);
         // Logger::debug($this->xpath->document->saveHTML());
@@ -150,14 +150,14 @@ class Block
     }
 }
 
-function renderBlock(Site $site, Block $block, Request $request): string
+function renderBlock(Site $site, Block $block, ?Request $request): string
 {
     $blockName = HttpUtils::sanitizeFileName($block->getName());
     ob_start();
     $blockFilePath = $site->getFsPath() . '/blocks/' . $blockName . ".php";
     if (!file_exists($blockFilePath)) {
         Logger::error("Block not found at: " . $blockFilePath);
-        return "<div class='w-100 p-3 border-1 border-top border-bottom text-danger text-center'>Block not found: \"" . $block->getName() . "\"</div>";
+        return "<div class='w-100 p-3 border-1 border-top border-bottom text-danger text-center'>Block not found: \"" . htmlspecialchars($block->getName(), ENT_QUOTES, 'UTF-8') . "\"</div>";
     } else {
         include $blockFilePath;
         $contents = ob_get_contents();

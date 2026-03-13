@@ -1,103 +1,128 @@
 body {
   margin-top: 5rem;
-  margin-bottom: 2rem; }
+  margin-bottom: 2rem;
+}
 
 .block {
-  margin-bottom: 2rem; }
+  margin-bottom: 2rem;
+}
 
 pre {
-  padding: 1rem; }
+  padding: 1rem;
+}
 
 .nav.flex-column.nav-compact .nav-link {
   padding-top: 1px;
-  padding-bottom: 1px; }
-  .nav.flex-column.nav-compact .nav-link.active {
-    background-color: #007bff;
-    color: #fff; }
+  padding-bottom: 1px;
+}
+.nav.flex-column.nav-compact .nav-link.active {
+  background-color: #007bff;
+  color: #fff;
+}
 
-textarea.simple-edit {
-  font-family: monospace;
-  min-height: 160px;
-  height: calc(100vh - 270px);
-  white-space: pre;
-  overflow: auto; }
+textarea.cm-md-editor {
+  height: calc(100vh - 200px);
+  margin-bottom: 1rem;
+}
 
 .col-sidebar {
-  overflow: scroll; }
+  overflow: scroll;
+}
 
 .container-fluid {
-  max-width: 1400px; }
+  max-width: 1400px;
+}
 
 .fade-out {
   animation: fadeOut 1s forwards;
-  animation-delay: 2s; }
+  animation-delay: 2s;
+}
 
 @keyframes fadeOut {
   from {
-    opacity: 1; }
+    opacity: 1;
+  }
   to {
-    opacity: 0; } }
-
+    opacity: 0;
+  }
+}
 .EasyMDEContainer .CodeMirror {
-  height: calc(100vh - 260px); }
-
+  height: calc(100vh - 260px);
+}
 .EasyMDEContainer .CodeMirror-fullscreen.CodeMirror {
-  height: auto; }
+  height: auto;
+}
 
 .EasyMDEContainer .CodeMirror {
   color: var(--bs-body-color);
   border-color: var(--bs-border-color);
-  background-color: var(--bs-body-bg); }
+  background-color: var(--bs-body-bg);
+}
 
 .EasyMDEContainer .cm-s-easymde .CodeMirror-cursor {
-  border-color: var(--bs-body-color); }
+  border-color: var(--bs-body-color);
+}
 
 .CodeMirror-cursor {
   border-left: 1px solid var(--bs-body-color);
   border-right: none;
-  width: 0; }
+  width: 0;
+}
 
 .EasyMDEContainer .editor-toolbar > * {
-  border-color: var(--bs-body-bg); }
+  border-color: var(--bs-body-bg);
+}
 
 .editor-toolbar {
   border-top: 1px solid var(--bs-border-color);
   border-left: 1px solid var(--bs-border-color);
-  border-right: 1px solid var(--bs-border-color); }
+  border-right: 1px solid var(--bs-border-color);
+}
 
 .editor-toolbar i.separator {
   border-left: 1px solid var(--bs-border-color);
-  border-right: 1px solid var(--bs-border-color); }
+  border-right: 1px solid var(--bs-border-color);
+}
 
 .EasyMDEContainer .editor-toolbar > .active, .editor-toolbar > button:hover, .editor-preview pre, .cm-s-easymde .cm-comment {
-  background-color: var(--bs-body-bg); }
+  background-color: var(--bs-body-bg);
+}
 
 .EasyMDEContainer .CodeMirror-fullscreen {
-  background: var(--bs-body-bg); }
+  background: var(--bs-body-bg);
+}
 
 .editor-toolbar.fullscreen {
   background: var(--bs-body-bg);
-  z-index: 100000; }
+  z-index: 100000;
+}
 
 .editor-preview {
-  background: var(--bs-body-bg); }
+  background: var(--bs-body-bg);
+}
 
 .editor-preview-side {
-  border-color: var(--bs-border-color); }
+  border-color: var(--bs-border-color);
+}
 
 .CodeMirror-selected {
-  background: var(--bs-secondary-bg); }
+  background: var(--bs-secondary-bg);
+}
 
 .CodeMirror-focused .CodeMirror-selected {
-  background: var(--bs-secondary-bg); }
+  background: var(--bs-secondary-bg);
+}
 
 .CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection {
-  background: var(--bs-secondary-bg); }
+  background: var(--bs-secondary-bg);
+}
 
 .CodeMirror-line::-moz-selection, .CodeMirror-line > span::-moz-selection, .CodeMirror-line > span > span::-moz-selection {
-  background: var(--bs-secondary-bg); }
+  background: var(--bs-secondary-bg);
+}
 
 .EasyMDEContainer .CodeMirror-focused .CodeMirror-selected {
-  background: var(--bs-secondary-bg); }
+  background: var(--bs-secondary-bg);
+}
 
 /*# sourceMappingURL=screen.css.map */

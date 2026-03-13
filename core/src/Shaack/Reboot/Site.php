@@ -35,7 +35,16 @@ class Site
         // addOns
         if (@$this->config["addons"]) {
             foreach ($this->config["addons"] as $addOnName) {
+                // Validate addon name to prevent path traversal
+                if (!preg_match('/^[a-zA-Z0-9_]+$/', $addOnName)) {
+                    Logger::error("Invalid addon name rejected: " . $addOnName);
+                    continue;
+                }
                 $addOnPath = $this->getFsPath() . "/addons/" . $addOnName . ".php";
+                if (!file_exists($addOnPath)) {
+                    Logger::error("Addon file not found: " . $addOnPath);
+                    continue;
+                }
                 require $addOnPath;
                 $className = "\Shaack\Reboot\\" . $addOnName;
                 $this->addOns[$addOnName] = new $className($this->reboot, $this);

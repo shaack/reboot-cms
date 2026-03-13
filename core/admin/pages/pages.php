@@ -7,9 +7,10 @@ $admin = $site->getAddOn("Admin");
 
 use Shaack\Logger;
 use Shaack\Utils\FileSystemUtils;
+use Shaack\Reboot\CsrfProtection;
 
 $defaultSite = $admin->getDefaultSite();
-$pagesDir = $defaultSite->getFsPath() . "/pages";
+$pagesDir = realpath($defaultSite->getFsPath() . "/pages");
 $editPageName = $request->getParam("page");
 $editable = false;
 $pages = FileSystemUtils::getFileList($pagesDir, true);
@@ -57,20 +58,28 @@ if($editPageName) {
         </div>
         <div class="col-md-9 order-md-1 order-0">
             <?php if ($editPageName) {
-                $fullPath = $defaultSite->getFsPath() . "/pages" . $editPageName;
-                $edited = $request->getParam("edited");
-                if ($edited !== null) {
-                    file_put_contents($fullPath, $edited);
-                }
+                $fullPath = $pagesDir . $editPageName;
+                // Validate the resolved path stays within the pages directory
+                $resolvedPath = realpath(dirname($fullPath));
+                if ($resolvedPath === false || strncmp($resolvedPath, $pagesDir, strlen($pagesDir)) !== 0) {
+                    Logger::error("Path traversal attempt blocked: " . $editPageName);
+                    $editPageName = null;
+                } else {
+                    $edited = $request->getParam("edited");
+                    if ($edited !== null) {
+                        CsrfProtection::validate($request);
+                        file_put_contents($fullPath, $edited);
+                    }
                 ?>
                 <!--suppress HtmlUnknownTarget -->
                 <form method="post" action="pages?page=<?= urlencode($editPageName) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                     <!--suppress HtmlFormInputWithoutLabel -->
-                    <textarea name="edited" class="form-control markdown"
-                              style="height: calc(100vh - 240px)"><?= file_get_contents($fullPath) ?></textarea>
+                    <textarea name="edited" class="form-control cm-md-editor markdown"><?= htmlspecialchars(file_get_contents($fullPath)) ?></textarea>
                     <button class="btn btn-primary">Save</button>
                     <?= $edited !== null ? "<span class='ms-2 text-info fade-out'>Page saved…</span>" : "" ?>
                 </form>
+                <?php } ?>
             <?php } ?>
         </div>
     </div>

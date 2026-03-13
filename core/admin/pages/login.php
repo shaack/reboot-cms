@@ -1,6 +1,7 @@
 <?php
 
 use Shaack\Logger;
+use Shaack\Reboot\CsrfProtection;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */
@@ -11,6 +12,7 @@ $username = htmlspecialchars($_REQUEST["username"] ?? "");
 $password = $_REQUEST["password"] ?? "";
 $error = null;
 if ($username) {
+    CsrfProtection::validate($request);
     if ($authentication->login($username, $password)) {
         Logger::info("Login success " . $username);
         $reboot->redirect($reboot->getBaseWebPath() . $site->getWebPath() . "/pages");
@@ -30,6 +32,7 @@ if ($username) {
                 </div>
             <?php } ?>
             <form id="loginForm" class="center-horizontal form-md" method="post">
+                <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                 <fieldset>
                     <!-- <legend>Login</legend> -->
                     <div class="form-group mb-3">

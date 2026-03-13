@@ -39,10 +39,17 @@ class Page
             $path = $pathOrRequest->getPath();
             $request = $pathOrRequest;
         }
-        $requestedFsPath = $this->site->getFsPath() . '/pages' . $path;
+        $pagesDir = realpath($this->site->getFsPath() . '/pages');
+        $requestedFsPath = $pagesDir . $path;
 
         if (is_dir($requestedFsPath)) {
             $requestedFsPath .= "/index";
+        }
+
+        // Resolve symlinks and '..' to prevent path traversal
+        $resolvedDir = realpath(dirname($requestedFsPath));
+        if ($resolvedDir === false || strncmp($resolvedDir, $pagesDir, strlen($pagesDir)) !== 0) {
+            return $this->render404($path);
         }
         $pathInfo = pathinfo($path);
         if (!array_key_exists("extension", $pathInfo)) {
@@ -79,7 +86,7 @@ class Page
      * @param string $pagePath
      * @return string
      */
-    private function renderMarkdown(string $pagePath, Request $request): string
+    private function renderMarkdown(string $pagePath, ?Request $request): string
     {
         $content = trim(file_get_contents($pagePath));
         if (!$content) {
@@ -154,7 +161,7 @@ class Page
      * @param $request
      * @return string
      */
-    private function renderPHP($articlePath, $request): string
+    private function renderPHP($articlePath, ?Request $request): string
     {
         return renderPHPPage($this->reboot, $this->site, $this, $request, $articlePath);
     }
