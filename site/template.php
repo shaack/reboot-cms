@@ -11,11 +11,11 @@ $pageConfig = $page->getConfig(); // the frontmatter config
 <html lang="en">
 <head>
     <base href="<?= $site->getWebPath() ?>/"/>
-    <title><?php echo $page->getConfig()['title']; ?></title>
+    <title><?php echo $pageConfig['title'] ?? 'Reboot CMS'; ?></title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="<?php echo $page->getConfig()['description']; ?>">
-    <meta name="author" content="<?php echo $page->getConfig()['author']; ?>">
+    <meta name="description" content="<?php echo $pageConfig['description'] ?? ''; ?>">
+    <meta name="author" content="<?php echo $pageConfig['author'] ?? 'shaack.com'; ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="./assets/styles/screen.css" rel="stylesheet">
