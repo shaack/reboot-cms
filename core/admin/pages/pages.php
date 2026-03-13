@@ -15,40 +15,88 @@ $editPageName = $request->getParam("page");
 $editable = false;
 $pages = FileSystemUtils::getFileList($pagesDir, true);
 usort($pages, function($a, $b) {
-    if($a['name'] == $b['name']) {
-        return 0;
-    } else {
-        return $a['name'] > $b['name'] ? 1 : -1;
-    }
-
+    return strcmp($a['name'], $b['name']);
 });
 if($editPageName) {
     Logger::debug("Editing page " . $editPageName);
 }
+
+// Build tree structure from flat file list
+function buildPageTree(array $pages, string $pagesDir): array {
+    $tree = [];
+    foreach ($pages as $page) {
+        $pagePathInfo = pathinfo($page["name"]);
+        if (!array_key_exists("extension", $pagePathInfo) || $pagePathInfo["extension"] !== "md") {
+            continue;
+        }
+        $relPath = str_replace($pagesDir, "", $page["name"]);
+        $parts = explode("/", trim($relPath, "/"));
+        $node = &$tree;
+        for ($i = 0; $i < count($parts) - 1; $i++) {
+            if (!isset($node[$parts[$i]])) {
+                $node[$parts[$i]] = [];
+            }
+            $node = &$node[$parts[$i]];
+        }
+        $node[] = $relPath;
+        unset($node);
+    }
+    return $tree;
+}
+
+function renderTree(array $tree, string $editPageName = null, bool &$editable = false, string $prefix = ""): string {
+    $html = "<ul class='page-tree list-unstyled'>";
+    // Separate folders and files
+    $folders = [];
+    $files = [];
+    foreach ($tree as $key => $value) {
+        if (is_array($value)) {
+            $folders[$key] = $value;
+        } else {
+            $files[] = $value;
+        }
+    }
+    // Render files first, then folders
+    foreach ($files as $filePath) {
+        $fileName = basename($filePath);
+        $active = $editPageName && $filePath === $editPageName;
+        if ($active) {
+            $editable = true;
+        }
+        $html .= "<li>";
+        $html .= "<a class='page-tree-file" . ($active ? " active" : "") . "' href='pages?page=" . urlencode($filePath) . "'>" . htmlspecialchars($fileName) . "</a>";
+        $html .= "</li>";
+    }
+    foreach ($folders as $folderName => $children) {
+        $folderId = "folder-" . md5($prefix . $folderName);
+        // Check if any child in this folder is active
+        $folderContainsActive = false;
+        if ($editPageName) {
+            $folderPrefix = $prefix . $folderName . "/";
+            $folderContainsActive = str_starts_with($editPageName, "/" . $folderPrefix) || str_starts_with($editPageName, $folderPrefix);
+        }
+        $expanded = $folderContainsActive;
+        $html .= "<li>";
+        $html .= "<a class='page-tree-folder' data-bs-toggle='collapse' href='#" . $folderId . "' role='button' aria-expanded='" . ($expanded ? "true" : "false") . "'>";
+        $html .= "<span class='folder-icon'>" . ($expanded ? "&#9660;" : "&#9654;") . "</span> " . htmlspecialchars($folderName);
+        $html .= "</a>";
+        $html .= "<div class='collapse" . ($expanded ? " show" : "") . "' id='" . $folderId . "'>";
+        $html .= renderTree($children, $editPageName, $editable, $prefix . $folderName . "/");
+        $html .= "</div>";
+        $html .= "</li>";
+    }
+    $html .= "</ul>";
+    return $html;
+}
+
+$pageTree = buildPageTree($pages, $pagesDir);
 ?>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-3 col-sidebar order-md-0 order-1 mt-4 mt-md-0">
+        <div class="col-md-3 col-xl-2 col-sidebar order-md-0 order-1 mt-4 mt-md-0">
             <nav class="nav nav-compact flex-column">
                 <?php
-                foreach ($pages as $page) {
-                    $pagePathInfo = pathinfo($page["name"]);
-                    $name = str_replace($pagesDir, "", $page["name"]);
-                    // TODO configure, what is allowed
-                    if (array_key_exists("extension", $pagePathInfo) && $pagePathInfo["extension"] == "md") {
-                        $active = false;
-                        if ($editPageName && $name == $editPageName) {
-                            $editable = true;
-                            $active = true;
-                        }
-                        ?>
-                        <!--suppress HtmlUnknownTarget -->
-                        <a class="nav-link<?= $active ? " active" : "" ?>" href="pages?page=<?= urlencode($name) ?>"><?= $name ?></a>
-                        <?php
-                    } else {
-                        Logger::debug("Page " . $name . " not editable. type: " . $page["type"]);
-                    }
-                }
+                echo renderTree($pageTree, $editPageName, $editable);
                 if (!$editable && $editPageName) {
                     Logger::error("" . $editPageName . " is not editable.");
                     $editPageName = null;
@@ -90,3 +138,16 @@ if($editPageName) {
         </div>
     </div>
 </div>
+<script>
+document.querySelectorAll('.page-tree-folder').forEach(function(folder) {
+    var target = document.querySelector(folder.getAttribute('href'));
+    if (target) {
+        target.addEventListener('show.bs.collapse', function() {
+            folder.querySelector('.folder-icon').innerHTML = '&#9660;';
+        });
+        target.addEventListener('hide.bs.collapse', function() {
+            folder.querySelector('.folder-icon').innerHTML = '&#9654;';
+        });
+    }
+});
+</script>
