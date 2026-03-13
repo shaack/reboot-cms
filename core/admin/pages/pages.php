@@ -77,6 +77,12 @@ if($editPageName) {
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <textarea name="edited" class="form-control cm-md-editor markdown"><?= htmlspecialchars(file_get_contents($fullPath)) ?></textarea>
                     <button class="btn btn-primary">Save</button>
+                    <?php
+                    $viewPath = preg_replace('/\.md$/', '', $editPageName);
+                    $viewPath = preg_replace('/\/index$/', '/', $viewPath);
+                    $viewUrl = $reboot->getBaseWebPath() . $viewPath;
+                    ?>
+                    <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-outline-secondary ms-2">View Page</a>
                     <?= $edited !== null ? "<span class='ms-2 text-info fade-out'>Page saved…</span>" : "" ?>
                 </form>
                 <?php } ?>

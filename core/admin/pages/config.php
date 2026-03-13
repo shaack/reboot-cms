@@ -46,10 +46,10 @@ try {
     <form method="post" action="config">
         <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
         <div class="form-group">
-            <label for="configFile" class="sr-only">Configuration file</label>
+            <label for="configFile" class="visually-hidden">Configuration file</label>
             <textarea name="configuration"
                       class="mb-3 form-control font-monospace simple-edit <?= $configHasErrors ? "border-danger" : "" ?>" id="configFile"
-                      rows="10"><?= $configFile ?></textarea>
+                      rows="15"><?= $configFile ?></textarea>
         </div>
         <?php if ($configHasErrors) { ?>
             <p class="text-danger">
