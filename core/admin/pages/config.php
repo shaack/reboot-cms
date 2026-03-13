@@ -41,27 +41,32 @@ try {
 ?>
 
 <div class="container-fluid">
-    <h1>Site configuration</h1>
-    <!--suppress HtmlUnknownTarget -->
-    <form method="post" action="config">
-        <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-        <div class="form-group">
-            <label for="configFile" class="visually-hidden">Configuration file</label>
-            <textarea name="configuration"
-                      class="mb-3 form-control font-monospace simple-edit <?= $configHasErrors ? "border-danger" : "" ?>" id="configFile"
-                      rows="15"><?= $configFile ?></textarea>
+    <?php if ($configSaveError) { ?>
+        <script>statusMessage("Configuration not saved: <?= htmlspecialchars($configSaveError, ENT_QUOTES) ?>", "text-bg-danger")</script>
+    <?php } ?>
+    <?php if ($configuration !== null && !$configSaveError) { ?>
+        <script>statusMessage("Configuration saved")</script>
+    <?php } ?>
+
+    <div class="card">
+        <div class="card-header"><h5 class="mb-0">Site Configuration</h5></div>
+        <div class="card-body">
+            <!--suppress HtmlUnknownTarget -->
+            <form method="post" action="config">
+                <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                <div class="form-group">
+                    <label for="configFile" class="visually-hidden">Configuration file</label>
+                    <textarea name="configuration"
+                              class="mb-3 form-control font-monospace simple-edit <?= $configHasErrors ? "border-danger" : "" ?>" id="configFile"
+                              rows="15"><?= $configFile ?></textarea>
+                </div>
+                <?php if ($configHasErrors) { ?>
+                    <p class="text-danger">
+                        Syntax Error in Configuration
+                    </p>
+                <?php } ?>
+                <button class="btn btn-primary">Save</button>
+            </form>
         </div>
-        <?php if ($configHasErrors) { ?>
-            <p class="text-danger">
-                Syntax Error in Configuration
-            </p>
-        <?php } ?>
-        <?php if ($configSaveError) { ?>
-            <script>statusMessage("Configuration not saved: <?= htmlspecialchars($configSaveError, ENT_QUOTES) ?>", "text-bg-danger")</script>
-        <?php } ?>
-        <button class="btn btn-primary">Save</button>
-        <?php if ($configuration !== null && !$configSaveError) { ?>
-            <script>statusMessage("Configuration saved")</script>
-        <?php } ?>
-    </form>
+    </div>
 </div>

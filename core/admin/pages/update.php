@@ -28,38 +28,45 @@ if ($action === "update") {
 ?>
 
 <div class="container-fluid">
-    <h1>Update</h1>
-
     <?php if ($error) { ?>
         <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>
     <?php if ($success) { ?>
-        <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
+        <script>statusMessage("<?= htmlspecialchars($success, ENT_QUOTES) ?>")</script>
     <?php } ?>
 
-    <table class="table" style="max-width: 400px">
-        <tr>
-            <td>Installed version</td>
-            <td><strong><?= htmlspecialchars($localVersion) ?></strong></td>
-        </tr>
-        <?php if ($remoteVersion !== null) { ?>
-            <tr>
-                <td>Available version</td>
-                <td><strong><?= htmlspecialchars($remoteVersion) ?></strong></td>
-            </tr>
-        <?php } ?>
-    </table>
+    <div class="card" style="max-width: 500px">
+        <div class="card-header"><h5 class="mb-0">Update</h5></div>
+        <div class="card-body">
+            <table class="table table-borderless mb-3">
+                <tr>
+                    <td>Installed version</td>
+                    <td><strong><?= htmlspecialchars($localVersion) ?></strong></td>
+                </tr>
+                <?php if ($remoteVersion !== null) { ?>
+                    <tr>
+                        <td>Available version</td>
+                        <td><strong><?= htmlspecialchars($remoteVersion) ?></strong></td>
+                    </tr>
+                <?php } ?>
+            </table>
 
-    <?php if ($remoteVersion !== null && $remoteVersion !== $localVersion) { ?>
-        <form method="post" action="update"
-              onsubmit="return confirm('Update Reboot CMS to version <?= htmlspecialchars($remoteVersion, ENT_QUOTES) ?>. To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.')">
-            <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-            <input type="hidden" name="action" value="update">
-            <button class="btn btn-primary">Update to <?= htmlspecialchars($remoteVersion) ?></button>
-        </form>
-    <?php } elseif ($remoteVersion === null && !$success) { ?>
-        <p class="text-muted">Could not check for updates. Please verify your internet connection.</p>
-    <?php } elseif (!$success) { ?>
-        <p class="text-muted">You are running the latest version.</p>
-    <?php } ?>
+            <?php if ($remoteVersion !== null && $remoteVersion !== $localVersion) { ?>
+                <form method="post" action="update"
+                      onsubmit="return confirm('Update Reboot CMS to version <?= htmlspecialchars($remoteVersion, ENT_QUOTES) ?>. To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.')">
+                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                    <input type="hidden" name="action" value="update">
+                    <button class="btn btn-primary">Update to <?= htmlspecialchars($remoteVersion) ?></button>
+                </form>
+            <?php } elseif ($remoteVersion === null && !$success) { ?>
+                <p class="text-muted mb-0">Could not check for updates. Please verify your internet connection.</p>
+            <?php } elseif (!$success) { ?>
+                <p class="text-muted mb-0">You are running the latest version.</p>
+            <?php } ?>
+
+            <?php if ($success) { ?>
+                <a href="update" class="btn btn-success">OK</a>
+            <?php } ?>
+        </div>
+    </div>
 </div>

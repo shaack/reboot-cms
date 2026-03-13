@@ -25,7 +25,7 @@ $authentication = $site->getAddOn("Authentication");
         }
     </script>
 </head>
-<body>
+<body class="bg-body-tertiary">
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
 <nav class="navbar navbar-expand-md fixed-top">
     <div class="container-fluid">
