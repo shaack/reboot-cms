@@ -4,7 +4,8 @@ addons: [ Authentication, Admin ]
 navbar:
   brand: Reboot CMS
   structure:
-    Edit Pages: /pages
+    Pages: /pages
+    Media: /media
     Site Configuration: /config
     Users: /users
     Update: /update
