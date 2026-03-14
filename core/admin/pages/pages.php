@@ -141,6 +141,15 @@ $pageTree = buildPageTree($pages, $pagesDir);
     </div>
 </div>
 <script>
+document.addEventListener('keydown', function(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        var form = document.querySelector('form[action^="pages?page="]');
+        if (form) {
+            e.preventDefault();
+            form.submit();
+        }
+    }
+});
 document.querySelectorAll('.page-tree-folder').forEach(function(folder) {
     var target = document.querySelector(folder.getAttribute('href'));
     if (target) {

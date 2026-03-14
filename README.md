@@ -30,17 +30,19 @@ a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report
 
 ## Install
 
-Download the [Reboot CMS repository](https://github.com/shaack/reboot-cms) and install it in your web root.
-
-Then install dependencies:
+Clone or download the [Reboot CMS repository](https://github.com/shaack/reboot-cms):
 
 ```bash
-composer install
+git clone https://github.com/shaack/reboot-cms.git my-site
 ```
 
-This should work out of the box.
+All dependencies are included in the repository, so no `composer install` is needed.
 
-Then (**important**), **set the Admin password in `/local/.htpasswd`**
+### Setup
+
+Point your web server's document root to the `web/` directory. The CMS should work out of the box.
+
+On first visit to `/admin`, you will be prompted to create an admin account.
 
 ## Directory Structure
 
