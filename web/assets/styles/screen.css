@@ -1,31 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --surface: rgba(255, 255, 255, 0.03);
+    --surface-hover: rgba(255, 255, 255, 0.06);
+    --border: rgba(255, 255, 255, 0.08);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-    margin-top: 6rem;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin-top: 5rem;
     margin-bottom: 6rem;
+    letter-spacing: -0.01em;
 }
 
 .block {
-    margin-bottom: 5rem;
+    margin-bottom: 6rem;
 }
 
 pre {
-    background-color: var(--bs-gray-800);
-    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    font-size: 0.9rem;
 }
 
+/* Navbar */
 nav.navbar .container-fluid {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
 }
-nav.navbar.bg-dark {
-    background-color: rgba(20, 20, 20, 0.95) !important;
-    font-size: 1.1rem;
+
+nav.navbar {
+    background: rgba(10, 10, 15, 0.8) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
 }
 
 .navbar-brand {
-    font-size: 2rem;
-    line-height: 1;
-    font-family: "Verdana", Courier, monospace;
-    padding: 0.6rem 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    padding: 0.5rem 0;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.navbar-brand:hover {
+    opacity: 1;
+}
+
+.nav-link {
+    transition: color 0.2s, opacity 0.2s;
+    opacity: 0.6;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    opacity: 1;
 }
 
 body img {
@@ -33,6 +73,181 @@ body img {
 }
 
 main {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Hero */
+.block-hero .card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.08), rgba(236, 72, 153, 0.06)) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.block-hero .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.12), transparent 60%);
+    pointer-events: none;
+}
+
+.block-hero .display-4 {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.block-hero .lead {
+    font-weight: 300;
+    font-size: 1.3rem;
+    opacity: 0.75;
+}
+
+.block-hero hr {
+    border-color: var(--border);
+    opacity: 0.5;
+}
+
+.block-hero .btn-primary {
+    background: var(--accent);
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.block-hero .btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+}
+
+/* Text-Image */
+.block-text-image {
+    padding: 2rem 0;
+}
+
+.block-text-image .row {
+    align-items: center;
+    gap: 0;
+}
+
+.block-text-image h2 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.block-text-image .img-fluid {
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    transition: transform 0.3s;
+}
+
+.block-text-image .img-fluid:hover {
+    transform: scale(1.02);
+}
+
+/* Three Columns */
+.block-three-columns .row > div {
+    padding: 1.5rem;
+}
+
+.block-three-columns h3 {
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.block-three-columns .row {
+    gap: 1rem;
+}
+
+.block-three-columns .row > div {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 2rem !important;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+@media (min-width: 768px) {
+    .block-three-columns .row > div {
+        flex: 1;
+    }
+}
+
+.block-three-columns .row > div:hover {
+    background: var(--surface-hover);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Cards */
+.block-cards h2 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+}
+
+.block-cards .card {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 1rem;
+    overflow: hidden;
+    margin: 0.375rem;
+}
+
+.block-cards .card-img-top {
+    padding: 1.5rem 1.5rem 0;
+}
+
+.block-cards .card-body {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    padding: 1rem 1.5rem 1.5rem;
+}
+
+/* Text Block */
+.block-text {
+    padding: 2rem 0;
+}
+
+.block-text h2 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.block-text h3 {
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin-top: 2rem;
+}
+
+.block-text ul {
+    padding-left: 1.25rem;
+}
+
+.block-text li {
+    margin-bottom: 0.4rem;
+}
+
+/* Links */
+a {
+    color: var(--accent-hover);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #a5b4fc;
+}
+
+/* Selection */
+::selection {
+    background: rgba(99, 102, 241, 0.3);
 }

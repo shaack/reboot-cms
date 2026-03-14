@@ -22,7 +22,7 @@ $pageConfig = $page->getConfig(); // the frontmatter config
 </head>
 <body data-bs-theme="dark">
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
-<nav class="navbar navbar-expand-md fixed-top bg-dark navbar-dark">
+<nav class="navbar navbar-expand-md fixed-top navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand me-5 text-muted" href="<?= $site->getWebPath() ?>/"><?php echo $navbarConfig["brand"] ?></a>
         <?php if(!@$pageConfig["hide-nav"]) { ?>
