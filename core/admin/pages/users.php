@@ -5,9 +5,10 @@
 /** @var Shaack\Reboot\Admin $admin */
 $admin = $site->getAddOn("Admin");
 
+use Shaack\Reboot\Authentication;
 use Shaack\Reboot\CsrfProtection;
 
-/** @var \Shaack\Reboot\Authentication $authentication */
+/** @var Authentication $authentication */
 $authentication = $site->getAddOn("Authentication");
 $htpasswd = $authentication->getHtpasswd();
 $currentUser = $authentication->getUser();
@@ -29,9 +30,11 @@ if ($action) {
             if (strlen($password) < 8) {
                 throw new \InvalidArgumentException("Password must be at least 8 characters");
             }
+            $role = $request->getParam("role") ?? Authentication::ROLE_EDITOR;
             $htpasswd->addUser($username, $password);
+            $authentication->setUserRole($username, $role);
             $authentication->refreshChecksum();
-            $success = "User '$username' added";
+            $success = "User '$username' added as $role";
         } elseif ($action === "change_password") {
             if (strlen($password) < 8) {
                 throw new \InvalidArgumentException("Password must be at least 8 characters");
@@ -39,11 +42,19 @@ if ($action) {
             $htpasswd->changePassword($username, $password);
             $authentication->refreshChecksum();
             $success = "Password changed for '$username'";
+        } elseif ($action === "change_role") {
+            if ($username === $currentUser) {
+                throw new \InvalidArgumentException("You cannot change your own role");
+            }
+            $role = $request->getParam("role") ?? Authentication::ROLE_EDITOR;
+            $authentication->setUserRole($username, $role);
+            $success = "Role changed for '$username' to $role";
         } elseif ($action === "delete") {
             if ($username === $currentUser) {
                 throw new \InvalidArgumentException("You cannot delete your own account");
             }
             $htpasswd->deleteUser($username);
+            $authentication->deleteUserRole($username);
             $authentication->refreshChecksum();
             $success = "User '$username' deleted";
         }
@@ -66,10 +77,26 @@ $users = $htpasswd->getUsers();
     <div class="card mb-4">
         <div class="card-header"><h5 class="mb-0">Users</h5></div>
         <ul class="list-group list-group-flush">
-            <?php foreach ($users as $user) { ?>
+            <?php foreach ($users as $user) {
+                $userRole = $authentication->getUserRole($user);
+                ?>
                 <li class="list-group-item">
                     <div class="d-flex flex-wrap align-items-center gap-2">
-                        <strong class="me-auto"><?= htmlspecialchars($user) ?></strong>
+                        <strong><?= htmlspecialchars($user) ?></strong>
+                        <?php if ($user !== $currentUser) { ?>
+                            <form method="post" action="users" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                                <input type="hidden" name="action" value="change_role">
+                                <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
+                                <select name="role" class="form-select form-select-sm" style="width: auto" onchange="this.form.submit()">
+                                    <option value="<?= Authentication::ROLE_ADMIN ?>" <?= $userRole === Authentication::ROLE_ADMIN ? 'selected' : '' ?>>Admin</option>
+                                    <option value="<?= Authentication::ROLE_EDITOR ?>" <?= $userRole === Authentication::ROLE_EDITOR ? 'selected' : '' ?>>Editor</option>
+                                </select>
+                            </form>
+                        <?php } else { ?>
+                            <span class="badge text-bg-secondary"><?= htmlspecialchars($userRole) ?></span>
+                        <?php } ?>
+                        <span class="me-auto"></span>
                         <form method="post" action="users" class="d-flex flex-wrap align-items-center gap-2">
                             <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                             <input type="hidden" name="action" value="change_password">
@@ -103,6 +130,10 @@ $users = $htpasswd->getUsers();
                        placeholder="Username" required pattern="[a-zA-Z0-9_]{1,64}" autocomplete="off">
                 <input type="password" name="password" class="form-control form-control-sm" style="width: 200px"
                        placeholder="Password" required minlength="8" autocomplete="new-password">
+                <select name="role" class="form-select form-select-sm" style="width: auto">
+                    <option value="<?= Authentication::ROLE_EDITOR ?>">Editor</option>
+                    <option value="<?= Authentication::ROLE_ADMIN ?>">Admin</option>
+                </select>
                 <button class="btn btn-sm btn-primary text-nowrap">Add User</button>
             </form>
         </div>

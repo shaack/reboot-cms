@@ -40,8 +40,12 @@ $authentication = $site->getAddOn("Authentication");
                 <ul class="navbar-nav me-auto">
                     <?php
                     $structure = $navbarConfig['structure'];
+                    $isAdmin = $authentication->isAdmin();
                     if ($structure) {
                         foreach ($structure as $label => $path) {
+                            if (!$isAdmin && !in_array($path, \Shaack\Reboot\Authentication::EDITOR_PAGES)) {
+                                continue;
+                            }
                             ?>
                             <li class="nav-item">
                                 <a class="nav-link <?= $request->getPath() == $path ? "active" : "" ?>" href="<?= $site->getWebPath() . $path ?>"><?= $label ?></a>

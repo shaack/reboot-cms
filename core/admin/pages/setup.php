@@ -32,6 +32,7 @@ if ($username) {
             mkdir($localDir, 0700, true);
         }
         $htpasswd->addUser($username, $password);
+        $authentication->setUserRole($username, \Shaack\Reboot\Authentication::ROLE_ADMIN);
         $authentication->login($username, $password);
         $reboot->redirect($reboot->getBaseWebPath() . $site->getWebPath() . "/pages");
         return;
