@@ -150,7 +150,7 @@ aliqua.
 
 This `Page` contains 3 `Block` types, "hero", "text-image" and "three-columns". It will render to this:
 
-![A rendered page](https://shaack.com/projekte/assets/img/reboot-cms-index-2_8_1.png)
+![A rendered page](docs/img/reboot-cms-index.png)
 
 Blocks can be configured in the block comment. With this configuration, the `text-image`
 block allows to display the image to the left side in desktop view.
@@ -242,22 +242,38 @@ You find the admin interface at `/admin`.
 If no users exist yet (e.g. on a fresh installation), the admin interface will automatically show a setup page where
 you can create the first admin account. After that, you can log in with the credentials you created.
 
-In the admin interface you can edit markdown pages, set the site configuration, manage users, and update the CMS.
+In the admin interface you can edit markdown pages, manage media files, set the site configuration, manage users,
+and update the CMS.
 
-### Edit the startpage
+### Login
 
-![Edit the startpage](https://shaack.com/projekte/assets/img/reboot-cms-admin-edit-index.png)
+![Login](docs/img/reboot-cms-admin-login.png)
 
-### Edit a flat markdown page
+### Pages
 
-![Edit a markdown page](https://shaack.com/projekte/assets/img/reboot-cms-admin-page-edit.png)
+The "Pages" section lists all markdown pages in your site. Click on a page name to open it in the editor.
+Pages are organized in a tree structure reflecting the folder hierarchy in `site/pages/`.
 
-### Edit the site configuration
+![Pages](docs/img/reboot-cms-admin-pages.png)
+
+### Edit a page
+
+![Edit a page](docs/img/reboot-cms-admin-page-edit.png)
+
+### Media
+
+The "Media" section lets you manage files in the `web/media/` directory. You can upload files, create folders,
+and delete files or empty folders. Media files are accessible at `/media/` in the browser and can be referenced
+in your markdown pages.
+
+![Media](docs/img/reboot-cms-admin-media.png)
+
+### Site configuration
 
 In the site configuration, you can store global values of the site, like the navigation structure or the content of
 header elements. The site configuration is written in YAML.
 
-![Edit a markdown page](https://shaack.com/projekte/assets/img/reboot-cms-admin-site-configration.png)
+![Site configuration](docs/img/reboot-cms-admin-site-configuration.png)
 
 ### User management
 
@@ -269,6 +285,8 @@ The "Users" page in the admin interface allows you to manage admin accounts dire
 
 Usernames may contain letters, numbers, and underscores (max 64 characters). Passwords must be at least 8 characters.
 All credentials are stored as APR1-MD5 hashes in `local/.htpasswd`.
+
+![Users](docs/img/reboot-cms-admin-users.png)
 
 You can also manage users via the command line:
 
@@ -287,6 +305,8 @@ release and replaces `core/`, `web/admin/`, and `vendor/`. Your site content (`s
 and entry point (`web/index.php`) are not affected.
 
 It is recommended to make a backup of the project folder before updating.
+
+![Update](docs/img/reboot-cms-admin-update.png)
 
 ## AddOns
 
