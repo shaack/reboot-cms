@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <input id="check" name="check" type="hidden" value="">
                 </fieldset>
-                <button class="btn btn-primary btn-block px-4" type="submit">Login</button>
+                <button class="btn btn-primary btn-sm btn-block px-4" type="submit">Login</button>
             </form>
         </div>
     </div>
