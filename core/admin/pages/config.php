@@ -40,7 +40,7 @@ try {
 }
 ?>
 
-<div class="container-fluid">
+<div class="container-fluid max-width-md">
     <?php if ($configSaveError) { ?>
         <script>statusMessage("Configuration not saved: <?= htmlspecialchars($configSaveError, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>

@@ -55,7 +55,7 @@ if ($action) {
 $users = $htpasswd->getUsers();
 ?>
 
-<div class="container-fluid">
+<div class="container-fluid max-width-md">
     <?php if ($error) { ?>
         <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>
@@ -65,44 +65,32 @@ $users = $htpasswd->getUsers();
 
     <div class="card mb-4">
         <div class="card-header"><h5 class="mb-0">Users</h5></div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($users as $user) { ?>
-                    <tr>
-                        <td class="align-middle"><?= htmlspecialchars($user) ?></td>
-                        <td>
-                            <div class="d-flex flex-wrap align-items-center gap-2">
-                                <form method="post" action="users" class="d-flex align-items-center gap-2">
-                                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-                                    <input type="hidden" name="action" value="change_password">
-                                    <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
-                                    <input type="password" name="password" class="form-control form-control-sm" style="width: 200px"
-                                           placeholder="New password" required minlength="8">
-                                    <button class="btn btn-sm btn-outline-primary text-nowrap">Change Password</button>
-                                </form>
-                                <?php if ($user !== $currentUser) { ?>
-                                    <form method="post" action="users"
-                                          onsubmit="return confirm('Delete user \'<?= htmlspecialchars($user, ENT_QUOTES) ?>\'?')">
-                                        <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
-                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
-                                    </form>
-                                <?php } ?>
-                            </div>
-                        </td>
-                    </tr>
-                <?php } ?>
-                </tbody>
-            </table>
-        </div>
+        <ul class="list-group list-group-flush">
+            <?php foreach ($users as $user) { ?>
+                <li class="list-group-item">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <strong class="me-auto"><?= htmlspecialchars($user) ?></strong>
+                        <form method="post" action="users" class="d-flex flex-wrap align-items-center gap-2">
+                            <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                            <input type="hidden" name="action" value="change_password">
+                            <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
+                            <input type="password" name="password" class="form-control form-control-sm" style="width: 200px"
+                                   placeholder="New password" required minlength="8">
+                            <button class="btn btn-sm btn-outline-primary text-nowrap">Change Password</button>
+                        </form>
+                        <?php if ($user !== $currentUser) { ?>
+                            <form method="post" action="users"
+                                  onsubmit="return confirm('Delete user \'<?= htmlspecialchars($user, ENT_QUOTES) ?>\'?')">
+                                <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
+                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        <?php } ?>
+                    </div>
+                </li>
+            <?php } ?>
+        </ul>
     </div>
 
     <div class="card">

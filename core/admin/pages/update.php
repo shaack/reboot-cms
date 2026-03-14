@@ -27,7 +27,7 @@ if ($action === "update") {
 }
 ?>
 
-<div class="container-fluid">
+<div class="container-fluid max-width-md">
     <?php if ($error) { ?>
         <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>
@@ -35,8 +35,8 @@ if ($action === "update") {
         <script>statusMessage("<?= htmlspecialchars($success, ENT_QUOTES) ?>")</script>
     <?php } ?>
 
-    <div class="card" style="max-width: 500px">
-        <div class="card-header"><h5 class="mb-0">Update</h5></div>
+    <div class="card">
+        <div class="card-header"><h5 class="mb-0">Reboot CMS Update</h5></div>
         <div class="card-body">
             <table class="table table-borderless mb-3">
                 <tr>
