@@ -114,7 +114,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 ?>
             </nav>
         </div>
-        <div class="col-md-9 order-md-1 order-0">
+        <div class="col-md-9 col-xl-10 order-md-1 order-0">
             <?php if ($editPageName) {
                 $fullPath = $pagesDir . $editPageName;
                 // Validate the resolved path stays within the pages directory

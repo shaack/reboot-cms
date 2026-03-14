@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 version.textContent = data.version
                 cell.innerHTML = ""
                 cell.appendChild(version)
-                if (data.version !== localVersion) {
+                if (data.version.localeCompare(localVersion, undefined, {numeric: true, sensitivity: 'base'}) > 0) {
                     const safeVersion = data.version.replace(/[<>"'&]/g, '')
                     actions.innerHTML =
                         '<form method="post" action="update" onsubmit="return confirm(\'Update Reboot CMS to version ' + safeVersion + '. To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.\')">' +
