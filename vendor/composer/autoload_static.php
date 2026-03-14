@@ -19,6 +19,7 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
         array (
             'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Component\\Yaml\\' => 23,
+            'Shaack\\' => 7,
         ),
     );
 
@@ -35,10 +36,10 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
         array (
             0 => __DIR__ . '/..' . '/symfony/yaml',
         ),
-    );
-
-    public static $fallbackDirsPsr4 = array (
-        0 => __DIR__ . '/../..' . '/core/src',
+        'Shaack\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/core/src/Shaack',
+        ),
     );
 
     public static $prefixesPsr0 = array (
@@ -60,7 +61,6 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70::$prefixDirsPsr4;
-            $loader->fallbackDirsPsr4 = ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70::$fallbackDirsPsr4;
             $loader->prefixesPsr0 = ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70::$prefixesPsr0;
             $loader->classMap = ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70::$classMap;
 
