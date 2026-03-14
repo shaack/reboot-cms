@@ -34,8 +34,6 @@ Clone or download the [Reboot CMS repository](https://github.com/shaack/reboot-c
 git clone https://github.com/shaack/reboot-cms.git my-site
 ```
 
-All dependencies are included in the repository, so no `composer install` is needed.
-
 ### Setup
 
 Point your web server's document root to the `web/` directory. The CMS should work out of the box.
@@ -87,8 +85,7 @@ Example for a Markdown `Page` with `Blocks`:
 ---
 title: Reboot CMS 
 description: Reboot CMS is a flat file CMS, with the support of blocks. 
-author: Stefan Haack (shaack.com)
-
+author: shaack.com
 ---
 
 <!-- hero -->
