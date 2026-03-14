@@ -1,6 +1,6 @@
 {
   "name": "cm-md-editor",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "a simple markdown editor",
   "main": "index.js",
   "scripts": {
