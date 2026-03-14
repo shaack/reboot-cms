@@ -15,6 +15,7 @@
     ],
     "description": "A nice flat file CMS. See https://github.com/shaack/reboot-cms",
     "require": {
+        "php": ">=8.0",
         "ext-json": "*",
         "ext-fileinfo": "*",
         "ext-dom": "*",
