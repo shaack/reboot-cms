@@ -17,6 +17,9 @@ $pages = FileSystemUtils::getFileList($pagesDir, true);
 usort($pages, function($a, $b) {
     return strcmp($a['name'], $b['name']);
 });
+if (!$editPageName && file_exists($pagesDir . "/index.md")) {
+    $editPageName = "/index.md";
+}
 if($editPageName) {
     Logger::debug("Editing page " . $editPageName);
 }
@@ -56,6 +59,13 @@ function renderTree(array $tree, string $editPageName = null, bool &$editable = 
             $files[] = $value;
         }
     }
+    // Sort files: index first, then alphabetically
+    usort($files, function($a, $b) {
+        $aIsIndex = basename($a) === 'index.md';
+        $bIsIndex = basename($b) === 'index.md';
+        if ($aIsIndex !== $bIsIndex) return $aIsIndex ? -1 : 1;
+        return strcasecmp($a, $b);
+    });
     // Render files first, then folders
     foreach ($files as $filePath) {
         $fileName = preg_replace('/\.md$/', '', basename($filePath));
