@@ -7,9 +7,11 @@
 $authentication = $site->getAddOn("Authentication");
 $admin = $site->getAddOn("Admin");
 $localConfig = $admin->getLocalConfig();
-$editorFont = $localConfig['editorFont'] ?? 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
-$editorFontSize = $localConfig['editorFontSize'] ?? '1rem';
-$editorLineHeight = $localConfig['editorLineHeight'] ?? '1.5';
+$editor = $localConfig['editor'] ?? [];
+$editorFont = $editor['font'] ?? 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
+$editorFontSize = $editor['fontSize'] ?? '1rem';
+$editorLineHeight = $editor['lineHeight'] ?? '1.5';
+$editorTabSize = $editor['tabSize'] ?? '4';
 ?>
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
@@ -22,7 +24,7 @@ $editorLineHeight = $localConfig['editorLineHeight'] ?? '1.5';
     <link href="https://fonts.googleapis.com/css2?family=Gelasio:wght@700&display=swap" rel="stylesheet">
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/screen.css" rel="stylesheet">
-    <style>textarea.editor-font { font-family: <?= $editorFont ?>; font-size: <?= $editorFontSize ?>; line-height: <?= $editorLineHeight ?>; }</style>
+    <style>textarea.editor-font { font-family: <?= $editorFont ?>; font-size: <?= $editorFontSize ?>; line-height: <?= $editorLineHeight ?>; tab-size: <?= $editorTabSize ?>; -moz-tab-size: <?= $editorTabSize ?>; }</style>
     <script src="node_modules/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
     <script>
         window._toastQueue = []
