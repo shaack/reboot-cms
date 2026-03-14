@@ -58,7 +58,7 @@ function renderTree(array $tree, string $editPageName = null, bool &$editable = 
     }
     // Render files first, then folders
     foreach ($files as $filePath) {
-        $fileName = basename($filePath);
+        $fileName = preg_replace('/\.md$/', '', basename($filePath));
         $active = $editPageName && $filePath === $editPageName;
         if ($active) {
             $editable = true;
