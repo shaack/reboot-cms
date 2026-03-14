@@ -133,7 +133,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 <form method="post" action="pages?page=<?= urlencode($editPageName) ?>">
                     <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                     <!--suppress HtmlFormInputWithoutLabel -->
-                    <textarea name="edited" class="form-control cm-md-editor markdown"><?= htmlspecialchars(file_get_contents($fullPath)) ?></textarea>
+                    <textarea name="edited" class="form-control cm-md-editor markdown editor-font"><?= htmlspecialchars(file_get_contents($fullPath)) ?></textarea>
                     <button type="button" class="btn btn-sm btn-primary px-3" onclick="savePageAsync()">Save</button>
                     <?php
                     $viewPath = preg_replace('/\.md$/', '', $editPageName);

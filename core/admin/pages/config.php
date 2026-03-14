@@ -65,7 +65,7 @@ try {
                 <div class="form-group">
                     <label for="configFile" class="visually-hidden">Configuration file</label>
                     <textarea name="configuration"
-                              class="mb-3 form-control font-monospace simple-edit <?= $configHasErrors ? "border-danger" : "" ?>" id="configFile"
+                              class="mb-3 form-control editor-font simple-edit <?= $configHasErrors ? "border-danger" : "" ?>" id="configFile"
                               rows="20"><?= $configFile ?></textarea>
                 </div>
                 <?php if ($configHasErrors) { ?>

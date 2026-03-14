@@ -8,4 +8,9 @@ class Admin extends AddOn
     {
         return new Site($this->reboot, "/site", "");
     }
+
+    public function getLocalConfig(): array
+    {
+        return $this->reboot->getConfig();
+    }
 }

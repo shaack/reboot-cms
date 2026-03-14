@@ -4,3 +4,8 @@
 # 0 = debug, 1 = info, 2 = error
 
 logLevel: 2 # <= set to 2 in production
+
+# Font family and size for the admin editor textareas
+editorFont: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'
+editorFontSize: '0.95rem'
+editorLineHeight: '1.4'
