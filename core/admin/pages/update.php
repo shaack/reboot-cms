@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         '<form method="post" action="update" onsubmit="return confirm(\'Update Reboot CMS to version ' + safeVersion + '. To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.\')">' +
                         '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
                         '<input type="hidden" name="action" value="update">' +
-                        '<button class="btn btn-primary">Update to ' + safeVersion + '</button>' +
+                        '<button class="btn btn-sm btn-primary">Update to ' + safeVersion + '</button>' +
                         '</form>'
                 } else {
                     actions.innerHTML = '<p class="text-muted mb-0">You are running the latest version.</p>'

@@ -73,7 +73,7 @@ try {
                         Syntax Error in Configuration
                     </p>
                 <?php } ?>
-                <button class="btn btn-primary">Save</button>
+                <button class="btn btn-sm btn-primary px-3">Save</button>
             </form>
         </div>
     </div>

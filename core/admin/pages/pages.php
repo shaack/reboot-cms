@@ -124,13 +124,13 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <textarea name="edited" class="form-control cm-md-editor markdown"><?= htmlspecialchars(file_get_contents($fullPath)) ?></textarea>
-                    <button class="btn btn-primary">Save</button>
+                    <button class="btn btn-sm btn-primary px-3">Save</button>
                     <?php
                     $viewPath = preg_replace('/\.md$/', '', $editPageName);
                     $viewPath = preg_replace('/\/index$/', '/', $viewPath);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
-                    <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-outline-secondary ms-2">View Page</a>
+                    <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
                     <?php if ($edited !== null) { ?>
                     <script>statusMessage("Page saved")</script>
                     <?php } ?>
