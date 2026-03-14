@@ -13,6 +13,6 @@
     "bootstrap": "^5.3.8",
     "bootstrap-auto-dark-mode": "^1.1.1",
     "bootstrap-show-toast": "^1.2.2",
-    "cm-md-editor": "^2.2.1"
+    "cm-md-editor": "^2.3.0"
   }
 }

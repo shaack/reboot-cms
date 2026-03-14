@@ -68,6 +68,25 @@ if ($action) {
                 throw new \RuntimeException("Failed to create folder");
             }
             $success = "Folder '$folderName' created";
+        } elseif ($action === "replace" && isset($_FILES["replace_file"])) {
+            $targetName = basename($request->getParam("name") ?? "");
+            if (empty($targetName) || $targetName === "." || $targetName === "..") {
+                throw new \InvalidArgumentException("Invalid file name");
+            }
+            $targetPath = $resolvedPath . "/" . $targetName;
+            $resolvedTarget = realpath($targetPath);
+            if ($resolvedTarget === false || !is_file($resolvedTarget) || strncmp($resolvedTarget, realpath($mediaDir), strlen(realpath($mediaDir))) !== 0) {
+                throw new \InvalidArgumentException("Invalid target file");
+            }
+            $file = $_FILES["replace_file"];
+            if ($file["error"] !== UPLOAD_ERR_OK) {
+                throw new \RuntimeException("Upload failed");
+            }
+            if (move_uploaded_file($file["tmp_name"], $resolvedTarget)) {
+                $success = "File '$targetName' replaced";
+            } else {
+                throw new \RuntimeException("Failed to replace file");
+            }
         } elseif ($action === "delete") {
             $deleteName = $request->getParam("name") ?? "";
             $deleteName = basename($deleteName);
@@ -229,13 +248,24 @@ function isImageType(string $mimeType): bool
                             <?= date("Y-m-d H:i", $entry['modified']) ?>
                         </td>
                         <td>
-                            <form method="post" action="media?path=<?= urlencode($currentPath) ?>"
-                                  onsubmit="return confirm('Delete \'<?= htmlspecialchars($entry['name'], ENT_QUOTES) ?>\'?')">
-                                <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="name" value="<?= htmlspecialchars($entry['name']) ?>">
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
+                            <div class="d-flex gap-1">
+                                <?php if (!$entry['isDir']) { ?>
+                                <form method="post" action="media?path=<?= urlencode($currentPath) ?>" enctype="multipart/form-data">
+                                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                                    <input type="hidden" name="action" value="replace">
+                                    <input type="hidden" name="name" value="<?= htmlspecialchars($entry['name']) ?>">
+                                    <input type="file" name="replace_file" class="d-none" onchange="this.form.submit()">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="this.form.querySelector('input[type=file]').click()">Replace</button>
+                                </form>
+                                <?php } ?>
+                                <form method="post" action="media?path=<?= urlencode($currentPath) ?>"
+                                      onsubmit="return confirm('Delete \'<?= htmlspecialchars($entry['name'], ENT_QUOTES) ?>\'?')">
+                                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="name" value="<?= htmlspecialchars($entry['name']) ?>">
+                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 <?php } ?>

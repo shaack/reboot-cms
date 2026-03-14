@@ -124,16 +124,13 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <textarea name="edited" class="form-control cm-md-editor markdown"><?= htmlspecialchars(file_get_contents($fullPath)) ?></textarea>
-                    <button class="btn btn-sm btn-primary px-3">Save</button>
+                    <button type="button" class="btn btn-sm btn-primary px-3" onclick="savePageAsync()">Save</button>
                     <?php
                     $viewPath = preg_replace('/\.md$/', '', $editPageName);
                     $viewPath = preg_replace('/\/index$/', '/', $viewPath);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
-                    <?php if ($edited !== null) { ?>
-                    <script>statusMessage("Page saved")</script>
-                    <?php } ?>
                 </form>
                 <?php } ?>
             <?php } ?>
@@ -141,13 +138,27 @@ $pageTree = buildPageTree($pages, $pagesDir);
     </div>
 </div>
 <script>
+function savePageAsync() {
+    var form = document.querySelector('form[action^="pages?page="]');
+    if (!form) return;
+    var formData = new FormData(form);
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    }).then(function(response) {
+        if (response.ok) {
+            statusMessage("Page saved");
+        } else {
+            statusMessage("Error saving page", "text-bg-danger");
+        }
+    }).catch(function() {
+        statusMessage("Error saving page", "text-bg-danger");
+    });
+}
 document.addEventListener('keydown', function(e) {
     if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        var form = document.querySelector('form[action^="pages?page="]');
-        if (form) {
-            e.preventDefault();
-            form.submit();
-        }
+        e.preventDefault();
+        savePageAsync();
     }
 });
 document.querySelectorAll('.page-tree-folder').forEach(function(folder) {

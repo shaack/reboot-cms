@@ -20,8 +20,14 @@ $authentication = $site->getAddOn("Authentication");
     <script src="node_modules/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
     <script>
         window._toastQueue = []
+        window._toastsReady = false
         function statusMessage(body, toastClass) {
-            window._toastQueue.push({body: body, toastClass: toastClass || "text-bg-success"})
+            var t = {body: body, toastClass: toastClass || "text-bg-success"}
+            if (window._toastsReady) {
+                bootstrap.showToast(t)
+            } else {
+                window._toastQueue.push(t)
+            }
         }
     </script>
 </head>
@@ -78,6 +84,7 @@ echo($page->render($request));
 <script src="node_modules/bootstrap-show-toast/src/bootstrap-show-toast.js"></script>
 <script>
     window._toastQueue.forEach(function(t) { bootstrap.showToast(t) })
+    window._toastsReady = true
 </script>
 <script type="module">
     import {MdEditor} from "./node_modules/cm-md-editor/src/MdEditor.js"
