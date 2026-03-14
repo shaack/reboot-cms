@@ -61,11 +61,10 @@ if ($action === "update") {
                 </tr>
             </table>
 
-            <div id="update-actions">
-                <?php if ($success) { ?>
-                    <a href="update" class="btn btn-success">OK</a>
-                <?php } ?>
-            </div>
+            <div id="update-actions"></div>
+            <?php if ($success) { ?>
+                <script>setTimeout(function() { window.location.href = "update"; }, 1000)</script>
+            <?php } ?>
         </div>
     </div>
 </div>
