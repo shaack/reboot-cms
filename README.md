@@ -23,9 +23,7 @@ a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report
 ## Minimum System Requirements
 
 - **PHP** 8.0 or higher
-- **PHP Extensions:** json, fileinfo, dom
 - **Web Server:** Apache with mod_rewrite (or compatible server)
-- **Composer** for PHP dependency management
 - **No database required** — all content is stored as flat files
 
 ## Install
