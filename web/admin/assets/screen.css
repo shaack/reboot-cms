@@ -25,12 +25,7 @@ textarea.cm-md-editor {
   margin-bottom: 1rem;
 }
 
-[data-bs-theme=dark] .editor-wrapper {
-  background-color: var(--bs-body-bg);
-  border-radius: var(--bs-border-radius);
-}
-
-[data-bs-theme=dark] .editor-wrapper textarea.cm-md-editor {
+[data-bs-theme=dark] textarea.cm-md-editor {
   background-color: #1a1a1a;
 }
 
