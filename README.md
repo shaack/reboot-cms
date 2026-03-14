@@ -249,14 +249,10 @@ and update the CMS.
 
 ![Login](docs/img/reboot-cms-admin-login.png)
 
-### Pages
+### Edit a page
 
 The "Pages" section lists all markdown pages in your site. Click on a page name to open it in the editor.
 Pages are organized in a tree structure reflecting the folder hierarchy in `site/pages/`.
-
-![Pages](docs/img/reboot-cms-admin-pages.png)
-
-### Edit a page
 
 ![Edit a page](docs/img/reboot-cms-admin-page-edit.png)
 

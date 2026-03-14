@@ -9,8 +9,8 @@ const imgDir = path.join(__dirname, 'img');
 
 const BASE = 'http://localhost';
 const ADMIN = `${BASE}/admin`;
-const WIDTH = 1280;
-const HEIGHT = 900;
+const WIDTH = 1024;
+const HEIGHT = 768;
 
 async function main() {
     const browser = await puppeteer.launch({ headless: true });
@@ -37,13 +37,7 @@ async function main() {
     await page.waitForNavigation({ waitUntil: 'networkidle0' });
     console.log('  Logged in, now at:', page.url());
 
-    // 4. Pages list
-    console.log('Capturing pages list...');
-    await page.goto(`${ADMIN}/pages`, { waitUntil: 'networkidle0' });
-    await page.screenshot({ path: path.join(imgDir, 'reboot-cms-admin-pages.png') });
-    console.log('  -> reboot-cms-admin-pages.png');
-
-    // 5. Page editor (editing index.md)
+    // 4. Page editor (editing index.md)
     console.log('Capturing page editor...');
     await page.goto(`${ADMIN}/pages?page=/index.md`, { waitUntil: 'networkidle0' });
     await new Promise(r => setTimeout(r, 1000));

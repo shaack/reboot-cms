@@ -34,7 +34,6 @@ The script logs in to the admin interface and takes screenshots of each section:
 |---|---|
 | `reboot-cms-index.png` | Front page (no auth) |
 | `reboot-cms-admin-login.png` | Admin login screen |
-| `reboot-cms-admin-pages.png` | Pages list |
 | `reboot-cms-admin-page-edit.png` | Page editor (index.md) |
 | `reboot-cms-admin-site-configuration.png` | Site configuration editor |
 | `reboot-cms-admin-media.png` | Media file manager |
