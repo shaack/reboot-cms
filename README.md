@@ -147,7 +147,7 @@ aliqua.
 
 This `Page` contains 3 `Block` types, "hero", "text-image" and "three-columns". It will render to this:
 
-![A rendered page](docs/img/reboot-cms-index.png)
+![A rendered page](web/media/screenshots/reboot-cms-index.png)
 
 Blocks can be configured in the block comment. With this configuration, the `text-image`
 block allows to display the image to the left side in desktop view.
@@ -244,14 +244,14 @@ and update the CMS.
 
 ### Login
 
-![Login](docs/img/reboot-cms-admin-login.png)
+![Login](web/media/screenshots/reboot-cms-admin-login.png)
 
 ### Edit a page
 
 The "Pages" section lists all markdown pages in your site. Click on a page name to open it in the editor.
 Pages are organized in a tree structure reflecting the folder hierarchy in `site/pages/`.
 
-![Edit a page](docs/img/reboot-cms-admin-page-edit.png)
+![Edit a page](web/media/screenshots/reboot-cms-admin-page-edit.png)
 
 ### Media
 
@@ -259,14 +259,14 @@ The "Media" section lets you manage files in the `web/media/` directory. You can
 and delete files or empty folders. Media files are accessible at `/media/` in the browser and can be referenced
 in your markdown pages.
 
-![Media](docs/img/reboot-cms-admin-media.png)
+![Media](web/media/screenshots/reboot-cms-admin-media.png)
 
 ### Site configuration
 
 In the site configuration, you can store global values of the site, like the navigation structure or the content of
 header elements. The site configuration is written in YAML.
 
-![Site configuration](docs/img/reboot-cms-admin-site-configuration.png)
+![Site configuration](web/media/screenshots/reboot-cms-admin-site-configuration.png)
 
 ### User management
 
@@ -279,7 +279,7 @@ The "Users" page in the admin interface allows you to manage admin accounts dire
 Usernames may contain letters, numbers, and underscores (max 64 characters). Passwords must be at least 8 characters.
 All credentials are stored as APR1-MD5 hashes in `local/.htpasswd`.
 
-![Users](docs/img/reboot-cms-admin-users.png)
+![Users](web/media/screenshots/reboot-cms-admin-users.png)
 
 You can also manage users via the command line:
 
@@ -299,7 +299,7 @@ and entry point (`web/index.php`) are not affected.
 
 It is recommended to make a backup of the project folder before updating.
 
-![Update](docs/img/reboot-cms-admin-update.png)
+![Update](web/media/screenshots/reboot-cms-admin-update.png)
 
 ## AddOns
 

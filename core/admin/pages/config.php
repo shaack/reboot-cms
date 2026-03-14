@@ -48,7 +48,7 @@ try {
 }
 ?>
 
-<div class="container-fluid max-width-md">
+<div class="container-fluid max-width-lg">
     <?php if ($configSaveError) { ?>
         <script>statusMessage("Configuration not saved: <?= htmlspecialchars($configSaveError, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>
@@ -66,7 +66,7 @@ try {
                     <label for="configFile" class="visually-hidden">Configuration file</label>
                     <textarea name="configuration"
                               class="mb-3 form-control font-monospace simple-edit <?= $configHasErrors ? "border-danger" : "" ?>" id="configFile"
-                              rows="15"><?= $configFile ?></textarea>
+                              rows="20"><?= $configFile ?></textarea>
                 </div>
                 <?php if ($configHasErrors) { ?>
                     <p class="text-danger">

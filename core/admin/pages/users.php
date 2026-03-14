@@ -70,7 +70,7 @@ if ($action) {
 $users = $htpasswd->getUsers();
 ?>
 
-<div class="container-fluid max-width-md">
+<div class="container-fluid max-width-lg">
     <?php if ($error) { ?>
         <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>

@@ -1,6 +1,6 @@
 # Capturing Screenshots
 
-The screenshots in `docs/img/` are generated automatically using a Puppeteer script. This ensures
+The screenshots in `web/media/screenshots/` are generated automatically using a Puppeteer script. This ensures
 consistent, clean viewport captures without browser chrome.
 
 ## Prerequisites
@@ -40,4 +40,4 @@ The script logs in to the admin interface and takes screenshots of each section:
 | `reboot-cms-admin-users.png` | User management |
 | `reboot-cms-admin-update.png` | Update page |
 
-All images are saved to `docs/img/` and referenced from `README.md`.
+All images are saved to `web/media/screenshots/` and referenced from `README.md`.

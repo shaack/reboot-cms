@@ -91,4 +91,12 @@ textarea.cm-md-editor {
   max-width: 720px;
 }
 
+.max-width-lg {
+  max-width: 960px;
+}
+
+.max-width-xl {
+  max-width: 1140px;
+}
+
 /*# sourceMappingURL=screen.css.map */

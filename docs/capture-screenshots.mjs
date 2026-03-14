@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const imgDir = path.join(__dirname, 'img');
+const imgDir = path.join(__dirname, '..', 'web', 'media', 'screenshots');
 
 const BASE = 'http://localhost';
 const ADMIN = `${BASE}/admin`;
@@ -71,7 +71,7 @@ async function main() {
     console.log('  -> reboot-cms-admin-update.png');
 
     await browser.close();
-    console.log('\nDone! All screenshots saved to docs/img/');
+    console.log('\nDone! All screenshots saved to web/media/screenshots/');
 }
 
 main().catch(err => {
