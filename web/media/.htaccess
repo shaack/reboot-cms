@@ -1,0 +1,7 @@
+# Prevent PHP execution in media directory
+<FilesMatch "\.(php|phtml|php3|php4|php5|phps)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+Options -Indexes

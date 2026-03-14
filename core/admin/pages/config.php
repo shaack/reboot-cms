@@ -5,9 +5,17 @@
 /** @var Shaack\Reboot\Admin $admin */
 $admin = $site->getAddOn("Admin");
 
+use Shaack\Reboot\Authentication;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Shaack\Reboot\CsrfProtection;
+
+/** @var Authentication $authentication */
+$authentication = $site->getAddOn("Authentication");
+if (!$authentication->isAdmin()) {
+    $reboot->redirect($site->getWebPath() . "/pages");
+    return;
+}
 
 $defaultSite = $admin->getDefaultSite();
 $configuration = $request->getParam("configuration");

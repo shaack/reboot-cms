@@ -3,8 +3,16 @@
 /** @var \Shaack\Reboot\Site $site */
 /** @var \Shaack\Reboot\Request $request */
 
+use Shaack\Reboot\Authentication;
 use Shaack\Reboot\CsrfProtection;
 use Shaack\Reboot\Updater;
+
+/** @var Authentication $authentication */
+$authentication = $site->getAddOn("Authentication");
+if (!$authentication->isAdmin()) {
+    $reboot->redirect($site->getWebPath() . "/pages");
+    return;
+}
 
 $updater = new Updater($reboot->getBaseFsPath());
 $localVersion = $updater->getLocalVersion() ?? "unknown";
@@ -80,13 +88,17 @@ document.addEventListener("DOMContentLoaded", function () {
             const cell = document.getElementById("remote-version-cell")
             const actions = document.getElementById("update-actions")
             if (data.version) {
-                cell.innerHTML = "<strong>" + data.version + "</strong>"
+                const version = document.createElement("strong")
+                version.textContent = data.version
+                cell.innerHTML = ""
+                cell.appendChild(version)
                 if (data.version !== localVersion) {
+                    const safeVersion = data.version.replace(/[<>"'&]/g, '')
                     actions.innerHTML =
-                        '<form method="post" action="update" onsubmit="return confirm(\'Update Reboot CMS to version ' + data.version + '. To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.\')">' +
+                        '<form method="post" action="update" onsubmit="return confirm(\'Update Reboot CMS to version ' + safeVersion + '. To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.\')">' +
                         '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
                         '<input type="hidden" name="action" value="update">' +
-                        '<button class="btn btn-primary">Update to ' + data.version + '</button>' +
+                        '<button class="btn btn-primary">Update to ' + safeVersion + '</button>' +
                         '</form>'
                 } else {
                     actions.innerHTML = '<p class="text-muted mb-0">You are running the latest version.</p>'

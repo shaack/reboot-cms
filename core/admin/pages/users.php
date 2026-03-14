@@ -10,6 +10,10 @@ use Shaack\Reboot\CsrfProtection;
 
 /** @var Authentication $authentication */
 $authentication = $site->getAddOn("Authentication");
+if (!$authentication->isAdmin()) {
+    $reboot->redirect($site->getWebPath() . "/pages");
+    return;
+}
 $htpasswd = $authentication->getHtpasswd();
 $currentUser = $authentication->getUser();
 
