@@ -1,19 +1,20 @@
 {
     "name": "shaack/reboot-cms",
-    "version": "3.1.0",
-    "authors": [
-        {
-            "name": "shaack",
-            "homepage": "https://shaack.com"
-        }
-    ],
+    "description": "A lightweight, flat-file Content Management System with block-based content rendering",
+    "license": "MIT",
+    "type": "project",
     "repositories": [
         {
             "type": "vcs",
             "url": "https://github.com/shaack/reboot-cms"
         }
     ],
-    "description": "A nice flat file CMS. See https://github.com/shaack/reboot-cms",
+    "authors": [
+        {
+            "name": "shaack",
+            "homepage": "https://shaack.com"
+        }
+    ],
     "require": {
         "php": ">=8.0",
         "ext-json": "*",
