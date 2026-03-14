@@ -43,7 +43,7 @@ if ($action === "update") {
 }
 ?>
 
-<div class="container-fluid max-width-md">
+<div class="container-fluid max-width-lg">
     <?php if ($error) { ?>
         <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>
@@ -54,7 +54,7 @@ if ($action === "update") {
     <div class="card">
         <div class="card-header"><h5 class="mb-0">Reboot CMS Update</h5></div>
         <div class="card-body">
-            <table class="table table-borderless mb-3">
+            <table class="table table-borderless mb-3 max-width-md">
                 <tr>
                     <td>Installed version</td>
                     <td><strong><?= htmlspecialchars($localVersion) ?></strong></td>

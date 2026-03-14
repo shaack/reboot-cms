@@ -32,6 +32,10 @@ textarea.cm-md-editor {
     margin-bottom: 1rem;
 }
 
+[data-bs-theme="dark"] textarea.cm-md-editor {
+    background-color: #1a1a1a;
+}
+
 .col-sidebar {
     overflow: scroll;
 }
@@ -40,11 +44,40 @@ textarea.cm-md-editor {
     max-width: 1400px;
 }
 
+nav.navbar {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    font-size: 0.95rem;
+}
+
+[data-bs-theme="dark"] nav.navbar {
+    background: rgba(10, 10, 15, 0.8) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
 .navbar-brand {
-    font-family: 'Gelasio', serif;
-    font-size: 1.5rem;
-    letter-spacing: -0.02em;
-    opacity: 0.8;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    padding: 0.5rem 0;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.nav-link {
+    transition: color 0.2s, opacity 0.2s;
+    opacity: 0.6;
+
+    &:hover,
+    &.active {
+        opacity: 1;
+    }
 }
 
 .page-tree {

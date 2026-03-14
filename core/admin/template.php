@@ -36,9 +36,9 @@ $authentication = $site->getAddOn("Authentication");
 <nav class="navbar navbar-expand-md fixed-top">
     <div class="container-fluid">
         <!--suppress HtmlUnknownTarget -->
-        <a class="navbar-brand" href="pages"><?php echo $navbarConfig["brand"] ?></a>
+        <a class="navbar-brand me-5" href="pages"><?php echo $navbarConfig["brand"] ?></a>
         <?php if ($authentication->getUser()) { ?>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar"
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
