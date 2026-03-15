@@ -7,7 +7,6 @@ export class MdEditor {
     constructor(element, props) {
         this.element = element
         this.props = {
-            syntaxHighlight: 1, // opacity of the highlighting, set 0 to disable
             colorHeading: "100,160,255",
             colorCode: "130,170,200",
             colorComment: "128,128,128",
@@ -21,6 +20,7 @@ export class MdEditor {
             colorHorizontalRule: "128,128,200",
             colorEscape: "128,128,128",
             colorFrontMatter: "128,128,200",
+            wordWrap: true,
             toolbarButtons: ["h1", "h2", "h3", "bold", "italic", "ul", "ol", "link", "image"],
             ...props
         }
@@ -79,7 +79,7 @@ export class MdEditor {
         // Wrap toggle button
         this.wrapStorageKey = 'mdEditor_wrap_' + (this.element.id || this.element.name || 'default')
         const savedWrap = localStorage.getItem(this.wrapStorageKey)
-        this.wrapEnabled = savedWrap !== null ? savedWrap === 'true' : true
+        this.wrapEnabled = savedWrap !== null ? savedWrap === 'true' : this.props.wordWrap
         this.wrapButton = document.createElement('button')
         this.wrapButton.type = 'button'
         this.wrapButton.title = 'Toggle word wrap'
@@ -102,7 +102,6 @@ export class MdEditor {
     }
 
     createHighlightBackdrop() {
-        if (!this.props.syntaxHighlight) return
         const container = this.element.parentNode
         container.style.position = 'relative'
         this.backdrop = document.createElement('div')
@@ -112,7 +111,7 @@ export class MdEditor {
 
         // Copy textarea computed styles to backdrop
         const cs = window.getComputedStyle(this.element)
-        this.backdrop.style.cssText = `position:absolute;overflow:hidden;pointer-events:none;z-index:1;opacity:${this.props.syntaxHighlight};`
+        this.backdrop.style.cssText = `position:absolute;overflow:hidden;pointer-events:none;z-index:1;`
         this.highlightLayer.style.cssText = `white-space:pre-wrap;word-wrap:break-word;overflow-wrap:break-word;`
 
         const syncStyles = () => {

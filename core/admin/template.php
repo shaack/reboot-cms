@@ -12,6 +12,7 @@ $editorFont = $editor['font'] ?? 'ui-monospace, SFMono-Regular, "SF Mono", Menlo
 $editorFontSize = $editor['fontSize'] ?? '1rem';
 $editorLineHeight = $editor['lineHeight'] ?? '1.5';
 $editorTabSize = $editor['tabSize'] ?? '4';
+$editorWordWrap = ($editor['wordWrap'] ?? true) ? 'true' : 'false';
 ?>
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
@@ -97,7 +98,7 @@ echo($page->render($request));
 <script type="module">
     import {MdEditor} from "./node_modules/cm-md-editor/src/MdEditor.js"
     document.querySelectorAll("textarea.markdown").forEach(editor => {
-        new MdEditor(editor)
+        new MdEditor(editor, {wordWrap: <?= $editorWordWrap ?>})
     })
 </script>
 </body>

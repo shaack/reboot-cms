@@ -11,3 +11,4 @@ editor:
   fontSize: '0.95rem'
   lineHeight: '1.4'
   tabSize: 4
+  wordWrap: true
