@@ -22,7 +22,7 @@
         "ext-fileinfo": "*",
         "ext-dom": "*",
         "erusev/parsedown": "^1.7",
-        "symfony/yaml": "^4.1",
+        "symfony/yaml": "^6.0",
         "whitehat101/apr1-md5": "~1.0"
     },
     "autoload": {
