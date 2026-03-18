@@ -76,7 +76,7 @@ function buildPageTree(array $pages, string $pagesDir): array {
     return $tree;
 }
 
-function renderTree(array $tree, string $editPageName = null, bool &$editable = false, string $prefix = ""): string {
+function renderTree(array $tree, ?string $editPageName = null, bool &$editable = false, string $prefix = ""): string {
     $html = "<ul class='page-tree list-unstyled'>";
     // Separate folders and files
     $folders = [];
