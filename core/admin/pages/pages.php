@@ -260,7 +260,9 @@ if ($pageAction) {
                 throw new \InvalidArgumentException("Folder already exists.");
             }
             mkdir($newDir, 0755, true);
-            $pageActionSuccess = "Folder created";
+            file_put_contents($newDir . "/index.md", "");
+            $editPageName = "/" . $folderName . "/index.md";
+            $pageActionSuccess = "Folder created with index.md";
             $pages = FileSystemUtils::getFileList($pagesDir, true);
             usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
 
@@ -344,6 +346,7 @@ if($editPageName) {
 // Build tree structure from flat file list
 function buildPageTree(array $pages, string $pagesDir): array {
     $tree = [];
+    // Add .md files
     foreach ($pages as $page) {
         $pagePathInfo = pathinfo($page["name"]);
         if (!array_key_exists("extension", $pagePathInfo) || $pagePathInfo["extension"] !== "md") {
@@ -361,7 +364,27 @@ function buildPageTree(array $pages, string $pagesDir): array {
         $node[] = $relPath;
         unset($node);
     }
+    // Add empty directories
+    addEmptyDirs($pagesDir, $pagesDir, $tree);
     return $tree;
+}
+
+function addEmptyDirs(string $dir, string $pagesDir, array &$tree): void {
+    $entries = scandir($dir);
+    foreach ($entries as $entry) {
+        if ($entry[0] === '.' || !is_dir($dir . "/" . $entry)) continue;
+        $relPath = substr($dir . "/" . $entry, strlen($pagesDir) + 1);
+        $parts = explode("/", $relPath);
+        $node = &$tree;
+        foreach ($parts as $part) {
+            if (!isset($node[$part])) {
+                $node[$part] = [];
+            }
+            $node = &$node[$part];
+        }
+        unset($node);
+        addEmptyDirs($dir . "/" . $entry, $pagesDir, $tree);
+    }
 }
 
 function renderTree(array $tree, ?string $editPageName = null, bool &$editable = false, string $prefix = ""): string {
