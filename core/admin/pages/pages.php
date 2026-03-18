@@ -398,8 +398,8 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     <div class="dropdown d-inline-block ms-2">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">&#8230;</button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#" onclick="renamePage(); return false;">Rename</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="movePage(); return false;">Move</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="renamePage(); return false;">Rename Page</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="movePage(); return false;">Move Page</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="#" onclick="deletePage(); return false;">Delete Page</a></li>
                         </ul>
