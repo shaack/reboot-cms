@@ -117,6 +117,28 @@ nav.navbar {
   text-align: center;
 }
 
+.folder-actions {
+  display: none;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.page-tree-folder-item:hover .folder-actions {
+  display: flex;
+}
+
+.folder-action {
+  text-decoration: none;
+  color: var(--bs-body-color);
+  opacity: 0.4;
+  font-size: 0.8rem;
+  padding: 0 3px;
+  line-height: 1;
+}
+.folder-action:hover {
+  opacity: 1;
+}
+
 .max-width-md {
   max-width: 720px;
 }

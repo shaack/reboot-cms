@@ -46,6 +46,153 @@ if ($request->getParam("list")) {
     exit;
 }
 
+// Handle page/folder management actions
+$pageAction = $request->getParam("action");
+$pageActionError = null;
+$pageActionSuccess = null;
+if ($pageAction) {
+    try {
+        CsrfProtection::validate($request);
+        $targetName = $request->getParam("name") ?? "";
+        $targetName = str_replace("..", "", $targetName);
+
+        if ($pageAction === "add_page") {
+            $newName = trim($targetName);
+            if (!preg_match('/^[\w\-\/]+$/', $newName)) {
+                throw new \InvalidArgumentException("Invalid page name. Use letters, numbers, hyphens, underscores.");
+            }
+            $newPath = $pagesDir . "/" . $newName . ".md";
+            $newDir = dirname($newPath);
+            if (!is_dir($newDir)) {
+                mkdir($newDir, 0755, true);
+            }
+            if (file_exists($newPath)) {
+                throw new \InvalidArgumentException("Page already exists.");
+            }
+            file_put_contents($newPath, "");
+            $editPageName = "/" . $newName . ".md";
+            $pageActionSuccess = "Page created";
+            // Refresh file list
+            $pages = FileSystemUtils::getFileList($pagesDir, true);
+            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
+
+        } elseif ($pageAction === "delete_page") {
+            $delPath = realpath($pagesDir . $targetName);
+            if (!$delPath || strncmp($delPath, $pagesDir, strlen($pagesDir)) !== 0 || !is_file($delPath)) {
+                throw new \InvalidArgumentException("Invalid page.");
+            }
+            unlink($delPath);
+            $editPageName = null;
+            $pageActionSuccess = "Page deleted";
+            $pages = FileSystemUtils::getFileList($pagesDir, true);
+            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
+
+        } elseif ($pageAction === "rename_page") {
+            $newName = trim($request->getParam("new_name") ?? "");
+            if (!preg_match('/^[\w\-]+$/', $newName)) {
+                throw new \InvalidArgumentException("Invalid name. Use letters, numbers, hyphens, underscores.");
+            }
+            $oldPath = realpath($pagesDir . $targetName);
+            if (!$oldPath || strncmp($oldPath, $pagesDir, strlen($pagesDir)) !== 0 || !is_file($oldPath)) {
+                throw new \InvalidArgumentException("Invalid page.");
+            }
+            $newPath = dirname($oldPath) . "/" . $newName . ".md";
+            if (file_exists($newPath)) {
+                throw new \InvalidArgumentException("A page with that name already exists.");
+            }
+            rename($oldPath, $newPath);
+            $relNew = str_replace($pagesDir, "", $newPath);
+            $editPageName = $relNew;
+            $pageActionSuccess = "Page renamed";
+            $pages = FileSystemUtils::getFileList($pagesDir, true);
+            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
+
+        } elseif ($pageAction === "move_page") {
+            $destination = trim($request->getParam("destination") ?? "");
+            $destination = str_replace("..", "", $destination);
+            $oldPath = realpath($pagesDir . $targetName);
+            if (!$oldPath || strncmp($oldPath, $pagesDir, strlen($pagesDir)) !== 0 || !is_file($oldPath)) {
+                throw new \InvalidArgumentException("Invalid page.");
+            }
+            $destDir = $pagesDir . ($destination ? "/" . $destination : "");
+            if (!is_dir($destDir)) {
+                throw new \InvalidArgumentException("Destination folder does not exist.");
+            }
+            $newPath = $destDir . "/" . basename($oldPath);
+            if (file_exists($newPath)) {
+                throw new \InvalidArgumentException("A page with that name already exists in the destination.");
+            }
+            rename($oldPath, $newPath);
+            $editPageName = str_replace($pagesDir, "", $newPath);
+            $pageActionSuccess = "Page moved";
+            $pages = FileSystemUtils::getFileList($pagesDir, true);
+            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
+
+        } elseif ($pageAction === "add_folder") {
+            $folderName = trim($targetName);
+            if (!preg_match('/^[\w\-\/]+$/', $folderName)) {
+                throw new \InvalidArgumentException("Invalid folder name.");
+            }
+            $newDir = $pagesDir . "/" . $folderName;
+            if (is_dir($newDir)) {
+                throw new \InvalidArgumentException("Folder already exists.");
+            }
+            mkdir($newDir, 0755, true);
+            $pageActionSuccess = "Folder created";
+            $pages = FileSystemUtils::getFileList($pagesDir, true);
+            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
+
+        } elseif ($pageAction === "delete_folder") {
+            $delDir = realpath($pagesDir . "/" . $targetName);
+            if (!$delDir || strncmp($delDir, $pagesDir, strlen($pagesDir)) !== 0 || !is_dir($delDir)) {
+                throw new \InvalidArgumentException("Invalid folder.");
+            }
+            if ($delDir === $pagesDir) {
+                throw new \InvalidArgumentException("Cannot delete the pages root folder.");
+            }
+            if (count(scandir($delDir)) > 2) {
+                throw new \InvalidArgumentException("Folder is not empty.");
+            }
+            rmdir($delDir);
+            $pageActionSuccess = "Folder deleted";
+            $pages = FileSystemUtils::getFileList($pagesDir, true);
+            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
+
+        } elseif ($pageAction === "rename_folder") {
+            $newName = trim($request->getParam("new_name") ?? "");
+            if (!preg_match('/^[\w\-]+$/', $newName)) {
+                throw new \InvalidArgumentException("Invalid name.");
+            }
+            $oldDir = realpath($pagesDir . "/" . $targetName);
+            if (!$oldDir || strncmp($oldDir, $pagesDir, strlen($pagesDir)) !== 0 || !is_dir($oldDir)) {
+                throw new \InvalidArgumentException("Invalid folder.");
+            }
+            $newDir = dirname($oldDir) . "/" . $newName;
+            if (file_exists($newDir)) {
+                throw new \InvalidArgumentException("A folder with that name already exists.");
+            }
+            rename($oldDir, $newDir);
+            $pageActionSuccess = "Folder renamed";
+            // Update editPageName if it was inside the renamed folder
+            if ($editPageName) {
+                $oldPrefix = "/" . $targetName . "/";
+                $newPrefix = "/" . dirname($targetName) . "/" . $newName . "/";
+                if (dirname($targetName) === ".") {
+                    $oldPrefix = "/" . $targetName . "/";
+                    $newPrefix = "/" . $newName . "/";
+                }
+                if (str_starts_with($editPageName, $oldPrefix)) {
+                    $editPageName = $newPrefix . substr($editPageName, strlen($oldPrefix));
+                }
+            }
+            $pages = FileSystemUtils::getFileList($pagesDir, true);
+            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
+        }
+    } catch (\Exception $e) {
+        $pageActionError = $e->getMessage();
+    }
+}
+
 if (!$editPageName && file_exists($pagesDir . "/index.md")) {
     $editPageName = "/index.md";
 }
@@ -115,10 +262,17 @@ function renderTree(array $tree, ?string $editPageName = null, bool &$editable =
             $folderContainsActive = str_starts_with($editPageName, "/" . $folderPrefix) || str_starts_with($editPageName, $folderPrefix);
         }
         $expanded = $folderContainsActive;
-        $html .= "<li>";
-        $html .= "<a class='page-tree-folder' data-bs-toggle='collapse' href='#" . $folderId . "' role='button' aria-expanded='" . ($expanded ? "true" : "false") . "'>";
+        $folderPath = $prefix . $folderName;
+        $html .= "<li class='page-tree-folder-item'>";
+        $html .= "<div class='d-flex align-items-center'>";
+        $html .= "<a class='page-tree-folder flex-grow-1' data-bs-toggle='collapse' href='#" . $folderId . "' role='button' aria-expanded='" . ($expanded ? "true" : "false") . "'>";
         $html .= "<span class='folder-icon'>" . ($expanded ? "&#9660;" : "&#9654;") . "</span> " . htmlspecialchars($folderName);
         $html .= "</a>";
+        $html .= "<span class='folder-actions'>";
+        $html .= "<a href='#' class='folder-action' title='Rename folder' onclick='renameFolder(\"" . htmlspecialchars($folderPath, ENT_QUOTES) . "\", \"" . htmlspecialchars($folderName, ENT_QUOTES) . "\"); return false;'>&#9998;</a>";
+        $html .= "<a href='#' class='folder-action' title='Delete empty folder' onclick='deleteFolder(\"" . htmlspecialchars($folderPath, ENT_QUOTES) . "\", \"" . htmlspecialchars($folderName, ENT_QUOTES) . "\"); return false;'>&#10005;</a>";
+        $html .= "</span>";
+        $html .= "</div>";
         $html .= "<div class='collapse" . ($expanded ? " show" : "") . "' id='" . $folderId . "'>";
         $html .= renderTree($children, $editPageName, $editable, $prefix . $folderName . "/");
         $html .= "</div>";
@@ -128,9 +282,29 @@ function renderTree(array $tree, ?string $editPageName = null, bool &$editable =
     return $html;
 }
 
+// Collect folder paths for the move dropdown
+function collectFolders(string $dir, string $base = ""): array {
+    $folders = [$base ?: "/"];
+    $entries = scandir($dir);
+    foreach ($entries as $entry) {
+        if ($entry[0] === '.' || !is_dir($dir . "/" . $entry)) continue;
+        $path = $base . "/" . $entry;
+        $folders[] = $path;
+        $folders = array_merge($folders, collectFolders($dir . "/" . $entry, $path));
+    }
+    return $folders;
+}
+$allFolders = collectFolders($pagesDir);
+
 $pageTree = buildPageTree($pages, $pagesDir);
 ?>
 <div class="container-fluid">
+    <?php if ($pageActionError) { ?>
+        <script>statusMessage("<?= htmlspecialchars($pageActionError, ENT_QUOTES) ?>", "text-bg-danger")</script>
+    <?php } ?>
+    <?php if ($pageActionSuccess) { ?>
+        <script>statusMessage("<?= htmlspecialchars($pageActionSuccess, ENT_QUOTES) ?>")</script>
+    <?php } ?>
     <div class="row">
         <div class="col-md-3 col-xl-2 col-sidebar order-md-0 order-1 mt-4 mt-md-0">
             <nav class="nav nav-compact flex-column">
@@ -142,6 +316,28 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 }
                 ?>
             </nav>
+            <div class="mt-3 d-flex flex-column gap-1" style="font-size: 0.85rem;">
+                <div class="d-flex gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="collapse" data-bs-target="#add-page-form">+ Page</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="collapse" data-bs-target="#add-folder-form">+ Folder</button>
+                </div>
+                <div class="collapse" id="add-page-form">
+                    <form method="post" action="pages" class="d-flex gap-1 mt-1">
+                        <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                        <input type="hidden" name="action" value="add_page">
+                        <input type="text" name="name" class="form-control form-control-sm" placeholder="path/name" required pattern="[\w\-\/]+">
+                        <button class="btn btn-sm btn-primary text-nowrap">Add</button>
+                    </form>
+                </div>
+                <div class="collapse" id="add-folder-form">
+                    <form method="post" action="pages" class="d-flex gap-1 mt-1">
+                        <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                        <input type="hidden" name="action" value="add_folder">
+                        <input type="text" name="name" class="form-control form-control-sm" placeholder="path/folder" required pattern="[\w\-\/]+">
+                        <button class="btn btn-sm btn-primary text-nowrap">Add</button>
+                    </form>
+                </div>
+            </div>
         </div>
         <div class="col-md-9 col-xl-10 order-md-1 order-0">
             <?php if ($editPageName) {
@@ -198,6 +394,24 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
+                    <?php $currentBaseName = basename($editPageName, '.md'); ?>
+                    <div class="dropdown d-inline-block ms-2">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">&#8230;</button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="renamePage(); return false;">Rename</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="movePage(); return false;">Move</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="pages"
+                                      onsubmit="return confirm('Delete page \'<?= htmlspecialchars($currentBaseName, ENT_QUOTES) ?>\'?')">
+                                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                                    <input type="hidden" name="action" value="delete_page">
+                                    <input type="hidden" name="name" value="<?= htmlspecialchars($editPageName) ?>">
+                                    <button class="dropdown-item text-danger">Delete Page</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 </form>
                 <script id="block-examples" type="application/json"><?= json_encode($blockExamplesForInsert) ?></script>
                 <?php if (!empty($validationErrors)) { ?>
@@ -265,4 +479,54 @@ document.querySelectorAll('.page-tree-folder').forEach(function(folder) {
         });
     }
 });
+var csrfToken = '<?= CsrfProtection::getToken() ?>';
+var currentPage = <?= json_encode($editPageName ?? '') ?>;
+var allFolders = <?= json_encode($allFolders) ?>;
+
+function submitPageAction(action, name, extra) {
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'pages';
+    form.innerHTML = '<input type="hidden" name="csrf_token" value="' + csrfToken + '">'
+        + '<input type="hidden" name="action" value="' + action + '">'
+        + '<input type="hidden" name="name" value="' + name + '">';
+    if (extra) {
+        for (var key in extra) {
+            form.innerHTML += '<input type="hidden" name="' + key + '" value="' + extra[key] + '">';
+        }
+    }
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function renamePage() {
+    if (!currentPage) return;
+    var baseName = currentPage.replace(/\.md$/, '').split('/').pop();
+    var newName = prompt('Rename page:', baseName);
+    if (newName === null || newName === baseName) return;
+    submitPageAction('rename_page', currentPage, {new_name: newName});
+}
+
+function movePage() {
+    if (!currentPage) return;
+    var currentFolder = currentPage.replace(/\/[^/]+$/, '') || '/';
+    var options = allFolders.map(function(f) {
+        return (f === currentFolder ? '> ' : '  ') + f;
+    }).join('\n');
+    var dest = prompt('Move page to folder:\n\n' + options + '\n\nEnter folder path:', currentFolder);
+    if (dest === null || dest === currentFolder) return;
+    dest = dest.replace(/^\//, '').replace(/\/$/, '');
+    submitPageAction('move_page', currentPage, {destination: dest});
+}
+
+function renameFolder(folderPath, folderName) {
+    var newName = prompt('Rename folder:', folderName);
+    if (newName === null || newName === folderName) return;
+    submitPageAction('rename_folder', folderPath, {new_name: newName});
+}
+
+function deleteFolder(folderPath, folderName) {
+    if (!confirm('Delete empty folder \'' + folderName + '\'?')) return;
+    submitPageAction('delete_folder', folderPath);
+}
 </script>
