@@ -596,6 +596,8 @@ function savePageAsync() {
                         statusMessage("No changes", "text-bg-secondary");
                         return;
                     }
+                    pageUnsaved = false;
+                    savedContent = editorTextarea ? editorTextarea.value : '';
                     if (data.validationErrors && data.validationErrors.length > 0) {
                         var list = data.validationErrors.map(function(e) { return "<li>" + e + "</li>"; }).join("");
                         var msg = "Page saved with " + data.validationErrors.length + " schema warning(s):<ul class='mb-0 mt-1'>" + list + "</ul>";
@@ -623,6 +625,19 @@ function savePageAsync() {
         statusMessage("Error saving page", "text-bg-danger");
     });
 }
+var pageUnsaved = false;
+var editorTextarea = document.querySelector('textarea[name="edited"]');
+var savedContent = editorTextarea ? editorTextarea.value : '';
+if (editorTextarea) {
+    editorTextarea.addEventListener('input', function() {
+        pageUnsaved = editorTextarea.value !== savedContent;
+    });
+}
+window.addEventListener('beforeunload', function(e) {
+    if (pageUnsaved) {
+        e.preventDefault();
+    }
+});
 document.addEventListener('keydown', function(e) {
     if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
