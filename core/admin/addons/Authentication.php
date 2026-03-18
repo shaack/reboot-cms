@@ -20,6 +20,10 @@ class Authentication extends AddOn
      * @see AddOn::init()
      */
     protected function init() {
+        session_set_cookie_params([
+            'httponly' => true,
+            'samesite' => 'Strict'
+        ]);
         session_start();
         $this->htpasswd = new Htpasswd($this->reboot->getBaseFsPath() . "/local/.htpasswd");
         $this->rolesFile = $this->reboot->getBaseFsPath() . "/local/roles.yml";
@@ -82,6 +86,7 @@ class Authentication extends AddOn
     public function login($username, $password): bool
     {
         if ($this->htpasswd->validate($username, $password)) {
+            session_regenerate_id(true);
             $_SESSION['user'] = $username;
             $_SESSION['checksum'] = $this->getChecksum();
             return true;
@@ -92,8 +97,9 @@ class Authentication extends AddOn
     public function logout()
     {
         Logger::info("logout " . $this->getUser());
-        $_SESSION['user'] = null;
-        $_SESSION['checksum'] = null;
+        $_SESSION = [];
+        session_regenerate_id(true);
+        session_destroy();
         $this->reboot->redirect($this->reboot->getBaseWebPath() . "/admin");
     }
 

@@ -313,15 +313,19 @@ if ($pageAction) {
         } elseif ($pageAction === "restore_page") {
             $version = $request->getParam("version") ?? "";
             $version = basename($version); // sanitize
-            $pagePath = $pagesDir . $targetName;
+            $pagePath = realpath($pagesDir . $targetName);
+            if (!$pagePath || strncmp($pagePath, $pagesDir, strlen($pagesDir)) !== 0 || !is_file($pagePath)) {
+                throw new \InvalidArgumentException("Invalid page.");
+            }
             $relPath = preg_replace('/\.md$/', '', $targetName);
             $snapshotFile = $historyDir . $relPath . "/" . $version;
-            if (!is_file($snapshotFile) || !is_file($pagePath)) {
-                throw new \InvalidArgumentException("Invalid version or page.");
+            $resolvedSnapshot = realpath($snapshotFile);
+            if (!$resolvedSnapshot || strncmp($resolvedSnapshot, realpath($historyDir), strlen(realpath($historyDir))) !== 0 || !is_file($resolvedSnapshot)) {
+                throw new \InvalidArgumentException("Invalid version.");
             }
             // Save current version as snapshot before restoring
             savePageSnapshot($pagePath, $pagesDir, $historyDir, $historyMaxVersions);
-            copy($snapshotFile, $pagePath);
+            copy($resolvedSnapshot, $pagePath);
             $editPageName = $targetName;
             $pageActionSuccess = "Page restored to " . basename($version, '.md');
         }

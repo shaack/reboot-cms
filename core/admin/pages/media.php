@@ -68,8 +68,15 @@ if ($action) {
     try {
         CsrfProtection::validate($request);
 
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg',
+            'mp4', 'webm', 'ogg', 'mp3', 'wav',
+            'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp',
+            'txt', 'csv', 'json', 'xml', 'yml', 'yaml',
+            'zip', 'gz', 'tar', 'woff', 'woff2', 'ttf', 'otf', 'eot', 'ico'];
+
         if ($action === "upload" && isset($_FILES["files"])) {
             $uploadCount = 0;
+            $skipped = [];
             $files = $_FILES["files"];
             for ($i = 0; $i < count($files["name"]); $i++) {
                 if ($files["error"][$i] !== UPLOAD_ERR_OK) {
@@ -81,6 +88,12 @@ if ($action) {
                 if (empty($fileName) || $fileName === "." || $fileName === "..") {
                     continue;
                 }
+                // Validate file extension
+                $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                if (!in_array($ext, $allowedExtensions)) {
+                    $skipped[] = $fileName;
+                    continue;
+                }
                 $targetPath = $resolvedPath . "/" . $fileName;
                 if (move_uploaded_file($files["tmp_name"][$i], $targetPath)) {
                     $uploadCount++;
@@ -88,6 +101,9 @@ if ($action) {
             }
             if ($uploadCount > 0) {
                 $success = "$uploadCount file(s) uploaded";
+            }
+            if (!empty($skipped)) {
+                $error = "Blocked: " . implode(", ", $skipped) . " (extension not allowed)";
             }
         } elseif ($action === "create_folder") {
             $folderName = trim($request->getParam("folder_name") ?? "");
@@ -115,6 +131,10 @@ if ($action) {
             $file = $_FILES["replace_file"];
             if ($file["error"] !== UPLOAD_ERR_OK) {
                 throw new \RuntimeException("Upload failed");
+            }
+            $replaceExt = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
+            if (!in_array($replaceExt, $allowedExtensions)) {
+                throw new \InvalidArgumentException("File extension not allowed");
             }
             if (move_uploaded_file($file["tmp_name"], $resolvedTarget)) {
                 $success = "File '$targetName' replaced";
