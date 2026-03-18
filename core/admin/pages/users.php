@@ -117,6 +117,8 @@ $users = $htpasswd->getUsers();
                                 <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
                                 <button class="btn btn-sm btn-outline-danger">Delete</button>
                             </form>
+                        <?php } else { ?>
+                            <button class="btn btn-sm btn-outline-danger invisible">Delete</button>
                         <?php } ?>
                     </div>
                 </li>
