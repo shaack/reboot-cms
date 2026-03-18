@@ -838,11 +838,12 @@ function escapeHtml(str) {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
 }
 
-var previewActive = false;
+var previewActive = localStorage.getItem('reboot_preview') === 'true';
 var previewDebounceTimer = null;
 
 function togglePreview() {
     previewActive = !previewActive;
+    localStorage.setItem('reboot_preview', previewActive);
     var editorCol = document.getElementById('editor-column');
     var previewCol = document.getElementById('preview-column');
     var toggleBtn = document.getElementById('preview-toggle');
@@ -855,6 +856,8 @@ function togglePreview() {
         updatePreview();
         if (editorTextarea) {
             editorTextarea.addEventListener('input', schedulePreviewUpdate);
+            editorTextarea.addEventListener('click', syncPreviewToBlock);
+            editorTextarea.addEventListener('keyup', syncPreviewToBlock);
         }
     } else {
         editorCol.classList.remove('col-md-5', 'col-xl-6');
@@ -865,13 +868,44 @@ function togglePreview() {
         previewInitialized = false;
         if (editorTextarea) {
             editorTextarea.removeEventListener('input', schedulePreviewUpdate);
+            editorTextarea.removeEventListener('click', syncPreviewToBlock);
+            editorTextarea.removeEventListener('keyup', syncPreviewToBlock);
         }
     }
 }
 
 function schedulePreviewUpdate() {
     if (previewDebounceTimer) clearTimeout(previewDebounceTimer);
-    previewDebounceTimer = setTimeout(updatePreview, 1000);
+    previewDebounceTimer = setTimeout(updatePreview, 500);
+}
+
+var lastSyncedBlock = -1;
+
+function syncPreviewToBlock() {
+    if (!previewActive || !previewInitialized || !editorTextarea) return;
+    var iframe = document.getElementById('preview-iframe');
+    try {
+        var doc = iframe.contentDocument;
+        var sections = doc.querySelectorAll('section.block');
+        if (sections.length === 0) return;
+
+        // Find which block the cursor is in
+        var cursorPos = editorTextarea.selectionStart;
+        var textBeforeCursor = editorTextarea.value.substring(0, cursorPos);
+        var blockIndex = (textBeforeCursor.match(/<!--[\s\S]*?-->/g) || []).length - 1;
+        if (blockIndex < 0) blockIndex = 0;
+        if (blockIndex >= sections.length) blockIndex = sections.length - 1;
+
+        // Only scroll if the block changed
+        if (blockIndex === lastSyncedBlock) return;
+        lastSyncedBlock = blockIndex;
+
+        // Center the block in the iframe viewport
+        var section = sections[blockIndex];
+        var iframeHeight = iframe.clientHeight;
+        var scrollTarget = section.offsetTop - (iframeHeight / 2) + (section.offsetHeight / 2);
+        doc.documentElement.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
+    } catch(e) {}
 }
 
 var previewInitialized = false;
@@ -933,5 +967,11 @@ function updatePreview() {
             }
         });
     }
+}
+
+// Restore preview state on load
+if (previewActive && currentPage) {
+    previewActive = false; // togglePreview will flip it back to true
+    togglePreview();
 }
 </script>
