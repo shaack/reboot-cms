@@ -458,9 +458,9 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 ?>
             </nav>
             <div class="mt-3 d-flex flex-column gap-1" style="font-size: 0.85rem;">
-                <div class="d-flex gap-1">
-                    <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="collapse" data-bs-target="#add-page-form">+ Page</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="collapse" data-bs-target="#add-folder-form">+ Folder</button>
+                <div class="d-flex gap-2 justify-content-start border-1 border-top">
+                    <button type="button" class="btn btn-sm opacity-75 btn-link text-body-secondary text-decoration-none p-0" data-bs-toggle="collapse" data-bs-target="#add-page-form">+ Page</button>
+                    <button type="button" class="btn btn-sm opacity-75 btn-link text-body-secondary text-decoration-none p-0" data-bs-toggle="collapse" data-bs-target="#add-folder-form">+ Folder</button>
                 </div>
                 <div class="collapse" id="add-page-form">
                     <form method="post" action="pages" class="d-flex gap-1 mt-1">
