@@ -67,8 +67,6 @@ text-image:
 
 ![alt text](media/dummy.svg "Title Text")>
 
-
-
 ## The block "cards"
 
 - ![This is](media/dummy.svg)

@@ -29,6 +29,40 @@ if ($resolvedPath === false || strncmp($resolvedPath, realpath($mediaDir), strle
     $resolvedPath = realpath($mediaDir);
 }
 
+// JSON API for listing media files (used by InsertMedia editor tool)
+if ($request->getParam("list")) {
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    header('Content-Type: application/json');
+    $items = [];
+    if (is_dir($resolvedPath)) {
+        $d = dir($resolvedPath);
+        while (false !== ($entry = $d->read())) {
+            if ($entry[0] === ".") continue;
+            $entryPath = $resolvedPath . "/" . $entry;
+            $isDir = is_dir($entryPath);
+            $type = $isDir ? 'folder' : mime_content_type($entryPath);
+            $webPath = $reboot->getBaseWebPath() . "/media" . ($currentPath ? "/" . $currentPath : "") . "/" . $entry;
+            $items[] = [
+                'name' => $entry,
+                'isDir' => $isDir,
+                'type' => $type,
+                'isImage' => !$isDir && str_starts_with($type, 'image/'),
+                'webPath' => $webPath,
+                'subPath' => ($currentPath ? $currentPath . "/" : "") . $entry
+            ];
+        }
+        $d->close();
+    }
+    usort($items, function ($a, $b) {
+        if ($a['isDir'] !== $b['isDir']) return $b['isDir'] - $a['isDir'];
+        return strcasecmp($a['name'], $b['name']);
+    });
+    echo json_encode(['path' => $currentPath, 'items' => $items]);
+    exit;
+}
+
 $action = $request->getParam("action");
 if ($action) {
     try {

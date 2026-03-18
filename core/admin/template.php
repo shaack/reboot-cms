@@ -100,13 +100,16 @@ echo($page->render($request));
     import {defaultTools} from "./node_modules/cm-md-editor/src/tools/DefaultTools.js"
     import {Separator} from "./node_modules/cm-md-editor/src/tools/Separator.js"
     import {InsertBlock} from "./assets/InsertBlock.js"
+    import {InsertMedia} from "./assets/InsertMedia.js"
     const blockExamplesEl = document.getElementById('block-examples')
     const blockExamples = blockExamplesEl ? JSON.parse(blockExamplesEl.textContent) : null
     document.querySelectorAll("textarea.markdown").forEach(editor => {
         const props = {wordWrap: <?= $editorWordWrap ?>}
+        const extraTools = [[InsertMedia, {mediaUrl: 'media'}]]
         if (blockExamples && Object.keys(blockExamples).length > 0) {
-            props.tools = [...defaultTools, Separator, [InsertBlock, {blocks: blockExamples}]]
+            extraTools.push([InsertBlock, {blocks: blockExamples}])
         }
+        props.tools = [...defaultTools, Separator, ...extraTools]
         new MdEditor(editor, props)
     })
 </script>
