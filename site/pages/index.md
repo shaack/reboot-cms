@@ -6,7 +6,7 @@ author: shaack.com
 
 <!-- hero -->
 
-## Reboot CMS
+# Reboot CMS
 
 A flat file, markdown CMS with blocks
 

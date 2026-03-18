@@ -141,6 +141,23 @@ $pageTree = buildPageTree($pages, $pagesDir);
                         $validationErrors = Block::getAllValidationErrors();
                         $blockExamples = Block::getAllExamples();
                     }
+
+                    // Collect block examples for the insert-block tool
+                    $blocksDir = $defaultSite->getFsPath() . '/blocks';
+                    $blockExamplesForInsert = [];
+                    if (is_dir($blocksDir)) {
+                        Block::resetAllValidationErrors();
+                        foreach (glob($blocksDir . '/*.php') as $blockFile) {
+                            $blockName = basename($blockFile, '.php');
+                            $block = new Block($defaultSite, $blockName, '');
+                            ob_start();
+                            $block->render(null);
+                            ob_end_clean();
+                            $block->collectExample();
+                        }
+                        $blockExamplesForInsert = Block::getAllExamples();
+                        Block::resetAllValidationErrors();
+                    }
                 ?>
                 <!--suppress HtmlUnknownTarget -->
                 <form method="post" action="pages?page=<?= urlencode($editPageName) ?>">
@@ -155,6 +172,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     ?>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
                 </form>
+                <script id="block-examples" type="application/json"><?= json_encode($blockExamplesForInsert) ?></script>
                 <?php if (!empty($validationErrors)) { ?>
                 <script id="validation-data" type="application/json"><?= json_encode(['errors' => $validationErrors, 'examples' => $blockExamples ?? []]) ?></script>
                 <?php } ?>
@@ -181,12 +199,15 @@ function savePageAsync() {
                     var data = JSON.parse(dataEl.textContent);
                     var list = data.errors.map(function(e) { return "<li>" + e + "</li>"; }).join("");
                     var msg = "Page saved with " + data.errors.length + " schema warning(s):<ul class='mb-0 mt-1'>" + list + "</ul>";
-                    if (data.examples && Object.keys(data.examples).length > 0) {
-                        msg += "<hr class='my-2'><strong>Expected markdown:</strong>";
-                        for (var blockName in data.examples) {
-                            msg += "<div class='mt-1'><code>&lt;!-- " + blockName + " --&gt;</code></div>";
-                            msg += "<pre class='mb-1 p-1 bg-light text-dark rounded' style='font-size:0.8rem;white-space:pre-wrap'>" + data.examples[blockName].replace(/</g, "&lt;") + "</pre>";
-                        }
+                    // Extract failing block names from errors
+                    var failingBlocks = {};
+                    data.errors.forEach(function(e) {
+                        var m = e.match(/^Block '([^']+)':/);
+                        if (m && data.examples[m[1]]) failingBlocks[m[1]] = true;
+                    });
+                    for (var blockName in failingBlocks) {
+                        msg += "<hr class='my-2'><strong>Expected markdown for &quot;" + blockName + "&quot;:</strong>";
+                        msg += "<pre class='mb-1 p-1 bg-light text-dark rounded' style='font-size:0.8rem;white-space:pre-wrap'>" + data.examples[blockName].replace(/</g, "&lt;") + "</pre>";
                     }
                     statusMessage(msg, "text-bg-warning");
                 } else {

@@ -206,7 +206,12 @@ class Block
                 $lines[] = '';
             }
             if (isset($parts[$p])) {
+                $firstField = true;
                 foreach ($parts[$p] as $field) {
+                    if (!$firstField) {
+                        $lines[] = '';
+                    }
+                    $firstField = false;
                     $description = $field['props']['description'] ?? 'content';
                     $min = $field['props']['min'] ?? 1;
                     $line = $this->xpathToMarkdown($field['expression'], $description);
@@ -214,11 +219,9 @@ class Block
                     for ($i = 0; $i < $repeatCount; $i++) {
                         $lines[] = $line;
                     }
-                    $lines[] = '';
                 }
             } else {
-                $lines[] = '...';
-                $lines[] = '';
+                $lines[] = 'Lorem ipsum dolor sit amet, consectetur adipiscing.';
             }
         }
 

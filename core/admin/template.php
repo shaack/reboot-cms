@@ -97,8 +97,17 @@ echo($page->render($request));
 </script>
 <script type="module">
     import {MdEditor} from "./node_modules/cm-md-editor/src/MdEditor.js"
+    import {defaultTools} from "./node_modules/cm-md-editor/src/tools/DefaultTools.js"
+    import {Separator} from "./node_modules/cm-md-editor/src/tools/Separator.js"
+    import {InsertBlock} from "./assets/InsertBlock.js"
+    const blockExamplesEl = document.getElementById('block-examples')
+    const blockExamples = blockExamplesEl ? JSON.parse(blockExamplesEl.textContent) : null
     document.querySelectorAll("textarea.markdown").forEach(editor => {
-        new MdEditor(editor, {wordWrap: <?= $editorWordWrap ?>})
+        const props = {wordWrap: <?= $editorWordWrap ?>}
+        if (blockExamples && Object.keys(blockExamples).length > 0) {
+            props.tools = [...defaultTools, Separator, [InsertBlock, {blocks: blockExamples}]]
+        }
+        new MdEditor(editor, props)
     })
 </script>
 </body>
