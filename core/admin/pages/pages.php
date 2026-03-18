@@ -525,6 +525,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                         Block::resetAllValidationErrors();
                     }
                 ?>
+                <script>document.title = <?= json_encode(basename($editPageName, '.md') . ' – Reboot CMS Admin') ?>;</script>
                 <!--suppress HtmlUnknownTarget -->
                 <form method="post" action="pages?page=<?= urlencode($editPageName) ?>">
                     <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">

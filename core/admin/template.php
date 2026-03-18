@@ -21,7 +21,11 @@ $editorWordWrap = ($editor['wordWrap'] ?? true) ? 'true' : 'false';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Reboot CMS / Admin</title>
+    <?php
+    $adminPageTitle = ucfirst(trim($request->getPath(), '/'));
+    if (!$adminPageTitle) $adminPageTitle = 'Admin';
+    ?>
+    <title><?= htmlspecialchars($adminPageTitle) ?> – Reboot CMS Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Gelasio:wght@700&display=swap" rel="stylesheet">
     <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/screen.css" rel="stylesheet">
