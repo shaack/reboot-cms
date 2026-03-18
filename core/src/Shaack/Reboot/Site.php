@@ -45,7 +45,7 @@ class Site
                     Logger::error("Addon file not found: " . $addOnPath);
                     continue;
                 }
-                require $addOnPath;
+                require_once $addOnPath;
                 $className = "\Shaack\Reboot\\" . $addOnName;
                 $this->addOns[$addOnName] = new $className($this->reboot, $this);
             }

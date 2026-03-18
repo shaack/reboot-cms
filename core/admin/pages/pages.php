@@ -165,6 +165,38 @@ if ($request->getParam("history")) {
     exit;
 }
 
+// Live preview: render page content without saving
+if ($request->getParam("preview") && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    CsrfProtection::validate($request);
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    $previewPageName = $request->getParam("page") ?? "";
+    $previewPageName = str_replace("..", "", $previewPageName);
+    $previewContent = $request->getParam("content") ?? "";
+    $previewPath = $pagesDir . $previewPageName;
+    $resolvedPreview = realpath(dirname($previewPath));
+    if ($resolvedPreview && strncmp($resolvedPreview, $pagesDir, strlen($pagesDir)) === 0 && is_file($previewPath)) {
+        // Temporarily write content, render, restore
+        $originalContent = file_get_contents($previewPath);
+        file_put_contents($previewPath, $previewContent, LOCK_EX);
+        // Override security headers for the preview iframe
+        header('Content-Type: text/html; charset=utf-8');
+        header('X-Frame-Options: SAMEORIGIN');
+        header('Content-Security-Policy: default-src * \'unsafe-inline\' \'unsafe-eval\'; img-src * data:;');
+        $previewSite = new \Shaack\Reboot\Site($reboot, "/site", "");
+        $previewRequest = new \Shaack\Reboot\Request($previewSite, $reboot->getBaseWebPath(), preg_replace('/\/index$/', '/', preg_replace('/\.md$/', '', $previewPageName)), []);
+        $previewPageObj = new Page($reboot, $previewSite);
+        echo \Shaack\Reboot\renderPage($previewSite, $previewPageObj, $previewRequest);
+        // Restore original content
+        file_put_contents($previewPath, $originalContent, LOCK_EX);
+    } else {
+        http_response_code(404);
+        echo 'Page not found';
+    }
+    exit;
+}
+
 // Handle page/folder management actions
 $pageAction = $request->getParam("action");
 $pageActionError = null;
@@ -503,7 +535,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 </div>
             </div>
         </div>
-        <div class="col-md-9 col-xl-10 order-md-1 order-0">
+        <div class="col-md-9 col-xl-10 order-md-1 order-0" id="editor-column">
             <?php if ($editPageName) {
                 $fullPath = $pagesDir . $editPageName;
                 // Validate the resolved path stays within the pages directory
@@ -564,7 +596,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     $viewPath = preg_replace('/\/index$/', '/', $viewPath);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
-                    <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="togglePreview()" id="preview-toggle">Preview</button>
                     <?php $currentBaseName = basename($editPageName, '.md'); ?>
                     <div class="dropdown d-inline-block ms-2">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">&#8230;</button>
@@ -601,6 +633,9 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 <?php } ?>
                 <?php } ?>
             <?php } ?>
+        </div>
+        <div class="col-4 order-md-2 d-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 120px);">
+            <iframe id="preview-iframe" name="preview-iframe" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;"></iframe>
         </div>
     </div>
 </div>
@@ -801,5 +836,102 @@ function restoreVersion(filename) {
 
 function escapeHtml(str) {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+}
+
+var previewActive = false;
+var previewDebounceTimer = null;
+
+function togglePreview() {
+    previewActive = !previewActive;
+    var editorCol = document.getElementById('editor-column');
+    var previewCol = document.getElementById('preview-column');
+    var toggleBtn = document.getElementById('preview-toggle');
+    if (previewActive) {
+        editorCol.classList.remove('col-md-9', 'col-xl-10');
+        editorCol.classList.add('col-md-5', 'col-xl-6');
+        previewCol.classList.remove('d-none');
+        toggleBtn.classList.remove('btn-outline-secondary');
+        toggleBtn.classList.add('btn-secondary');
+        updatePreview();
+        if (editorTextarea) {
+            editorTextarea.addEventListener('input', schedulePreviewUpdate);
+        }
+    } else {
+        editorCol.classList.remove('col-md-5', 'col-xl-6');
+        editorCol.classList.add('col-md-9', 'col-xl-10');
+        previewCol.classList.add('d-none');
+        toggleBtn.classList.remove('btn-secondary');
+        toggleBtn.classList.add('btn-outline-secondary');
+        previewInitialized = false;
+        if (editorTextarea) {
+            editorTextarea.removeEventListener('input', schedulePreviewUpdate);
+        }
+    }
+}
+
+function schedulePreviewUpdate() {
+    if (previewDebounceTimer) clearTimeout(previewDebounceTimer);
+    previewDebounceTimer = setTimeout(updatePreview, 1000);
+}
+
+var previewInitialized = false;
+
+function getPreviewForm() {
+    var previewForm = document.getElementById('preview-form');
+    if (!previewForm) {
+        previewForm = document.createElement('form');
+        previewForm.id = 'preview-form';
+        previewForm.method = 'POST';
+        previewForm.action = 'pages?preview=1';
+        previewForm.target = 'preview-iframe';
+        previewForm.style.display = 'none';
+        previewForm.innerHTML = '<input type="hidden" name="csrf_token" value="' + csrfToken + '">'
+            + '<input type="hidden" name="page" value="">'
+            + '<input type="hidden" name="content" value="">';
+        document.body.appendChild(previewForm);
+    }
+    return previewForm;
+}
+
+function updatePreview() {
+    if (!previewActive || !currentPage) return;
+    var iframe = document.getElementById('preview-iframe');
+    var content = editorTextarea ? editorTextarea.value : '';
+
+    if (!previewInitialized) {
+        // First load: use form submit so the iframe gets its own CSP from the response
+        var form = getPreviewForm();
+        form.querySelector('[name="page"]').value = currentPage;
+        form.querySelector('[name="content"]').value = content;
+        iframe.onload = function() {
+            iframe.onload = null;
+            previewInitialized = true;
+        };
+        form.submit();
+    } else {
+        // Subsequent updates: fetch and replace only <main> to preserve scroll
+        var formData = new FormData();
+        formData.append('csrf_token', csrfToken);
+        formData.append('page', currentPage);
+        formData.append('content', content);
+        fetch('pages?preview=1', {
+            method: 'POST',
+            body: formData
+        }).then(function(r) { return r.text(); })
+        .then(function(html) {
+            var doc = iframe.contentDocument;
+            var parser = new DOMParser();
+            var newDoc = parser.parseFromString(html, 'text/html');
+            var newMain = newDoc.querySelector('main');
+            var oldMain = doc.querySelector('main');
+            if (newMain && oldMain) {
+                oldMain.innerHTML = newMain.innerHTML;
+            } else {
+                var scrollTop = doc.documentElement.scrollTop || doc.body.scrollTop;
+                doc.body.innerHTML = newDoc.body.innerHTML;
+                doc.documentElement.scrollTop = scrollTop;
+            }
+        });
+    }
 }
 </script>
