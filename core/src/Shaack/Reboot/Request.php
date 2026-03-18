@@ -64,7 +64,7 @@ class Request
      * @param string|null $method set to "get" or "post" to return only that methods params
      * @return mixed|null
      */
-    public function getParam(string $name, string $method = null)
+    public function getParam(string $name, ?string $method = null)
     {
         if ($method == null || strtolower($method) == "post") {
             if (array_key_exists($name, $this->paramsPost)) {
