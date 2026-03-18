@@ -201,28 +201,38 @@ This is useful for simple blocks like "text":
 </section>
 ```
 
-Another example, the "hero" `Block`:
+### Schema validation
+
+`$block->xpath()` accepts an optional second parameter — an array of props for validation:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `required` | `bool` | Field must match at least once |
+| `min` | `int` | Minimum number of matches required (for lists) |
+| `description` | `string` | Human-readable name, shown in validation warnings |
+
+When a required field is missing or a minimum count is not met, the CMS logs an error and — in
+debug mode (`logLevel: 0`) — shows a warning banner on the page and a toast with the expected
+markdown structure in the admin editor.
+
+Example — the "hero" block with validation:
 
 ```php
-<?php /* hero */ ?>
+<?php /** @var \Shaack\Reboot\Block $block */ ?>
 <section class="block block-hero">
     <div class="container-fluid">
         <div class="card border-0 bg-gradient">
             <div class="card-body">
                 <div class="p-xl-5 p-md-4 p-3">
-                    <!-- use the text of the <h1> in part 1 for the display-4 -->
-                    <h1 class="display-4"><?= $block->nodeHtml($block->xpath("/h1[part(1)]/text()")) ?></h1>
-                    <!-- the lead will be the text of the <p> in part 1 -->
+                    <h1 class="display-4"><?= $block->nodeHtml($block->xpath("/h1[part(1)]/text()", ["required" => true, "description" => "Hero heading (h1)"])) ?></h1>
                     <p class="lead"><?= $block->nodeHtml($block->xpath("/p[part(1)]/text()")) ?></p>
                     <hr class="my-4">
-                    <!-- print everything from part 2 -->
                     <div class="mb-4">
                         <?= $block->nodeHtml($block->xpath("/*[part(2)]")) ?>
                     </div>
                     <p>
-                        <!-- the link in part 3 will be used as the primary button -->
                         <a class="btn btn-primary btn-lg"
-                           href="<?= $block->nodeHtml($block->xpath("//a[part(3)]/@href")) ?>"
+                           href="<?= $block->nodeHtml($block->xpath("//a[part(3)]/@href", ["required" => true, "description" => "Call-to-action link"])) ?>"
                            role="button"><?= $block->nodeHtml($block->xpath("//a[part(3)]/text()")) ?></a>
                     </p>
                 </div>
@@ -230,6 +240,12 @@ Another example, the "hero" `Block`:
         </div>
     </div>
 </section>
+```
+
+For list fields (like the "cards" block), use `min` to require a minimum number of matches:
+
+```php
+$images = $block->xpath("//li/img", ["min" => 1, "description" => "Card images"]);
 ```
 
 ## Admin interface
