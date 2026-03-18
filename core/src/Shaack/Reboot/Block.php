@@ -143,6 +143,7 @@ class Block
                 $description = $props['description'] ?? $originalExpression;
                 $isRequired = $props['required'] ?? false;
                 $min = $props['min'] ?? null;
+                $max = $props['max'] ?? null;
                 if ($isRequired && $count === 0) {
                     $error = "Block '{$this->name}': missing required '$description'";
                     $this->validationErrors[] = $error;
@@ -150,6 +151,12 @@ class Block
                     self::$allValidationErrors[] = $error;
                 } else if ($min !== null && $count < $min) {
                     $error = "Block '{$this->name}': '$description' expected at least $min, found $count";
+                    $this->validationErrors[] = $error;
+                    Logger::error($error);
+                    self::$allValidationErrors[] = $error;
+                }
+                if ($max !== null && $count > $max) {
+                    $error = "Block '{$this->name}': '$description' expected at most $max, found $count";
                     $this->validationErrors[] = $error;
                     Logger::error($error);
                     self::$allValidationErrors[] = $error;

@@ -208,8 +208,9 @@ This is useful for simple blocks like "text":
 | Prop | Type | Description |
 |------|------|-------------|
 | `required` | `bool` | Field must match at least once |
-| `min` | `int` | Minimum number of matches required (for lists) |
 | `description` | `string` | Human-readable name, shown in validation warnings |
+| `min` | `int` | Minimum number of matches required (for lists) |
+| `max` | `int` | Maximum number of matches allowed (for lists) |
 
 When a required field is missing or a minimum count is not met, the CMS logs an error and — in
 debug mode (`logLevel: 0`) — shows a warning banner on the page and a toast with the expected
