@@ -11,13 +11,13 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-4">
-                <?= $block->nodeHtml($block->xpath("/*[part(1)]")) ?>
+                <?= $block->nodeHtml($block->xpath("/*[part(1)]", ["required" => true, "description" => "First column"])) ?>
             </div>
             <div class="col-md-4">
-                <?= $block->nodeHtml($block->xpath("/*[part(2)]")) ?>
+                <?= $block->nodeHtml($block->xpath("/*[part(2)]", ["required" => true, "description" => "Second column"])) ?>
             </div>
             <div class="col-md-4">
-                <?= $block->nodeHtml($block->xpath("/*[part(3)]")) ?>
+                <?= $block->nodeHtml($block->xpath("/*[part(3)]", ["required" => true, "description" => "Third column"])) ?>
             </div>
         </div>
     </div>

@@ -8,6 +8,8 @@ $admin = $site->getAddOn("Admin");
 use Shaack\Logger;
 use Shaack\Utils\FileSystemUtils;
 use Shaack\Reboot\CsrfProtection;
+use Shaack\Reboot\Page;
+use Shaack\Reboot\Block;
 
 $defaultSite = $admin->getDefaultSite();
 $pagesDir = realpath($defaultSite->getFsPath() . "/pages");
@@ -124,9 +126,20 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     $editPageName = null;
                 } else {
                     $edited = $request->getParam("edited");
+                    $validationErrors = [];
                     if ($edited !== null) {
                         CsrfProtection::validate($request);
                         file_put_contents($fullPath, $edited);
+                        // Validate by rendering the page and collecting schema errors
+                        Block::resetAllValidationErrors();
+                        $validationPage = new Page($reboot, $defaultSite);
+                        $pagePath = preg_replace('/\.md$/', '', $editPageName);
+                        $pagePath = preg_replace('/\/index$/', '/', $pagePath);
+                        ob_start();
+                        $validationPage->render($pagePath);
+                        ob_end_clean();
+                        $validationErrors = Block::getAllValidationErrors();
+                        $blockExamples = Block::getAllExamples();
                     }
                 ?>
                 <!--suppress HtmlUnknownTarget -->
@@ -142,6 +155,9 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     ?>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
                 </form>
+                <?php if (!empty($validationErrors)) { ?>
+                <script id="validation-data" type="application/json"><?= json_encode(['errors' => $validationErrors, 'examples' => $blockExamples ?? []]) ?></script>
+                <?php } ?>
                 <?php } ?>
             <?php } ?>
         </div>
@@ -157,7 +173,26 @@ function savePageAsync() {
         body: formData
     }).then(function(response) {
         if (response.ok) {
-            statusMessage("Page saved");
+            return response.text().then(function(html) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                var dataEl = doc.getElementById('validation-data');
+                if (dataEl) {
+                    var data = JSON.parse(dataEl.textContent);
+                    var list = data.errors.map(function(e) { return "<li>" + e + "</li>"; }).join("");
+                    var msg = "Page saved with " + data.errors.length + " schema warning(s):<ul class='mb-0 mt-1'>" + list + "</ul>";
+                    if (data.examples && Object.keys(data.examples).length > 0) {
+                        msg += "<hr class='my-2'><strong>Expected markdown:</strong>";
+                        for (var blockName in data.examples) {
+                            msg += "<div class='mt-1'><code>&lt;!-- " + blockName + " --&gt;</code></div>";
+                            msg += "<pre class='mb-1 p-1 bg-light text-dark rounded' style='font-size:0.8rem;white-space:pre-wrap'>" + data.examples[blockName].replace(/</g, "&lt;") + "</pre>";
+                        }
+                    }
+                    statusMessage(msg, "text-bg-warning");
+                } else {
+                    statusMessage("Page saved");
+                }
+            });
         } else {
             statusMessage("Error saving page", "text-bg-danger");
         }

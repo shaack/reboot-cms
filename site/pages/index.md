@@ -11,9 +11,11 @@ author: shaack.com
 A flat file, markdown CMS with blocks
 
 ---
+
 The main idea is to have a **minimal CMS** without needing a database, but with the support of blocks.
 
 ---
+
 [Learn more](documentation)
 
 <!-- text-image -->
@@ -26,6 +28,7 @@ The gray block above is a "hero" block. This one is a "text-image" block. You ca
 Shipped with this CMS are some default block types, but it is easy to create your own, if you know some PHP.
 
 ---
+
 ![alt text](media/dummy.svg "Title Text")
 
 <!-- three-columns -->
@@ -61,9 +64,10 @@ text-image:
 ```
 
 ---
+
 ![alt text](media/dummy.svg "Title Text")>
 
-<!-- cards -->
+
 
 ## The block "cards"
 
