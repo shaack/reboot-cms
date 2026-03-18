@@ -39,11 +39,11 @@ git clone https://github.com/shaack/reboot-cms.git my-site
 Run the CMS with PHP's built-in web server (no Apache or Docker needed):
 
 ```bash
-./start.sh
+./run.sh
 ```
 
 The site is available at `http://localhost:8080`, the admin at `http://localhost:8080/admin`.
-You can specify a custom port: `./start.sh 3000`.
+You can specify a custom port: `./run.sh 3000`.
 
 ### Production Setup
 
