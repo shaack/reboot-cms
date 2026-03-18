@@ -1,3 +1,4 @@
 /.htpasswd
 /roles.yml
 /.login_attempts
+/history

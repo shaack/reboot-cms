@@ -13,6 +13,94 @@ use Shaack\Reboot\Block;
 
 $defaultSite = $admin->getDefaultSite();
 $pagesDir = realpath($defaultSite->getFsPath() . "/pages");
+$localConfig = $admin->getLocalConfig();
+$historyMaxVersions = $localConfig['history']['maxVersions'] ?? 50;
+$historyDir = $reboot->getBaseFsPath() . "/local/history/pages";
+
+/**
+ * Save a snapshot of a page to the history directory.
+ */
+function savePageSnapshot(string $pageFsPath, string $pagesDir, string $historyDir, int $maxVersions): void {
+    if (!is_file($pageFsPath) || filesize($pageFsPath) === 0) return;
+    $relPath = str_replace($pagesDir, "", $pageFsPath);
+    $relPath = preg_replace('/\.md$/', '', $relPath);
+    $snapshotDir = $historyDir . $relPath;
+    if (!is_dir($snapshotDir)) {
+        mkdir($snapshotDir, 0755, true);
+    }
+    $timestamp = date('Y-m-d_H-i-s');
+    $snapshotPath = $snapshotDir . "/" . $timestamp . ".md";
+    copy($pageFsPath, $snapshotPath);
+    pruneHistory($snapshotDir, $maxVersions);
+}
+
+/**
+ * Keep only the latest $max snapshots in a history directory.
+ */
+function pruneHistory(string $snapshotDir, int $max): void {
+    $files = glob($snapshotDir . "/*.md");
+    if (count($files) <= $max) return;
+    sort($files);
+    $toDelete = array_slice($files, 0, count($files) - $max);
+    foreach ($toDelete as $file) {
+        unlink($file);
+    }
+}
+
+/**
+ * Get the list of snapshots for a page, newest first.
+ */
+function getPageHistory(string $editPageName, string $pagesDir, string $historyDir): array {
+    $relPath = preg_replace('/\.md$/', '', $editPageName);
+    $snapshotDir = $historyDir . $relPath;
+    if (!is_dir($snapshotDir)) return [];
+    $files = glob($snapshotDir . "/*.md");
+    rsort($files);
+    $versions = [];
+    foreach ($files as $file) {
+        $name = basename($file, '.md');
+        $timestamp = str_replace('_', ' ', str_replace('-', ':', $name));
+        // Fix: first 10 chars are date with colons, fix back to hyphens
+        $timestamp = substr($name, 0, 10) . ' ' . str_replace('-', ':', substr($name, 11));
+        $versions[] = [
+            'file' => $file,
+            'filename' => basename($file),
+            'timestamp' => $timestamp,
+            'size' => filesize($file)
+        ];
+    }
+    return $versions;
+}
+
+/**
+ * Move history directory when a page is renamed or moved.
+ */
+function movePageHistory(string $oldPageName, string $newPageName, string $historyDir): void {
+    $oldDir = $historyDir . preg_replace('/\.md$/', '', $oldPageName);
+    $newDir = $historyDir . preg_replace('/\.md$/', '', $newPageName);
+    if (is_dir($oldDir)) {
+        $newParent = dirname($newDir);
+        if (!is_dir($newParent)) {
+            mkdir($newParent, 0755, true);
+        }
+        rename($oldDir, $newDir);
+    }
+}
+
+/**
+ * Move all history under a folder when the folder is renamed.
+ */
+function moveFolderHistory(string $oldFolderPath, string $newFolderPath, string $historyDir): void {
+    $oldDir = $historyDir . "/" . $oldFolderPath;
+    $newDir = $historyDir . "/" . $newFolderPath;
+    if (is_dir($oldDir)) {
+        $newParent = dirname($newDir);
+        if (!is_dir($newParent)) {
+            mkdir($newParent, 0755, true);
+        }
+        rename($oldDir, $newDir);
+    }
+}
 $editPageName = $request->getParam("page");
 $editable = false;
 $pages = FileSystemUtils::getFileList($pagesDir, true);
@@ -43,6 +131,27 @@ if ($request->getParam("list")) {
         ];
     }
     echo json_encode($pageList);
+    exit;
+}
+
+// JSON API for page history
+if ($request->getParam("history")) {
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    header('Content-Type: application/json');
+    $historyPage = $request->getParam("page") ?? "";
+    $historyPage = str_replace("..", "", $historyPage);
+    $versions = getPageHistory($historyPage, $pagesDir, $historyDir);
+    $result = array_map(function($v) {
+        return [
+            'filename' => $v['filename'],
+            'timestamp' => $v['timestamp'],
+            'size' => $v['size'],
+            'content' => file_get_contents($v['file'])
+        ];
+    }, $versions);
+    echo json_encode($result);
     exit;
 }
 
@@ -102,6 +211,7 @@ if ($pageAction) {
             }
             rename($oldPath, $newPath);
             $relNew = str_replace($pagesDir, "", $newPath);
+            movePageHistory($targetName, $relNew, $historyDir);
             $editPageName = $relNew;
             $pageActionSuccess = "Page renamed";
             $pages = FileSystemUtils::getFileList($pagesDir, true);
@@ -123,7 +233,9 @@ if ($pageAction) {
                 throw new \InvalidArgumentException("A page with that name already exists in the destination.");
             }
             rename($oldPath, $newPath);
-            $editPageName = str_replace($pagesDir, "", $newPath);
+            $newRelPath = str_replace($pagesDir, "", $newPath);
+            movePageHistory($targetName, $newRelPath, $historyDir);
+            $editPageName = $newRelPath;
             $pageActionSuccess = "Page moved";
             $pages = FileSystemUtils::getFileList($pagesDir, true);
             usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
@@ -172,6 +284,7 @@ if ($pageAction) {
                 throw new \InvalidArgumentException("A folder with that name already exists.");
             }
             rename($oldDir, $newDir);
+            moveFolderHistory($targetName, (dirname($targetName) === "." ? "" : dirname($targetName) . "/") . $newName, $historyDir);
             $pageActionSuccess = "Folder renamed";
             // Update editPageName if it was inside the renamed folder
             if ($editPageName) {
@@ -187,6 +300,20 @@ if ($pageAction) {
             }
             $pages = FileSystemUtils::getFileList($pagesDir, true);
             usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
+        } elseif ($pageAction === "restore_page") {
+            $version = $request->getParam("version") ?? "";
+            $version = basename($version); // sanitize
+            $pagePath = $pagesDir . $targetName;
+            $relPath = preg_replace('/\.md$/', '', $targetName);
+            $snapshotFile = $historyDir . $relPath . "/" . $version;
+            if (!is_file($snapshotFile) || !is_file($pagePath)) {
+                throw new \InvalidArgumentException("Invalid version or page.");
+            }
+            // Save current version as snapshot before restoring
+            savePageSnapshot($pagePath, $pagesDir, $historyDir, $historyMaxVersions);
+            copy($snapshotFile, $pagePath);
+            $editPageName = $targetName;
+            $pageActionSuccess = "Page restored to " . basename($version, '.md');
         }
     } catch (\Exception $e) {
         $pageActionError = $e->getMessage();
@@ -352,6 +479,8 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     $validationErrors = [];
                     if ($edited !== null) {
                         CsrfProtection::validate($request);
+                        // Save snapshot before overwriting
+                        savePageSnapshot($fullPath, $pagesDir, $historyDir, $historyMaxVersions);
                         file_put_contents($fullPath, $edited);
                         // Validate by rendering the page and collecting schema errors
                         Block::resetAllValidationErrors();
@@ -394,6 +523,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleHistory()" title="History">History</button>
                     <?php $currentBaseName = basename($editPageName, '.md'); ?>
                     <div class="dropdown d-inline-block ms-2">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">&#8230;</button>
@@ -405,6 +535,20 @@ $pageTree = buildPageTree($pages, $pagesDir);
                         </ul>
                     </div>
                 </form>
+                <div class="modal fade" id="page-history-modal" tabindex="-1" aria-labelledby="page-history-label" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="page-history-label">History</h5>
+                                <span id="page-history-count" class="text-body-secondary ms-2"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-0" id="page-history-body">
+                                <div class="p-4 text-center text-body-secondary">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <script id="block-examples" type="application/json"><?= json_encode($blockExamplesForInsert) ?></script>
                 <?php if (!empty($validationErrors)) { ?>
                 <script id="validation-data" type="application/json"><?= json_encode(['errors' => $validationErrors, 'examples' => $blockExamples ?? []]) ?></script>
@@ -527,5 +671,67 @@ function renameFolder(folderPath, folderName) {
 function deleteFolder(folderPath, folderName) {
     if (!confirm('Delete empty folder \'' + folderName + '\'?')) return;
     submitPageAction('delete_folder', folderPath);
+}
+
+var historyCache = null;
+
+function toggleHistory() {
+    var modal = document.getElementById('page-history-modal');
+    if (!modal) return;
+    var body = document.getElementById('page-history-body');
+    var count = document.getElementById('page-history-count');
+    body.innerHTML = '<div class="p-4 text-center text-body-secondary">Loading…</div>';
+    count.textContent = '';
+    new bootstrap.Modal(modal).show();
+    fetch('pages?history=1&page=' + encodeURIComponent(currentPage))
+        .then(function(r) { return r.json(); })
+        .then(function(versions) {
+            historyCache = versions;
+            count.textContent = versions.length + ' version(s)';
+            if (versions.length === 0) {
+                body.innerHTML = '<div class="p-4 text-body-secondary">No history available.</div>';
+                return;
+            }
+            var html = '<ul class="list-group list-group-flush" style="max-height:60vh;overflow-y:auto;">';
+            versions.forEach(function(v) {
+                var kb = (v.size / 1024).toFixed(1);
+                html += '<li class="list-group-item d-flex align-items-center" style="font-size:0.85rem;">'
+                    + '<span class="flex-grow-1">' + escapeHtml(v.timestamp) + '</span>'
+                    + '<span class="text-body-secondary me-2">' + kb + ' KB</span>'
+                    + '<a href="#" class="btn btn-sm btn-outline-secondary me-1" onclick="previewVersion(\'' + escapeHtml(v.filename) + '\'); return false;">Preview</a>'
+                    + '<a href="#" class="btn btn-sm btn-outline-primary" onclick="restoreVersion(\'' + escapeHtml(v.filename) + '\'); return false;">Restore</a>'
+                    + '</li>';
+            });
+            html += '</ul>';
+            body.innerHTML = html;
+        })
+        .catch(function() {
+            body.innerHTML = '<div class="p-4 text-danger">Failed to load history.</div>';
+        });
+}
+
+function previewVersion(filename) {
+    if (!historyCache) return;
+    var version = historyCache.find(function(v) { return v.filename === filename; });
+    if (!version) return;
+    var win = window.open('', '_blank');
+    win.document.write('<html><head><title>Preview: ' + filename + '</title>'
+        + '<style>'
+        + ':root { color-scheme: light dark; }'
+        + 'body { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;'
+        + ' padding: 2rem; white-space: pre-wrap; max-width: 80ch; margin: 0 auto;'
+        + ' color: light-dark(#1a1a1a, #e0e0e0); background: light-dark(#fff, #1a1a1a); }'
+        + '</style></head>'
+        + '<body>' + version.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</body></html>');
+    win.document.close();
+}
+
+function restoreVersion(filename) {
+    if (!confirm('Restore this version? Current content will be saved as a snapshot first.')) return;
+    submitPageAction('restore_page', currentPage, {version: filename});
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
 }
 </script>
