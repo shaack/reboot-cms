@@ -565,11 +565,11 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
-                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleHistory()" title="History">History</button>
                     <?php $currentBaseName = basename($editPageName, '.md'); ?>
                     <div class="dropdown d-inline-block ms-2">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">&#8230;</button>
                         <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="toggleHistory(); return false;">History</a></li>
                             <li><a class="dropdown-item" href="#" onclick="renamePage(); return false;">Rename Page</a></li>
                             <li><a class="dropdown-item" href="#" onclick="movePage(); return false;">Move Page</a></li>
                             <li><hr class="dropdown-divider"></li>
