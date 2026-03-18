@@ -15,7 +15,7 @@ const HEIGHT = 768;
 async function main() {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-    await page.setViewport({ width: WIDTH, height: HEIGHT });
+    await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 2 });
 
     // 1. Front page (no auth needed)
     console.log('Capturing front page...');
