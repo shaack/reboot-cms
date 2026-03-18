@@ -7,7 +7,7 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const imgDir = path.join(__dirname, '..', 'web', 'media', 'screenshots');
 
-const BASE = 'http://localhost';
+const BASE = 'http://localhost:8080';
 const ADMIN = `${BASE}/admin`;
 const WIDTH = 1024;
 const HEIGHT = 768;
