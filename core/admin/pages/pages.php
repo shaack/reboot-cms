@@ -25,7 +25,17 @@ function savePageSnapshot(string $pageFsPath, string $pagesDir, string $historyD
     $relPath = str_replace($pagesDir, "", $pageFsPath);
     $relPath = preg_replace('/\.md$/', '', $relPath);
     $snapshotDir = $historyDir . $relPath;
-    if (!is_dir($snapshotDir)) {
+    // Skip if content is identical to the latest snapshot
+    if (is_dir($snapshotDir)) {
+        $existing = glob($snapshotDir . "/*.md");
+        if (!empty($existing)) {
+            sort($existing);
+            $latest = end($existing);
+            if (file_get_contents($latest) === file_get_contents($pageFsPath)) {
+                return;
+            }
+        }
+    } else {
         mkdir($snapshotDir, 0755, true);
     }
     $timestamp = date('Y-m-d_H-i-s');
@@ -477,11 +487,15 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 } else {
                     $edited = $request->getParam("edited");
                     $validationErrors = [];
+                    $pageChanged = false;
                     if ($edited !== null) {
                         CsrfProtection::validate($request);
-                        // Save snapshot before overwriting
-                        savePageSnapshot($fullPath, $pagesDir, $historyDir, $historyMaxVersions);
-                        file_put_contents($fullPath, $edited);
+                        $pageChanged = !file_exists($fullPath) || file_get_contents($fullPath) !== $edited;
+                        if ($pageChanged) {
+                            // Save snapshot before overwriting
+                            savePageSnapshot($fullPath, $pagesDir, $historyDir, $historyMaxVersions);
+                            file_put_contents($fullPath, $edited);
+                        }
                         // Validate by rendering the page and collecting schema errors
                         Block::resetAllValidationErrors();
                         $validationPage = new Page($reboot, $defaultSite);
@@ -550,8 +564,12 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     </div>
                 </div>
                 <script id="block-examples" type="application/json"><?= json_encode($blockExamplesForInsert) ?></script>
-                <?php if (!empty($validationErrors)) { ?>
-                <script id="validation-data" type="application/json"><?= json_encode(['errors' => $validationErrors, 'examples' => $blockExamples ?? []]) ?></script>
+                <?php if ($edited !== null) { ?>
+                <script id="save-result" type="application/json"><?= json_encode([
+                    'changed' => $pageChanged,
+                    'validationErrors' => $validationErrors,
+                    'examples' => $blockExamples ?? []
+                ]) ?></script>
                 <?php } ?>
                 <?php } ?>
             <?php } ?>
@@ -571,22 +589,29 @@ function savePageAsync() {
             return response.text().then(function(html) {
                 var parser = new DOMParser();
                 var doc = parser.parseFromString(html, 'text/html');
-                var dataEl = doc.getElementById('validation-data');
-                if (dataEl) {
-                    var data = JSON.parse(dataEl.textContent);
-                    var list = data.errors.map(function(e) { return "<li>" + e + "</li>"; }).join("");
-                    var msg = "Page saved with " + data.errors.length + " schema warning(s):<ul class='mb-0 mt-1'>" + list + "</ul>";
-                    // Extract failing block names from errors
-                    var failingBlocks = {};
-                    data.errors.forEach(function(e) {
-                        var m = e.match(/^Block '([^']+)':/);
-                        if (m && data.examples[m[1]]) failingBlocks[m[1]] = true;
-                    });
-                    for (var blockName in failingBlocks) {
-                        msg += "<hr class='my-2'><strong>Expected markdown for &quot;" + blockName + "&quot;:</strong>";
-                        msg += "<pre class='mb-1 p-1 bg-light text-dark rounded' style='font-size:0.8rem;white-space:pre-wrap'>" + data.examples[blockName].replace(/</g, "&lt;") + "</pre>";
+                var resultEl = doc.getElementById('save-result');
+                if (resultEl) {
+                    var data = JSON.parse(resultEl.textContent);
+                    if (!data.changed) {
+                        statusMessage("No changes", "text-bg-secondary");
+                        return;
                     }
-                    statusMessage(msg, "text-bg-warning");
+                    if (data.validationErrors && data.validationErrors.length > 0) {
+                        var list = data.validationErrors.map(function(e) { return "<li>" + e + "</li>"; }).join("");
+                        var msg = "Page saved with " + data.validationErrors.length + " schema warning(s):<ul class='mb-0 mt-1'>" + list + "</ul>";
+                        var failingBlocks = {};
+                        data.validationErrors.forEach(function(e) {
+                            var m = e.match(/^Block '([^']+)':/);
+                            if (m && data.examples[m[1]]) failingBlocks[m[1]] = true;
+                        });
+                        for (var blockName in failingBlocks) {
+                            msg += "<hr class='my-2'><strong>Expected markdown for &quot;" + blockName + "&quot;:</strong>";
+                            msg += "<pre class='mb-1 p-1 bg-light text-dark rounded' style='font-size:0.8rem;white-space:pre-wrap'>" + data.examples[blockName].replace(/</g, "&lt;") + "</pre>";
+                        }
+                        statusMessage(msg, "text-bg-warning");
+                    } else {
+                        statusMessage("Page saved");
+                    }
                 } else {
                     statusMessage("Page saved");
                 }

@@ -67,7 +67,9 @@ text-image:
 
 ---
 
-![alt text](media/dummy.svg "Title Text")>
+![alt text](media/dummy.svg "Title Text")
+
+<!-- cards -->
 
 ## The block "cards"
 
