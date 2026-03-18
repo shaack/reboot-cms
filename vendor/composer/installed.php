@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'shaack/reboot-cms',
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
-        'reference' => '7c496ddbae4e8fd624a0078d742f626321611c42',
+        'pretty_version' => '3.3.0',
+        'version' => '3.3.0.0',
+        'reference' => null,
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'shaack/reboot-cms' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => '7c496ddbae4e8fd624a0078d742f626321611c42',
+            'pretty_version' => '3.3.0',
+            'version' => '3.3.0.0',
+            'reference' => null,
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

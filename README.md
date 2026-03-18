@@ -34,7 +34,18 @@ Clone or download the [Reboot CMS repository](https://github.com/shaack/reboot-c
 git clone https://github.com/shaack/reboot-cms.git my-site
 ```
 
-### Setup
+### Quick Start
+
+Run the CMS with PHP's built-in web server (no Apache or Docker needed):
+
+```bash
+./start.sh
+```
+
+The site is available at `http://localhost:8080`, the admin at `http://localhost:8080/admin`.
+You can specify a custom port: `./start.sh 3000`.
+
+### Production Setup
 
 Point your web server's document root to the `web/` directory. The CMS should work out of the box.
 
