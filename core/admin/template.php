@@ -101,11 +101,15 @@ echo($page->render($request));
     import {Separator} from "./node_modules/cm-md-editor/src/tools/Separator.js"
     import {InsertBlock} from "./assets/InsertBlock.js"
     import {InsertMedia} from "./assets/InsertMedia.js"
+    import {InsertPageLink} from "./assets/InsertPageLink.js"
     const blockExamplesEl = document.getElementById('block-examples')
     const blockExamples = blockExamplesEl ? JSON.parse(blockExamplesEl.textContent) : null
     document.querySelectorAll("textarea.markdown").forEach(editor => {
         const props = {wordWrap: <?= $editorWordWrap ?>}
-        const extraTools = [[InsertMedia, {mediaUrl: 'media'}]]
+        const extraTools = [
+            [InsertPageLink, {pagesUrl: 'pages'}],
+            [InsertMedia, {mediaUrl: 'media'}]
+        ]
         if (blockExamples && Object.keys(blockExamples).length > 0) {
             extraTools.push([InsertBlock, {blocks: blockExamples}])
         }

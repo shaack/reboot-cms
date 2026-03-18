@@ -14,6 +14,8 @@ A flat file, markdown CMS with blocks
 
 The main idea is to have a **minimal CMS** without needing a database, but with the support of blocks.
 
+[all-blocks](/testpages/all-blocks)
+
 ---
 
 [Learn more](documentation)

@@ -19,6 +19,33 @@ $pages = FileSystemUtils::getFileList($pagesDir, true);
 usort($pages, function($a, $b) {
     return strcmp($a['name'], $b['name']);
 });
+// JSON API for listing pages (used by InsertPageLink editor tool)
+if ($request->getParam("list")) {
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    header('Content-Type: application/json');
+    $pageList = [];
+    foreach ($pages as $page) {
+        $pagePathInfo = pathinfo($page["name"]);
+        if (!array_key_exists("extension", $pagePathInfo) || $pagePathInfo["extension"] !== "md") {
+            continue;
+        }
+        $relPath = str_replace($pagesDir, "", $page["name"]);
+        // Convert to web path: strip .md, strip /index
+        $webPath = preg_replace('/\.md$/', '', $relPath);
+        $webPath = preg_replace('/\/index$/', '/', $webPath);
+        if ($webPath === '/index') $webPath = '/';
+        $pageList[] = [
+            'filePath' => $relPath,
+            'webPath' => $webPath,
+            'name' => basename($relPath, '.md')
+        ];
+    }
+    echo json_encode($pageList);
+    exit;
+}
+
 if (!$editPageName && file_exists($pagesDir . "/index.md")) {
     $editPageName = "/index.md";
 }
