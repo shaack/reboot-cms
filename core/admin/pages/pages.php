@@ -401,15 +401,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                             <li><a class="dropdown-item" href="#" onclick="renamePage(); return false;">Rename</a></li>
                             <li><a class="dropdown-item" href="#" onclick="movePage(); return false;">Move</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="post" action="pages"
-                                      onsubmit="return confirm('Delete page \'<?= htmlspecialchars($currentBaseName, ENT_QUOTES) ?>\'?')">
-                                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-                                    <input type="hidden" name="action" value="delete_page">
-                                    <input type="hidden" name="name" value="<?= htmlspecialchars($editPageName) ?>">
-                                    <button class="dropdown-item text-danger">Delete Page</button>
-                                </form>
-                            </li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deletePage(); return false;">Delete Page</a></li>
                         </ul>
                     </div>
                 </form>
@@ -517,6 +509,13 @@ function movePage() {
     if (dest === null || dest === currentFolder) return;
     dest = dest.replace(/^\//, '').replace(/\/$/, '');
     submitPageAction('move_page', currentPage, {destination: dest});
+}
+
+function deletePage() {
+    if (!currentPage) return;
+    var baseName = currentPage.replace(/\.md$/, '').split('/').pop();
+    if (!confirm('Delete page \'' + baseName + '\'?')) return;
+    submitPageAction('delete_page', currentPage);
 }
 
 function renameFolder(folderPath, folderName) {
