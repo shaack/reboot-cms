@@ -34,7 +34,7 @@ textarea.cm-md-editor {
 }
 
 .container-fluid {
-  max-width: 1400px;
+  max-width: 1800px;
 }
 
 nav.navbar {
@@ -149,6 +149,10 @@ nav.navbar {
 
 .max-width-xl {
   max-width: 1140px;
+}
+
+.max-width-xxl {
+  max-width: 1440px;
 }
 
 /*# sourceMappingURL=screen.css.map */

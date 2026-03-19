@@ -216,7 +216,7 @@ function isImageType(string $mimeType): bool
 }
 
 ?>
-<div class="container-fluid">
+<div class="container-fluid max-width-xxl">
     <?php if ($error) { ?>
         <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
     <?php } ?>

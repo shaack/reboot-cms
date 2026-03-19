@@ -24,7 +24,7 @@ The main idea is to have a **minimal CMS** without needing a database, but with 
 
 ## The "text-image" block
 
-The gray block above is a "hero" block. This one is a "text-image" block. You can define multiple blocks as you need.
+The block above is a "hero" block. This one is a "text-image" block. You can define multiple blocks as you need.
 [Reboot CMS documentation](documentation)
 
 Shipped with this CMS are some default block types, but it is easy to create your own, if you know some PHP.
