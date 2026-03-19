@@ -1,19 +1,12 @@
-<!--
-text-image:
-    image-position: left
--->
 
-## Configure blocks in the block comment
+<!-- hero -->
 
-The text-image block can also display the image to the left.
-
-Umlauts: äöü
-
-👍
+# Hero heading (h1)
 
 ---
-![alt text](media/dummy.svg "Title Text")>
 
-<!-- text -->
+Lorem ipsum dolor sit amet, consectetur adipiscing.
 
-äöü
+---
+
+[Call-to-action link](url)
