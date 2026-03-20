@@ -638,7 +638,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 <?php } ?>
             <?php } ?>
         </div>
-        <div class="col-4 order-md-2 d-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 120px);">
+        <div class="col-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 120px);">
             <iframe id="preview-iframe-a" name="preview-iframe-a" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;"></iframe>
             <iframe id="preview-iframe-b" name="preview-iframe-b" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;position:absolute;top:0;left:0;visibility:hidden;"></iframe>
         </div>
@@ -855,7 +855,8 @@ function togglePreview() {
     if (previewActive) {
         editorCol.classList.remove('col-md-9', 'col-xl-10');
         editorCol.classList.add('col-md-5', 'col-xl-6');
-        previewCol.classList.remove('d-none');
+        previewCol.classList.remove('d-lg-none');
+        previewCol.classList.add('d-lg-block');
         toggleBtn.classList.remove('btn-outline-secondary');
         toggleBtn.classList.add('btn-secondary');
         updatePreview();
@@ -867,7 +868,8 @@ function togglePreview() {
     } else {
         editorCol.classList.remove('col-md-5', 'col-xl-6');
         editorCol.classList.add('col-md-9', 'col-xl-10');
-        previewCol.classList.add('d-none');
+        previewCol.classList.remove('d-lg-block');
+        previewCol.classList.add('d-lg-none');
         toggleBtn.classList.remove('btn-secondary');
         toggleBtn.classList.add('btn-outline-secondary');
         previewInitialized = false;
