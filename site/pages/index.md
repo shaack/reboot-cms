@@ -74,7 +74,7 @@ text-image:
 - ![This is](media/dummy.svg)
 - ![a dynamic list](media/dummy.svg)
 - ![of images.](media/dummy.svg)
-- ![4 is enough.](media/dummy.svg)
+- ![4 is enough](media/dummy.svg)
 
 <!-- text -->
 
