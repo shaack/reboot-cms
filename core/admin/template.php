@@ -46,7 +46,7 @@ $editorWordWrap = ($editor['wordWrap'] ?? true) ? 'true' : 'false';
 </head>
 <body class="bg-body-tertiary">
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
-<nav class="navbar navbar-expand-md fixed-top">
+<nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
         <!--suppress HtmlUnknownTarget -->
         <a class="navbar-brand me-5" href="pages"><?php echo $navbarConfig["brand"] ?></a>

@@ -599,7 +599,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                     $viewPath = preg_replace('/\/index$/', '/', $viewPath);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
-                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="togglePreview()" id="preview-toggle">Preview</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2 d-none d-lg-inline-block" onclick="togglePreview()" id="preview-toggle">Preview</button>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
                     <?php $currentBaseName = basename($editPageName, '.md'); ?>
                     <div class="dropdown d-inline-block ms-2">
@@ -953,8 +953,8 @@ function updatePreview() {
     form.submit();
 }
 
-// Restore preview state on load
-if (previewActive && currentPage) {
+// Restore preview state on load (only on lg+ screens)
+if (previewActive && currentPage && window.innerWidth >= 992) {
     previewActive = false; // togglePreview will flip it back to true
     togglePreview();
 }
