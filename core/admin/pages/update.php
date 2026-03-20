@@ -14,7 +14,14 @@ if (!$authentication->isAdmin()) {
     return;
 }
 
-$updater = new Updater($reboot->getBaseFsPath());
+$allowedBranches = ["distrib", "master"];
+$branch = $request->getParam("branch") ?? "distrib";
+if (!in_array($branch, $allowedBranches, true)) {
+    $branch = "distrib";
+}
+$isMaster = ($branch === "master");
+
+$updater = new Updater($reboot->getBaseFsPath(), "shaack/reboot-cms", $branch);
 $localVersion = $updater->getLocalVersion() ?? "unknown";
 $error = null;
 $success = null;
@@ -25,8 +32,12 @@ if ($request->getParam("check_version")) {
         ob_end_clean();
     }
     header('Content-Type: application/json');
-    $remoteVersion = $updater->getRemoteVersion();
-    echo json_encode(["version" => $remoteVersion]);
+    $result = ["version" => $updater->getRemoteVersion()];
+    if ($isMaster) {
+        $result["remoteCommit"] = $updater->getRemoteCommitSha();
+        $result["localCommit"] = $updater->getLocalCommitSha();
+    }
+    echo json_encode($result);
     exit;
 }
 
@@ -56,11 +67,27 @@ if ($action === "update") {
         <div class="card-body">
             <table class="table table-borderless mb-3 max-width-md">
                 <tr>
+                    <td>Branch</td>
+                    <td>
+                        <select id="branch-select" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                            <option value="distrib"<?= $branch === "distrib" ? " selected" : "" ?>>distrib (stable)</option>
+                            <option value="main"<?= $branch === "main" ? " selected" : "" ?>>master (unstable)</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
                     <td>Installed version</td>
-                    <td><strong><?= htmlspecialchars($localVersion) ?></strong></td>
+                    <td><strong><?= htmlspecialchars($localVersion) ?></strong><?php
+                        if ($isMaster) {
+                            $localCommit = $updater->getLocalCommitSha();
+                            if ($localCommit) {
+                                echo ' <span class="text-muted">(commit ' . htmlspecialchars(substr($localCommit, 0, 7)) . ')</span>';
+                            }
+                        }
+                    ?></td>
                 </tr>
                 <tr id="remote-version-row">
-                    <td>Available version</td>
+                    <td><?= $branch === "main" ? "Latest commit" : "Available version" ?></td>
                     <td id="remote-version-cell">
                         <div class="spinner-border spinner-border-sm text-secondary" role="status">
                             <span class="visually-hidden">Checking...</span>
@@ -82,12 +109,42 @@ if ($action === "update") {
 document.addEventListener("DOMContentLoaded", function () {
     const localVersion = "<?= htmlspecialchars($localVersion, ENT_QUOTES) ?>"
     const csrfToken = "<?= CsrfProtection::getToken() ?>"
-    fetch("update?check_version=1")
+    const branch = "<?= htmlspecialchars($branch, ENT_QUOTES) ?>"
+
+    document.getElementById("branch-select").addEventListener("change", function () {
+        window.location.href = "update?branch=" + encodeURIComponent(this.value)
+    })
+
+    fetch("update?check_version=1&branch=" + encodeURIComponent(branch))
         .then(function (r) { return r.json() })
         .then(function (data) {
+            data = data || {}
             const cell = document.getElementById("remote-version-cell")
             const actions = document.getElementById("update-actions")
-            if (data.version) {
+            if (branch === "master") {
+                const remoteCommit = data.remoteCommit
+                const localCommit = data.localCommit
+                if (remoteCommit) {
+                    const shortRemote = remoteCommit.substring(0, 7)
+                    const shortLocal = localCommit ? localCommit.substring(0, 7) : null
+                    const isUpToDate = localCommit && remoteCommit.startsWith(localCommit)
+                    cell.innerHTML = '<strong>' + shortRemote + '</strong>'
+                    if (isUpToDate) {
+                        actions.innerHTML = '<p class="text-muted mb-0">You are running the latest commit (' + shortLocal + ').</p>'
+                    } else {
+                        const installedInfo = shortLocal ? ' (installed: ' + shortLocal + ')' : ''
+                        actions.innerHTML =
+                            '<form method="post" action="update?branch=' + encodeURIComponent(branch) + '" onsubmit="return confirm(\'Update Reboot CMS from branch master (unstable) to commit ' + shortRemote + '.' + installedInfo + ' To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.\')">' +
+                            '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
+                            '<input type="hidden" name="action" value="update">' +
+                            '<button class="btn btn-sm btn-primary">Update to ' + shortRemote + '</button>' +
+                            '</form>'
+                    }
+                } else {
+                    cell.innerHTML = '<span class="text-muted">unavailable</span>'
+                    actions.innerHTML = '<p class="text-muted mb-0">Could not check for updates. Please verify your internet connection.</p>'
+                }
+            } else if (data.version) {
                 const version = document.createElement("strong")
                 version.textContent = data.version
                 cell.innerHTML = ""
@@ -95,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (data.version.localeCompare(localVersion, undefined, {numeric: true, sensitivity: 'base'}) > 0) {
                     const safeVersion = data.version.replace(/[<>"'&]/g, '')
                     actions.innerHTML =
-                        '<form method="post" action="update" onsubmit="return confirm(\'Update Reboot CMS to version ' + safeVersion + '. To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.\')">' +
+                        '<form method="post" action="update?branch=' + encodeURIComponent(branch) + '" onsubmit="return confirm(\'Update Reboot CMS to version ' + safeVersion + '. To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.\')">' +
                         '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
                         '<input type="hidden" name="action" value="update">' +
                         '<button class="btn btn-sm btn-primary">Update to ' + safeVersion + '</button>' +

@@ -23,7 +23,7 @@ class Updater
     }
 
     /**
-     * Fetches the remote version from the composer.json in the distrib branch.
+     * Fetches the remote version from the composer.json in the branch.
      */
     public function getRemoteVersion(): ?string
     {
@@ -34,6 +34,46 @@ class Updater
         }
         $data = json_decode($json, true);
         return $data["version"] ?? null;
+    }
+
+    /**
+     * Fetches the latest commit SHA for the current branch from GitHub.
+     */
+    public function getRemoteCommitSha(): ?string
+    {
+        $url = "https://api.github.com/repos/" . $this->repo . "/commits/" . $this->branch;
+        $context = stream_context_create([
+            "http" => [
+                "header" => "User-Agent: reboot-cms-updater\r\nAccept: application/vnd.github.v3+json\r\n",
+            ]
+        ]);
+        $json = @file_get_contents($url, false, $context);
+        if ($json === false) {
+            return null;
+        }
+        $data = json_decode($json, true);
+        return $data["sha"] ?? null;
+    }
+
+    /**
+     * Gets the locally stored commit SHA for a branch.
+     */
+    public function getLocalCommitSha(): ?string
+    {
+        $path = $this->baseFsPath . "/local/update-commit-" . $this->branch . ".sha";
+        if (!file_exists($path)) {
+            return null;
+        }
+        return trim(file_get_contents($path));
+    }
+
+    /**
+     * Saves the commit SHA after a successful update.
+     */
+    private function saveLocalCommitSha(string $sha): void
+    {
+        $path = $this->baseFsPath . "/local/update-commit-" . $this->branch . ".sha";
+        file_put_contents($path, $sha);
     }
 
     /**
@@ -85,6 +125,12 @@ class Updater
                 throw new \RuntimeException("Failed to extract update archive");
             }
             $sourceDir = $extractedDirs[0];
+
+            // Extract commit SHA from the directory name (e.g. "shaack-reboot-cms-abc1234")
+            $dirName = basename($sourceDir);
+            if (preg_match('/-([0-9a-f]+)$/', $dirName, $matches)) {
+                $this->saveLocalCommitSha($matches[1]);
+            }
 
             // Replace core/
             $sourceCore = $sourceDir . "/core";
