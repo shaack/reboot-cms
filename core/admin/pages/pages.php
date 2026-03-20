@@ -639,7 +639,8 @@ $pageTree = buildPageTree($pages, $pagesDir);
             <?php } ?>
         </div>
         <div class="col-4 order-md-2 d-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 120px);">
-            <iframe id="preview-iframe" name="preview-iframe" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;"></iframe>
+            <iframe id="preview-iframe-a" name="preview-iframe-a" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;"></iframe>
+            <iframe id="preview-iframe-b" name="preview-iframe-b" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;position:absolute;top:0;left:0;visibility:hidden;"></iframe>
         </div>
     </div>
 </div>
@@ -887,7 +888,7 @@ var lastSyncedBlock = -1;
 
 function syncPreviewToBlock() {
     if (!previewActive || !previewInitialized || !editorTextarea) return;
-    var iframe = document.getElementById('preview-iframe');
+    var iframe = getFrontIframe();
     try {
         var doc = iframe.contentDocument;
         var sections = doc.querySelectorAll('section.block');
@@ -913,41 +914,57 @@ function syncPreviewToBlock() {
 }
 
 var previewInitialized = false;
+var previewFront = 'a'; // currently visible iframe: 'a' or 'b'
 
-function getPreviewForm() {
+function getFrontIframe() {
+    return document.getElementById('preview-iframe-' + previewFront);
+}
+function getBackIframe() {
+    return document.getElementById('preview-iframe-' + (previewFront === 'a' ? 'b' : 'a'));
+}
+
+function getPreviewForm(targetName) {
     var previewForm = document.getElementById('preview-form');
     if (!previewForm) {
         previewForm = document.createElement('form');
         previewForm.id = 'preview-form';
         previewForm.method = 'POST';
         previewForm.action = 'pages?preview=1';
-        previewForm.target = 'preview-iframe';
         previewForm.style.display = 'none';
         previewForm.innerHTML = '<input type="hidden" name="csrf_token" value="' + csrfToken + '">'
             + '<input type="hidden" name="page" value="">'
             + '<input type="hidden" name="content" value="">';
         document.body.appendChild(previewForm);
     }
+    previewForm.target = targetName;
     return previewForm;
 }
 
 function updatePreview() {
     if (!previewActive || !currentPage) return;
-    var iframe = document.getElementById('preview-iframe');
+    var front = getFrontIframe();
+    var back = getBackIframe();
     var content = editorTextarea ? editorTextarea.value : '';
-    var scrollTop = 0;
-    if (previewInitialized && iframe.contentDocument) {
-        var doc = iframe.contentDocument;
-        scrollTop = doc.documentElement.scrollTop || doc.body.scrollTop || 0;
+    // Capture exact scroll position from front iframe
+    var savedScrollTop = 0;
+    if (previewInitialized && front.contentDocument) {
+        var doc = front.contentDocument;
+        savedScrollTop = doc.documentElement.scrollTop || doc.body.scrollTop || 0;
     }
-    var form = getPreviewForm();
+    var form = getPreviewForm(back.name);
     form.querySelector('[name="page"]').value = currentPage;
     form.querySelector('[name="content"]').value = content;
-    iframe.onload = function() {
-        iframe.onload = null;
+    back.onload = function() {
+        back.onload = null;
         previewInitialized = true;
-        if (scrollTop && iframe.contentDocument) {
-            iframe.contentDocument.documentElement.scrollTop = scrollTop;
+        // Swap first (so layout is computed in visible state), then restore scroll
+        front.style.visibility = 'hidden';
+        front.style.position = 'absolute';
+        back.style.visibility = 'visible';
+        back.style.position = '';
+        previewFront = (previewFront === 'a') ? 'b' : 'a';
+        if (back.contentDocument) {
+            back.contentDocument.documentElement.scrollTop = savedScrollTop;
         }
     };
     form.submit();
