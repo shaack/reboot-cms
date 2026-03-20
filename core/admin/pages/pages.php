@@ -538,7 +538,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 </div>
             </div>
         </div>
-        <div class="col-md-9 col-xl-10 order-md-1 order-0" id="editor-column">
+        <div class="col-12 col-lg-9 col-xl-10 order-md-1 order-0" id="editor-column">
             <?php if ($editPageName) {
                 $fullPath = $pagesDir . $editPageName;
                 // Validate the resolved path stays within the pages directory
@@ -638,7 +638,7 @@ $pageTree = buildPageTree($pages, $pagesDir);
                 <?php } ?>
             <?php } ?>
         </div>
-        <div class="col-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 120px);">
+        <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 120px);">
             <iframe id="preview-iframe-a" name="preview-iframe-a" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;"></iframe>
             <iframe id="preview-iframe-b" name="preview-iframe-b" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;position:absolute;top:0;left:0;visibility:hidden;"></iframe>
         </div>
@@ -853,8 +853,8 @@ function togglePreview() {
     var previewCol = document.getElementById('preview-column');
     var toggleBtn = document.getElementById('preview-toggle');
     if (previewActive) {
-        editorCol.classList.remove('col-md-9', 'col-xl-10');
-        editorCol.classList.add('col-md-5', 'col-xl-6');
+        editorCol.classList.remove('col-lg-9', 'col-xl-10');
+        editorCol.classList.add('col-lg-5', 'col-xl-6');
         previewCol.classList.remove('d-lg-none');
         previewCol.classList.add('d-lg-block');
         toggleBtn.classList.remove('btn-outline-secondary');
@@ -866,8 +866,8 @@ function togglePreview() {
             editorTextarea.addEventListener('keyup', syncPreviewToBlock);
         }
     } else {
-        editorCol.classList.remove('col-md-5', 'col-xl-6');
-        editorCol.classList.add('col-md-9', 'col-xl-10');
+        editorCol.classList.remove('col-lg-5', 'col-xl-6');
+        editorCol.classList.add('col-lg-9', 'col-xl-10');
         previewCol.classList.remove('d-lg-block');
         previewCol.classList.add('d-lg-none');
         toggleBtn.classList.remove('btn-secondary');
