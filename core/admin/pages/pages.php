@@ -187,7 +187,10 @@ if ($request->getParam("preview") && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $previewSite = new \Shaack\Reboot\Site($reboot, "/site", "");
         $previewRequest = new \Shaack\Reboot\Request($previewSite, $reboot->getBaseWebPath(), preg_replace('/\/index$/', '/', preg_replace('/\.md$/', '', $previewPageName)), []);
         $previewPageObj = new Page($reboot, $previewSite);
-        echo \Shaack\Reboot\renderPage($previewSite, $previewPageObj, $previewRequest);
+        $previewHtml = \Shaack\Reboot\renderPage($previewSite, $previewPageObj, $previewRequest);
+        // Disable scroll animations in preview for immediate visibility
+        $previewHtml = str_replace('</head>', '<style>*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important;}</style></head>', $previewHtml);
+        echo $previewHtml;
         // Restore original content
         file_put_contents($previewPath, $originalContent, LOCK_EX);
     } else {
@@ -932,42 +935,22 @@ function updatePreview() {
     if (!previewActive || !currentPage) return;
     var iframe = document.getElementById('preview-iframe');
     var content = editorTextarea ? editorTextarea.value : '';
-
-    if (!previewInitialized) {
-        // First load: use form submit so the iframe gets its own CSP from the response
-        var form = getPreviewForm();
-        form.querySelector('[name="page"]').value = currentPage;
-        form.querySelector('[name="content"]').value = content;
-        iframe.onload = function() {
-            iframe.onload = null;
-            previewInitialized = true;
-        };
-        form.submit();
-    } else {
-        // Subsequent updates: fetch and replace only <main> to preserve scroll
-        var formData = new FormData();
-        formData.append('csrf_token', csrfToken);
-        formData.append('page', currentPage);
-        formData.append('content', content);
-        fetch('pages?preview=1', {
-            method: 'POST',
-            body: formData
-        }).then(function(r) { return r.text(); })
-        .then(function(html) {
-            var doc = iframe.contentDocument;
-            var parser = new DOMParser();
-            var newDoc = parser.parseFromString(html, 'text/html');
-            var newMain = newDoc.querySelector('main');
-            var oldMain = doc.querySelector('main');
-            if (newMain && oldMain) {
-                oldMain.innerHTML = newMain.innerHTML;
-            } else {
-                var scrollTop = doc.documentElement.scrollTop || doc.body.scrollTop;
-                doc.body.innerHTML = newDoc.body.innerHTML;
-                doc.documentElement.scrollTop = scrollTop;
-            }
-        });
+    var scrollTop = 0;
+    if (previewInitialized && iframe.contentDocument) {
+        var doc = iframe.contentDocument;
+        scrollTop = doc.documentElement.scrollTop || doc.body.scrollTop || 0;
     }
+    var form = getPreviewForm();
+    form.querySelector('[name="page"]').value = currentPage;
+    form.querySelector('[name="content"]').value = content;
+    iframe.onload = function() {
+        iframe.onload = null;
+        previewInitialized = true;
+        if (scrollTop && iframe.contentDocument) {
+            iframe.contentDocument.documentElement.scrollTop = scrollTop;
+        }
+    };
+    form.submit();
 }
 
 // Restore preview state on load
