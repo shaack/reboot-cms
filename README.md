@@ -186,42 +186,6 @@ Ut enim ad minim [veniam](/), quis nostrud exercitation ullamco laboris nisi ut 
 ### block
 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-<!--
-text-image:
-    image-position: left
--->
-
-## Configure blocks in the block comment
-
-The `text-image` block can also display the image to the left.
-
----
-
-![alt text](media/dummy.svg "Title Text")
-
-<!-- cards -->
-
-## The block "cards"
-
-- ![This is](media/dummy.svg)
-- ![a dynamic list](media/dummy.svg)
-- ![of images.](media/dummy.svg)
-- ![4 is enough](media/dummy.svg)
-
-<!-- text -->
-
-## This is the "text" block
-
-A text block contains just one markdown part.
-
-### This is a h3
-
-Text block can contain
-
-- lists
-- and [links](https://shaack.com)
-- and **everything else** in markdown.
 ```
 
 This `Page` contains 3 `Block` types, "hero", "text-image" and "three-columns". It will render to this:

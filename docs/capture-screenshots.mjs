@@ -15,13 +15,15 @@ const HEIGHT = 720;
 async function main() {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-    await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 2 });
+    await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 2 });
 
     // 1. Front page (no auth needed)
     console.log('Capturing front page...');
     await page.goto(BASE, { waitUntil: 'networkidle0' });
     await page.screenshot({ path: path.join(imgDir, 'reboot-cms-index.png') });
     console.log('  -> reboot-cms-index.png');
+
+    await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 2 });
 
     // 2. Login page
     console.log('Capturing login page...');
