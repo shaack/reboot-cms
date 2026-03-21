@@ -24,12 +24,10 @@ async function main() {
     console.log('  -> reboot-cms-index.png');
 
     // 2. Login page
-    /*
     console.log('Capturing login page...');
     await page.goto(`${ADMIN}/login`, { waitUntil: 'networkidle0' });
     await page.screenshot({ path: path.join(imgDir, 'reboot-cms-admin-login.png') });
     console.log('  -> reboot-cms-admin-login.png');
-    */
 
     // 3. Log in
     console.log('Logging in...');
