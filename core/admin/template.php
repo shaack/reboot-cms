@@ -13,6 +13,9 @@ $editorFontSize = $editor['fontSize'] ?? '1rem';
 $editorLineHeight = $editor['lineHeight'] ?? '1.5';
 $editorTabSize = $editor['tabSize'] ?? '4';
 $editorWordWrap = ($editor['wordWrap'] ?? true) ? 'true' : 'false';
+$defaultEditorTools = ['Headings', '|', 'Bold', 'Italic', 'Strikethrough', '|',
+    'UnorderedList', 'OrderedList', '|', 'InsertLink', 'InsertImage'];
+$editorTools = $editor['tools'] ?? $defaultEditorTools;
 ?>
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
@@ -101,23 +104,43 @@ echo($page->render($request));
 </script>
 <script type="module">
     import {MdEditor} from "./node_modules/cm-md-editor/src/MdEditor.js"
-    import {defaultTools} from "./node_modules/cm-md-editor/src/tools/DefaultTools.js"
     import {Separator} from "./node_modules/cm-md-editor/src/tools/Separator.js"
+    import {Headings} from "./node_modules/cm-md-editor/src/tools/Headings.js"
+    import {Bold} from "./node_modules/cm-md-editor/src/tools/Bold.js"
+    import {Italic} from "./node_modules/cm-md-editor/src/tools/Italic.js"
+    import {Strikethrough} from "./node_modules/cm-md-editor/src/tools/Strikethrough.js"
+    import {UnorderedList} from "./node_modules/cm-md-editor/src/tools/UnorderedList.js"
+    import {OrderedList} from "./node_modules/cm-md-editor/src/tools/OrderedList.js"
+    import {InsertLink} from "./node_modules/cm-md-editor/src/tools/InsertLink.js"
+    import {InsertImage} from "./node_modules/cm-md-editor/src/tools/InsertImage.js"
     import {InsertBlock} from "./assets/InsertBlock.js"
     import {InsertMedia} from "./assets/InsertMedia.js"
     import {InsertPageLink} from "./assets/InsertPageLink.js"
+
+    const toolRegistry = {
+        Headings, Bold, Italic, Strikethrough,
+        UnorderedList, OrderedList, InsertLink, InsertImage
+    }
+    const configuredTools = <?= json_encode($editorTools) ?>;
     const blockExamplesEl = document.getElementById('block-examples')
     const blockExamples = blockExamplesEl ? JSON.parse(blockExamplesEl.textContent) : null
     document.querySelectorAll("textarea.markdown").forEach(editor => {
         const props = {wordWrap: <?= $editorWordWrap ?>}
+        const tools = configuredTools.map(name => {
+            if (name === '|') return Separator
+            if (toolRegistry[name]) return toolRegistry[name]
+            console.warn('Unknown editor tool:', name)
+            return null
+        }).filter(Boolean)
         const extraTools = [
+            Separator,
             [InsertPageLink, {pagesUrl: 'pages'}],
             [InsertMedia, {mediaUrl: 'media'}]
         ]
         if (blockExamples && Object.keys(blockExamples).length > 0) {
             extraTools.push([InsertBlock, {blocks: blockExamples}])
         }
-        props.tools = [...defaultTools, Separator, ...extraTools]
+        props.tools = [...tools, ...extraTools]
         new MdEditor(editor, props)
     })
 </script>

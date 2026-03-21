@@ -12,6 +12,18 @@ editor:
   lineHeight: '1.4'
   tabSize: 4
   wordWrap: true
+  tools:
+    - Headings
+    - "|"
+    - Bold
+    - Italic
+  #  - Strikethrough
+    - "|"
+    - UnorderedList
+    - OrderedList
+    - "|"
+    - InsertLink
+    - InsertImage
 
 # Page history: number of snapshots to keep per page
 history:
