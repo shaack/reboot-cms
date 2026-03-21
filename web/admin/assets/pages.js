@@ -79,18 +79,41 @@
         }
     });
 
-    // --- Folder collapse icons ---
+    // --- Folder collapse state (persisted in localStorage) ---
 
+    var STORAGE_KEY = 'reboot_sidebar_expanded';
+    function getExpandedFolders() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { return {}; }
+    }
+    function saveExpandedFolders(map) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    }
+
+    // Restore saved state: expand folders that were previously open
+    var expanded = getExpandedFolders();
     document.querySelectorAll('.page-tree-folder').forEach(function (folder) {
         var target = document.querySelector(folder.getAttribute('href'));
-        if (target) {
-            target.addEventListener('show.bs.collapse', function () {
-                folder.querySelector('.folder-icon').innerHTML = '&#9660;';
-            });
-            target.addEventListener('hide.bs.collapse', function () {
-                folder.querySelector('.folder-icon').innerHTML = '&#9654;';
-            });
+        if (!target) return;
+        var id = target.id;
+        // Expand if saved as open (and not already expanded by the server for the active page)
+        if (expanded[id] && !target.classList.contains('show')) {
+            target.classList.add('show');
+            folder.setAttribute('aria-expanded', 'true');
+            folder.querySelector('.folder-icon').innerHTML = '&#9660;';
         }
+        // Track show/hide and persist
+        target.addEventListener('show.bs.collapse', function () {
+            folder.querySelector('.folder-icon').innerHTML = '&#9660;';
+            var map = getExpandedFolders();
+            map[id] = true;
+            saveExpandedFolders(map);
+        });
+        target.addEventListener('hide.bs.collapse', function () {
+            folder.querySelector('.folder-icon').innerHTML = '&#9654;';
+            var map = getExpandedFolders();
+            delete map[id];
+            saveExpandedFolders(map);
+        });
     });
 
     // --- Page actions ---
