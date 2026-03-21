@@ -7,6 +7,8 @@
 
 namespace Shaack\Reboot\Admin;
 
+use Shaack\Reboot\CsrfProtection;
+use Shaack\Reboot\Request;
 use Shaack\Reboot\Site;
 use Shaack\Reboot\Reboot;
 
@@ -38,6 +40,25 @@ class AdminHelper
             $html .= '<script>statusMessage("' . htmlspecialchars($success, ENT_QUOTES) . '")</script>';
         }
         return $html;
+    }
+
+    /**
+     * Validate CSRF token and execute an action callback within a try/catch.
+     * Returns ['error' => ?string, 'success' => ?string] plus any extra keys from the callback.
+     * The callback should return a success message string or an array with 'success' and extra keys.
+     */
+    public static function handleAction(Request $request, callable $callback): array
+    {
+        try {
+            CsrfProtection::validate($request);
+            $result = $callback();
+            if (is_string($result)) {
+                return ['error' => null, 'success' => $result];
+            }
+            return array_merge(['error' => null, 'success' => null], $result);
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage(), 'success' => null];
+        }
     }
 
     /**

@@ -16,9 +16,9 @@ $defaultSite = $admin->getDefaultSite();
 $configuration = $request->getParam("configuration");
 $configPath = $defaultSite->getFsPath() . "/config.yml";
 $configSaveError = null;
+$configSaved = false;
 if ($configuration) {
-    CsrfProtection::validate($request);
-    try {
+    $result = AdminHelper::handleAction($request, function() use ($configuration, $configPath) {
         $parsed = Yaml::parse($configuration);
         if (isset($parsed["addons"]) && is_array($parsed["addons"])) {
             foreach ($parsed["addons"] as $addonName) {
@@ -28,9 +28,10 @@ if ($configuration) {
             }
         }
         file_put_contents($configPath, $configuration);
-    } catch (\Exception $e) {
-        $configSaveError = $e->getMessage();
-    }
+        return "Configuration saved";
+    });
+    $configSaveError = $result['error'];
+    $configSaved = !$configSaveError;
 }
 $configFile = file_get_contents($configPath);
 $configHasErrors = false;
@@ -42,10 +43,7 @@ try {
 ?>
 
 <div class="container-fluid max-width-lg">
-    <?= AdminHelper::renderStatusMessages(
-        $configSaveError,
-        $configuration !== null && !$configSaveError ? "Configuration saved" : null
-    ) ?>
+    <?= AdminHelper::renderStatusMessages($configSaveError, $configSaved ? "Configuration saved" : null) ?>
 
     <div class="card">
         <div class="card-header"><h5 class="mb-0">Site Configuration</h5></div>

@@ -27,16 +27,14 @@ if ($request->getParam("check_version")) {
     return;
 }
 
-$action = $request->getParam("action");
-if ($action === "update") {
-    CsrfProtection::validate($request);
-    try {
+if ($request->getParam("action") === "update") {
+    $result = AdminHelper::handleAction($request, function() use ($updater, &$localVersion) {
         $updater->update();
-        $success = "Update complete.";
         $localVersion = $updater->getLocalVersion() ?? "unknown";
-    } catch (\Exception $e) {
-        $error = $e->getMessage();
-    }
+        return "Update complete.";
+    });
+    $error = $result['error'];
+    $success = $result['success'];
 }
 ?>
 

@@ -21,8 +21,7 @@ $success = null;
 
 $action = $request->getParam("action");
 if ($action) {
-    try {
-        CsrfProtection::validate($request);
+    $result = AdminHelper::handleAction($request, function() use ($action, $request, $htpasswd, $authentication, $currentUser) {
         $username = trim($request->getParam("username") ?? "");
         $password = $request->getParam("password") ?? "";
 
@@ -37,21 +36,21 @@ if ($action) {
             $htpasswd->addUser($username, $password);
             $authentication->setUserRole($username, $role);
             $authentication->refreshChecksum();
-            $success = "User '$username' added as $role";
+            return "User '$username' added as $role";
         } elseif ($action === "change_password") {
             if (strlen($password) < 8) {
                 throw new \InvalidArgumentException("Password must be at least 8 characters");
             }
             $htpasswd->changePassword($username, $password);
             $authentication->refreshChecksum();
-            $success = "Password changed for '$username'";
+            return "Password changed for '$username'";
         } elseif ($action === "change_role") {
             if ($username === $currentUser) {
                 throw new \InvalidArgumentException("You cannot change your own role");
             }
             $role = $request->getParam("role") ?? Authentication::ROLE_EDITOR;
             $authentication->setUserRole($username, $role);
-            $success = "Role changed for '$username' to $role";
+            return "Role changed for '$username' to $role";
         } elseif ($action === "delete") {
             if ($username === $currentUser) {
                 throw new \InvalidArgumentException("You cannot delete your own account");
@@ -59,11 +58,11 @@ if ($action) {
             $htpasswd->deleteUser($username);
             $authentication->deleteUserRole($username);
             $authentication->refreshChecksum();
-            $success = "User '$username' deleted";
+            return "User '$username' deleted";
         }
-    } catch (\Exception $e) {
-        $error = $e->getMessage();
-    }
+    });
+    $error = $result['error'];
+    $success = $result['success'];
 }
 
 $users = $htpasswd->getUsers();

@@ -37,9 +37,7 @@ if ($request->getParam("list")) {
 
 $action = $request->getParam("action");
 if ($action) {
-    try {
-        CsrfProtection::validate($request);
-
+    $result = AdminHelper::handleAction($request, function() use ($action, $request, $resolvedPath, $mediaDir) {
         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg',
             'mp4', 'webm', 'ogg', 'mp3', 'wav',
             'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp',
@@ -69,12 +67,10 @@ if ($action) {
                     $uploadCount++;
                 }
             }
-            if ($uploadCount > 0) {
-                $success = "$uploadCount file(s) uploaded";
-            }
-            if (!empty($skipped)) {
-                $error = "Blocked: " . implode(", ", $skipped) . " (extension not allowed)";
-            }
+            return [
+                'success' => $uploadCount > 0 ? "$uploadCount file(s) uploaded" : null,
+                'error' => !empty($skipped) ? "Blocked: " . implode(", ", $skipped) . " (extension not allowed)" : null,
+            ];
         } elseif ($action === "create_folder") {
             $folderName = trim($request->getParam("folder_name") ?? "");
             if (!preg_match('/^[\w\s\-.]+$/', $folderName)) {
@@ -87,7 +83,7 @@ if ($action) {
             if (!mkdir($newFolderPath, 0755)) {
                 throw new \RuntimeException("Failed to create folder");
             }
-            $success = "Folder '$folderName' created";
+            return "Folder '$folderName' created";
         } elseif ($action === "replace" && isset($_FILES["replace_file"])) {
             $targetName = basename($request->getParam("name") ?? "");
             if (empty($targetName) || $targetName === "." || $targetName === "..") {
@@ -107,13 +103,11 @@ if ($action) {
                 throw new \InvalidArgumentException("File extension not allowed");
             }
             if (move_uploaded_file($file["tmp_name"], $resolvedTarget)) {
-                $success = "File '$targetName' replaced";
-            } else {
-                throw new \RuntimeException("Failed to replace file");
+                return "File '$targetName' replaced";
             }
+            throw new \RuntimeException("Failed to replace file");
         } elseif ($action === "delete") {
-            $deleteName = $request->getParam("name") ?? "";
-            $deleteName = basename($deleteName);
+            $deleteName = basename($request->getParam("name") ?? "");
             $deletePath = $resolvedPath . "/" . $deleteName;
             $resolvedDeletePath = realpath($deletePath);
             if ($resolvedDeletePath === false || strncmp($resolvedDeletePath, realpath($mediaDir), strlen(realpath($mediaDir))) !== 0) {
@@ -124,15 +118,15 @@ if ($action) {
                     throw new \InvalidArgumentException("Folder is not empty");
                 }
                 rmdir($resolvedDeletePath);
-                $success = "Folder '$deleteName' deleted";
+                return "Folder '$deleteName' deleted";
             } elseif (is_file($resolvedDeletePath)) {
                 unlink($resolvedDeletePath);
-                $success = "File '$deleteName' deleted";
+                return "File '$deleteName' deleted";
             }
         }
-    } catch (\Exception $e) {
-        $error = $e->getMessage();
-    }
+    });
+    $error = $result['error'];
+    $success = $result['success'];
 }
 
 // Read directory contents

@@ -47,19 +47,21 @@ $pageAction = $request->getParam("action");
 $pageActionError = null;
 $pageActionSuccess = null;
 if ($pageAction) {
-    try {
-        CsrfProtection::validate($request);
+    $actionResult = AdminHelper::handleAction($request, function() use ($pageAction, $request, $pagesDir, $historyDir, $historyMaxVersions) {
         $targetName = $request->getParam("name") ?? "";
         $targetName = str_replace("..", "", $targetName);
         $handler = new PageActionHandler($pagesDir, $historyDir, $historyMaxVersions);
-        $result = $handler->handle($pageAction, $targetName, $request);
-        $pageActionSuccess = $result['success'];
-        if (array_key_exists('editPageName', $result)) {
-            $editPageName = $result['editPageName'];
+        return $handler->handle($pageAction, $targetName, $request);
+    });
+    $pageActionError = $actionResult['error'];
+    $pageActionSuccess = $actionResult['success'];
+    if (!$pageActionError) {
+        if (array_key_exists('editPageName', $actionResult)) {
+            $editPageName = $actionResult['editPageName'];
         }
         // Handle folder rename: update editPageName if it was inside the renamed folder
-        if (isset($result['renamedFolder']) && $editPageName) {
-            $rf = $result['renamedFolder'];
+        if (isset($actionResult['renamedFolder']) && $editPageName) {
+            $rf = $actionResult['renamedFolder'];
             $oldPrefix = "/" . $rf['oldPrefix'] . "/";
             $newPrefix = "/" . (dirname($rf['oldPrefix']) === "." ? "" : dirname($rf['oldPrefix']) . "/") . $rf['newName'] . "/";
             if (str_starts_with($editPageName, $oldPrefix)) {
@@ -69,8 +71,6 @@ if ($pageAction) {
         // Refresh file list after any action
         $pages = FileSystemUtils::getFileList($pagesDir, true);
         usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
-    } catch (\Exception $e) {
-        $pageActionError = $e->getMessage();
     }
 }
 
