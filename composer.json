@@ -27,7 +27,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Shaack\\": "core/src/Shaack/"
+            "Shaack\\": "core/src/Shaack/",
+            "Shaack\\Reboot\\Admin\\": "core/admin/addons/Admin/"
         }
     },
     "keywords": [

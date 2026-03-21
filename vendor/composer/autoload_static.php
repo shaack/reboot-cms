@@ -20,6 +20,7 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
         array (
             'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Component\\Yaml\\' => 23,
+            'Shaack\\Reboot\\Admin\\' => 20,
             'Shaack\\' => 7,
         ),
     );
@@ -36,6 +37,10 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
         'Symfony\\Component\\Yaml\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/yaml',
+        ),
+        'Shaack\\Reboot\\Admin\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/core/admin/addons/Admin',
         ),
         'Shaack\\' =>
         array (

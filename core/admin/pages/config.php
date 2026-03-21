@@ -5,17 +5,12 @@
 /** @var Shaack\Reboot\Admin $admin */
 $admin = $site->getAddOn("Admin");
 
-use Shaack\Reboot\Authentication;
+use Shaack\Reboot\Admin\AdminHelper;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Shaack\Reboot\CsrfProtection;
 
-/** @var Authentication $authentication */
-$authentication = $site->getAddOn("Authentication");
-if (!$authentication->isAdmin()) {
-    $reboot->redirect($site->getWebPath() . "/pages");
-    return;
-}
+if (!AdminHelper::requireAdmin($site, $reboot)) return;
 
 $defaultSite = $admin->getDefaultSite();
 $configuration = $request->getParam("configuration");
@@ -23,10 +18,8 @@ $configPath = $defaultSite->getFsPath() . "/config.yml";
 $configSaveError = null;
 if ($configuration) {
     CsrfProtection::validate($request);
-    // Validate YAML before saving
     try {
         $parsed = Yaml::parse($configuration);
-        // Validate addon names contain only safe characters
         if (isset($parsed["addons"]) && is_array($parsed["addons"])) {
             foreach ($parsed["addons"] as $addonName) {
                 if (!preg_match('/^[a-zA-Z0-9_]+$/', $addonName)) {
@@ -49,12 +42,10 @@ try {
 ?>
 
 <div class="container-fluid max-width-lg">
-    <?php if ($configSaveError) { ?>
-        <script>statusMessage("Configuration not saved: <?= htmlspecialchars($configSaveError, ENT_QUOTES) ?>", "text-bg-danger")</script>
-    <?php } ?>
-    <?php if ($configuration !== null && !$configSaveError) { ?>
-        <script>statusMessage("Configuration saved")</script>
-    <?php } ?>
+    <?= AdminHelper::renderStatusMessages(
+        $configSaveError,
+        $configuration !== null && !$configSaveError ? "Configuration saved" : null
+    ) ?>
 
     <div class="card">
         <div class="card-header"><h5 class="mb-0">Site Configuration</h5></div>

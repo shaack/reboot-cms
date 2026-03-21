@@ -1,6 +1,7 @@
 <?php
 
 use Shaack\Logger;
+use Shaack\Reboot\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
@@ -21,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $ip = $_SERVER['REMOTE_ADDR'];
     $now = time();
-    // Clean old entries
     $attempts = array_filter($attempts, function($entry) use ($now) {
         return $entry['time'] > ($now - 900);
     });
@@ -34,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         CsrfProtection::validate($request);
         if ($username && $authentication->login($username, $password)) {
-            // Clear attempts for this IP on success
             $attempts = array_filter($attempts, function($entry) use ($ip) {
                 return $entry['ip'] !== $ip;
             });
@@ -56,9 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container">
     <div class="card mx-auto" style="max-width: 32rem; margin-top: 200px;">
         <div class="card-body">
-            <?php if ($error) { ?>
-                <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
-            <?php } ?>
+            <?= AdminHelper::renderStatusMessages($error, null) ?>
             <form id="loginForm" class="center-horizontal form-md" method="post">
                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                 <fieldset>

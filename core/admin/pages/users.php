@@ -5,15 +5,14 @@
 /** @var Shaack\Reboot\Admin $admin */
 $admin = $site->getAddOn("Admin");
 
+use Shaack\Reboot\Admin\AdminHelper;
 use Shaack\Reboot\Authentication;
 use Shaack\Reboot\CsrfProtection;
 
+if (!AdminHelper::requireAdmin($site, $reboot)) return;
+
 /** @var Authentication $authentication */
 $authentication = $site->getAddOn("Authentication");
-if (!$authentication->isAdmin()) {
-    $reboot->redirect($site->getWebPath() . "/pages");
-    return;
-}
 $htpasswd = $authentication->getHtpasswd();
 $currentUser = $authentication->getUser();
 
@@ -71,12 +70,7 @@ $users = $htpasswd->getUsers();
 ?>
 
 <div class="container-fluid max-width-lg">
-    <?php if ($error) { ?>
-        <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
-    <?php } ?>
-    <?php if ($success) { ?>
-        <script>statusMessage("<?= htmlspecialchars($success, ENT_QUOTES) ?>")</script>
-    <?php } ?>
+    <?= AdminHelper::renderStatusMessages($error, $success) ?>
 
     <div class="card mb-4">
         <div class="card-header"><h5 class="mb-0">Users</h5></div>

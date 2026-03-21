@@ -5,7 +5,7 @@
 /** @var Shaack\Reboot\Admin $admin */
 $admin = $site->getAddOn("Admin");
 
-use Shaack\Logger;
+use Shaack\Reboot\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 
 $mediaDir = $reboot->getBaseFsPath() . "/web/media";
@@ -16,7 +16,6 @@ if (!is_dir($mediaDir)) {
 $error = null;
 $success = null;
 $currentPath = $request->getParam("path") ?? "";
-// Sanitize: remove leading/trailing slashes, prevent traversal
 $currentPath = trim($currentPath, "/");
 $currentPath = str_replace("..", "", $currentPath);
 $currentPath = preg_replace('#/+#', '/', $currentPath);
@@ -29,38 +28,10 @@ if ($resolvedPath === false || strncmp($resolvedPath, realpath($mediaDir), strle
     $resolvedPath = realpath($mediaDir);
 }
 
-// JSON API for listing media files (used by InsertMedia editor tool)
+// JSON API endpoint
 if ($request->getParam("list")) {
-    while (ob_get_level()) {
-        ob_end_clean();
-    }
-    header('Content-Type: application/json');
-    $items = [];
-    if (is_dir($resolvedPath)) {
-        $d = dir($resolvedPath);
-        while (false !== ($entry = $d->read())) {
-            if ($entry[0] === ".") continue;
-            $entryPath = $resolvedPath . "/" . $entry;
-            $isDir = is_dir($entryPath);
-            $type = $isDir ? 'folder' : mime_content_type($entryPath);
-            $webPath = $reboot->getBaseWebPath() . "/media" . ($currentPath ? "/" . $currentPath : "") . "/" . $entry;
-            $items[] = [
-                'name' => $entry,
-                'isDir' => $isDir,
-                'type' => $type,
-                'isImage' => !$isDir && str_starts_with($type, 'image/'),
-                'webPath' => $webPath,
-                'subPath' => ($currentPath ? $currentPath . "/" : "") . $entry
-            ];
-        }
-        $d->close();
-    }
-    usort($items, function ($a, $b) {
-        if ($a['isDir'] !== $b['isDir']) return $b['isDir'] - $a['isDir'];
-        return strcasecmp($a['name'], $b['name']);
-    });
-    echo json_encode(['path' => $currentPath, 'items' => $items]);
-    exit;
+    require __DIR__ . "/api/media-list.php";
+    return;
 }
 
 $action = $request->getParam("action");
@@ -83,12 +54,10 @@ if ($action) {
                     continue;
                 }
                 $fileName = basename($files["name"][$i]);
-                // Sanitize filename
                 $fileName = preg_replace('/[^\w\s\-.]/', '_', $fileName);
                 if (empty($fileName) || $fileName === "." || $fileName === "..") {
                     continue;
                 }
-                // Validate file extension
                 $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                 if (!in_array($ext, $allowedExtensions)) {
                     $skipped[] = $fileName;
@@ -183,7 +152,6 @@ if (is_dir($resolvedPath)) {
     }
     $d->close();
 }
-// Sort: folders first, then alphabetically
 usort($entries, function ($a, $b) {
     if ($a['isDir'] !== $b['isDir']) return $b['isDir'] - $a['isDir'];
     return strcasecmp($a['name'], $b['name']);
@@ -200,7 +168,6 @@ if ($currentPath) {
     }
 }
 
-// Web path for media files
 $mediaWebPath = $reboot->getBaseWebPath() . "/media";
 
 function formatFileSize(int $bytes): string
@@ -217,12 +184,7 @@ function isImageType(string $mimeType): bool
 
 ?>
 <div class="container-fluid max-width-xxl">
-    <?php if ($error) { ?>
-        <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
-    <?php } ?>
-    <?php if ($success) { ?>
-        <script>statusMessage("<?= htmlspecialchars($success, ENT_QUOTES) ?>")</script>
-    <?php } ?>
+    <?= AdminHelper::renderStatusMessages($error, $success) ?>
 
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
         <nav aria-label="breadcrumb" class="me-auto">

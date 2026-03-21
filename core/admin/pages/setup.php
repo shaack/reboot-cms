@@ -1,5 +1,6 @@
 <?php
 
+use Shaack\Reboot\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
@@ -47,9 +48,7 @@ if ($username) {
         <div class="card-body">
             <h3>Create Admin Account</h3>
             <p class="text-muted">No users found. Create the first admin account to get started.</p>
-            <?php if ($error) { ?>
-                <script>statusMessage("<?= htmlspecialchars($error, ENT_QUOTES) ?>", "text-bg-danger")</script>
-            <?php } ?>
+            <?= AdminHelper::renderStatusMessages($error, null) ?>
             <form method="post">
                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                 <div class="form-group mb-3">
