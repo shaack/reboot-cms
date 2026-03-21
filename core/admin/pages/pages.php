@@ -217,8 +217,10 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
             <?php } ?>
         </div>
         <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 167px);">
-            <iframe id="preview-iframe-a" name="preview-iframe-a" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;"></iframe>
-            <iframe id="preview-iframe-b" name="preview-iframe-b" style="width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;position:absolute;top:0;left:0;visibility:hidden;"></iframe>
+            <div style="position:relative;width:100%;height:100%;">
+                <iframe id="preview-iframe-a" name="preview-iframe-a" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;"></iframe>
+                <iframe id="preview-iframe-b" name="preview-iframe-b" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;background:#fff;visibility:hidden;"></iframe>
+            </div>
         </div>
     </div>
 </div>

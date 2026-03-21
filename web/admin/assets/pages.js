@@ -272,11 +272,17 @@
         if (!previewActive || !currentPage) return;
         var front = getFrontIframe();
         var back = getBackIframe();
+        var isFirstLoad = !previewInitialized;
         var content = editorTextarea ? editorTextarea.value : '';
         var savedScrollTop = 0;
         if (previewInitialized && front.contentDocument) {
             var doc = front.contentDocument;
             savedScrollTop = doc.documentElement.scrollTop || doc.body.scrollTop || 0;
+        }
+        // On first load, hide the empty front iframe
+        if (isFirstLoad) {
+            front.style.visibility = 'hidden';
+            front.style.opacity = '0';
         }
         var form = getPreviewForm(back.name);
         form.querySelector('[name="page"]').value = currentPage;
@@ -284,14 +290,22 @@
         back.onload = function () {
             back.onload = null;
             previewInitialized = true;
-            front.style.visibility = 'hidden';
-            front.style.position = 'absolute';
-            back.style.visibility = 'visible';
-            back.style.position = '';
-            previewFront = (previewFront === 'a') ? 'b' : 'a';
             if (back.contentDocument) {
                 back.contentDocument.documentElement.scrollTop = savedScrollTop;
             }
+            // Fade in back, then hide front
+            back.style.opacity = '0';
+            back.style.visibility = 'visible';
+            back.style.transition = 'opacity 0.5s ease';
+            requestAnimationFrame(function () {
+                back.style.opacity = '1';
+                setTimeout(function () {
+                    front.style.visibility = 'hidden';
+                    front.style.opacity = '0';
+                    back.style.transition = '';
+                    previewFront = (previewFront === 'a') ? 'b' : 'a';
+                }, 200);
+            });
         };
         form.submit();
     }
