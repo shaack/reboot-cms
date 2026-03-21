@@ -23,12 +23,17 @@ class Updater
     }
 
     /**
-     * Fetches the remote version from the composer.json in the branch.
+     * Fetches the remote version from the composer.json in the branch via the GitHub API (no CDN caching).
      */
     public function getRemoteVersion(): ?string
     {
-        $url = "https://raw.githubusercontent.com/" . $this->repo . "/" . $this->branch . "/composer.json";
-        $json = @file_get_contents($url);
+        $url = "https://api.github.com/repos/" . $this->repo . "/contents/composer.json?ref=" . $this->branch;
+        $context = stream_context_create([
+            "http" => [
+                "header" => "User-Agent: reboot-cms-updater\r\nAccept: application/vnd.github.v3.raw\r\n",
+            ]
+        ]);
+        $json = @file_get_contents($url, false, $context);
         if ($json === false) {
             return null;
         }
