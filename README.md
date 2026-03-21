@@ -5,6 +5,8 @@ and [Craft CMS](https://craftcms.com/).
 
 Reboot CMS is a minimal CMS without a database, but with the support of **blocks** 🚀.
 
+![Edit a page](web/media/screenshots/reboot-cms-admin-page-edit.png)
+
 ## Why another CMS?
 
 I developed Reboot CMS because I couldn't find a CMS that works with flat markdown files but allows easy use of blocks.
@@ -269,10 +271,6 @@ you can create the first admin account. After that, you can log in with the cred
 
 In the admin interface you can edit markdown pages, manage media files, set the site configuration, manage users,
 and update the CMS.
-
-### Login
-
-![Login](web/media/screenshots/reboot-cms-admin-login.png)
 
 ### Edit a page
 
