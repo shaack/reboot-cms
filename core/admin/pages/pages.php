@@ -11,6 +11,7 @@ use Shaack\Reboot\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 use Shaack\Reboot\Page;
 use Shaack\Reboot\Block;
+use Shaack\Reboot\Admin\PageActionHandler;
 use Shaack\Reboot\Admin\PageHistoryHelper;
 use Shaack\Reboot\Admin\PageTreeHelper;
 
@@ -50,160 +51,24 @@ if ($pageAction) {
         CsrfProtection::validate($request);
         $targetName = $request->getParam("name") ?? "";
         $targetName = str_replace("..", "", $targetName);
-
-        if ($pageAction === "add_page") {
-            $newName = trim($targetName);
-            if (!preg_match('/^[\w\-\/]+$/', $newName)) {
-                throw new \InvalidArgumentException("Invalid page name. Use letters, numbers, hyphens, underscores.");
-            }
-            $newPath = $pagesDir . "/" . $newName . ".md";
-            $newDir = dirname($newPath);
-            if (!is_dir($newDir)) {
-                mkdir($newDir, 0755, true);
-            }
-            if (file_exists($newPath)) {
-                throw new \InvalidArgumentException("Page already exists.");
-            }
-            file_put_contents($newPath, "");
-            $editPageName = "/" . $newName . ".md";
-            $pageActionSuccess = "Page created";
-            $pages = FileSystemUtils::getFileList($pagesDir, true);
-            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
-
-        } elseif ($pageAction === "delete_page") {
-            $delPath = realpath($pagesDir . $targetName);
-            if (!$delPath || strncmp($delPath, $pagesDir, strlen($pagesDir)) !== 0 || !is_file($delPath)) {
-                throw new \InvalidArgumentException("Invalid page.");
-            }
-            unlink($delPath);
-            $editPageName = null;
-            $pageActionSuccess = "Page deleted";
-            $pages = FileSystemUtils::getFileList($pagesDir, true);
-            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
-
-        } elseif ($pageAction === "rename_page") {
-            $newName = trim($request->getParam("new_name") ?? "");
-            if (!preg_match('/^[\w\-]+$/', $newName)) {
-                throw new \InvalidArgumentException("Invalid name. Use letters, numbers, hyphens, underscores.");
-            }
-            $oldPath = realpath($pagesDir . $targetName);
-            if (!$oldPath || strncmp($oldPath, $pagesDir, strlen($pagesDir)) !== 0 || !is_file($oldPath)) {
-                throw new \InvalidArgumentException("Invalid page.");
-            }
-            $newPath = dirname($oldPath) . "/" . $newName . ".md";
-            if (file_exists($newPath)) {
-                throw new \InvalidArgumentException("A page with that name already exists.");
-            }
-            rename($oldPath, $newPath);
-            $relNew = str_replace($pagesDir, "", $newPath);
-            PageHistoryHelper::movePageHistory($targetName, $relNew, $historyDir);
-            $editPageName = $relNew;
-            $pageActionSuccess = "Page renamed";
-            $pages = FileSystemUtils::getFileList($pagesDir, true);
-            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
-
-        } elseif ($pageAction === "move_page") {
-            $destination = trim($request->getParam("destination") ?? "");
-            $destination = str_replace("..", "", $destination);
-            $oldPath = realpath($pagesDir . $targetName);
-            if (!$oldPath || strncmp($oldPath, $pagesDir, strlen($pagesDir)) !== 0 || !is_file($oldPath)) {
-                throw new \InvalidArgumentException("Invalid page.");
-            }
-            $destDir = $pagesDir . ($destination ? "/" . $destination : "");
-            if (!is_dir($destDir)) {
-                throw new \InvalidArgumentException("Destination folder does not exist.");
-            }
-            $newPath = $destDir . "/" . basename($oldPath);
-            if (file_exists($newPath)) {
-                throw new \InvalidArgumentException("A page with that name already exists in the destination.");
-            }
-            rename($oldPath, $newPath);
-            $newRelPath = str_replace($pagesDir, "", $newPath);
-            PageHistoryHelper::movePageHistory($targetName, $newRelPath, $historyDir);
-            $editPageName = $newRelPath;
-            $pageActionSuccess = "Page moved";
-            $pages = FileSystemUtils::getFileList($pagesDir, true);
-            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
-
-        } elseif ($pageAction === "add_folder") {
-            $folderName = trim($targetName);
-            if (!preg_match('/^[\w\-\/]+$/', $folderName)) {
-                throw new \InvalidArgumentException("Invalid folder name.");
-            }
-            $newDir = $pagesDir . "/" . $folderName;
-            if (is_dir($newDir)) {
-                throw new \InvalidArgumentException("Folder already exists.");
-            }
-            mkdir($newDir, 0755, true);
-            file_put_contents($newDir . "/index.md", "");
-            $editPageName = "/" . $folderName . "/index.md";
-            $pageActionSuccess = "Folder created with index.md";
-            $pages = FileSystemUtils::getFileList($pagesDir, true);
-            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
-
-        } elseif ($pageAction === "delete_folder") {
-            $delDir = realpath($pagesDir . "/" . $targetName);
-            if (!$delDir || strncmp($delDir, $pagesDir, strlen($pagesDir)) !== 0 || !is_dir($delDir)) {
-                throw new \InvalidArgumentException("Invalid folder.");
-            }
-            if ($delDir === $pagesDir) {
-                throw new \InvalidArgumentException("Cannot delete the pages root folder.");
-            }
-            if (count(scandir($delDir)) > 2) {
-                throw new \InvalidArgumentException("Folder is not empty.");
-            }
-            rmdir($delDir);
-            $pageActionSuccess = "Folder deleted";
-            $pages = FileSystemUtils::getFileList($pagesDir, true);
-            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
-
-        } elseif ($pageAction === "rename_folder") {
-            $newName = trim($request->getParam("new_name") ?? "");
-            if (!preg_match('/^[\w\-]+$/', $newName)) {
-                throw new \InvalidArgumentException("Invalid name.");
-            }
-            $oldDir = realpath($pagesDir . "/" . $targetName);
-            if (!$oldDir || strncmp($oldDir, $pagesDir, strlen($pagesDir)) !== 0 || !is_dir($oldDir)) {
-                throw new \InvalidArgumentException("Invalid folder.");
-            }
-            $newDir = dirname($oldDir) . "/" . $newName;
-            if (file_exists($newDir)) {
-                throw new \InvalidArgumentException("A folder with that name already exists.");
-            }
-            rename($oldDir, $newDir);
-            PageHistoryHelper::moveFolderHistory($targetName, (dirname($targetName) === "." ? "" : dirname($targetName) . "/") . $newName, $historyDir);
-            $pageActionSuccess = "Folder renamed";
-            if ($editPageName) {
-                $oldPrefix = "/" . $targetName . "/";
-                $newPrefix = "/" . dirname($targetName) . "/" . $newName . "/";
-                if (dirname($targetName) === ".") {
-                    $oldPrefix = "/" . $targetName . "/";
-                    $newPrefix = "/" . $newName . "/";
-                }
-                if (str_starts_with($editPageName, $oldPrefix)) {
-                    $editPageName = $newPrefix . substr($editPageName, strlen($oldPrefix));
-                }
-            }
-            $pages = FileSystemUtils::getFileList($pagesDir, true);
-            usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
-        } elseif ($pageAction === "restore_page") {
-            $version = $request->getParam("version") ?? "";
-            $version = basename($version);
-            $pagePath = realpath($pagesDir . $targetName);
-            if (!$pagePath || strncmp($pagePath, $pagesDir, strlen($pagesDir)) !== 0 || !is_file($pagePath)) {
-                throw new \InvalidArgumentException("Invalid page.");
-            }
-            $relPath = preg_replace('/\.md$/', '', $targetName);
-            $snapshotFile = $historyDir . $relPath . "/" . $version;
-            $resolvedSnapshot = realpath($snapshotFile);
-            if (!$resolvedSnapshot || strncmp($resolvedSnapshot, realpath($historyDir), strlen(realpath($historyDir))) !== 0 || !is_file($resolvedSnapshot)) {
-                throw new \InvalidArgumentException("Invalid version.");
-            }
-            PageHistoryHelper::savePageSnapshot($pagePath, $pagesDir, $historyDir, $historyMaxVersions);
-            copy($resolvedSnapshot, $pagePath);
-            $editPageName = $targetName;
-            $pageActionSuccess = "Page restored to " . basename($version, '.md');
+        $handler = new PageActionHandler($pagesDir, $historyDir, $historyMaxVersions);
+        $result = $handler->handle($pageAction, $targetName, $request);
+        $pageActionSuccess = $result['success'];
+        if (array_key_exists('editPageName', $result)) {
+            $editPageName = $result['editPageName'];
         }
+        // Handle folder rename: update editPageName if it was inside the renamed folder
+        if (isset($result['renamedFolder']) && $editPageName) {
+            $rf = $result['renamedFolder'];
+            $oldPrefix = "/" . $rf['oldPrefix'] . "/";
+            $newPrefix = "/" . (dirname($rf['oldPrefix']) === "." ? "" : dirname($rf['oldPrefix']) . "/") . $rf['newName'] . "/";
+            if (str_starts_with($editPageName, $oldPrefix)) {
+                $editPageName = $newPrefix . substr($editPageName, strlen($oldPrefix));
+            }
+        }
+        // Refresh file list after any action
+        $pages = FileSystemUtils::getFileList($pagesDir, true);
+        usort($pages, function($a, $b) { return strcmp($a['name'], $b['name']); });
     } catch (\Exception $e) {
         $pageActionError = $e->getMessage();
     }

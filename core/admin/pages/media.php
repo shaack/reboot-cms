@@ -6,6 +6,7 @@
 $admin = $site->getAddOn("Admin");
 
 use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\Admin\MediaHelper;
 use Shaack\Reboot\CsrfProtection;
 
 $mediaDir = $reboot->getBaseFsPath() . "/web/media";
@@ -170,18 +171,6 @@ if ($currentPath) {
 
 $mediaWebPath = $reboot->getBaseWebPath() . "/media";
 
-function formatFileSize(int $bytes): string
-{
-    if ($bytes >= 1048576) return round($bytes / 1048576, 1) . " MB";
-    if ($bytes >= 1024) return round($bytes / 1024, 1) . " KB";
-    return $bytes . " B";
-}
-
-function isImageType(string $mimeType): bool
-{
-    return str_starts_with($mimeType, 'image/');
-}
-
 ?>
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
@@ -240,7 +229,7 @@ function isImageType(string $mimeType): bool
                         <td class="text-center">
                             <?php if ($entry['isDir']) { ?>
                                 <span style="font-size: 1.3em">&#128193;</span>
-                            <?php } elseif (isImageType($entry['type'])) { ?>
+                            <?php } elseif (MediaHelper::isImageType($entry['type'])) { ?>
                                 <img src="<?= htmlspecialchars($entryWebPath) ?>" alt="" style="width: 36px; height: 36px; object-fit: cover; border-radius: 3px;">
                             <?php } else { ?>
                                 <span style="font-size: 1.3em">&#128196;</span>
@@ -258,7 +247,7 @@ function isImageType(string $mimeType): bool
                             <?php } ?>
                         </td>
                         <td class="text-body-secondary">
-                            <?= $entry['isDir'] ? '&mdash;' : formatFileSize($entry['size']) ?>
+                            <?= $entry['isDir'] ? '&mdash;' : MediaHelper::formatFileSize($entry['size']) ?>
                         </td>
                         <td class="text-body-secondary">
                             <?= date("Y-m-d H:i", $entry['modified']) ?>
