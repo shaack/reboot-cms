@@ -9,8 +9,8 @@ const imgDir = path.join(__dirname, '..', 'web', 'media', 'screenshots');
 
 const BASE = 'http://localhost:8080';
 const ADMIN = `${BASE}/admin`;
-const WIDTH = 1024;
-const HEIGHT = 768;
+const WIDTH = 1280;
+const HEIGHT = 720;
 
 async function main() {
     const browser = await puppeteer.launch({ headless: true });
@@ -37,10 +37,12 @@ async function main() {
     await page.waitForNavigation({ waitUntil: 'networkidle0' });
     console.log('  Logged in, now at:', page.url());
 
-    // 4. Page editor (editing index.md)
+    // 4. Page editor (editing index.md) with preview
     console.log('Capturing page editor...');
     await page.goto(`${ADMIN}/pages?page=/index.md`, { waitUntil: 'networkidle0' });
     await new Promise(r => setTimeout(r, 1000));
+    await page.click('#preview-toggle');
+    await new Promise(r => setTimeout(r, 2000));
     await page.screenshot({ path: path.join(imgDir, 'reboot-cms-admin-page-edit.png') });
     console.log('  -> reboot-cms-admin-page-edit.png');
 
