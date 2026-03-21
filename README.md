@@ -3,7 +3,7 @@
 A flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org), [Redaxo](https://redaxo.org/)
 and [Craft CMS](https://craftcms.com/).
 
-Reboot CMS is a minimal CMS without a database, but with the support of **blocks** 🚀.
+Reboot CMS is a minimal CMS without a database, but with the support of **blocks** to structure the content.
 
 ![Edit a page](web/media/screenshots/reboot-cms-admin-page-edit.png)
 
@@ -12,8 +12,7 @@ Reboot CMS is a minimal CMS without a database, but with the support of **blocks
 I developed Reboot CMS because I couldn't find a CMS that works with flat markdown files but allows easy use of blocks.
 
 Reboot CMS is very small and the pages are delivered extremely fast. My website [shaack.com](https://shaack.com), built
-with Reboot CMS, has
-a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report?url=https%3A%2F%2Fshaack.com%2F).
+with Reboot CMS, has a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report?url=https%3A%2F%2Fshaack.com%2F).
 
 ## Websites using Reboot CMS
 
@@ -47,6 +46,14 @@ Run the CMS with PHP's built-in web server (no Apache or Docker needed):
 The site is available at `http://localhost:8080`, the admin at `http://localhost:8080/admin`.
 You can specify a custom port: `./run.sh 3000`.
 
+### Docker / Podman
+
+```bash
+cd compose && podman compose up -d
+```
+
+The site is available at `http://localhost:8080`.
+
 ### Production Setup
 
 Point your web server's document root to the `web/` directory. The CMS should work out of the box.
@@ -64,7 +71,40 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 ## Configuration
 
 - `site/config.yml` — Site-wide settings: addon registration, navbar with `brand` and `structure`
-- `local/config.yml` — Local settings: `logLevel` (0=debug, 1=info, 2=error)
+- `local/config.yml` — Local/environment settings (not committed to git):
+
+```yaml
+# Logging: 0 = debug, 1 = info, 2 = error
+logLevel: 2
+
+# Admin editor settings
+editor:
+  font: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace'
+  fontSize: '0.95rem'
+  lineHeight: '1.4'
+  tabSize: 4
+  wordWrap: true
+  tools:
+    - Headings
+    - "|"
+    - Bold
+    - Italic
+    - Strikethrough
+    - "|"
+    - UnorderedList
+    - OrderedList
+    - "|"
+    - InsertLink
+    - InsertImage
+
+# Page history: number of snapshots to keep per page
+history:
+  maxVersions: 50
+```
+
+Available editor tools: `Headings`, `Bold`, `Italic`, `Strikethrough`, `UnorderedList`, `OrderedList`,
+`InsertLink`, `InsertImage`. Use `"|"` for a separator. The admin tools (`InsertPageLink`, `InsertMedia`,
+`InsertBlock`) are always appended automatically.
 
 ## Template
 
@@ -83,6 +123,7 @@ Call `$page->render($request)` to render the page content and `$page->getConfig(
 Folder: `/site/pages`
 
 A `Page` can be a **flat Markdown** file, can contain **Blocks** or also can be a **PHP** file.
+PHP pages receive the same variables as the template: `$site`, `$page`, and `$request`.
 
 Pages are auto-routed on web-requests:
 
@@ -294,13 +335,20 @@ You find the admin interface at `/admin`.
 If no users exist yet (e.g. on a fresh installation), the admin interface will automatically show a setup page where
 you can create the first admin account. After that, you can log in with the credentials you created.
 
-In the admin interface you can edit markdown pages, manage media files, set the site configuration, manage users,
-and update the CMS.
+In the admin interface you can edit markdown pages with a live preview, manage media files, set the site
+configuration, manage users and roles, and update the CMS.
 
 ### Edit a page
 
 The "Pages" section lists all markdown pages in your site. Click on a page name to open it in the editor.
 Pages are organized in a tree structure reflecting the folder hierarchy in `site/pages/`.
+
+A **live preview** panel can be toggled to see the rendered page side-by-side with the editor
+(available on screens lg and wider). The preview updates automatically as you type.
+
+The editor tracks **page history** — every save creates a snapshot. You can view previous versions and
+restore them from the History dialog. The number of snapshots kept per page is configurable via
+`history.maxVersions` in `local/config.yml`.
 
 ![Edit a page](web/media/screenshots/reboot-cms-admin-page-edit.png)
 
@@ -321,14 +369,17 @@ header elements. The site configuration is written in YAML.
 
 ### User management
 
-The "Users" page in the admin interface allows you to manage admin accounts directly from the browser. You can:
+The "Users" page in the admin interface allows you to manage accounts directly from the browser. You can:
 
-- **Add users** — create new admin accounts with a username and password
+- **Add users** — create new accounts with a username, password, and role
 - **Change passwords** — update the password for any existing user
-- **Delete users** — remove admin accounts (you cannot delete your own account)
+- **Change roles** — switch a user between **Admin** and **Editor** roles
+- **Delete users** — remove accounts (you cannot delete your own account)
+
+**Admins** have full access to all admin pages. **Editors** can only access the page editor and media manager.
 
 Usernames may contain letters, numbers, and underscores (max 64 characters). Passwords must be at least 8 characters.
-All credentials are stored as APR1-MD5 hashes in `local/.htpasswd`.
+Credentials are stored as APR1-MD5 hashes in `local/.htpasswd`, roles in `local/roles.yml`.
 
 ![Users](web/media/screenshots/reboot-cms-admin-users.png)
 
@@ -344,8 +395,13 @@ htpasswd .htpasswd admin
 The "Update" page in the admin interface shows the currently installed version and checks for available updates from
 the [GitHub repository](https://github.com/shaack/reboot-cms).
 
+You can switch between two branches:
+
+- **distrib** (stable) — versioned releases, compared by version number
+- **main** (unstable) — latest development commits, compared by commit SHA
+
 When an update is available, you can apply it directly from the admin interface. The updater downloads the latest
-release and replaces `core/`, `web/admin/`, and `vendor/`. Your site content (`site/`), local configuration (`local/`),
+tarball and replaces `core/`, `web/admin/`, and `vendor/`. Your site content (`site/`), local configuration (`local/`),
 and entry point (`web/index.php`) are not affected.
 
 It is recommended to make a backup of the project folder before updating.

@@ -1,6 +1,6 @@
 ---
 title: Reboot CMS
-description: Reboot CMS is a flat file CMS, with the support of blocks.
+description: Reboot CMS is a fast and small CMS, which needs no database.
 author: shaack.com
 ---
 
