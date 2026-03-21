@@ -1,6 +1,6 @@
 {
     "name": "shaack/reboot-cms",
-    "version": "3.5.3",
+    "version": "3.5.4",
     "description": "A lightweight, flat-file Content Management System with block-based content rendering",
     "license": "MIT",
     "type": "project",
