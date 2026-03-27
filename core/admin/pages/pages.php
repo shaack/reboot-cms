@@ -157,7 +157,7 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
                             $blockName = basename($blockFile, '.php');
                             $block = new Block($defaultSite, $blockName, '');
                             ob_start();
-                            $block->render(null);
+                            $block->render($request);
                             ob_end_clean();
                             $block->collectExample();
                         }
