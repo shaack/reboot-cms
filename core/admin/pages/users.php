@@ -25,6 +25,14 @@ if ($action) {
         $username = trim($request->getParam("username") ?? "");
         $password = $request->getParam("password") ?? "";
 
+        // Require admin password re-entry for sensitive actions
+        if (in_array($action, ["add", "change_password", "delete"])) {
+            $adminPassword = $request->getParam("admin_password") ?? "";
+            if (!$htpasswd->validate($currentUser, $adminPassword)) {
+                throw new \InvalidArgumentException("Incorrect admin password");
+            }
+        }
+
         if ($action === "add") {
             if (!preg_match('/^[a-zA-Z0-9_]{1,64}$/', $username)) {
                 throw new \InvalidArgumentException("Username must contain only letters, numbers, underscores (max 64 chars)");
@@ -79,7 +87,7 @@ $users = $htpasswd->getUsers();
                 ?>
                 <li class="list-group-item">
                     <div class="d-flex flex-wrap align-items-center gap-2">
-                        <strong><?= htmlspecialchars($user) ?></strong>
+                        <strong style="min-width: 120px"><?= htmlspecialchars($user) ?></strong>
                         <?php if ($user !== $currentUser) { ?>
                             <form method="post" action="users" class="d-inline">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
@@ -94,7 +102,7 @@ $users = $htpasswd->getUsers();
                             <span class="badge text-bg-secondary"><?= htmlspecialchars($userRole) ?></span>
                         <?php } ?>
                         <span class="me-auto"></span>
-                        <form method="post" action="users" class="d-flex flex-wrap align-items-center gap-2">
+                        <form method="post" action="users" class="d-flex flex-wrap align-items-center gap-2 admin-password-form">
                             <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                             <input type="hidden" name="action" value="change_password">
                             <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
@@ -103,8 +111,8 @@ $users = $htpasswd->getUsers();
                             <button class="btn btn-sm btn-outline-primary text-nowrap">Change Password</button>
                         </form>
                         <?php if ($user !== $currentUser) { ?>
-                            <form method="post" action="users"
-                                  onsubmit="return confirm('Delete user \'<?= htmlspecialchars($user, ENT_QUOTES) ?>\'?')">
+                            <form method="post" action="users" class="admin-password-form"
+                                  data-confirm="Delete user '<?= htmlspecialchars($user, ENT_QUOTES) ?>'?">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
@@ -122,7 +130,7 @@ $users = $htpasswd->getUsers();
     <div class="card">
         <div class="card-header"><h5 class="mb-0">Add User</h5></div>
         <div class="card-body">
-            <form method="post" action="users" class="d-flex flex-wrap align-items-center gap-2">
+            <form method="post" action="users" class="d-flex flex-wrap align-items-center gap-2 admin-password-form">
                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                 <input type="hidden" name="action" value="add">
                 <input type="text" name="username" class="form-control form-control-sm" style="width: 200px"
@@ -138,3 +146,49 @@ $users = $htpasswd->getUsers();
         </div>
     </div>
 </div>
+
+<script type="module">
+    document.querySelectorAll(".admin-password-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault()
+            if (!form.checkValidity()) {
+                form.reportValidity()
+                return
+            }
+            const confirmMessage = form.dataset.confirm
+            if (confirmMessage && !confirm(confirmMessage)) {
+                return
+            }
+            bootstrap.showModal({
+                title: "Confirm your password",
+                body: '<input type="password" class="form-control" placeholder="Your password" id="admin-password-input" required>',
+                footer: '<button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>' +
+                    '<button class="btn btn-primary" id="admin-password-submit">Confirm</button>',
+                onShown: function (modal) {
+                    const input = document.getElementById("admin-password-input")
+                    const submitBtn = document.getElementById("admin-password-submit")
+                    input.focus()
+                    input.addEventListener("keydown", function (e) {
+                        if (e.key === "Enter") {
+                            e.preventDefault()
+                            submitBtn.click()
+                        }
+                    })
+                    submitBtn.addEventListener("click", function () {
+                        if (!input.value) {
+                            input.classList.add("is-invalid")
+                            return
+                        }
+                        const hiddenInput = document.createElement("input")
+                        hiddenInput.type = "hidden"
+                        hiddenInput.name = "admin_password"
+                        hiddenInput.value = input.value
+                        form.appendChild(hiddenInput)
+                        modal.hide()
+                        form.submit()
+                    })
+                }
+            })
+        })
+    })
+</script>

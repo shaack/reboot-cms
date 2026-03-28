@@ -103,6 +103,7 @@ echo($page->render($request));
     window._toastsReady = true
 </script>
 <script type="module">
+    import "./node_modules/bootstrap-show-modal/src/ShowModal.js"
     import {MdEditor} from "./node_modules/cm-md-editor/src/MdEditor.js"
     import {Separator} from "./node_modules/cm-md-editor/src/tools/Separator.js"
     import {Headings} from "./node_modules/cm-md-editor/src/tools/Headings.js"
