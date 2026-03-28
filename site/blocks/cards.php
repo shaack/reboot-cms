@@ -12,10 +12,10 @@
 
 <section class="block block-cards">
     <div class="container-fluid">
-        <h2><?= $block->nodeHtml($block->xpath("//h2", ["required" => true, "description" => "Card group heading"])) ?></h2>
+        <h2><?= $block->nodeHtml($block->field("//h2", "Card group heading", true)) ?></h2>
         <div class="card-group">
         <?php
-        $images = $block->xpath("//li/img", ["min" => 1, "description" => "Card images"]);
+        $images = $block->field("//li/img", "Card images", true, "media-list", ["min" => 1]);
         foreach ($images as $image) { ?>
             <div class="card">
                 <img src="<?= $image->getAttribute("src") ?>" class="card-img-top" alt="<?= $image->getAttribute("alt") ?>">
