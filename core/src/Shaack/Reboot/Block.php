@@ -114,7 +114,30 @@ class Block
 
     /**
      * Queries a value or a part in the markdown to use it in the block template.
-     * Optional props for validation: 'required' (bool), 'min' (int), 'description' (string)
+     * New preferred API with explicit parameters for the structured editor.
+     * @param string $expression XPath expression (with part() support)
+     * @param string|null $label Human-readable field label
+     * @param bool $required Whether the field is required
+     * @param string $type Field type: text, textarea, md-editor, media, link
+     * @param array $props Additional props (min, max, etc.)
+     * @return \DOMNode|\DOMNodeList
+     */
+    public function field(string $expression, ?string $label = null, bool $required = false, string $type = "text", array $props = []): \DOMNode|\DOMNodeList
+    {
+        $mergedProps = $props;
+        if ($label !== null) {
+            $mergedProps['description'] = $label;
+        }
+        if ($required) {
+            $mergedProps['required'] = true;
+        }
+        $mergedProps['type'] = $type;
+        return $this->xpath($expression, $mergedProps);
+    }
+
+    /**
+     * Queries a value or a part in the markdown to use it in the block template.
+     * @deprecated Use field() instead for new block templates.
      * @param string $expression
      * @param array $props
      * @return \DOMNode|\DOMNodeList
@@ -170,7 +193,7 @@ class Block
     }
 
     /**
-     * Collect an xpath field for example generation, deduplicating by base expression.
+     * Collect an xpath field for example generation and structured editor, deduplicating by base expression.
      */
     private function collectField(string $expression, array $props): void
     {
@@ -181,6 +204,25 @@ class Block
         if (!isset($this->xpathFields[$baseExpression])) {
             $this->xpathFields[$baseExpression] = $props;
         }
+    }
+
+    /**
+     * Get collected field definitions for the structured editor.
+     * @return array Array of fields with keys: xpath, label, required, type, props
+     */
+    public function getFields(): array
+    {
+        $fields = [];
+        foreach ($this->xpathFields as $expression => $props) {
+            $fields[] = [
+                'xpath' => $expression,
+                'label' => $props['description'] ?? $expression,
+                'required' => $props['required'] ?? false,
+                'type' => $props['type'] ?? 'text',
+                'props' => array_diff_key($props, array_flip(['description', 'required', 'type'])),
+            ];
+        }
+        return $fields;
     }
 
     /**
