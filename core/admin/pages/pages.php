@@ -181,7 +181,7 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
                     $viewPath = preg_replace('/\/index$/', '/', $viewPath);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
-                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleStructuredEditor()" id="structured-toggle">Structured</button>
+                    <?php /* <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleStructuredEditor()" id="structured-toggle">Structured</button> */ ?>
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2 d-none d-lg-inline-block" onclick="togglePreview()" id="preview-toggle">Preview</button>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
                     <?php $currentBaseName = basename($editPageName, '.md'); ?>
