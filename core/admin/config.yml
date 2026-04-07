@@ -8,4 +8,5 @@ navbar:
     Media: /media
     Site Configuration: /config
     Users: /users
+    Health: /health
     Update: /update

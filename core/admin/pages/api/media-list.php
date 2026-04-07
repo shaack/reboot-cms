@@ -10,7 +10,7 @@ if (is_dir($resolvedPath)) {
         if ($entry[0] === ".") continue;
         $entryPath = $resolvedPath . "/" . $entry;
         $isDir = is_dir($entryPath);
-        $type = $isDir ? 'folder' : mime_content_type($entryPath);
+        $type = $isDir ? 'folder' : \mime_content_type($entryPath);
         $webPath = $reboot->getBaseWebPath() . "/media" . ($currentPath ? "/" . $currentPath : "") . "/" . $entry;
         $items[] = [
             'name' => $entry,

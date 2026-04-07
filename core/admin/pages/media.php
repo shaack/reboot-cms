@@ -141,7 +141,7 @@ if (is_dir($resolvedPath)) {
             'name' => $entry,
             'isDir' => $isDir,
             'size' => $isDir ? 0 : filesize($entryPath),
-            'type' => $isDir ? 'folder' : mime_content_type($entryPath),
+            'type' => $isDir ? 'folder' : \mime_content_type($entryPath),
             'modified' => filemtime($entryPath),
         ];
     }
