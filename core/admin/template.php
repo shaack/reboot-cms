@@ -65,20 +65,46 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
                     $isAdmin = $authentication->isAdmin();
                     if ($structure) {
                         foreach ($structure as $label => $path) {
-                            if (!$isAdmin && !in_array($path, \Shaack\Reboot\Authentication::EDITOR_PAGES)) {
-                                continue;
+                            if (is_array($path)) {
+                                // Dropdown menu (admin-only)
+                                if (!$isAdmin) continue;
+                                $dropdownActive = in_array($request->getPath(), $path, true);
+                                ?>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle <?= $dropdownActive ? "active" : "" ?>"
+                                       href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <?= htmlspecialchars($label) ?>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <?php foreach ($path as $subLabel => $subPath) { ?>
+                                            <li><a class="dropdown-item <?= $request->getPath() == $subPath ? "active" : "" ?>"
+                                                   href="<?= $site->getWebPath() . $subPath ?>"><?= htmlspecialchars($subLabel) ?></a></li>
+                                        <?php } ?>
+                                    </ul>
+                                </li>
+                                <?php
+                            } else {
+                                if (!$isAdmin && !in_array($path, \Shaack\Reboot\Authentication::EDITOR_PAGES)) {
+                                    continue;
+                                }
+                                ?>
+                                <li class="nav-item">
+                                    <a class="nav-link <?= $request->getPath() == $path ? "active" : "" ?>"
+                                       href="<?= $site->getWebPath() . $path ?>"><?= htmlspecialchars($label) ?></a>
+                                </li>
+                                <?php
                             }
-                            ?>
-                            <li class="nav-item">
-                                <a class="nav-link <?= $request->getPath() == $path ? "active" : "" ?>" href="<?= $site->getWebPath() . $path ?>"><?= $label ?></a>
-                            </li>
-                            <?php
                         }
                     }
                     ?>
                 </ul>
                 <span class="me-3 navbar-text opacity-75 mt-2 mt-md-0">
-                    Logged in as <?= $authentication->getUser() ?>
+                    <?php if ($authentication->isImpersonating()) { ?>
+                        Impersonating <strong><?= htmlspecialchars($authentication->getUser()) ?></strong>
+                        <a href="<?= $site->getWebPath() ?>/users?action=stop_impersonate" class="ms-1 text-warning">(stop)</a>
+                    <?php } else { ?>
+                        Logged in as <?= $authentication->getUser() ?>
+                    <?php } ?>
                 </span>
                 <ul class="navbar-nav">
                     <li class="nav-item">

@@ -14,12 +14,12 @@ $imagePosition = @$block->getConfig()["image-position"];
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-6 <?= $imagePosition === "left" ? "order-md-1" : "" ?>">
-                <?= $block->nodeHtml($block->xpath("/*[part(1)]", ["required" => true, "description" => "Text content"])) ?>
+                <?= $block->nodeHtml($block->field("/*[part(1)]", "Text content", true, "md-editor")) ?>
             </div>
             <div class="col-md-6">
-                <img class="img-fluid" src="<?= $block->nodeHtml($block->xpath("//img[part(2)]/@src", ["required" => true, "description" => "Image"])) ?>"
-                     alt="<?= $block->nodeHtml($block->xpath("//img[part(2)]/@alt")) ?>"
-                     title="<?= $block->nodeHtml($block->xpath("//img[part(2)]/@title")) ?>"/>
+                <img class="img-fluid" src="<?= $block->nodeHtml($block->field("//img[part(2)]/@src", "Image", true, "media")) ?>"
+                     alt="<?= $block->nodeHtml($block->field("//img[part(2)]/@alt", "Alt text")) ?>"
+                     title="<?= $block->nodeHtml($block->field("//img[part(2)]/@title", "Title")) ?>"/>
             </div>
         </div>
     </div>

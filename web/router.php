@@ -19,7 +19,7 @@ if ($uri !== '/' && is_file(__DIR__ . $uri)) {
     if ($webPrefixStripped) {
         // Cannot use return false after rewriting URI, serve the file manually
         $filePath = __DIR__ . $uri;
-        $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+        $mimeType = \mime_content_type($filePath) ?: 'application/octet-stream';
         header('Content-Type: ' . $mimeType);
         header('Content-Length: ' . filesize($filePath));
         readfile($filePath);

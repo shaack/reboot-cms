@@ -41,6 +41,10 @@ if ($request->getParam("preview") && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require __DIR__ . "/api/pages-preview.php";
     return;
 }
+if ($request->getParam("fields")) {
+    require __DIR__ . "/api/pages-fields.php";
+    return;
+}
 
 // Handle page/folder management actions
 $pageAction = $request->getParam("action");
@@ -177,6 +181,7 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
                     $viewPath = preg_replace('/\/index$/', '/', $viewPath);
                     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
                     ?>
+                    <?php /* <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleStructuredEditor()" id="structured-toggle">Structured</button> */ ?>
                     <button type="button" class="btn btn-sm btn-outline-secondary ms-2 d-none d-lg-inline-block" onclick="togglePreview()" id="preview-toggle">Preview</button>
                     <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
                     <?php $currentBaseName = basename($editPageName, '.md'); ?>
@@ -204,6 +209,10 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
                             </div>
                         </div>
                     </div>
+                </div>
+                <div id="structured-editor" class="d-none mt-2">
+                    <div id="structured-editor-blocks"></div>
+                    <button type="button" class="btn btn-sm btn-primary px-3 mt-2" onclick="saveStructuredEditor()">Save</button>
                 </div>
                 <script id="block-examples" type="application/json"><?= json_encode($blockExamplesForInsert) ?></script>
                 <?php if ($edited !== null) { ?>

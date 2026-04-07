@@ -18,7 +18,8 @@ class Block
     private array $config;
     private Site $site;
     private array $validationErrors = [];
-    private array $xpathFields = []; // collected xpath calls with props, for example generation
+    private array $xpathFields = []; // collected xpath calls with props, deduplicated for example generation
+    private array $allFields = []; // all field() calls in order, for structured editor
     private int $maxPart = 1; // highest part number seen across all xpath calls
 
     private static $parsedown;
@@ -118,7 +119,7 @@ class Block
      * @param string $expression XPath expression (with part() support)
      * @param string|null $label Human-readable field label
      * @param bool $required Whether the field is required
-     * @param string $type Field type: text, textarea, md-editor, media, link
+     * @param string $type Field type: text, textarea, md-editor, media, media-list, link, link-list
      * @param array $props Additional props (min, max, etc.)
      * @return \DOMNode|\DOMNodeList
      */
@@ -197,10 +198,12 @@ class Block
      */
     private function collectField(string $expression, array $props): void
     {
+        // Store every field call for the structured editor
+        $this->allFields[] = ['expression' => $expression, 'props' => $props];
         // Strip attribute selectors and /text() to get the base element expression
         $baseExpression = preg_replace('/\/@[\w-]+$/', '', $expression);
         $baseExpression = preg_replace('/\/text\(\)$/', '', $baseExpression);
-        // Only store the first occurrence per base expression
+        // Only store the first occurrence per base expression (for example generation)
         if (!isset($this->xpathFields[$baseExpression])) {
             $this->xpathFields[$baseExpression] = $props;
         }
@@ -223,6 +226,214 @@ class Block
             ];
         }
         return $fields;
+    }
+
+    /**
+     * Get collected field definitions with current values for the structured editor.
+     * Must be called after render() so fields are collected.
+     * @return array Array of fields with keys: xpath, label, required, type, props, value
+     */
+    public function getFieldsWithValues(): array
+    {
+        $fields = [];
+        $rawParts = $this->getRawParts();
+        foreach ($this->allFields as $entry) {
+            $expression = $entry['expression'];
+            $props = $entry['props'];
+            $type = $props['type'] ?? 'text';
+            $value = $this->extractFieldValue($expression, $type, $rawParts);
+            $fields[] = [
+                'xpath' => $expression,
+                'label' => $props['description'] ?? $expression,
+                'required' => $props['required'] ?? false,
+                'type' => $type,
+                'props' => array_diff_key($props, array_flip(['description', 'required', 'type'])),
+                'value' => $value,
+            ];
+        }
+        return $fields;
+    }
+
+    /**
+     * Split the raw markdown content into parts by '---' separator.
+     * @return array indexed by part number (1-based)
+     */
+    private function getRawParts(): array
+    {
+        $parts = [1 => $this->content];
+        // Split by --- that is a block separator (not in code blocks)
+        $segments = preg_split('/^\s*---\s*$/m', $this->content);
+        if (count($segments) > 1) {
+            $parts = [];
+            foreach ($segments as $i => $segment) {
+                $parts[$i + 1] = trim($segment);
+            }
+        }
+        return $parts;
+    }
+
+    /**
+     * Extract the current value for a field from the DOM or raw markdown.
+     */
+    private function extractFieldValue(string $expression, string $type, array $rawParts): mixed
+    {
+        // For md-editor fields that select all elements in a part, return raw markdown
+        if ($type === 'md-editor') {
+            $partNumber = 1;
+            if (preg_match('/part\((\d)\)/', $expression, $m)) {
+                $partNumber = (int)$m[1];
+            }
+            return $rawParts[$partNumber] ?? '';
+        }
+
+        // For list types, return array of values
+        if ($type === 'media-list') {
+            $result = $this->queryXpath($expression);
+            if ($result instanceof \DOMNodeList) {
+                $values = [];
+                foreach ($result as $node) {
+                    $values[] = [
+                        'src' => $node->getAttribute('src'),
+                        'alt' => $node->getAttribute('alt'),
+                    ];
+                }
+                return $values;
+            }
+            return [];
+        }
+
+        // For single-value fields, query the DOM
+        $result = $this->queryXpath($expression);
+        if ($result instanceof \DOMNodeList) {
+            if ($result->length === 0) return '';
+            $result = $result->item(0);
+        }
+        if ($result instanceof \DOMAttr) {
+            return $result->value;
+        }
+        if ($result instanceof \DOMNode) {
+            return $result->textContent;
+        }
+        return '';
+    }
+
+    /**
+     * Run an xpath query without side effects (no validation, no field collection).
+     */
+    private function queryXpath(string $expression): \DOMNodeList|false
+    {
+        $resolved = preg_replace_callback("/part\((\d)\)/", function ($matches) {
+            $partNumber = $matches[1] - 1;
+            return "count(preceding::hr)=$partNumber and not(self::hr)";
+        }, $expression);
+        $resolved = "/html/body" . $resolved;
+        return $this->xpath->query($resolved);
+    }
+
+    /**
+     * Generate markdown from field values.
+     * @param array $values Associative array of xpath expression => value
+     * @return string Generated markdown
+     */
+    public static function generateMarkdownFromValues(array $fields): string
+    {
+        // Group fields by part number
+        $parts = [];
+        $maxPart = 1;
+        foreach ($fields as $field) {
+            $partNumber = 1;
+            if (preg_match('/part\((\d)\)/', $field['xpath'], $m)) {
+                $partNumber = (int)$m[1];
+            }
+            $maxPart = max($maxPart, $partNumber);
+            if (!isset($parts[$partNumber])) {
+                $parts[$partNumber] = [];
+            }
+            $parts[$partNumber][] = $field;
+        }
+
+        $sections = [];
+        for ($p = 1; $p <= $maxPart; $p++) {
+            if (!isset($parts[$p])) {
+                $sections[] = '';
+                continue;
+            }
+            $partFields = $parts[$p];
+            // Check if this part has an md-editor field — use its value directly as raw markdown
+            foreach ($partFields as $field) {
+                if ($field['type'] === 'md-editor') {
+                    $sections[] = $field['value'];
+                    continue 2;
+                }
+            }
+            // Otherwise build markdown from individual fields
+            $lines = [];
+            $pendingLink = null; // buffer for combining link href + text
+            foreach ($partFields as $field) {
+                $value = $field['value'] ?? '';
+                $xpath = $field['xpath'];
+                $type = $field['type'];
+                $clean = preg_replace('/\[part\(\d\)\]/', '', $xpath);
+                $clean = ltrim($clean, '/');
+
+                if ($type === 'media') {
+                    $alt = '';
+                    // Look for an alt field for the same element
+                    foreach ($partFields as $other) {
+                        if ($other !== $field && preg_match('/img.*\/@alt/', $other['xpath'])) {
+                            $alt = $other['value'] ?? '';
+                        }
+                    }
+                    if (preg_match('/^(\/\/)?li\/img/', $clean)) {
+                        $lines[] = "- ![$alt]($value)";
+                    } else {
+                        $lines[] = "![$alt]($value)";
+                    }
+                } else if ($type === 'media-list') {
+                    $items = is_array($value) ? $value : [];
+                    foreach ($items as $item) {
+                        $src = $item['src'] ?? '';
+                        $alt = $item['alt'] ?? '';
+                        if (preg_match('/^(\/\/)?li\/img/', $clean)) {
+                            $lines[] = "- ![$alt]($src)";
+                        } else {
+                            $lines[] = "![$alt]($src)";
+                        }
+                    }
+                } else if ($type === 'link') {
+                    // Buffer link — combine with next text field for the same element
+                    $pendingLink = $value;
+                } else {
+                    // text or textarea
+                    if ($pendingLink !== null) {
+                        $lines[] = "[$value]($pendingLink)";
+                        $pendingLink = null;
+                    } else {
+                        $line = self::valueToMarkdown($clean, $value);
+                        $lines[] = $line;
+                    }
+                }
+            }
+            // Flush pending link without text
+            if ($pendingLink !== null) {
+                $lines[] = "[$pendingLink]($pendingLink)";
+            }
+            $sections[] = implode("\n\n", $lines);
+        }
+
+        return implode("\n\n---\n\n", $sections);
+    }
+
+    /**
+     * Convert a value to markdown based on the xpath element type.
+     */
+    private static function valueToMarkdown(string $cleanXpath, string $value): string
+    {
+        if (preg_match('/^(\/\/)?h1/', $cleanXpath)) return "# $value";
+        if (preg_match('/^(\/\/)?h2/', $cleanXpath)) return "## $value";
+        if (preg_match('/^(\/\/)?h3/', $cleanXpath)) return "### $value";
+        if (preg_match('/^(\/\/)?h4/', $cleanXpath)) return "#### $value";
+        return $value;
     }
 
     /**

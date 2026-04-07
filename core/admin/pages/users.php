@@ -21,19 +21,30 @@ $success = null;
 
 $action = $request->getParam("action");
 if ($action) {
-    $result = AdminHelper::handleAction($request, function() use ($action, $request, $htpasswd, $authentication, $currentUser) {
+    $result = AdminHelper::handleAction($request, function() use ($action, $request, $htpasswd, $authentication, $currentUser, $reboot, $site) {
         $username = trim($request->getParam("username") ?? "");
         $password = $request->getParam("password") ?? "";
 
         // Require admin password re-entry for sensitive actions
         if (in_array($action, ["add", "change_password", "delete"])) {
             $adminPassword = $request->getParam("admin_password") ?? "";
-            if (!$htpasswd->validate($currentUser, $adminPassword)) {
+            $adminUser = $authentication->getImpersonator() ?? $currentUser;
+            if (!$htpasswd->validate($adminUser, $adminPassword)) {
                 throw new \InvalidArgumentException("Incorrect admin password");
             }
         }
 
-        if ($action === "add") {
+        if ($action === "impersonate") {
+            if ($username === $currentUser) {
+                throw new \InvalidArgumentException("You are already logged in as this user");
+            }
+            if (!in_array($username, $htpasswd->getUsers(), true)) {
+                throw new \InvalidArgumentException("User '$username' does not exist");
+            }
+            $authentication->impersonate($username);
+            $reboot->redirect($reboot->getBaseWebPath() . $site->getWebPath() . "/users");
+            return null;
+        } elseif ($action === "add") {
             if (!preg_match('/^[a-zA-Z0-9_]{1,64}$/', $username)) {
                 throw new \InvalidArgumentException("Username must contain only letters, numbers, underscores (max 64 chars)");
             }
@@ -77,6 +88,16 @@ $users = $htpasswd->getUsers();
 ?>
 
 <div class="container-fluid max-width-lg">
+    <?php if ($authentication->isImpersonating()) { ?>
+        <div class="alert alert-warning d-flex align-items-center justify-content-between">
+            <span>You are impersonating <strong><?= htmlspecialchars($currentUser) ?></strong> (logged in as <?= htmlspecialchars($authentication->getImpersonator()) ?>)</span>
+            <form method="post" action="users" class="d-inline">
+                <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                <input type="hidden" name="action" value="stop_impersonate">
+                <button class="btn btn-sm btn-warning">Stop Impersonating</button>
+            </form>
+        </div>
+    <?php } ?>
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
 
     <div class="card mb-4">
@@ -110,7 +131,15 @@ $users = $htpasswd->getUsers();
                                    placeholder="New password" required minlength="8">
                             <button class="btn btn-sm btn-outline-primary text-nowrap">Change Password</button>
                         </form>
-                        <?php if ($user !== $currentUser) { ?>
+                        <?php if ($user !== $currentUser && !$authentication->isImpersonating()) { ?>
+                            <form method="post" action="users">
+                                <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                                <input type="hidden" name="action" value="impersonate">
+                                <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
+                                <button class="btn btn-sm btn-outline-secondary text-nowrap">Impersonate</button>
+                            </form>
+                        <?php } ?>
+                        <?php if ($user !== $currentUser && !$authentication->isImpersonating()) { ?>
                             <form method="post" action="users" class="admin-password-form"
                                   data-confirm="Delete user '<?= htmlspecialchars($user, ENT_QUOTES) ?>'?">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
@@ -118,7 +147,7 @@ $users = $htpasswd->getUsers();
                                 <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
                                 <button class="btn btn-sm btn-outline-danger">Delete</button>
                             </form>
-                        <?php } else { ?>
+                        <?php } else if ($user !== $currentUser) { ?>
                             <button class="btn btn-sm btn-outline-danger invisible">Delete</button>
                         <?php } ?>
                     </div>

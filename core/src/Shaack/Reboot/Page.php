@@ -83,6 +83,67 @@ class Page
     }
 
     /**
+     * Parse a markdown file into blocks and collect field definitions with current values.
+     * Renders each block to trigger field() calls, then returns the field metadata.
+     * @param string $pageFsPath Absolute path to the .md file
+     * @return array Array of blocks, each with 'name', 'config', and 'fields'
+     */
+    public function getBlockFields(string $pageFsPath): array
+    {
+        $content = trim(file_get_contents($pageFsPath));
+        if (!$content) return [];
+
+        // Strip frontmatter
+        $offset = strpos($content, "---");
+        if ($offset === 0) {
+            $offset += 3;
+            $end = strpos($content, "---", $offset);
+            if ($end !== false) {
+                $content = substr($content, $end + 3);
+            }
+        }
+
+        // Parse blocks (same logic as renderMarkdown)
+        $contentForBlockSearch = preg_replace_callback('/```[\s\S]*?```/', function ($m) {
+            return str_repeat(" ", strlen($m[0]));
+        }, $content);
+        $offset = strpos($contentForBlockSearch, "<!--");
+        $blocks = [];
+        if ($offset !== false) {
+            do {
+                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $contentForBlockSearch, $matches, 0, $offset);
+                if ($matches) {
+                    $offset += strlen($matches[0]) - 4;
+                    try {
+                        $blockProps = \Symfony\Component\Yaml\Yaml::parse(trim($matches[1]));
+                        $blockContent = trim($matches[2]);
+                        $blockName = null;
+                        if (is_string($blockProps)) {
+                            $blockName = $blockProps;
+                            $blockProps = [];
+                        } else {
+                            $blockName = array_keys($blockProps)[0];
+                            $blockProps = $blockProps[$blockName];
+                        }
+                        $block = new Block($this->site, $blockName, $blockContent, $blockProps ?? []);
+                        // Render to collect field definitions
+                        $block->render(null);
+                        $blocks[] = [
+                            'name' => $blockName,
+                            'config' => $blockProps ?? [],
+                            'fields' => $block->getFieldsWithValues(),
+                        ];
+                    } catch (\Exception $e) {
+                        Logger::error("Error parsing block: " . $e->getMessage());
+                    }
+                }
+            } while ($matches);
+        }
+
+        return $blocks;
+    }
+
+    /**
      * @param string $pagePath
      * @return string
      */

@@ -363,4 +363,383 @@
         previewActive = false;
         window.togglePreview();
     }
+
+    // --- Structured Editor ---
+
+    var structuredActive = false;
+    var structuredBlocks = null; // cached block data from API
+
+    window.toggleStructuredEditor = function () {
+        structuredActive = !structuredActive;
+        var form = document.querySelector('form[action^="pages?page="]');
+        var structuredDiv = document.getElementById('structured-editor');
+        var toggleBtn = document.getElementById('structured-toggle');
+        if (!form || !structuredDiv) return;
+
+        if (structuredActive) {
+            form.classList.add('d-none');
+            structuredDiv.classList.remove('d-none');
+            toggleBtn.classList.remove('btn-outline-secondary');
+            toggleBtn.classList.add('btn-secondary');
+            loadStructuredEditor();
+        } else {
+            // Sync structured editor values back to textarea before showing it
+            if (structuredBlocks) {
+                syncStructuredToTextarea();
+            }
+            form.classList.remove('d-none');
+            structuredDiv.classList.add('d-none');
+            toggleBtn.classList.remove('btn-secondary');
+            toggleBtn.classList.add('btn-outline-secondary');
+        }
+    };
+
+    function loadStructuredEditor() {
+        var container = document.getElementById('structured-editor-blocks');
+        container.innerHTML = '<div class="text-body-secondary p-3">Loading…</div>';
+        fetch('pages?fields=1&page=' + encodeURIComponent(currentPage))
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                structuredBlocks = data.blocks;
+                renderStructuredEditor(container, data.blocks);
+            })
+            .catch(function () {
+                container.innerHTML = '<div class="text-danger p-3">Failed to load block fields.</div>';
+            });
+    }
+
+    function renderStructuredEditor(container, blocks) {
+        container.innerHTML = '';
+        if (!blocks || blocks.length === 0) {
+            container.innerHTML = '<div class="text-body-secondary p-3">No blocks with fields found on this page.</div>';
+            return;
+        }
+        blocks.forEach(function (block, blockIndex) {
+            var card = document.createElement('div');
+            card.className = 'card mb-3';
+            var header = document.createElement('div');
+            header.className = 'card-header';
+            header.innerHTML = '<h6 class="mb-0">' + escapeHtml(block.name) + '</h6>';
+            card.appendChild(header);
+
+            var body = document.createElement('div');
+            body.className = 'card-body d-flex flex-column gap-3';
+            block.fields.forEach(function (field, fieldIndex) {
+                var fieldId = 'sf-' + blockIndex + '-' + fieldIndex;
+                var group = document.createElement('div');
+
+                var label = document.createElement('label');
+                label.className = 'form-label mb-1';
+                label.setAttribute('for', fieldId);
+                label.textContent = field.label;
+                if (field.required) {
+                    var req = document.createElement('span');
+                    req.className = 'text-danger ms-1';
+                    req.textContent = '*';
+                    label.appendChild(req);
+                }
+                group.appendChild(label);
+
+                var input = createFieldInput(field, fieldId);
+                group.appendChild(input);
+                body.appendChild(group);
+            });
+            card.appendChild(body);
+            container.appendChild(card);
+        });
+    }
+
+    function createFieldInput(field, fieldId) {
+        var value = field.value || '';
+        switch (field.type) {
+            case 'textarea':
+            case 'md-editor': {
+                var textarea = document.createElement('textarea');
+                textarea.className = 'form-control form-control-sm editor-font';
+                textarea.id = fieldId;
+                textarea.rows = field.type === 'md-editor' ? 6 : 3;
+                textarea.value = value;
+                textarea.required = field.required;
+                if (field.type === 'md-editor') {
+                    textarea.classList.add('structured-md-editor');
+                }
+                return textarea;
+            }
+            case 'media': {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'd-flex gap-2 align-items-center';
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'form-control form-control-sm';
+                input.id = fieldId;
+                input.value = value;
+                input.required = field.required;
+                input.placeholder = 'Media path';
+                wrapper.appendChild(input);
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-outline-secondary text-nowrap';
+                btn.textContent = 'Browse';
+                btn.addEventListener('click', function () {
+                    openMediaPicker(input);
+                });
+                wrapper.appendChild(btn);
+                return wrapper;
+            }
+            case 'media-list': {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'structured-media-list';
+                var items = Array.isArray(value) ? value : [];
+                items.forEach(function (item) {
+                    wrapper.appendChild(createMediaListItem(item.src, item.alt));
+                });
+                var addBtn = document.createElement('button');
+                addBtn.type = 'button';
+                addBtn.className = 'btn btn-sm btn-outline-secondary mt-1';
+                addBtn.textContent = '+ Add';
+                addBtn.addEventListener('click', function () {
+                    wrapper.insertBefore(createMediaListItem('', ''), addBtn);
+                });
+                wrapper.appendChild(addBtn);
+                return wrapper;
+            }
+            case 'link': {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'd-flex gap-2 align-items-center';
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'form-control form-control-sm';
+                input.id = fieldId;
+                input.value = value;
+                input.required = field.required;
+                input.placeholder = 'Page link';
+                wrapper.appendChild(input);
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-outline-secondary text-nowrap';
+                btn.textContent = 'Browse';
+                btn.addEventListener('click', function () {
+                    openPagePicker(input);
+                });
+                wrapper.appendChild(btn);
+                return wrapper;
+            }
+            default: {
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'form-control form-control-sm';
+                input.id = fieldId;
+                input.value = value;
+                input.required = field.required;
+                return input;
+            }
+        }
+    }
+
+    function createMediaListItem(src, alt) {
+        var row = document.createElement('div');
+        row.className = 'd-flex gap-2 align-items-center mb-1';
+        var srcInput = document.createElement('input');
+        srcInput.type = 'text';
+        srcInput.className = 'form-control form-control-sm media-list-src';
+        srcInput.placeholder = 'Image path';
+        srcInput.value = src;
+        row.appendChild(srcInput);
+        var altInput = document.createElement('input');
+        altInput.type = 'text';
+        altInput.className = 'form-control form-control-sm media-list-alt';
+        altInput.placeholder = 'Alt text';
+        altInput.value = alt;
+        row.appendChild(altInput);
+        var browseBtn = document.createElement('button');
+        browseBtn.type = 'button';
+        browseBtn.className = 'btn btn-sm btn-outline-secondary text-nowrap';
+        browseBtn.textContent = 'Browse';
+        browseBtn.addEventListener('click', function () {
+            openMediaPicker(srcInput);
+        });
+        row.appendChild(browseBtn);
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-sm btn-outline-danger';
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', function () {
+            row.remove();
+        });
+        row.appendChild(removeBtn);
+        return row;
+    }
+
+    function openMediaPicker(inputElement) {
+        // TODO: integrate with InsertMedia picker
+        inputElement.focus();
+    }
+
+    function openPagePicker(inputElement) {
+        // TODO: integrate with InsertPageLink picker
+        inputElement.focus();
+    }
+
+    function collectStructuredValues() {
+        if (!structuredBlocks) return null;
+        var container = document.getElementById('structured-editor-blocks');
+        var blocks = [];
+        structuredBlocks.forEach(function (block, blockIndex) {
+            var fields = [];
+            block.fields.forEach(function (field, fieldIndex) {
+                var fieldId = 'sf-' + blockIndex + '-' + fieldIndex;
+                var value = '';
+                if (field.type === 'media-list') {
+                    var items = [];
+                    var card = container.children[blockIndex];
+                    var listWrapper = card.querySelector('.structured-media-list');
+                    if (listWrapper) {
+                        listWrapper.querySelectorAll('.d-flex.align-items-center.mb-1').forEach(function (row) {
+                            var src = row.querySelector('.media-list-src');
+                            var alt = row.querySelector('.media-list-alt');
+                            if (src) {
+                                items.push({src: src.value, alt: alt ? alt.value : ''});
+                            }
+                        });
+                    }
+                    value = items;
+                } else {
+                    var el = document.getElementById(fieldId);
+                    value = el ? el.value : '';
+                }
+                fields.push({
+                    xpath: field.xpath,
+                    label: field.label,
+                    type: field.type,
+                    value: value
+                });
+            });
+            blocks.push({name: block.name, config: block.config, fields: fields});
+        });
+        return blocks;
+    }
+
+    function blocksToMarkdown(blocks) {
+        var parts = [];
+        blocks.forEach(function (block) {
+            var blockComment = '<!-- ' + block.name;
+            if (block.config && Object.keys(block.config).length > 0) {
+                // YAML-style config: <!-- block-name:\n  key: value -->
+                var configParts = [];
+                for (var key in block.config) {
+                    configParts.push('  ' + key + ': ' + block.config[key]);
+                }
+                blockComment = '<!-- ' + block.name + ':\n' + configParts.join('\n') + ' -->';
+            } else {
+                blockComment += ' -->';
+            }
+            var fieldsByPart = {};
+            var maxPart = 1;
+            block.fields.forEach(function (field) {
+                var partNum = 1;
+                var partMatch = field.xpath.match(/part\((\d)\)/);
+                if (partMatch) partNum = parseInt(partMatch[1]);
+                if (partNum > maxPart) maxPart = partNum;
+                if (!fieldsByPart[partNum]) fieldsByPart[partNum] = [];
+                fieldsByPart[partNum].push(field);
+            });
+
+            var contentParts = [];
+            for (var p = 1; p <= maxPart; p++) {
+                var partFields = fieldsByPart[p] || [];
+                var partContent = buildPartMarkdown(partFields);
+                contentParts.push(partContent);
+            }
+            parts.push(blockComment + '\n' + contentParts.join('\n\n---\n\n'));
+        });
+        return parts.join('\n\n');
+    }
+
+    function buildPartMarkdown(fields) {
+        var lines = [];
+        var pendingLinkHref = null;
+        for (var i = 0; i < fields.length; i++) {
+            var field = fields[i];
+            var value = field.value || '';
+            var xpath = field.xpath;
+            var type = field.type;
+            var clean = xpath.replace(/\[part\(\d\)\]/g, '').replace(/^\/+/, '');
+
+            if (type === 'md-editor') {
+                lines.push(value);
+                continue;
+            }
+            if (type === 'media') {
+                var alt = '';
+                for (var j = 0; j < fields.length; j++) {
+                    if (fields[j] !== field && /img.*\/@alt/.test(fields[j].xpath)) {
+                        alt = fields[j].value || '';
+                    }
+                }
+                if (/^(\/\/)?li\/img/.test(clean)) {
+                    lines.push('- ![' + alt + '](' + value + ')');
+                } else {
+                    lines.push('![' + alt + '](' + value + ')');
+                }
+                continue;
+            }
+            if (type === 'media-list') {
+                var items = Array.isArray(value) ? value : [];
+                items.forEach(function (item) {
+                    if (/^(\/\/)?li\/img/.test(clean)) {
+                        lines.push('- ![' + (item.alt || '') + '](' + (item.src || '') + ')');
+                    } else {
+                        lines.push('![' + (item.alt || '') + '](' + (item.src || '') + ')');
+                    }
+                });
+                continue;
+            }
+            if (type === 'link') {
+                pendingLinkHref = value;
+                continue;
+            }
+            // Skip alt/title fields for media (already handled above)
+            if (/\/@(alt|title)$/.test(xpath)) continue;
+
+            if (pendingLinkHref !== null) {
+                lines.push('[' + value + '](' + pendingLinkHref + ')');
+                pendingLinkHref = null;
+            } else {
+                lines.push(valueToMarkdown(clean, value));
+            }
+        }
+        if (pendingLinkHref !== null) {
+            lines.push('[' + pendingLinkHref + '](' + pendingLinkHref + ')');
+        }
+        return lines.join('\n\n');
+    }
+
+    function valueToMarkdown(cleanXpath, value) {
+        if (/^(\/\/)?h1/.test(cleanXpath)) return '# ' + value;
+        if (/^(\/\/)?h2/.test(cleanXpath)) return '## ' + value;
+        if (/^(\/\/)?h3/.test(cleanXpath)) return '### ' + value;
+        if (/^(\/\/)?h4/.test(cleanXpath)) return '#### ' + value;
+        return value;
+    }
+
+    function syncStructuredToTextarea() {
+        var blocks = collectStructuredValues();
+        if (!blocks || !editorTextarea) return;
+        // Preserve frontmatter
+        var existing = editorTextarea.value;
+        var frontmatter = '';
+        if (existing.indexOf('---') === 0) {
+            var end = existing.indexOf('---', 3);
+            if (end !== -1) {
+                frontmatter = existing.substring(0, end + 3) + '\n';
+            }
+        }
+        editorTextarea.value = frontmatter + blocksToMarkdown(blocks);
+        pageUnsaved = true;
+    }
+
+    window.saveStructuredEditor = function () {
+        syncStructuredToTextarea();
+        window.savePageAsync();
+    };
 })();

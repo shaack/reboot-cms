@@ -6,6 +6,8 @@ navbar:
   structure:
     Pages: /pages
     Media: /media
-    Site Configuration: /config
-    Users: /users
-    Update: /update
+    Admin:
+      Site Configuration: /config
+      Users: /users
+      System Health: /health
+      Update: /update

@@ -44,6 +44,13 @@ class Authentication extends AddOn
             }
             return true;
         }
+        // Handle stop impersonating before access control
+        if ($this->isImpersonating() && $request->getParam("action") === "stop_impersonate") {
+            $this->stopImpersonating();
+            $this->reboot->redirect($this->site->getWebPath() . "/users");
+            return false;
+        }
+
         $user = $this->getUser();
         if (!$user && $request->getPath() !== "/login") {
             Logger::info("No user found, redirect to the login");
@@ -54,8 +61,8 @@ class Authentication extends AddOn
                 $this->logout();
                 return false;
             }
-            // Restrict editor access to allowed pages only
-            if ($this->getUserRole($user) === self::ROLE_EDITOR) {
+            // Restrict editor access to allowed pages only (skip if impersonating — admin retains access)
+            if (!$this->isImpersonating() && $this->getUserRole($user) === self::ROLE_EDITOR) {
                 $path = $request->getPath();
                 $allowed = false;
                 foreach (self::EDITOR_PAGES as $editorPage) {
@@ -92,6 +99,30 @@ class Authentication extends AddOn
             return true;
         }
         return false;
+    }
+
+    public function impersonate(string $username): void
+    {
+        $_SESSION['impersonator'] = $_SESSION['user'];
+        $_SESSION['user'] = $username;
+    }
+
+    public function stopImpersonating(): void
+    {
+        if (isset($_SESSION['impersonator'])) {
+            $_SESSION['user'] = $_SESSION['impersonator'];
+            unset($_SESSION['impersonator']);
+        }
+    }
+
+    public function isImpersonating(): bool
+    {
+        return isset($_SESSION['impersonator']);
+    }
+
+    public function getImpersonator(): ?string
+    {
+        return $_SESSION['impersonator'] ?? null;
     }
 
     public function logout()
