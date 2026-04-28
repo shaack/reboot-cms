@@ -9,7 +9,7 @@
 ?>
 <section class="block block-hero">
     <div class="container-fluid">
-        <div class="card border-0 bg-gradient">
+        <div class="card border-0">
             <div class="card-body">
                 <div class="p-xl-5 p-md-4 p-3">
                     <h1 class="display-4"><?= $block->nodeHtml($block->field("/h1[part(1)]/text()", "Hero heading", true)) ?></h1>

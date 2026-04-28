@@ -2,5 +2,6 @@
 /.idea
 /.claude
 /CLAUDE.md
+/AGENTS.md
 /publish.sh
 .DS_Store

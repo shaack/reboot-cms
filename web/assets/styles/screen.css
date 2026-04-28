@@ -2,9 +2,9 @@
 
 :root {
     --accent: #6366f1;
-    --accent-hover: #818cf8;
-    --surface: rgba(255, 255, 255, 0.03);
-    --surface-hover: rgba(255, 255, 255, 0.06);
+    --accent-hover: #7477f3;
+    --surface: #23272e;
+    --surface-hover: #2b3038;
     --border: rgba(255, 255, 255, 0.08);
 }
 
@@ -24,7 +24,7 @@ body {
 }
 
 pre {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: #1a1d23;
     border: 1px solid var(--border);
     border-radius: 0.75rem;
     padding: 1.25rem;
@@ -38,9 +38,7 @@ nav.navbar .container-fluid {
 }
 
 nav.navbar {
-    background: rgba(10, 10, 15, 0.8) !important;
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: #101318 !important;
     border-bottom: 1px solid var(--border);
     font-size: 0.95rem;
 }
@@ -80,19 +78,9 @@ main {
 
 /* Hero */
 .block-hero .card {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.08), rgba(236, 72, 153, 0.06)) !important;
+    background: #2b2f36 !important;
     border: 1px solid var(--border) !important;
     border-radius: 1.5rem;
-    overflow: hidden;
-    position: relative;
-}
-
-.block-hero .card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.12), transparent 60%);
-    pointer-events: none;
 }
 
 .block-hero .display-4 {
@@ -118,13 +106,10 @@ main {
     border-radius: 0.75rem;
     padding: 0.75rem 2rem;
     font-weight: 500;
-    transition: all 0.2s;
 }
 
 .block-hero .btn-primary:hover {
-    background: var(--accent-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+    background: var(--accent);
 }
 
 /* Text-Image */
@@ -145,11 +130,6 @@ main {
 .block-text-image .img-fluid {
     border-radius: 1rem;
     border: 1px solid var(--border);
-    transition: transform 0.3s;
-}
-
-.block-text-image .img-fluid:hover {
-    transform: scale(1.02);
 }
 
 /* Three Columns */
@@ -244,7 +224,7 @@ a {
 }
 
 a:hover {
-    color: #a5b4fc;
+    color: var(--accent-hover);
 }
 
 /* Selection */
