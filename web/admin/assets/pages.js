@@ -300,29 +300,6 @@
         previewDebounceTimer = setTimeout(updatePreview, 500);
     }
 
-    var lastSyncedBlock = -1;
-
-    function syncPreviewToBlock() {
-        if (!previewActive || !previewInitialized || !editorTextarea) return;
-        var iframe = getFrontIframe();
-        try {
-            var doc = iframe.contentDocument;
-            var sections = doc.querySelectorAll('section.block');
-            if (sections.length === 0) return;
-            var cursorPos = editorTextarea.selectionStart;
-            var textBeforeCursor = editorTextarea.value.substring(0, cursorPos);
-            var blockIndex = (textBeforeCursor.match(/<!--[\s\S]*?-->/g) || []).length - 1;
-            if (blockIndex < 0) blockIndex = 0;
-            if (blockIndex >= sections.length) blockIndex = sections.length - 1;
-            if (blockIndex === lastSyncedBlock) return;
-            lastSyncedBlock = blockIndex;
-            var section = sections[blockIndex];
-            var iframeHeight = iframe.clientHeight;
-            var scrollTarget = section.offsetTop - (iframeHeight / 2) + (section.offsetHeight / 2);
-            doc.documentElement.scrollTo({top: Math.max(0, scrollTarget), behavior: 'smooth'});
-        } catch (e) {}
-    }
-
     window.togglePreview = function () {
         previewActive = !previewActive;
         localStorage.setItem('reboot_preview', previewActive);
@@ -339,8 +316,6 @@
             updatePreview();
             if (editorTextarea) {
                 editorTextarea.addEventListener('input', schedulePreviewUpdate);
-                editorTextarea.addEventListener('click', syncPreviewToBlock);
-                editorTextarea.addEventListener('keyup', syncPreviewToBlock);
             }
         } else {
             editorCol.classList.remove('col-lg-5', 'col-xl-6');
@@ -352,8 +327,6 @@
             previewInitialized = false;
             if (editorTextarea) {
                 editorTextarea.removeEventListener('input', schedulePreviewUpdate);
-                editorTextarea.removeEventListener('click', syncPreviewToBlock);
-                editorTextarea.removeEventListener('keyup', syncPreviewToBlock);
             }
         }
     };
