@@ -10,18 +10,20 @@
         window.location.href = "update?branch=" + encodeURIComponent(this.value);
     });
 
-    // Replace the action area with a visible progress indicator. The update is
-    // a synchronous form POST; swapping the DOM right before it proceeds means
-    // the spinner stays on screen while the files download and install.
-    function showUpdating() {
-        document.getElementById("update-actions").innerHTML =
-            '<div class="d-flex align-items-center">' +
+    // Show a visible progress indicator while the (synchronous) update POST is
+    // in flight. The <form> must stay in the document — removing it during its
+    // own submit handler would cancel the POST — so it is only hidden, and the
+    // spinner is added alongside it.
+    function showUpdating(form) {
+        form.style.display = "none";
+        var spinner = document.createElement("div");
+        spinner.className = "d-flex align-items-center";
+        spinner.innerHTML =
             '<div class="spinner-border spinner-border-sm text-primary" role="status" ' +
-            'style="margin-right:.6rem">' +
-            '<span class="visually-hidden">Updating...</span></div>' +
+            'style="margin-right:.6rem"><span class="visually-hidden">Updating...</span></div>' +
             '<span>Updating Reboot CMS &mdash; downloading and installing files. ' +
-            'This can take a moment, please do not close this page.</span>' +
-            '</div>';
+            'This can take a moment, please do not close this page.</span>';
+        document.getElementById("update-actions").appendChild(spinner);
     }
 
     // Confirm the update on submit, then show the progress indicator before
@@ -34,7 +36,7 @@
                 e.preventDefault();
                 return;
             }
-            showUpdating();
+            showUpdating(form);
         });
     }
 
