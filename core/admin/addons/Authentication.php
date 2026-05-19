@@ -14,6 +14,7 @@ class Authentication extends AddOn
 
     const ROLE_ADMIN = "admin";
     const ROLE_EDITOR = "editor";
+    const ROLE_DISABLED = "disabled";
     const EDITOR_PAGES = ["/pages", "/media"];
 
     /**
@@ -61,6 +62,12 @@ class Authentication extends AddOn
                 $this->logout();
                 return false;
             }
+            // Disabled accounts lose access immediately (skip if impersonating — admin retains access)
+            if (!$this->isImpersonating() && $this->getUserRole($user) === self::ROLE_DISABLED) {
+                Logger::info("Access denied, account disabled: " . $user);
+                $this->logout();
+                return false;
+            }
             // Restrict editor access to allowed pages only (skip if impersonating — admin retains access)
             if (!$this->isImpersonating() && $this->getUserRole($user) === self::ROLE_EDITOR) {
                 $path = $request->getPath();
@@ -93,6 +100,10 @@ class Authentication extends AddOn
     public function login($username, $password): bool
     {
         if ($this->htpasswd->validate($username, $password)) {
+            if ($this->getUserRole($username) === self::ROLE_DISABLED) {
+                Logger::info("Login denied, account disabled: " . $username);
+                return false;
+            }
             session_regenerate_id(true);
             $_SESSION['user'] = $username;
             $_SESSION['checksum'] = $this->getChecksum();
@@ -159,7 +170,7 @@ class Authentication extends AddOn
 
     public function setUserRole(string $username, string $role): void
     {
-        if (!in_array($role, [self::ROLE_ADMIN, self::ROLE_EDITOR])) {
+        if (!in_array($role, [self::ROLE_ADMIN, self::ROLE_EDITOR, self::ROLE_DISABLED])) {
             throw new \InvalidArgumentException("Invalid role: $role");
         }
         $this->roles[$username] = $role;

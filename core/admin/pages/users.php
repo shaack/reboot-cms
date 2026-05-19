@@ -117,6 +117,7 @@ $users = $htpasswd->getUsers();
                                 <select name="role" class="form-select form-select-sm" style="width: auto" onchange="this.form.submit()">
                                     <option value="<?= Authentication::ROLE_ADMIN ?>" <?= $userRole === Authentication::ROLE_ADMIN ? 'selected' : '' ?>>Admin</option>
                                     <option value="<?= Authentication::ROLE_EDITOR ?>" <?= $userRole === Authentication::ROLE_EDITOR ? 'selected' : '' ?>>Editor</option>
+                                    <option value="<?= Authentication::ROLE_DISABLED ?>" <?= $userRole === Authentication::ROLE_DISABLED ? 'selected' : '' ?>>Disabled</option>
                                 </select>
                             </form>
                         <?php } else { ?>
@@ -169,6 +170,7 @@ $users = $htpasswd->getUsers();
                 <select name="role" class="form-select form-select-sm" style="width: auto">
                     <option value="<?= Authentication::ROLE_EDITOR ?>">Editor</option>
                     <option value="<?= Authentication::ROLE_ADMIN ?>">Admin</option>
+                    <option value="<?= Authentication::ROLE_DISABLED ?>">Disabled</option>
                 </select>
                 <button class="btn btn-sm btn-primary text-nowrap">Add User</button>
             </form>

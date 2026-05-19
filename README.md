@@ -439,10 +439,11 @@ The "Users" page in the admin interface allows you to manage accounts directly f
 
 - **Add users** — create new accounts with a username, password, and role
 - **Change passwords** — update the password for any existing user
-- **Change roles** — switch a user between **Admin** and **Editor** roles
+- **Change roles** — switch a user between the **Admin**, **Editor**, and **Disabled** roles
 - **Delete users** — remove accounts (you cannot delete your own account)
 
 **Admins** have full access to all admin pages. **Editors** can only access the page editor and media manager.
+**Disabled** users keep their account but cannot log in; an open session is ended on the next request.
 
 Usernames may contain letters, numbers, and underscores (max 64 characters). Passwords must be at least 8 characters.
 Credentials are stored as APR1-MD5 hashes in `local/.htpasswd`, roles in `local/roles.yml`.
