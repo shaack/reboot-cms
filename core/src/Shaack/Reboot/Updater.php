@@ -164,6 +164,19 @@ class Updater
                 self::copyDirectory($sourceVendor, $targetVendor);
             }
 
+            // Replace root files
+            foreach (["README.md", "AGENTS.md", "LICENSE", "run.sh", "test.sh"] as $rootFile) {
+                $sourceFile = $sourceDir . "/" . $rootFile;
+                $targetFile = $this->baseFsPath . "/" . $rootFile;
+                if (file_exists($sourceFile)) {
+                    Logger::info("Updater: replacing " . $rootFile);
+                    copy($sourceFile, $targetFile);
+                    if (str_ends_with($rootFile, ".sh")) {
+                        chmod($targetFile, 0755);
+                    }
+                }
+            }
+
             // Update composer.json version
             $sourceComposer = $sourceDir . "/composer.json";
             if (file_exists($sourceComposer)) {
