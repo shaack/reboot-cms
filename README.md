@@ -14,6 +14,24 @@ I developed Reboot CMS because I couldn't find a CMS that works with flat markdo
 Reboot CMS is very small and the pages are delivered extremely fast. My website [shaack.com](https://shaack.com), built
 with Reboot CMS, has a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report?url=https%3A%2F%2Fshaack.com%2F).
 
+## Working with AI agents
+
+Reboot CMS works well with AI coding assistants, because its architecture maps
+onto what an agent can reliably reason about:
+
+- **Flat Markdown files, no database** — content is edited directly as text;
+  there is no schema, no migrations, and no admin API to learn.
+- **File equals URL** — the page for `/about` is always `site/pages/about.md`,
+  so an agent locates content without crawling routes.
+- **Small, transparent core** — the CMS classes (`Reboot`, `Site`, `Page`,
+  `Block`, `Request`) are short enough to fit a model's context window.
+- **Blocks are plain PHP files** — a new block type is a single file in
+  `site/blocks/`, with no framework or build step in between.
+- **Everything is text under Git** — every change is a reviewable diff.
+
+The repository includes an [`AGENTS.md`](AGENTS.md) that orients AI agents
+working on a Reboot CMS project.
+
 ## Websites using Reboot CMS
 
 - [The Reboot CMS demo page](https://shaack.com/projekte/reboot-cms/)
