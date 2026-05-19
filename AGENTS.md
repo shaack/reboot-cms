@@ -2,6 +2,10 @@
 
 Guidance for AI coding agents working in a Reboot CMS project.
 
+This file is a condensed orientation. For the full reference — installation,
+configuration, addons, blocks and multilingual navigation — read the project's
+`README.md` in full before making non-trivial changes.
+
 ## What this is
 
 Reboot CMS is a flat-file, database-free CMS in PHP. Content is plain Markdown,
@@ -63,6 +67,35 @@ Each block name maps to `site/blocks/{name}.php`. A block template is plain PHP
 and receives a `$block` object — `$block->content()`, `$block->xpath()`,
 `$block->getConfig()`. Adding a block type means adding one PHP file; there is
 no framework or build step in between.
+
+## Multilingual
+
+A site is monolingual by default. To enable several languages, declare them in
+`site/config.yml`:
+
+```yaml
+languages: [en, de]
+defaultLanguage: en
+```
+
+The **first path segment** then selects the language, and pages live in a folder
+per language — the URL maps onto the file as usual:
+
+- `/de/about` → `site/pages/de/about.md`
+- `/en/` → `site/pages/en/index.md`
+
+A path whose first segment is not a configured language carries no prefix and
+falls back to `defaultLanguage` (e.g. `/about` → `site/pages/about.md`).
+
+In `template.php` and block templates the request object exposes:
+
+- `$request->getLanguage()` — the active language code (`"en"`, `"de"`), for the
+  `<html lang>` attribute and `hreflang` tags
+- `$request->getPathWithoutLanguage()` — the path with the language prefix
+  stripped, for building language-switcher links
+
+Without `languages` in `config.yml` every request uses `defaultLanguage` (or
+`"en"`) and no prefix is expected.
 
 ## Conventions
 
