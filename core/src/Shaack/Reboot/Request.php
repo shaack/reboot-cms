@@ -7,6 +7,8 @@ use Shaack\Logger;
 class Request
 {
     private string $path; // the requestPath, relative to the $baseWebPath
+    private string $language; // language code from the path prefix, or the site's default language
+    private bool $pathHasLanguagePrefix = false; // whether $path starts with a configured language segment
     private array $paramsGet = []; // http post params
     private array $paramsPost = []; // http post params
 
@@ -48,7 +50,17 @@ class Request
             $this->paramsGet = [];
         }
         // $this->paramsPost = array_merge($this->paramsGet, @$post);
+        // detect the request language from the first path segment (for multilingual sites)
+        $siteConfig = $site->getConfig();
+        $languages = $siteConfig['languages'] ?? [];
+        $this->language = $siteConfig['defaultLanguage'] ?? ($languages[0] ?? 'en');
+        $firstSegment = explode('/', ltrim($this->path, '/'))[0];
+        if ($firstSegment !== '' && in_array($firstSegment, $languages, true)) {
+            $this->language = $firstSegment;
+            $this->pathHasLanguagePrefix = true;
+        }
         Logger::debug("request->path: " . $this->path);
+        Logger::debug("request->language: " . $this->language);
     }
 
     /**
@@ -56,6 +68,39 @@ class Request
      */
     public function getPath(): string
     {
+        return $this->path;
+    }
+
+    /**
+     * The language code for this request.
+     *
+     * On multilingual sites the language is taken from the first path segment
+     * (e.g. "/de/contact" => "de"). If the path has no language prefix, the
+     * site's default language is returned. Configure the available languages
+     * with `languages` and `defaultLanguage` in `site/config.yml`.
+     *
+     * @return string e.g. "en" or "de"
+     */
+    public function getLanguage(): string
+    {
+        return $this->language;
+    }
+
+    /**
+     * The request path with the language prefix removed.
+     *
+     * Useful for building language switcher links and `hreflang` tags.
+     * For "/de/contact" this returns "/contact"; for a path without a
+     * language prefix the path is returned unchanged.
+     *
+     * @return string
+     */
+    public function getPathWithoutLanguage(): string
+    {
+        if ($this->pathHasLanguagePrefix) {
+            $path = substr($this->path, strlen($this->language) + 1);
+            return $path === '' ? '/' : $path;
+        }
         return $this->path;
     }
 

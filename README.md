@@ -70,7 +70,8 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 
 ## Configuration
 
-- `site/config.yml` — Site-wide settings: addon registration, navbar with `brand` and `structure`
+- `site/config.yml` — Site-wide settings: addon registration, navbar with `brand` and `structure`,
+  and multilingual settings (see [Multilingual sites](#multilingual-sites))
 - `local/config.yml` — Local/environment settings (not committed to git):
 
 ```yaml
@@ -198,6 +199,89 @@ block allows to display the image to the left side in desktop view.
 Markdown files without blocks will render to a flat Markdown page like in every other flat file CMS.
 
 You can define metadata for the page on top of the file in `YAML Front Matter` syntax.
+
+### Multilingual sites
+
+Reboot CMS routes URLs directly to files, so a multilingual site needs no special
+routing — you put each language in its own folder under `site/pages/` and prefix
+its URLs with the language code.
+
+#### Folder layout
+
+Keep the default language at the root and add a folder per additional language:
+
+```
+site/pages/
+  index.md          contact.md       <- default language (no prefix)
+  de/
+    index.md        contact.md       <- German, served under /de/...
+```
+
+`/contact` renders `pages/contact.md`, `/de/contact` renders `pages/de/contact.md`.
+
+#### Configuration
+
+Declare the available languages in `site/config.yml`:
+
+```yaml
+languages: [en, de]
+defaultLanguage: en
+```
+
+`languages` lists every language code that may appear as a URL prefix.
+`defaultLanguage` is the language used for paths without a prefix — it is
+optional and defaults to the first entry of `languages`.
+
+#### Detecting the language
+
+The `Request` object detects the language from the first path segment:
+
+- `$request->getLanguage()` — the current language code (e.g. `"de"`), or the
+  default language for unprefixed paths
+- `$request->getPathWithoutLanguage()` — the path with the language prefix
+  stripped (e.g. `/de/contact` becomes `/contact`), handy for language switchers
+  and `hreflang` tags
+
+#### Multilingual navigation
+
+Define one navigation structure per language in `site/config.yml`, so that both
+the labels and the target paths are translated:
+
+```yaml
+navbar:
+  brand: Reboot CMS
+  structure:
+    en:
+      Home: /
+      Contact: /contact
+    de:
+      Start: /de
+      Kontakt: /de/contact
+```
+
+In `site/template.php`, pick the structure for the current language:
+
+```php
+$lang = $request->getLanguage();
+$structure = $site->getConfig()['navbar']['structure'][$lang];
+foreach ($structure as $label => $path) {
+    echo '<a href="' . $site->getWebPath() . $path . '">' . $label . '</a>';
+}
+```
+
+Build a language switcher by linking to the current page in the other language
+with `$request->getPathWithoutLanguage()`:
+
+```php
+// link to the German version of the current page
+$href = $site->getWebPath() . '/de' . $request->getPathWithoutLanguage();
+```
+
+Set the `<html>` language attribute from the detected language as well:
+
+```php
+<html lang="<?= $request->getLanguage() ?>">
+```
 
 ### Block
 

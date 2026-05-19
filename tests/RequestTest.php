@@ -102,4 +102,52 @@ class RequestTest
         $request = new Request($site, "", "/docs/api/reference", []);
         Assert::equals("/docs/api/reference", $request->getPath());
     }
+
+    public function testLanguageDefaultsToEnWhenNotConfigured(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "");
+        $request = new Request($site, "", "/about", []);
+        Assert::equals("en", $request->getLanguage());
+        Assert::equals("/about", $request->getPathWithoutLanguage());
+    }
+
+    public function testLanguageFromPathPrefix(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "", ["languages" => ["en", "de"]]);
+        $request = new Request($site, "", "/de/contact", []);
+        Assert::equals("de", $request->getLanguage());
+        Assert::equals("/de/contact", $request->getPath());
+        Assert::equals("/contact", $request->getPathWithoutLanguage());
+    }
+
+    public function testUnprefixedPathUsesDefaultLanguage(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "", ["languages" => ["en", "de"]]);
+        $request = new Request($site, "", "/contact", []);
+        Assert::equals("en", $request->getLanguage());
+        Assert::equals("/contact", $request->getPathWithoutLanguage());
+    }
+
+    public function testExplicitDefaultLanguage(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "", ["languages" => ["en", "de"], "defaultLanguage" => "de"]);
+        $request = new Request($site, "", "/about", []);
+        Assert::equals("de", $request->getLanguage());
+    }
+
+    public function testLanguagePrefixAtRoot(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "", ["languages" => ["en", "de"]]);
+        $request = new Request($site, "", "/de", []);
+        Assert::equals("de", $request->getLanguage());
+        Assert::equals("/", $request->getPathWithoutLanguage());
+    }
+
+    public function testUnknownSegmentIsNotTreatedAsLanguage(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "", ["languages" => ["en", "de"]]);
+        $request = new Request($site, "", "/fr/contact", []);
+        Assert::equals("en", $request->getLanguage());
+        Assert::equals("/fr/contact", $request->getPathWithoutLanguage());
+    }
 }
