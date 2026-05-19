@@ -290,11 +290,12 @@ foreach ($structure as $label => $path) {
 ```
 
 Build a language switcher by linking to the current page in the other language
-with `$request->getPathWithoutLanguage()`:
+with `$request->getPathWithoutLanguage()`. Append a `?setlang=xx` marker so the
+`LanguageRedirect` addon (see below) registers the choice:
 
 ```php
 // link to the German version of the current page
-$href = $site->getWebPath() . '/de' . $request->getPathWithoutLanguage();
+$href = $site->getWebPath() . '/de' . $request->getPathWithoutLanguage() . '?setlang=de';
 ```
 
 Set the `<html>` language attribute from the detected language as well:
@@ -302,6 +303,28 @@ Set the `<html>` language attribute from the detected language as well:
 ```php
 <html lang="<?= $request->getLanguage() ?>">
 ```
+
+#### Redirecting to the visitor's language
+
+The built-in `LanguageRedirect` addon sends visitors to the language version
+that matches their preference. Enable it in `site/config.yml`:
+
+```yaml
+addons: [ LanguageRedirect ]
+```
+
+On the homepage it redirects the visitor to their preferred language. An
+explicit choice stored in the `lang` cookie wins, otherwise the browser's
+`Accept-Language` header decides. Visitors whose preference is the
+`defaultLanguage` are not redirected, and the decision is taken on every visit,
+so a visitor whose browser prefers a non-default language consistently lands on
+that language.
+
+The `lang` cookie records only an *explicit* choice, which is why switcher
+links must carry the `?setlang=xx` marker shown above. When the addon sees
+`?setlang`, it stores the choice and redirects to the clean URL, so switching
+to the default language keeps the unprefixed homepage reachable instead of
+bouncing back.
 
 ### Block
 
@@ -525,6 +548,17 @@ Register your AddOns in `site/config.yml`. They are loaded and executed in the o
 ```yml
 addons: [ MyAddOn, AnotherAddOn ]
 ```
+
+### Built-in AddOns
+
+Some AddOns ship with Reboot CMS itself (in `core/src/Shaack/Reboot/AddOns/`) and
+need no file in `site/addons/` — just list them in `addons`. Currently:
+
+- **`LanguageRedirect`** — redirects visitors to the language version that matches
+  their browser or saved preference (see [Multilingual sites](#multilingual-sites)).
+
+A file of the same name in `site/addons/` takes precedence over the built-in one,
+so you can still override it per site.
 
 ### Available Properties
 

@@ -97,6 +97,10 @@ In `template.php` and block templates the request object exposes:
 Without `languages` in `config.yml` every request uses `defaultLanguage` (or
 `"en"`) and no prefix is expected.
 
+The built-in `LanguageRedirect` addon (enable it via `addons` in `config.yml`)
+redirects visitors to the language version matching their browser or saved
+preference. See the README for details.
+
 ## Conventions
 
 - Core classes are namespaced `Shaack\Reboot\*` with PSR-4 autoloading.

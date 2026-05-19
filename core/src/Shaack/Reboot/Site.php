@@ -41,12 +41,18 @@ class Site
                     continue;
                 }
                 $addOnPath = $this->getFsPath() . "/addons/" . $addOnName . ".php";
-                if (!file_exists($addOnPath)) {
-                    Logger::error("Addon file not found: " . $addOnPath);
-                    continue;
+                if (file_exists($addOnPath)) {
+                    // site-specific addon from site/addons/
+                    require_once $addOnPath;
+                    $className = "\Shaack\Reboot\\" . $addOnName;
+                } else {
+                    // built-in addon shipped with the core (PSR-4 autoloaded)
+                    $className = "\Shaack\Reboot\AddOns\\" . $addOnName;
+                    if (!class_exists($className)) {
+                        Logger::error("Addon not found: " . $addOnName);
+                        continue;
+                    }
                 }
-                require_once $addOnPath;
-                $className = "\Shaack\Reboot\\" . $addOnName;
                 $this->addOns[$addOnName] = new $className($this->reboot, $this);
             }
         }
