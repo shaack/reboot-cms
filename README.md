@@ -1,5 +1,7 @@
 # Reboot CMS
 
+**The Agent-Friendly CMS.**
+
 A flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org), [Redaxo](https://redaxo.org/)
 and [Craft CMS](https://craftcms.com/).
 

@@ -1,7 +1,7 @@
 {
     "name": "shaack/reboot-cms",
     "version": "3.8.0",
-    "description": "A lightweight, flat-file Content Management System with block-based content rendering",
+    "description": "The Agent-Friendly CMS — a lightweight, flat-file Content Management System with block-based content rendering",
     "license": "MIT",
     "type": "project",
     "repositories": [
@@ -36,6 +36,8 @@
         "flat file",
         "php",
         "bootstrap",
-        "markdown"
+        "markdown",
+        "ai",
+        "agent"
     ]
 }
