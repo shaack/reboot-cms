@@ -145,10 +145,7 @@
     window.movePage = function () {
         if (!currentPage) return;
         var currentFolder = currentPage.replace(/\/[^/]+$/, '') || '/';
-        var options = allFolders.map(function (f) {
-            return (f === currentFolder ? '> ' : '  ') + f;
-        }).join('\n');
-        var dest = prompt('Move page to folder:\n\n' + options + '\n\nEnter folder path:', currentFolder);
+        var dest = prompt('Move page to folder:', currentFolder);
         if (dest === null || dest === currentFolder) return;
         dest = dest.replace(/^\//, '').replace(/\/$/, '');
         submitPageAction('move_page', currentPage, {destination: dest});
