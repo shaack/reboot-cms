@@ -10,6 +10,42 @@
         window.location.href = "update?branch=" + encodeURIComponent(this.value);
     });
 
+    // Replace the action area with a visible progress indicator. The update is
+    // a synchronous form POST; swapping the DOM right before it proceeds means
+    // the spinner stays on screen while the files download and install.
+    function showUpdating() {
+        document.getElementById("update-actions").innerHTML =
+            '<div class="d-flex align-items-center">' +
+            '<div class="spinner-border spinner-border-sm text-primary" role="status" ' +
+            'style="margin-right:.6rem">' +
+            '<span class="visually-hidden">Updating...</span></div>' +
+            '<span>Updating Reboot CMS &mdash; downloading and installing files. ' +
+            'This can take a moment, please do not close this page.</span>' +
+            '</div>';
+    }
+
+    // Confirm the update on submit, then show the progress indicator before
+    // the (synchronous) POST navigates away.
+    function wireUpdateForm(confirmMessage) {
+        var form = document.querySelector("#update-actions form");
+        if (!form) return;
+        form.addEventListener("submit", function (e) {
+            if (!window.confirm(confirmMessage)) {
+                e.preventDefault();
+                return;
+            }
+            showUpdating();
+        });
+    }
+
+    function updateForm(buttonLabel) {
+        return '<form method="post" action="update?branch=' + encodeURIComponent(branch) + '">' +
+            '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
+            '<input type="hidden" name="action" value="update">' +
+            '<button class="btn btn-sm btn-primary">' + buttonLabel + '</button>' +
+            '</form>';
+    }
+
     fetch("update?check_version=1&branch=" + encodeURIComponent(branch))
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -28,12 +64,10 @@
                         actions.innerHTML = '<p class="text-muted mb-0">You are running the latest commit (' + shortLocal + ').</p>';
                     } else {
                         var installedInfo = shortLocal ? ' (installed: ' + shortLocal + ')' : '';
-                        actions.innerHTML =
-                            '<form method="post" action="update?branch=' + encodeURIComponent(branch) + '" onsubmit="return confirm(\'Update Reboot CMS from branch main (unstable) to commit ' + shortRemote + '.' + installedInfo + ' To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.\')">' +
-                            '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
-                            '<input type="hidden" name="action" value="update">' +
-                            '<button class="btn btn-sm btn-primary">Update to ' + shortRemote + '</button>' +
-                            '</form>';
+                        actions.innerHTML = updateForm('Update to ' + shortRemote);
+                        wireUpdateForm('Update Reboot CMS from branch main (unstable) to commit ' +
+                            shortRemote + '.' + installedInfo + ' To be safe, you should make a backup ' +
+                            'of the project folder first. This will replace core/, web/admin/ and vendor/.');
                     }
                 } else {
                     cell.innerHTML = '<span class="text-muted">unavailable</span>';
@@ -46,12 +80,10 @@
                 cell.appendChild(version);
                 if (data.version.localeCompare(localVersion, undefined, {numeric: true, sensitivity: 'base'}) > 0) {
                     var safeVersion = data.version.replace(/[<>"'&]/g, '');
-                    actions.innerHTML =
-                        '<form method="post" action="update?branch=' + encodeURIComponent(branch) + '" onsubmit="return confirm(\'Update Reboot CMS to version ' + safeVersion + '. To be safe, you should make a backup of the project folder first. This will replace core/, web/admin/ and vendor/.\')">' +
-                        '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
-                        '<input type="hidden" name="action" value="update">' +
-                        '<button class="btn btn-sm btn-primary">Update to ' + safeVersion + '</button>' +
-                        '</form>';
+                    actions.innerHTML = updateForm('Update to ' + safeVersion);
+                    wireUpdateForm('Update Reboot CMS to version ' + safeVersion +
+                        '. To be safe, you should make a backup of the project folder first. ' +
+                        'This will replace core/, web/admin/ and vendor/.');
                 } else {
                     actions.innerHTML = '<p class="text-muted mb-0">You are running the latest version.</p>';
                 }
