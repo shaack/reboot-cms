@@ -130,7 +130,7 @@ class PageTreeHelper
         foreach ($entries as $entry) {
             if ($entry[0] === '.' || !is_dir($dir . "/" . $entry)) continue;
             $path = $base . "/" . $entry;
-            $folders[] = $path;
+            // the recursive call adds $path itself via its $base — don't add it again
             $folders = array_merge($folders, self::collectFolders($dir . "/" . $entry, $path));
         }
         return $folders;
