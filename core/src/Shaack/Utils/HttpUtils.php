@@ -9,6 +9,6 @@ namespace Shaack\Utils;
 
 class HttpUtils {
     public static function sanitizeFileName($content): string {
-        return preg_replace('/[^a-zA-Z0-9_\-]/', '', $content);
+        return preg_replace('/[^a-zA-Z0-9_\-]/', '', (string)$content);
     }
 }

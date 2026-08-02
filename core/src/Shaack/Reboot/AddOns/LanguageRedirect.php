@@ -40,7 +40,15 @@ class LanguageRedirect extends AddOn
         $setLang = $request->getParam('setlang');
         if (is_string($setLang) && in_array($setLang, $languages, true)) {
             $this->storePreference($setLang);
-            $this->reboot->redirect($this->site->getWebPath() . $request->getPath());
+            // Redirect to the same page without the `setlang` marker, but keep
+            // any other query parameters (e.g. ?project=… on README pages).
+            $params = $request->getParamsGet();
+            unset($params['setlang']);
+            $target = $this->site->getWebPath() . $request->getPath();
+            if (!empty($params)) {
+                $target .= '?' . http_build_query($params);
+            }
+            $this->reboot->redirect($target);
             return false; // redirect() exits
         }
 

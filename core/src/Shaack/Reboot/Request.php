@@ -124,6 +124,14 @@ class Request
         return null;
     }
 
+    /**
+     * @return array all GET query parameters as an associative array
+     */
+    public function getParamsGet(): array
+    {
+        return $this->paramsGet;
+    }
+
     public function __toString()
     {
         return "[Request], path: " . $this->getPath();
