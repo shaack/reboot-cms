@@ -26,6 +26,21 @@ export class MdEditor {
             // Screen-reader hint (aria-describedby) telling users how to move focus
             // out of the editor with the keyboard. Only used when indentWithTab.
             tabReleaseHint: 'Tab indents list items. Press Escape, then Tab, to move focus out of the editor.',
+            // Whether the toolbar is a tab stop. With false the toolbar drops out of
+            // the tab order entirely, so Tab goes from the textarea straight to the
+            // next control on the page; the toolbar is then reached with
+            // focusToolbarShortcut, which keeps it keyboard-operable (WCAG 2.1.1).
+            toolbarInTabOrder: true,
+            // Keyboard shortcut that moves focus from the textarea into the toolbar,
+            // written as modifiers plus key, e.g. 'Alt+F10' (the convention in editors
+            // with an ARIA toolbar) or 'Ctrl+Shift+T'. Escape returns to the text.
+            // Set null to offer no shortcut. Note that on macOS the F-keys only reach
+            // the browser when "Use F1, F2, etc. as standard function keys" is on, so
+            // pick a different combination if that matters for your users.
+            focusToolbarShortcut: 'Alt+F10',
+            // Screen-reader hint for the toolbar shortcut. "{shortcut}" is replaced
+            // with the configured focusToolbarShortcut.
+            toolbarFocusHint: 'Press {shortcut} to move focus to the formatting toolbar, Escape to return to the text.',
             // Optional accessible name applied to the textarea.
             ariaLabel: null,
             // Toolbar chrome tint (RGB triplet), applied at low alpha to the toolbar
@@ -78,6 +93,7 @@ export class MdEditor {
         // One-shot flag: Escape sets it so the next Tab moves focus instead of
         // indenting; any editing key clears it again (see handleKeyDown).
         this.tabMovesFocus = false
+        this.focusToolbarShortcut = MdEditor.parseShortcut(this.props.focusToolbarShortcut)
         this.element.addEventListener('keydown', (e) => this.handleKeyDown(e))
         this.element.addEventListener('blur', () => this.tabMovesFocus = false)
         this.createToolbar()
@@ -89,19 +105,73 @@ export class MdEditor {
         this.setupAccessibility()
     }
 
+    /**
+     * Parse a shortcut written as "Alt+F10" / "Ctrl+Shift+T" into the flags a
+     * keydown event is matched against. Returns null for a falsy spec (no shortcut).
+     * `aria` is the normalised form for aria-keyshortcuts, `label` the spec as given,
+     * for use in the screen-reader hint.
+     */
+    static parseShortcut(spec) {
+        if (!spec) {
+            return null
+        }
+        const parts = String(spec).split('+').map(part => part.trim()).filter(Boolean)
+        const key = parts.pop()
+        if (!key) {
+            return null
+        }
+        const modifiers = parts.map(part => part.toLowerCase())
+        const shortcut = {
+            key: key.toLowerCase(),
+            alt: modifiers.includes('alt') || modifiers.includes('option'),
+            ctrl: modifiers.includes('ctrl') || modifiers.includes('control'),
+            shift: modifiers.includes('shift'),
+            meta: modifiers.includes('meta') || modifiers.includes('cmd') || modifiers.includes('command'),
+            label: String(spec)
+        }
+        // aria-keyshortcuts has a fixed modifier vocabulary and order.
+        const ariaParts = []
+        if (shortcut.alt) ariaParts.push('Alt')
+        if (shortcut.ctrl) ariaParts.push('Control')
+        if (shortcut.meta) ariaParts.push('Meta')
+        if (shortcut.shift) ariaParts.push('Shift')
+        ariaParts.push(key.length === 1 ? key.toUpperCase() : key)
+        shortcut.aria = ariaParts.join('+')
+        return shortcut
+    }
+
+    matchesShortcut(event, shortcut) {
+        return !!shortcut &&
+            typeof event.key === 'string' && event.key.toLowerCase() === shortcut.key &&
+            !!event.altKey === shortcut.alt &&
+            !!event.ctrlKey === shortcut.ctrl &&
+            !!event.shiftKey === shortcut.shift &&
+            !!event.metaKey === shortcut.meta
+    }
+
     setupAccessibility() {
         if (this.props.ariaLabel) {
             this.element.setAttribute('aria-label', this.props.ariaLabel)
         }
+        const shortcuts = []
+        const hints = []
         // With plain-textarea Tab behaviour there is no key trap to advise about.
-        if (!this.props.indentWithTab) return
-        this.element.setAttribute('aria-keyshortcuts', 'Escape')
+        if (this.props.indentWithTab) {
+            shortcuts.push('Escape')
+            hints.push(this.props.tabReleaseHint)
+        }
+        if (this.focusToolbarShortcut) {
+            shortcuts.push(this.focusToolbarShortcut.aria)
+            hints.push(this.props.toolbarFocusHint.replace('{shortcut}', this.focusToolbarShortcut.label))
+        }
+        if (!hints.length) return
+        this.element.setAttribute('aria-keyshortcuts', shortcuts.join(' '))
         // A visually hidden hint, announced by screen readers on focus, that tells
-        // users how to leave the editor with the keyboard (WCAG 2.1.2 requires the
-        // escape method to be advertised).
+        // users how to leave the editor and how to reach the toolbar with the keyboard
+        // (WCAG 2.1.2 requires the escape method to be advertised).
         const hint = document.createElement('span')
         hint.id = 'md-editor-tabhelp-' + (MdEditor.instanceCount++)
-        hint.textContent = this.props.tabReleaseHint
+        hint.textContent = hints.join(' ')
         hint.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;' +
             'margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;'
         this.element.insertAdjacentElement('afterend', hint)
@@ -167,11 +237,42 @@ export class MdEditor {
             this.element.style.whiteSpace = 'pre'
             this.element.style.overflowX = 'auto'
         }
-        // Roving tabindex: exactly one button is the toolbar's tab stop
-        const firstButton = toolbar.querySelector('button')
-        if (firstButton) {
-            firstButton.tabIndex = 0
+        // Which button the toolbar is entered on; moves with the focus so re-entering
+        // returns to the last used button (see handleToolbarKeydown, focusToolbar).
+        this.toolbarFocusIndex = 0
+        this.updateToolbarTabStop()
+    }
+
+    toolbarButtons() {
+        return this.toolbarElement ? Array.from(this.toolbarElement.querySelectorAll('button')) : []
+    }
+
+    /**
+     * Roving tabindex: with the toolbar in the tab order exactly one button is a tab
+     * stop, so Tab enters the toolbar once and the arrow keys move inside it. With
+     * toolbarInTabOrder:false no button is a tab stop, Tab skips the toolbar entirely
+     * and focusToolbarShortcut is the way in.
+     */
+    updateToolbarTabStop() {
+        this.toolbarButtons().forEach((button, index) => {
+            button.tabIndex = this.props.toolbarInTabOrder && index === this.toolbarFocusIndex ? 0 : -1
+        })
+    }
+
+    /**
+     * Move focus into the toolbar, onto the button last used there. Programmatic
+     * focus works regardless of tabIndex, so this is the keyboard path into a toolbar
+     * that was taken out of the tab order. Returns false if there is nothing to focus.
+     */
+    focusToolbar() {
+        const buttons = this.toolbarButtons()
+        if (!buttons.length) {
+            return false
         }
+        this.toolbarFocusIndex = Math.min(this.toolbarFocusIndex, buttons.length - 1)
+        this.updateToolbarTabStop()
+        buttons[this.toolbarFocusIndex].focus()
+        return true
     }
 
     handleToolbarKeydown(event) {
@@ -179,28 +280,26 @@ export class MdEditor {
             this.element.focus()
             return
         }
-        const buttons = Array.from(this.toolbarElement.querySelectorAll('button'))
+        const buttons = this.toolbarButtons()
         const index = buttons.indexOf(document.activeElement)
         if (index === -1) {
             return
         }
-        let next = null
+        let nextIndex = null
         if (event.key === 'ArrowRight') {
-            next = buttons[(index + 1) % buttons.length]
+            nextIndex = (index + 1) % buttons.length
         } else if (event.key === 'ArrowLeft') {
-            next = buttons[(index - 1 + buttons.length) % buttons.length]
+            nextIndex = (index - 1 + buttons.length) % buttons.length
         } else if (event.key === 'Home') {
-            next = buttons[0]
+            nextIndex = 0
         } else if (event.key === 'End') {
-            next = buttons[buttons.length - 1]
+            nextIndex = buttons.length - 1
         }
-        if (next) {
+        if (nextIndex !== null) {
             event.preventDefault()
-            // move the single tab stop with the focus, so re-entering the toolbar
-            // returns to the last used button
-            buttons.forEach(button => button.tabIndex = -1)
-            next.tabIndex = 0
-            next.focus()
+            this.toolbarFocusIndex = nextIndex
+            this.updateToolbarTabStop()
+            buttons[nextIndex].focus()
         }
     }
 
@@ -215,7 +314,7 @@ export class MdEditor {
         const button = document.createElement('button')
         button.type = 'button'
         button.title = btn.title
-        button.tabIndex = -1 // roving tabindex, see createToolbar/handleToolbarKeydown
+        button.tabIndex = -1 // roving tabindex, see updateToolbarTabStop
         if (btn.title) {
             button.setAttribute('aria-label', btn.title)
         }
@@ -742,6 +841,14 @@ export class MdEditor {
     }
 
     handleKeyDown(e) {
+        // Accessibility (WCAG 2.1.1, "Keyboard"): the shortcut moves focus into the
+        // toolbar. It is the only way in when the toolbar is out of the tab order, and
+        // a convenience otherwise. Checked first so it cannot be shadowed by a tool.
+        if (this.matchesShortcut(e, this.focusToolbarShortcut)) {
+            e.preventDefault()
+            this.focusToolbar()
+            return
+        }
         // Accessibility (WCAG 2.1.2, "No Keyboard Trap"): Escape arms a one-shot
         // release so the next Tab / Shift+Tab moves focus out of the editor instead
         // of indenting. Any other key re-arms indentation. Bare modifier keys must

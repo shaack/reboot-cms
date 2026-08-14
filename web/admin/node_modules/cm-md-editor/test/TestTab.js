@@ -58,15 +58,15 @@ describe("TestTab", () => {
 
     it("advertises the escape method via aria when indenting with Tab", () => {
         const {textarea} = makeEditor("x", 1)
-        assert.equal(textarea.getAttribute("aria-keyshortcuts"), "Escape")
+        assert.true(textarea.getAttribute("aria-keyshortcuts").split(" ").includes("Escape"))
         const describedby = textarea.getAttribute("aria-describedby")
         assert.true(!!describedby)
         const hint = document.getElementById(describedby.split(" ").pop())
-        assert.true(!!hint && hint.textContent.length > 0)
+        assert.true(!!hint && hint.textContent.includes("Escape"))
     })
 
     it("omits the Tab escape hint when indentWithTab is false", () => {
-        const {textarea} = makeEditor("x", 1, 1, {indentWithTab: false})
+        const {textarea} = makeEditor("x", 1, 1, {indentWithTab: false, focusToolbarShortcut: null})
         assert.equal(textarea.getAttribute("aria-keyshortcuts"), null)
         assert.equal(textarea.getAttribute("aria-describedby"), null)
     })

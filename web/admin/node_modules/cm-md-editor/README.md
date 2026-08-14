@@ -14,7 +14,7 @@ A minimal, dependency-free markdown editor as a vanilla JavaScript ES6 module.
 - Modular toolbar built from composable tools
 - Word wrap toggle with persistent state (localStorage)
 - Tab/Shift-Tab to indent/outdent the current line (any line, list nesting included); lists auto-continue on Enter
-- Keyboard-accessible: Escape then Tab moves focus out of the editor (no keyboard trap); `indentWithTab: false` for plain-textarea Tab
+- Keyboard-accessible: Escape then Tab moves focus out of the editor (no keyboard trap); `indentWithTab: false` for plain-textarea Tab; Alt+F10 focuses the toolbar
 - Move lines up/down with Alt+Up/Down (works on any line, not just list items)
 - Bold with Ctrl/Cmd+B, italic with Ctrl/Cmd+I (provided by tools)
 - Native undo/redo support (Ctrl/Cmd+Z / Ctrl/Cmd+Shift+Z)
@@ -95,6 +95,9 @@ All props are optional. Pass them as the second argument to the constructor.
 | `listIndent` | `string` | `"    "` (four spaces) | One level of indentation, inserted/removed with Tab/Shift-Tab at the start of the current line. Tabs and two-space levels are still accepted when reading existing text |
 | `indentWithTab` | `boolean` | `true` | When `true`, Tab indents the current line and Shift+Tab outdents it (in lists and plain lines alike), and Escape then Tab moves focus out (see [Accessibility](#accessibility)). Set `false` for plain-textarea behaviour where Tab always moves focus |
 | `tabReleaseHint` | `string` | (English sentence) | Screen-reader hint (`aria-describedby`) describing how to move focus out with the keyboard. Only used when `indentWithTab` is `true` |
+| `toolbarInTabOrder` | `boolean` | `true` | When `true`, the toolbar is a single tab stop, so Tab from the textarea lands on the buttons. Set `false` to take it out of the tab order entirely, so Tab goes straight to the next control on the page; the toolbar is then reached with `focusToolbarShortcut` (see [Accessibility](#accessibility)) |
+| `focusToolbarShortcut` | `string` | `"Alt+F10"` | Shortcut that moves focus from the textarea into the toolbar, written as modifiers plus key, e.g. `"Ctrl+Shift+T"`. Escape returns to the text. Set `null` to offer no shortcut |
+| `toolbarFocusHint` | `string` | (English sentence) | Screen-reader hint (`aria-describedby`) for the toolbar shortcut. `{shortcut}` is replaced with the configured `focusToolbarShortcut` |
 | `ariaLabel` | `string` | `null` | Accessible name applied to the textarea (`aria-label`) |
 | `iconsPath` | `string` | bundled `src/tools/icons/` | Base URL for tool icon files referenced by `iconFile`. Resolved via `import.meta.url` by default |
 | `colorChrome` | `string` | `"128,128,128"` | RGB tint for the toolbar chrome (background, borders, separators, button hover), applied at low alpha |
@@ -124,7 +127,9 @@ The editor keeps the keyboard usable for everyone, including screen-reader users
 
 - **Tab is not a trap.** By default Tab indents the current line and Shift+Tab outdents it. To move focus out of the editor with the keyboard, press **Escape** and then **Tab** (or **Shift+Tab**). Escape releases the Tab key for a single move; the next edit re-arms indentation. This satisfies WCAG 2.1.2 (No Keyboard Trap), and the escape method is announced to screen readers via `aria-describedby` (customise the wording with `tabReleaseHint`).
 - **Plain-textarea mode.** Set `indentWithTab: false` to disable Tab indentation entirely, so Tab simply moves focus like in any textarea.
-- **Toolbar.** The toolbar is a single tab stop (`role="toolbar"`, roving tabindex); arrow keys move between buttons and Escape returns focus to the text.
+- **Toolbar.** The toolbar is a single tab stop (`role="toolbar"`, roving tabindex); arrow keys move between buttons and Escape returns focus to the text. **Alt+F10** moves focus into the toolbar from the text, onto the button last used there (the convention in editors with an ARIA toolbar; change it with `focusToolbarShortcut`).
+- **Toolbar outside the tab order.** Set `toolbarInTabOrder: false` when Tab should go from the text straight to the next control on the page, e.g. in a forum post form where the buttons in between are in the way. The toolbar then has no tab stop at all and Alt+F10 is the only way in, so do not also set `focusToolbarShortcut: null` — that would leave the buttons unreachable by keyboard and break WCAG 2.1.1 (Keyboard).
+- **macOS and the F-keys.** Alt+F10 only reaches the browser when "Use F1, F2, etc. as standard function keys" is enabled in the system settings. If that matters for your users, configure a different combination, e.g. `focusToolbarShortcut: "Ctrl+Shift+T"`.
 - **Accessible name.** Provide `ariaLabel` (or set your own `aria-label` / associated `<label>`) so the field is announced meaningfully.
 
 ## Tools
@@ -340,6 +345,7 @@ new MdEditor(document.getElementById("editor"), {
 | Ctrl/Cmd + I | Toggle italic | `Italic` tool |
 | Tab | Indent list item or insert tab | Core editor |
 | Shift + Tab | Outdent list item | Core editor |
+| Alt + F10 | Move focus into the toolbar (Escape returns to the text) | Core editor |
 | Alt + ↑ / ↓ | Move the current line(s) up or down | Core editor |
 | Enter | Auto-continue list (unordered and ordered) | Core editor |
 | Ctrl/Cmd + Z | Undo | Core editor |

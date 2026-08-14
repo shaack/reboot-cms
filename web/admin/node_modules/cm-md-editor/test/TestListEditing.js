@@ -115,4 +115,67 @@ describe("TestListEditing", () => {
         tool(editor, "UnorderedList").insertUnorderedList()
         assert.equal(textarea.value, "hello")
     })
+
+    it("should turn every selected line into an unordered list item", () => {
+        const {editor, textarea} = makeEditor("one\ntwo\nthree", 0, 13)
+        tool(editor, "UnorderedList").insertUnorderedList()
+        assert.equal(textarea.value, "- one\n- two\n- three")
+    })
+
+    it("should turn a selected unordered list back into plain lines", () => {
+        const {editor, textarea} = makeEditor("- one\n- two\n- three", 0, 19)
+        tool(editor, "UnorderedList").insertUnorderedList()
+        assert.equal(textarea.value, "one\ntwo\nthree")
+    })
+
+    it("should keep the block selected so a second click toggles it back", () => {
+        const {editor, textarea} = makeEditor("one\ntwo", 0, 7)
+        const ul = tool(editor, "UnorderedList")
+        ul.insertUnorderedList()
+        assert.equal(snapshot(textarea), "[- one\n- two]")
+        ul.insertUnorderedList()
+        assert.equal(textarea.value, "one\ntwo")
+    })
+
+    it("should number every selected line for an ordered list", () => {
+        const {editor, textarea} = makeEditor("one\ntwo\nthree", 0, 13)
+        tool(editor, "OrderedList").insertOrderedList()
+        assert.equal(textarea.value, "1. one\n2. two\n3. three")
+    })
+
+    it("should turn a selected ordered list back into plain lines", () => {
+        const {editor, textarea} = makeEditor("1. one\n2. two", 0, 13)
+        tool(editor, "OrderedList").insertOrderedList()
+        assert.equal(textarea.value, "one\ntwo")
+    })
+
+    it("should normalise a partly marked selection into a full list", () => {
+        const {editor, textarea} = makeEditor("- one\ntwo", 0, 9)
+        tool(editor, "UnorderedList").insertUnorderedList()
+        assert.equal(textarea.value, "- one\n- two")
+    })
+
+    it("should replace the marker when switching between list types", () => {
+        const {editor, textarea} = makeEditor("1. one\n2. two", 0, 13)
+        tool(editor, "UnorderedList").insertUnorderedList()
+        assert.equal(textarea.value, "- one\n- two")
+    })
+
+    it("should keep the indent of nested list lines", () => {
+        const {editor, textarea} = makeEditor("- one\n    - two", 0, 15)
+        tool(editor, "UnorderedList").insertUnorderedList()
+        assert.equal(textarea.value, "one\n    two")
+    })
+
+    it("should leave blank lines alone and not let them consume an ordinal", () => {
+        const {editor, textarea} = makeEditor("one\n\ntwo", 0, 8)
+        tool(editor, "OrderedList").insertOrderedList()
+        assert.equal(textarea.value, "1. one\n\n2. two")
+    })
+
+    it("should only touch the lines the selection reaches", () => {
+        const {editor, textarea} = makeEditor("one\ntwo\nthree", 0, 5)
+        tool(editor, "UnorderedList").insertUnorderedList()
+        assert.equal(textarea.value, "- one\n- two\nthree")
+    })
 })
