@@ -155,4 +155,14 @@ nav.navbar {
   max-width: 1440px;
 }
 
+.update-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: 0.35rem;
+  vertical-align: 0.1rem;
+  border-radius: 50%;
+  background-color: var(--bs-danger, #dc3545);
+}
+
 /*# sourceMappingURL=screen.css.map */

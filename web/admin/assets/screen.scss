@@ -170,3 +170,13 @@ nav.navbar {
 .max-width-xxl {
     max-width: 1440px;
 }
+// Red dot on the "Admin" menu and its "Update" entry while an update is available
+.update-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-left: 0.35rem;
+    vertical-align: 0.1rem;
+    border-radius: 50%;
+    background-color: var(--bs-danger, #dc3545);
+}

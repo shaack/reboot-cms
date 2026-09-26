@@ -78,6 +78,7 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
                                     <ul class="dropdown-menu">
                                         <?php foreach ($path as $subLabel => $subPath) { ?>
                                             <li><a class="dropdown-item <?= $request->getPath() == $subPath ? "active" : "" ?>"
+                                                   data-nav-path="<?= htmlspecialchars($subPath) ?>"
                                                    href="<?= $site->getWebPath() . $subPath ?>"><?= htmlspecialchars($subLabel) ?></a></li>
                                         <?php } ?>
                                     </ul>
@@ -90,6 +91,7 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
                                 ?>
                                 <li class="nav-item">
                                     <a class="nav-link <?= $request->getPath() == $path ? "active" : "" ?>"
+                                       data-nav-path="<?= htmlspecialchars($path) ?>"
                                        href="<?= $site->getWebPath() . $path ?>"><?= htmlspecialchars($label) ?></a>
                                 </li>
                                 <?php
@@ -128,6 +130,18 @@ echo($page->render($request));
     window._toastQueue.forEach(function(t) { bootstrap.showToast(t) })
     window._toastsReady = true
 </script>
+<?php if ($authentication->isAdmin()) { ?>
+    <script>
+        // Marks the Admin menu and its Update entry with a red dot when a newer
+        // version is published. The comparison happens in the browser, so no
+        // admin page waits for a request to GitHub.
+        window.updateBadgeConfig = {
+            localVersion: <?= json_encode($admin->getLocalVersion() ?? "") ?>,
+            branch: "distrib"
+        }
+    </script>
+    <script src="assets/update-badge.js"></script>
+<?php } ?>
 <script type="module">
     import "./node_modules/bootstrap-show-modal/src/ShowModal.js"
     import {MdEditor} from "./node_modules/cm-md-editor/src/MdEditor.js"
