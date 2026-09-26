@@ -451,6 +451,49 @@ in your markdown pages.
 
 ![Media](web/media/screenshots/reboot-cms-admin-media.png)
 
+### Downloads
+
+The "Downloads" section hands out single files through cryptic, short lived links that are additionally protected by a six digit password. It is meant for sending a document to one recipient, not for public files. Those belong in "Media".
+
+Upload a file and Reboot CMS creates a link plus a password:
+
+```
+https://example.com/downloads/3ef938314c4d6cfe.pdf
+Password: 692072
+```
+
+The real file name never appears in the link. The extension is cosmetic, the name is only sent in the `Content-Disposition` header, so the recipient still saves the file as `Passwords.pdf`. Send the link by mail and the password through another channel, then neither message alone is enough to open the file.
+
+The list shows for every download whether it was fetched already, when, and from which anonymized IP address. The optional note you enter when uploading is shown to the recipient above the password form, so they know what they are about to download without the file name being revealed.
+
+A link expires **one week after the upload**, or **one hour after the first download**, whichever comes first. Within that hour the file may be fetched again, so an interrupted transfer does not ruin the link. After expiry the file is deleted from the server automatically; the entry stays in the list for 30 days, so the log remains readable. Ten wrong passwords lock a link for good, which is what keeps six digits from being guessable.
+
+Files live in `local/downloads/`, outside the web root and behind `local/.htaccess`, so nothing is ever served by the web server directly. Only the `Downloads` addon delivers a file, and only after the password was accepted. The password is stored in plain text next to the file, which is what makes it readable in the admin list later.
+
+Delivery needs the built-in [`Downloads` AddOn](#built-in-addons). Add it to `site/config.yml`:
+
+```yaml
+addons: [ Downloads ]
+```
+
+The defaults need no configuration. All values can be changed per site:
+
+```yaml
+downloads:
+  path: /downloads        # URL prefix of the links
+  linkLifetime: 604800    # seconds a fresh link stays valid (one week)
+  downloadWindow: 3600    # seconds after the first download (one hour)
+  logRetention: 2592000   # seconds an expired entry stays in the list (30 days)
+  texts:                  # override the built-in texts, per language
+    de:
+      title: "Datei herunterladen"
+      intro: "Bitte geben Sie das Passwort ein, das Sie per SMS erhalten haben."
+```
+
+The download page is self contained and does not use the site template, so a link looks the same in every project. Its texts ship in English and German and follow the request language on multilingual sites, so `/de/downloads/3ef938314c4d6cfe.pdf` speaks German.
+
+The upload size is limited by PHP, not by Reboot CMS. The current limits are shown next to the upload field; raise `upload_max_filesize` and `post_max_size` in `php.ini` for larger files.
+
 ### Site configuration
 
 In the site configuration, you can store global values of the site, like the navigation structure or the content of
@@ -556,6 +599,7 @@ need no file in `site/addons/` — just list them in `addons`. Currently:
 
 - **`LanguageRedirect`** — redirects visitors to the language version that matches
   their browser or saved preference (see [Multilingual sites](#multilingual-sites)).
+- **`Downloads`** — delivers password protected files through cryptic, short lived links (see [Downloads](#downloads)).
 
 A file of the same name in `site/addons/` takes precedence over the built-in one,
 so you can still override it per site.
