@@ -72,9 +72,8 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
                                 ?>
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle <?= $dropdownActive ? "active" : "" ?>"
-                                       href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <?= htmlspecialchars($label) ?>
-                                    </a>
+                                       href="#" role="button" data-bs-toggle="dropdown"
+                                       aria-expanded="false"><?= htmlspecialchars($label) ?></a>
                                     <ul class="dropdown-menu">
                                         <?php foreach ($path as $subLabel => $subPath) { ?>
                                             <li><a class="dropdown-item <?= $request->getPath() == $subPath ? "active" : "" ?>"

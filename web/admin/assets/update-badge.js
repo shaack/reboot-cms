@@ -6,6 +6,11 @@
  * admin does not wait for GitHub on every page and the API is called at most
  * once per day and browser. The cache is keyed by the installed version, so the
  * dot disappears by itself after an update.
+ *
+ * The update page checks the version anyway. It reports its result here
+ * (`window.rebootUpdateBadge.report()`, or `window.rebootUpdateCheckResult` if
+ * this script has not run yet), which refreshes the cache and saves a second
+ * request.
  */
 (function () {
     var config = window.updateBadgeConfig
@@ -55,6 +60,13 @@
         element.appendChild(dot)
     }
 
+    function clearNavigation() {
+        var dots = document.querySelectorAll(".update-dot")
+        for (var i = 0; i < dots.length; i++) {
+            dots[i].parentNode.removeChild(dots[i])
+        }
+    }
+
     function markNavigation(remoteVersion) {
         var updateLink = document.querySelector('[data-nav-path="/update"]')
         if (!updateLink) return
@@ -65,11 +77,39 @@
         }
     }
 
+    /**
+     * Takes a version that was just fetched elsewhere, usually by the update
+     * page, refreshes the cache and sets or removes the dot right away.
+     *
+     * @param remoteVersion the published version
+     * @param branch the branch it was read from, ignored if it is not the one
+     *        this badge watches
+     */
+    function report(remoteVersion, branch) {
+        if (!remoteVersion) return
+        if (branch && branch !== config.branch) return
+        writeCache(remoteVersion)
+        if (isNewer(remoteVersion)) markNavigation(remoteVersion)
+        else clearNavigation()
+    }
+
+    window.rebootUpdateBadge = {report: report, branch: config.branch}
+
+    // The update page may have finished its own check before this script ran.
+    if (window.rebootUpdateCheckResult) {
+        report(window.rebootUpdateCheckResult.version, window.rebootUpdateCheckResult.branch)
+        return
+    }
+
     var cachedVersion = readCache()
     if (cachedVersion !== null) {
         if (isNewer(cachedVersion)) markNavigation(cachedVersion)
         return
     }
+
+    // On the update page the check is running anyway, its result arrives
+    // through report(). Asking GitHub a second time would be wasteful.
+    if (window.updateConfig) return
 
     fetch("update?check_version=1&branch=" + encodeURIComponent(config.branch))
         .then(function (response) { return response.json() })

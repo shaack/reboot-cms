@@ -40,6 +40,16 @@
         });
     }
 
+    // Hand the freshly fetched version to the navbar badge, so its dot and its
+    // cache match what this page just learned. The badge script may not have
+    // run yet, then it picks the result up on startup.
+    function reportToBadge(remoteVersion) {
+        window.rebootUpdateCheckResult = {version: remoteVersion, branch: branch}
+        if (window.rebootUpdateBadge) {
+            window.rebootUpdateBadge.report(remoteVersion, branch)
+        }
+    }
+
     function updateForm(buttonLabel) {
         return '<form method="post" action="update?branch=' + encodeURIComponent(branch) + '">' +
             '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
@@ -76,6 +86,7 @@
                     actions.innerHTML = '<p class="text-muted mb-0">Could not check for updates. Please verify your internet connection.</p>';
                 }
             } else if (data.version) {
+                reportToBadge(data.version);
                 var version = document.createElement("strong");
                 version.textContent = data.version;
                 cell.innerHTML = "";
