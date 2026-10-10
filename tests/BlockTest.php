@@ -256,4 +256,71 @@ class BlockTest
         $example = $block->generateExample();
         Assert::contains("---", $example);
     }
+
+    // --- tolerant HTML parsing ---
+
+    /**
+     * Collect the PHP diagnostics raised while running $fn.
+     */
+    private function captureDiagnostics(callable $fn): array
+    {
+        $messages = [];
+        set_error_handler(function ($errno, $errstr) use (&$messages) {
+            $messages[] = $errstr;
+            return true;
+        });
+        try {
+            $fn();
+        } finally {
+            restore_error_handler();
+        }
+        return $messages;
+    }
+
+    public function testBareAmpersandInAttributeDoesNotWarn(): void
+    {
+        $block = null;
+        $messages = $this->captureDiagnostics(function () use (&$block) {
+            $block = $this->createBlock("test", '<a href="/page?a=1&b=2">Link</a>');
+        });
+        Assert::equals([], $messages);
+        $node = $block->xpath("//a/@href");
+        Assert::notNull($node);
+        Assert::contains("a=1&b=2", $node->value);
+    }
+
+    public function testScriptTagWithQueryStringDoesNotWarn(): void
+    {
+        $markdown = '<script src="https://example.com/x.php?module=A&action=B"></script>';
+        $messages = $this->captureDiagnostics(function () use ($markdown) {
+            $this->createBlock("test", $markdown);
+        });
+        Assert::equals([], $messages);
+    }
+
+    public function testUnknownTagDoesNotWarn(): void
+    {
+        $block = null;
+        $messages = $this->captureDiagnostics(function () use (&$block) {
+            $block = $this->createBlock("test", "<my-widget>Hello</my-widget>");
+        });
+        Assert::equals([], $messages);
+        Assert::contains("Hello", $block->content());
+    }
+
+    public function testContentSurvivesUnparsableMarkup(): void
+    {
+        $block = $this->createBlock("test", "# Title\n\n<p>Broken <b>markup</p>\n\nTail text");
+        $node = $block->xpath("//h1");
+        Assert::notNull($node);
+        Assert::contains("Title", $node->textContent);
+    }
+
+    public function testLibxmlInternalErrorStateIsRestored(): void
+    {
+        $before = libxml_use_internal_errors(false);
+        $this->createBlock("test", '<a href="/x?a=1&b=2">Link</a>');
+        $after = libxml_use_internal_errors($before);
+        Assert::false($after, "libxml_use_internal_errors must be restored to its previous value");
+    }
 }

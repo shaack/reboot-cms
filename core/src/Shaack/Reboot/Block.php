@@ -46,9 +46,40 @@ class Block
         $document = new \DOMDocument();
         if ($html) {
             $html = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">' . $html;
-            $document->loadHTML($html);
+            $this->loadHtml($document, $html);
         }
         $this->xpath = new \DOMXPath($document);
+    }
+
+    /**
+     * Parse the block HTML into the DOM.
+     *
+     * Content is written by humans, so it may contain markup that libxml does not like,
+     * for example a bare '&' in an attribute or an unknown tag. Such input is not an error
+     * the visitor should see: libxml would otherwise raise PHP warnings that end up in the
+     * rendered page and disclose the server path. The messages are collected and logged
+     * instead, and rendering continues with whatever could be parsed.
+     */
+    private function loadHtml(\DOMDocument $document, string $html): void
+    {
+        $previousUseInternalErrors = libxml_use_internal_errors(true);
+        libxml_clear_errors();
+        $loaded = $document->loadHTML($html);
+        foreach (libxml_get_errors() as $error) {
+            $message = "Block '" . $this->name . "': HTML parse "
+                . ($error->level === LIBXML_ERR_FATAL ? "error" : "warning")
+                . " in line " . $error->line . ": " . trim($error->message);
+            if ($error->level === LIBXML_ERR_FATAL) {
+                Logger::error($message);
+            } else {
+                Logger::info($message);
+            }
+        }
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousUseInternalErrors);
+        if (!$loaded) {
+            Logger::error("Block '" . $this->name . "': HTML could not be parsed, the block renders empty");
+        }
     }
 
     /**

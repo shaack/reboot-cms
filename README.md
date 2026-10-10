@@ -98,6 +98,11 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 # Logging: 0 = debug, 1 = info, 2 = error
 logLevel: 2
 
+# Print PHP notices, warnings and fatals into the page.
+# Omit it and the log level decides: on in debug mode (0), off otherwise.
+# Keep it off in production, a diagnostic message in the page body discloses the server path.
+# displayErrors: false
+
 # Admin editor settings
 editor:
   font: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace'

@@ -5,6 +5,11 @@
 
 logLevel: 2 # <= set to 2 in production
 
+# Print PHP notices, warnings and fatals into the page.
+# Leave this out and the log level decides: on in debug mode (0), off otherwise.
+# Keep it off in production, a diagnostic message in the page body discloses the server path.
+# displayErrors: false
+
 # Font family and size for the admin editor textareas
 editor:
   font: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace'
