@@ -312,8 +312,7 @@ Set the `<html>` language attribute from the detected language as well:
 
 #### Redirecting to the visitor's language
 
-The built-in `LanguageRedirect` addon sends visitors to the language version
-that matches their preference. Enable it in `site/config.yml`:
+The built-in `LanguageRedirect` AddOn (see its [README](core/addons/LanguageRedirect/README.md)) sends visitors to the language version that matches their preference. Enable it in `site/config.yml`:
 
 ```yaml
 addons: [ LanguageRedirect ]
@@ -476,7 +475,7 @@ A link expires **one week after the upload**, or **one hour after the first down
 
 Files live in `local/downloads/`, outside the web root and behind `local/.htaccess`, so nothing is ever served by the web server directly. Only the `Downloads` addon delivers a file, and only after the password was accepted. The password is stored in plain text next to the file, which is what makes it readable in the admin list later.
 
-The whole feature is the built-in [`Downloads` AddOn](#built-in-addons). Add it to `site/config.yml`:
+The whole feature is the built-in `Downloads` AddOn (see its [README](core/addons/Downloads/README.md)). Add it to `site/config.yml`:
 
 ```yaml
 addons: [ Downloads ]
@@ -551,6 +550,30 @@ It is recommended to make a backup of the project folder before updating.
 
 ![Update](web/media/screenshots/reboot-cms-admin-update.png)
 
+## Built-in AddOns
+
+Some features of Reboot CMS are not part of the core but ship as AddOns in `core/addons/`. They are off by default and switched on per site by listing them under `addons` in `site/config.yml`:
+
+```yaml
+addons: [ LanguageRedirect, Downloads ]
+```
+
+Everything an AddOn needs is in its folder, including its admin pages, so an AddOn that is not listed leaves no trace in the admin. Because `core/` is replaced by the [updater](#update), the built-in AddOns are updated together with the CMS. A project can still override one by placing an AddOn of the same name in `site/addons/`.
+
+Each AddOn folder has a `README.md` with the complete documentation of that AddOn.
+
+### LanguageRedirect
+
+Sends visitors of a multilingual site to the language version matching their preference. On the homepage an explicit choice stored in the `lang` cookie wins, otherwise the browser's `Accept-Language` header decides, and visitors who prefer the default language are not redirected. A language switcher appends `?setlang=xx` to register the visitor's choice. The AddOn does nothing on a site with a single language.
+
+See the [LanguageRedirect README](core/addons/LanguageRedirect/README.md) and [Multilingual sites](#multilingual-sites).
+
+### Downloads
+
+Hands out single files through cryptic, short lived links that are additionally protected by a six digit password, for sending a document to one recipient. Files are uploaded in the admin section "Downloads", which the AddOn brings along. A link expires one week after the upload or one hour after the first download, ten wrong passwords lock it, and expired files are deleted automatically. Files live in `local/downloads/`, outside the web root.
+
+See the [Downloads README](core/addons/Downloads/README.md) and the admin section [Downloads](#downloads).
+
 ## AddOns
 
 In Reboot CMS you can extend the functionality of your site with **AddOns**. AddOns hook into the request lifecycle to add authentication, modify rendered content, inject headers, track analytics, or implement any custom logic. An AddOn can also bring its own pages to the admin, so a feature like [Downloads](#downloads) is one self-contained unit.
@@ -611,14 +634,9 @@ Register your AddOns in `site/config.yml`. They are loaded and executed in the o
 addons: [ MyAddOn, AnotherAddOn ]
 ```
 
-### Built-in AddOns
+### Using the built-in AddOns
 
-Some AddOns ship with Reboot CMS itself in `core/addons/` and need no folder in `site/addons/`, just list them in `addons`. Currently:
-
-- **`LanguageRedirect`** — redirects visitors to the language version that matches their browser or saved preference (see [Multilingual sites](#multilingual-sites)).
-- **`Downloads`** — delivers password protected files through cryptic, short lived links and brings the "Downloads" section of the admin along (see [Downloads](#downloads)).
-
-An AddOn of the same name in `site/addons/` takes precedence over the built-in one, so you can still override it per site.
+The AddOns shipped in `core/addons/` need no folder in `site/addons/`, just list them in `addons`. They are described in [Built-in AddOns](#built-in-addons), each has a `README.md` in its folder, which is the convention for your own AddOns as well. An AddOn of the same name in `site/addons/` takes precedence over the built-in one, so you can still override it per site.
 
 ### Admin Pages
 
@@ -696,4 +714,4 @@ $myAddOn = $site->getAddOn("MyAddOn");
 
 ### Examples
 
-See the included [ExampleAddOn](site/addons/ExampleAddOn/ExampleAddOn.php) for a basic implementation and [Downloads](core/addons/Downloads/) for a complete one. The admin interface is itself a Reboot CMS site and uses AddOns too: [Authentication](core/admin/addons/Authentication/Authentication.php) for login session handling and [Admin](core/admin/addons/Admin/Admin.php) for the bridge to the managed site, which also mounts the admin pages of its AddOns.
+See the included [ExampleAddOn](site/addons/ExampleAddOn/README.md) for a basic implementation and [Downloads](core/addons/Downloads/README.md) for a complete one. The admin interface is itself a Reboot CMS site and uses AddOns too: [Authentication](core/admin/addons/Authentication/Authentication.php) for login session handling and [Admin](core/admin/addons/Admin/Admin.php) for the bridge to the managed site, which also mounts the admin pages of its AddOns.
