@@ -2,18 +2,18 @@
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */
 /** @var \Shaack\Reboot\Request $request */
-/** @var Shaack\Reboot\Admin $admin */
+/** @var Shaack\Reboot\AddOns\Admin $admin */
 $admin = $site->getAddOn("Admin");
 
 use Shaack\Logger;
 use Shaack\Utils\FileSystemUtils;
-use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 use Shaack\Reboot\Page;
 use Shaack\Reboot\Block;
-use Shaack\Reboot\Admin\PageActionHandler;
-use Shaack\Reboot\Admin\PageHistoryHelper;
-use Shaack\Reboot\Admin\PageTreeHelper;
+use Shaack\Reboot\AddOns\Admin\PageActionHandler;
+use Shaack\Reboot\AddOns\Admin\PageHistoryHelper;
+use Shaack\Reboot\AddOns\Admin\PageTreeHelper;
 
 $defaultSite = $admin->getDefaultSite();
 $pagesDir = realpath($defaultSite->getFsPath() . "/pages");

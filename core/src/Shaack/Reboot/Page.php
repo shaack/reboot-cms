@@ -48,20 +48,23 @@ class Page
 
         // Resolve symlinks and '..' to prevent path traversal
         $resolvedDir = realpath(dirname($requestedFsPath));
-        if ($resolvedDir === false || strncmp($resolvedDir, $pagesDir, strlen($pagesDir)) !== 0) {
-            return $this->render404($path);
-        }
+        $insidePagesDir = $resolvedDir !== false && strncmp($resolvedDir, $pagesDir, strlen($pagesDir)) === 0;
         $pathInfo = pathinfo($path);
-        if (!array_key_exists("extension", $pathInfo)) {
+        if ($insidePagesDir && !array_key_exists("extension", $pathInfo)) {
             if (file_exists($requestedFsPath . ".md")) {
                 Logger::info("Markdown page: " . $path);
                 return $this->renderMarkdown($requestedFsPath . ".md", $request);
             } else if (file_exists($requestedFsPath . ".php")) {
                 Logger::info("PHP page: " . $path);
                 return $this->renderPHP($requestedFsPath . ".php", $request);
-            } else {
-                return $this->render404($path);
             }
+        }
+        // Pages an AddOn brings along, see AddOn::getPages(). Matched by exact
+        // path, so the request path never touches the file system here.
+        $addOnPage = $this->site->getAddOnPage($path);
+        if ($addOnPage !== null) {
+            Logger::info("AddOn page: " . $path);
+            return $this->renderPHP($addOnPage, $request);
         }
         return $this->render404($path);
     }

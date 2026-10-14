@@ -2,10 +2,10 @@
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */
 /** @var \Shaack\Reboot\Request $request */
-/** @var Shaack\Reboot\Admin $admin */
+/** @var Shaack\Reboot\AddOns\Admin $admin */
 $admin = $site->getAddOn("Admin");
 
-use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Shaack\Reboot\CsrfProtection;

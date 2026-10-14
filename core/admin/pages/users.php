@@ -2,11 +2,11 @@
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */
 /** @var \Shaack\Reboot\Request $request */
-/** @var Shaack\Reboot\Admin $admin */
+/** @var Shaack\Reboot\AddOns\Admin $admin */
 $admin = $site->getAddOn("Admin");
 
-use Shaack\Reboot\Admin\AdminHelper;
-use Shaack\Reboot\Authentication;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Authentication;
 use Shaack\Reboot\CsrfProtection;
 
 if (!AdminHelper::requireAdmin($site, $reboot)) return;

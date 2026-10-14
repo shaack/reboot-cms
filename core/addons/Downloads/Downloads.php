@@ -9,14 +9,15 @@ namespace Shaack\Reboot\AddOns;
 
 use Shaack\Logger;
 use Shaack\Reboot\AddOn;
-use Shaack\Reboot\Downloads\DownloadStore;
+use Shaack\Reboot\AddOns\Downloads\DownloadStore;
 use Shaack\Reboot\Request;
 
 /**
  * Built-in AddOn that hands out files through cryptic, short lived links which
- * are additionally protected by a six digit password. Files are uploaded in the
- * admin under "Downloads"; enable the delivery side by adding `Downloads` to
- * the `addons` list in `site/config.yml`.
+ * are additionally protected by a six digit password. Enable it by adding
+ * `Downloads` to the `addons` list in `site/config.yml`. This activates the
+ * delivery side and mounts the admin page in `admin/index.php` under
+ * "Downloads" in the admin, where files are uploaded.
  *
  * A link looks like `https://example.com/downloads/3ef938314c4d6cfe.pdf`. The
  * extension is cosmetic, the real file name never appears in the URL. It is
@@ -86,6 +87,22 @@ class Downloads extends AddOn
     {
         $this->config = $this->site->getConfig()['downloads'] ?? [];
         $this->prefix = '/' . trim((string)($this->config['path'] ?? '/downloads'), '/');
+    }
+
+    /**
+     * The `downloads` section of the site config.
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
+
+    /**
+     * The URL prefix of the download links, `/downloads` by default.
+     */
+    public function getLinkPrefix(): string
+    {
+        return $this->prefix;
     }
 
     /**

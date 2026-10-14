@@ -1,9 +1,11 @@
 <?php
 
-namespace Shaack\Reboot;
+namespace Shaack\Reboot\AddOns;
 
 use Shaack\Htpasswd;
 use Shaack\Logger;
+use Shaack\Reboot\AddOn;
+use Shaack\Reboot\Request;
 use Symfony\Component\Yaml\Yaml;
 
 class Authentication extends AddOn

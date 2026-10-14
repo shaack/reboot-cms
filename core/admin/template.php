@@ -3,7 +3,7 @@
 /** @var Shaack\Reboot\Site $site */
 /** @var Shaack\Reboot\Page $page */
 /** @var Shaack\Reboot\Request $request */
-/** @var Shaack\Reboot\Authentication $authentication */
+/** @var Shaack\Reboot\AddOns\Authentication $authentication */
 $authentication = $site->getAddOn("Authentication");
 $admin = $site->getAddOn("Admin");
 $localConfig = $admin->getLocalConfig();
@@ -61,7 +61,7 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
             <div class="collapse navbar-collapse" id="navbar">
                 <ul class="navbar-nav me-auto">
                     <?php
-                    $structure = $navbarConfig['structure'];
+                    $structure = $admin->getNavbarStructure();
                     $isAdmin = $authentication->isAdmin();
                     if ($structure) {
                         foreach ($structure as $label => $path) {
@@ -84,7 +84,7 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
                                 </li>
                                 <?php
                             } else {
-                                if (!$isAdmin && !in_array($path, \Shaack\Reboot\Authentication::EDITOR_PAGES)) {
+                                if (!$isAdmin && !in_array($path, \Shaack\Reboot\AddOns\Authentication::EDITOR_PAGES)) {
                                     continue;
                                 }
                                 ?>

@@ -1,7 +1,7 @@
 <?php
 /** JSON API: list pages (used by InsertPageLink editor tool) */
 
-use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
 
 $pageList = [];
 foreach ($pages as $page) {

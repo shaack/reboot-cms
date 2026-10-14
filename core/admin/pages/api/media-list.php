@@ -1,7 +1,7 @@
 <?php
 /** JSON API: list media files (used by InsertMedia editor tool) */
 
-use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
 
 $items = [];
 if (is_dir($resolvedPath)) {

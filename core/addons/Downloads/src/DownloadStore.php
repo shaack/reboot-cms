@@ -5,7 +5,7 @@
  * License: MIT, see file 'LICENSE'
  */
 
-namespace Shaack\Reboot\Downloads;
+namespace Shaack\Reboot\AddOns\Downloads;
 
 /**
  * Stores files that are handed out as protected downloads, together with their

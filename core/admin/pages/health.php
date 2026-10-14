@@ -3,7 +3,7 @@
 /** @var \Shaack\Reboot\Site $site */
 /** @var \Shaack\Reboot\Request $request */
 
-use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
 
 if (!AdminHelper::requireAdmin($site, $reboot)) return;
 
@@ -114,7 +114,7 @@ $checks[] = [
 ];
 
 // .htpasswd has at least one user
-/** @var \Shaack\Reboot\Authentication $authentication */
+/** @var \Shaack\Reboot\AddOns\Authentication $authentication */
 $authentication = $site->getAddOn("Authentication");
 $htpasswd = $authentication->getHtpasswd();
 $hasUsers = !$htpasswd->isEmpty();
@@ -123,6 +123,24 @@ $checks[] = [
     'status' => $hasUsers,
     'value' => $hasUsers ? 'yes' : 'no users',
     'hint' => $hasUsers ? '' : 'No admin users found. Create one via the setup page.',
+];
+
+// AddOns in the deprecated single file format
+/** @var \Shaack\Reboot\AddOns\Admin $admin */
+$admin = $site->getAddOn("Admin");
+$legacyAddOns = [];
+foreach ($admin->getDefaultSite()->getAddOns() as $addOn) {
+    if ($addOn->getDir() === null) {
+        $legacyAddOns[] = $addOn->getName();
+    }
+}
+$checks[] = [
+    'label' => 'AddOn format',
+    'status' => $legacyAddOns ? null : true,
+    'value' => $legacyAddOns ? 'deprecated: ' . htmlspecialchars(implode(', ', $legacyAddOns)) : 'ok',
+    'hint' => $legacyAddOns
+        ? 'The single file format <code>site/addons/Name.php</code> is deprecated. Move each AddOn to <code>site/addons/Name/Name.php</code> and change its namespace to <code>Shaack\Reboot\AddOns</code>.'
+        : '',
 ];
 
 $allOk = true;

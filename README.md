@@ -83,6 +83,7 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 ## Directory Structure
 
 - `core/src/` — Core CMS classes (Reboot, Site, Page, Block, Request, AddOn)
+- `core/addons/` — AddOns shipped with Reboot CMS (`Downloads`, `LanguageRedirect`)
 - `site/` — Site content: `pages/`, `blocks/`, `addons/`, `template.php`, `config.yml`
 - `web/` — Document root (`index.php`, `.htaccess`)
 - `local/` — Local environment config (`config.yml`, `.htpasswd`) — not in git
@@ -475,11 +476,13 @@ A link expires **one week after the upload**, or **one hour after the first down
 
 Files live in `local/downloads/`, outside the web root and behind `local/.htaccess`, so nothing is ever served by the web server directly. Only the `Downloads` addon delivers a file, and only after the password was accepted. The password is stored in plain text next to the file, which is what makes it readable in the admin list later.
 
-Delivery needs the built-in [`Downloads` AddOn](#built-in-addons). Add it to `site/config.yml`:
+The whole feature is the built-in [`Downloads` AddOn](#built-in-addons). Add it to `site/config.yml`:
 
 ```yaml
 addons: [ Downloads ]
 ```
+
+This enables the delivery of the files and mounts the "Downloads" section in the admin. Without the AddOn there is neither a menu entry nor an admin page.
 
 The defaults need no configuration. All values can be changed per site:
 
@@ -550,21 +553,28 @@ It is recommended to make a backup of the project folder before updating.
 
 ## AddOns
 
-In Reboot CMS you can extend the functionality of your site with **AddOns**. AddOns allow you to hook into the request
-lifecycle to add authentication, modify rendered content, inject headers, track analytics, or implement any custom logic.
+In Reboot CMS you can extend the functionality of your site with **AddOns**. AddOns hook into the request lifecycle to add authentication, modify rendered content, inject headers, track analytics, or implement any custom logic. An AddOn can also bring its own pages to the admin, so a feature like [Downloads](#downloads) is one self-contained unit.
 
 ### Creating an AddOn
 
-An AddOn is a PHP class that extends [`AddOn`](core/src/Shaack/Reboot/AddOn.php). Place your AddOn file in
-`site/addons/` with the class name matching the file name.
+An AddOn is a folder in `site/addons/`, named after its class. The class file sits at the top level and extends [`AddOn`](core/src/Shaack/Reboot/AddOn.php), everything else is optional:
+
+```
+site/addons/MyAddOn/
+  MyAddOn.php          # the AddOn class, namespace Shaack\Reboot\AddOns
+  src/                 # helper classes, namespace Shaack\Reboot\AddOns\MyAddOn\, autoloaded
+  admin/               # admin pages, mounted at /admin/myaddon (see below)
+```
 
 ```php
 <?php
-// site/addons/MyAddOn.php
+// site/addons/MyAddOn/MyAddOn.php
 
-namespace Shaack\Reboot;
+namespace Shaack\Reboot\AddOns;
 
 use Shaack\Logger;
+use Shaack\Reboot\AddOn;
+use Shaack\Reboot\Request;
 
 class MyAddOn extends AddOn
 {
@@ -589,6 +599,10 @@ class MyAddOn extends AddOn
 }
 ```
 
+A helper class in `src/Util/Helper.php` is available as `Shaack\Reboot\AddOns\MyAddOn\Util\Helper` without any registration.
+
+The former single file format, `site/addons/MyAddOn.php` with the class in the namespace `Shaack\Reboot`, still works but is **deprecated**. Such AddOns cannot bring admin pages or helper classes, and the admin's System Health page lists them. To migrate, move the file into a folder of the same name and change the namespace to `Shaack\Reboot\AddOns`.
+
 ### Registering AddOns
 
 Register your AddOns in `site/config.yml`. They are loaded and executed in the order listed:
@@ -599,15 +613,41 @@ addons: [ MyAddOn, AnotherAddOn ]
 
 ### Built-in AddOns
 
-Some AddOns ship with Reboot CMS itself (in `core/src/Shaack/Reboot/AddOns/`) and
-need no file in `site/addons/` — just list them in `addons`. Currently:
+Some AddOns ship with Reboot CMS itself in `core/addons/` and need no folder in `site/addons/`, just list them in `addons`. Currently:
 
-- **`LanguageRedirect`** — redirects visitors to the language version that matches
-  their browser or saved preference (see [Multilingual sites](#multilingual-sites)).
-- **`Downloads`** — delivers password protected files through cryptic, short lived links (see [Downloads](#downloads)).
+- **`LanguageRedirect`** — redirects visitors to the language version that matches their browser or saved preference (see [Multilingual sites](#multilingual-sites)).
+- **`Downloads`** — delivers password protected files through cryptic, short lived links and brings the "Downloads" section of the admin along (see [Downloads](#downloads)).
 
-A file of the same name in `site/addons/` takes precedence over the built-in one,
-so you can still override it per site.
+An AddOn of the same name in `site/addons/` takes precedence over the built-in one, so you can still override it per site.
+
+### Admin Pages
+
+An AddOn adds pages to the admin by putting PHP files into its `admin/` folder. The folder is mounted at the AddOn's admin path, which is its lower case name by default:
+
+```
+site/addons/MyAddOn/admin/index.php      → /admin/myaddon
+site/addons/MyAddOn/admin/log.php        → /admin/myaddon/log
+site/addons/MyAddOn/admin/api/list.php   → /admin/myaddon/api/list
+```
+
+An `admin/index.php` also adds a menu entry named after the AddOn to the admin navigation. Pages and menu entry exist only while the AddOn is listed in `site/config.yml`, so disabling an AddOn removes its admin section as well. The pages are rendered inside the admin template with `$reboot`, `$site` (the admin site), `$page` and `$request` available, like the built-in admin pages. Start every page with the admin role check, and reach your AddOn through the admin's view of the site:
+
+```php
+<?php
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
+
+if (!AdminHelper::requireAdmin($site, $reboot)) return;
+
+$myAddOn = $site->getAddOn("Admin")->getDefaultSite()->getAddOn("MyAddOn");
+```
+
+Three methods let you deviate from the convention:
+
+- `getAdminPath(): string` — the mount point, `/myaddon` by default.
+- `getAdminPages(): array` — the pages as `path => PHP file`, by default the content of `admin/`.
+- `getAdminMenu(): array` — the navigation entries as `label => path`. By default one entry for `admin/index.php`. Return `[]` to keep a page out of the menu, or a nested array to extend a dropdown: `['Admin' => ['Statistics' => '/myaddon']]` adds the page to the "Admin" menu. AddOn entries are shown to admins only and never override a built-in entry of the same name.
+
+See [core/addons/Downloads/](core/addons/Downloads/) for a complete AddOn with a frontend part, a helper class and an admin page.
 
 ### Available Properties
 
@@ -615,6 +655,7 @@ Inside your AddOn, you have access to:
 
 - `$this->reboot` — the [`Reboot`](core/src/Shaack/Reboot/Reboot.php) instance (base paths, config, redirects)
 - `$this->site` — the [`Site`](core/src/Shaack/Reboot/Site.php) instance (site config, paths, other addons)
+- `$this->dir` — the folder of the AddOn, `null` for the deprecated single file format
 
 ### Lifecycle Hooks
 
@@ -641,6 +682,10 @@ Called after the page is rendered, before the output is sent to the browser. Use
 
 Returns the (possibly modified) content string.
 
+#### `getPages(): array`
+
+Pages the AddOn adds to its own site, as `path => PHP file`, for example `['/sitemap.xml' => $this->dir . '/pages/sitemap.php']`. A page is rendered like a PHP page in `site/pages/`, and a file in `site/pages/` of the same path wins. Admin pages use the `admin/` folder instead, see [Admin Pages](#admin-pages).
+
 ### Accessing AddOns from Pages
 
 You can access a registered AddOn from any page template using:
@@ -651,6 +696,4 @@ $myAddOn = $site->getAddOn("MyAddOn");
 
 ### Examples
 
-See the included [ExampleAddOn.php](site/addons/ExampleAddOn.php) for a basic implementation. The admin interface
-itself uses AddOns: [Authentication](core/admin/addons/Authentication.php) for login session handling and
-[Admin](core/admin/addons/Admin.php) for admin-specific functionality.
+See the included [ExampleAddOn](site/addons/ExampleAddOn/ExampleAddOn.php) for a basic implementation and [Downloads](core/addons/Downloads/) for a complete one. The admin interface is itself a Reboot CMS site and uses AddOns too: [Authentication](core/admin/addons/Authentication/Authentication.php) for login session handling and [Admin](core/admin/addons/Admin/Admin.php) for the bridge to the managed site, which also mounts the admin pages of its AddOns.

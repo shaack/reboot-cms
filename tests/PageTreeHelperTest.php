@@ -2,7 +2,7 @@
 
 namespace Shaack\Tests;
 
-use Shaack\Reboot\Admin\PageTreeHelper;
+use Shaack\Reboot\AddOns\Admin\PageTreeHelper;
 
 class PageTreeHelperTest
 {

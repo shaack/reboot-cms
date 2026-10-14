@@ -1,8 +1,8 @@
 <?php
 /** JSON API: page history */
 
-use Shaack\Reboot\Admin\AdminHelper;
-use Shaack\Reboot\Admin\PageHistoryHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\PageHistoryHelper;
 
 $historyPage = $request->getParam("page") ?? "";
 $historyPage = str_replace("..", "", $historyPage);

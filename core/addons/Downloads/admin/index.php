@@ -2,22 +2,24 @@
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */
 /** @var \Shaack\Reboot\Request $request */
-/** @var Shaack\Reboot\Admin $admin */
+/** @var Shaack\Reboot\AddOns\Admin $admin */
 $admin = $site->getAddOn("Admin");
 
-use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Downloads;
+use Shaack\Reboot\AddOns\Downloads\DownloadStore;
 use Shaack\Reboot\CsrfProtection;
-use Shaack\Reboot\Downloads\DownloadStore;
 
 if (!AdminHelper::requireAdmin($site, $reboot)) return;
 
-$defaultSite = $admin->getDefaultSite();
-$siteConfig = $defaultSite->getConfig();
-$downloadsConfig = $siteConfig['downloads'] ?? [];
-$addonEnabled = in_array('Downloads', $siteConfig['addons'] ?? [], true);
-$linkPrefix = '/' . trim((string)($downloadsConfig['path'] ?? '/downloads'), '/');
+// This page is mounted by the Admin addon only while the Downloads addon is
+// registered in site/config.yml, so the addon is always there.
+/** @var Downloads $downloads */
+$downloads = $admin->getDefaultSite()->getAddOn("Downloads");
+$linkPrefix = $downloads->getLinkPrefix();
+$adminPath = ltrim($downloads->getAdminPath(), '/');
 
-$store = new DownloadStore($reboot->getBaseFsPath(), $downloadsConfig);
+$store = new DownloadStore($reboot->getBaseFsPath(), $downloads->getConfig());
 $store->purge();
 
 $error = null;
@@ -84,16 +86,7 @@ $baseUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $reboot->g
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
 
-    <?php if (!$addonEnabled) { ?>
-        <div class="alert alert-warning">
-            The <code>Downloads</code> addon is not active, so the links below do not work yet.
-            Add it to the <code>addons</code> list in
-            <a href="config" class="alert-link">Site Configuration</a>:
-            <code>addons: [ Downloads ]</code>
-        </div>
-    <?php } ?>
-
-    <form method="post" action="downloads" enctype="multipart/form-data" class="card mb-3">
+    <form method="post" action="<?= htmlspecialchars($adminPath) ?>" enctype="multipart/form-data" class="card mb-3">
         <div class="card-body d-flex flex-wrap align-items-center gap-2">
             <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
             <input type="hidden" name="action" value="upload">
@@ -197,7 +190,7 @@ $baseUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $reboot->g
                             <?php } ?>
                         </td>
                         <td>
-                            <form method="post" action="downloads"
+                            <form method="post" action="<?= htmlspecialchars($adminPath) ?>"
                                   onsubmit="return confirm('Delete \'<?= htmlspecialchars($entry['fileName'], ENT_QUOTES) ?>\'?')">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                 <input type="hidden" name="action" value="delete">

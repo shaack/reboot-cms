@@ -1,7 +1,7 @@
 <?php
 /** JSON API: check remote version / commit */
 
-use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
 
 $result = ["version" => $updater->getRemoteVersion()];
 if ($isMain) {

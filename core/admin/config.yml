@@ -6,7 +6,6 @@ navbar:
   structure:
     Pages: /pages
     Media: /media
-    Downloads: /downloads
     Admin:
       Site Configuration: /config
       Users: /users

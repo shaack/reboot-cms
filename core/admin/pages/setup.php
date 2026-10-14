@@ -1,12 +1,12 @@
 <?php
 
-use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */
 /** @var \Shaack\Reboot\Request $request */
-/** @var \Shaack\Reboot\Authentication $authentication */
+/** @var \Shaack\Reboot\AddOns\Authentication $authentication */
 $authentication = $site->getAddOn("Authentication");
 $htpasswd = $authentication->getHtpasswd();
 
@@ -33,7 +33,7 @@ if ($username) {
             mkdir($localDir, 0700, true);
         }
         $htpasswd->addUser($username, $password);
-        $authentication->setUserRole($username, \Shaack\Reboot\Authentication::ROLE_ADMIN);
+        $authentication->setUserRole($username, \Shaack\Reboot\AddOns\Authentication::ROLE_ADMIN);
         $authentication->login($username, $password);
         $reboot->redirect($reboot->getBaseWebPath() . $site->getWebPath() . "/pages");
         return;

@@ -4,13 +4,17 @@ namespace Shaack\Tests;
 
 require_once __DIR__ . "/TestHelper.php";
 
+use Shaack\Reboot\AddOn;
 use Shaack\Reboot\Page;
 use Shaack\Reboot\Reboot;
+use Shaack\Reboot\Request;
+use Shaack\Reboot\Site;
 
 class PageTest
 {
     private string $tmpDir;
     private Page $page;
+    private Site $site;
 
     public function setUp(): void
     {
@@ -28,8 +32,18 @@ class PageTest
         $rebootRef->getProperty('baseWebPath')->setValue($reboot, "");
         $rebootRef->getProperty('config')->setValue($reboot, ["logLevel" => 2]);
 
-        $site = TestHelper::createSiteStub($this->tmpDir, "");
-        $this->page = new Page($reboot, $site);
+        $this->site = TestHelper::createSiteStub($this->tmpDir, "");
+        $this->page = new Page($reboot, $this->site);
+    }
+
+    /**
+     * Registers an AddOn stub that brings the given pages (`path => file`).
+     */
+    private function addPagesAddOn(array $pages): void
+    {
+        $addOn = (new \ReflectionClass(PagesAddOnStub::class))->newInstanceWithoutConstructor();
+        $addOn->pages = $pages;
+        (new \ReflectionClass(Site::class))->getProperty('addOns')->setValue($this->site, ['Stub' => $addOn]);
     }
 
     public function tearDown(): void
@@ -53,6 +67,32 @@ class PageTest
             }
         }
         rmdir($dir);
+    }
+
+    // --- AddOn pages ---
+
+    public function testRendersPageRegisteredByAddOn(): void
+    {
+        file_put_contents($this->tmpDir . "/addon-page.php", '<?php echo "from addon " . $request->getPath();');
+        $this->addPagesAddOn(["/tools/addon-page" => $this->tmpDir . "/addon-page.php"]);
+        $request = new Request($this->site, "", "/tools/addon-page", []);
+        Assert::equals("from addon /tools/addon-page", $this->page->render($request));
+    }
+
+    public function testPagesFolderWinsOverAddOnPage(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/hello.md", "from pages");
+        file_put_contents($this->tmpDir . "/addon-page.php", '<?php echo "from addon";');
+        $this->addPagesAddOn(["/hello" => $this->tmpDir . "/addon-page.php"]);
+        $request = new Request($this->site, "", "/hello", []);
+        Assert::contains("from pages", $this->page->render($request));
+    }
+
+    public function testAddOnPageWithMissingFileIs404(): void
+    {
+        $this->addPagesAddOn(["/gone" => $this->tmpDir . "/does-not-exist.php"]);
+        $request = new Request($this->site, "", "/gone", []);
+        Assert::equals("", $this->page->render($request)); // no custom 404 page, empty response
     }
 
     // --- Markdown rendering ---
@@ -191,5 +231,15 @@ class PageTest
         // The text block should handle it as plain markdown
         $noBlockError = !str_contains($html, "Block not found");
         Assert::true($noBlockError, "Fenced code blocks should not be parsed as CMS blocks");
+    }
+}
+
+class PagesAddOnStub extends AddOn
+{
+    public array $pages = [];
+
+    public function getPages(): array
+    {
+        return $this->pages;
     }
 }

@@ -14,12 +14,13 @@ There is no database, no schema, and no build step for content.
 
 ## Project layout
 
-- `core/src/Shaack/` — CMS core classes (`Reboot`, `Site`, `Page`, `Block`, `Request`, `AddOn`)
+- `core/src/Shaack/` — CMS core classes (`Reboot`, `Site`, `Page`, `Block`, `Request`, `AddOn`, `AddOnLoader`)
+- `core/addons/<Name>/` — AddOns shipped with the CMS (`Downloads`, `LanguageRedirect`), one folder each
 - `core/admin/` — admin interface (itself a Reboot CMS site)
 - `site/` — the site you edit:
   - `pages/` — content pages (`.md` or `.php`)
   - `blocks/` — PHP templates for content blocks
-  - `addons/` — site-specific addon classes
+  - `addons/<Name>/<Name>.php` — site-specific addons, one folder each with optional `src/` and `admin/`
   - `template.php` — main HTML template
   - `config.yml` — navigation, addon registration, multilingual settings
 - `web/` — document root (`index.php`, static assets)

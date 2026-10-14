@@ -2,7 +2,7 @@
 
 namespace Shaack\Tests;
 
-use Shaack\Reboot\Downloads\DownloadStore;
+use Shaack\Reboot\AddOns\Downloads\DownloadStore;
 
 class DownloadStoreTest
 {

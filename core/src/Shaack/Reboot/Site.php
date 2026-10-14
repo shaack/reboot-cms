@@ -33,27 +33,10 @@ class Site
             error_log("parse exception " . $file);
         }
         // addOns
-        if (@$this->config["addons"]) {
-            foreach ($this->config["addons"] as $addOnName) {
-                // Validate addon name to prevent path traversal
-                if (!preg_match('/^[a-zA-Z0-9_]+$/', $addOnName)) {
-                    Logger::error("Invalid addon name rejected: " . $addOnName);
-                    continue;
-                }
-                $addOnPath = $this->getFsPath() . "/addons/" . $addOnName . ".php";
-                if (file_exists($addOnPath)) {
-                    // site-specific addon from site/addons/
-                    require_once $addOnPath;
-                    $className = "\Shaack\Reboot\\" . $addOnName;
-                } else {
-                    // built-in addon shipped with the core (PSR-4 autoloaded)
-                    $className = "\Shaack\Reboot\AddOns\\" . $addOnName;
-                    if (!class_exists($className)) {
-                        Logger::error("Addon not found: " . $addOnName);
-                        continue;
-                    }
-                }
-                $this->addOns[$addOnName] = new $className($this->reboot, $this);
+        foreach ($this->config["addons"] ?? [] as $addOnName) {
+            $addOn = AddOnLoader::load($this->reboot, $this, (string)$addOnName);
+            if ($addOn !== null) {
+                $this->addOns[$addOnName] = $addOn;
             }
         }
         Logger::debug("site->webPath: " . $this->webPath);
@@ -107,6 +90,30 @@ class Site
     public function getAddOn($addOnName)
     {
         return $this->addOns[$addOnName];
+    }
+
+    /**
+     * All registered AddOns, keyed by name, in the order of `site/config.yml`.
+     * @return AddOn[]
+     */
+    public function getAddOns(): array
+    {
+        return $this->addOns;
+    }
+
+    /**
+     * The PHP file an AddOn registered for `$path` via `AddOn::getPages()`, or
+     * null. The first AddOn in the order of `config.yml` wins.
+     */
+    public function getAddOnPage(string $path): ?string
+    {
+        foreach ($this->addOns as $addOn) {
+            $file = $addOn->getPages()[$path] ?? null;
+            if (is_string($file) && is_file($file)) {
+                return $file;
+            }
+        }
+        return null;
     }
 }
 

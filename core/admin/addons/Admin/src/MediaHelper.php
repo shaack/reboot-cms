@@ -5,7 +5,7 @@
  * License: MIT, see file 'LICENSE'
  */
 
-namespace Shaack\Reboot\Admin;
+namespace Shaack\Reboot\AddOns\Admin;
 
 class MediaHelper
 {

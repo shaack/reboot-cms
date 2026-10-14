@@ -1,12 +1,12 @@
 <?php
 
 use Shaack\Logger;
-use Shaack\Reboot\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */
-/** @var Shaack\Reboot\Authentication $authentication */
+/** @var Shaack\Reboot\AddOns\Authentication $authentication */
 $authentication = $site->getAddOn("Authentication");
 
 $error = null;
