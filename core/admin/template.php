@@ -25,7 +25,14 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <?php
-    $adminPageTitle = ucfirst(trim($request->getPath(), '/'));
+    // The menu label of the current page, or the path if the page is not in the menu
+    $adminPageTitle = null;
+    foreach ($authentication->getUser() ? $admin->getNavbarStructure() : [] as $label => $entry) {
+        foreach (is_array($entry) ? $entry : [$label => $entry] as $subLabel => $path) {
+            if ($path === $request->getPath()) $adminPageTitle = $subLabel;
+        }
+    }
+    if (!$adminPageTitle) $adminPageTitle = ucfirst(trim($request->getPath(), '/'));
     if (!$adminPageTitle) $adminPageTitle = 'Admin';
     ?>
     <title><?= htmlspecialchars($adminPageTitle) ?> – Reboot CMS Admin</title>

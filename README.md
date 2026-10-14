@@ -83,7 +83,7 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 ## Directory Structure
 
 - `core/src/` — Core CMS classes (Reboot, Site, Page, Block, Request, AddOn)
-- `core/addons/` — AddOns shipped with Reboot CMS (`Downloads`, `LanguageRedirect`)
+- `core/addons/` — AddOns shipped with Reboot CMS (`Downloads`, `LanguageRedirect`, `ProtectedAreas`)
 - `site/` — Site content: `pages/`, `blocks/`, `addons/`, `template.php`, `config.yml`
 - `web/` — Document root (`index.php`, `.htaccess`)
 - `local/` — Local environment config (`config.yml`, `.htpasswd`) — not in git
@@ -555,7 +555,7 @@ It is recommended to make a backup of the project folder before updating.
 Some features of Reboot CMS are not part of the core but ship as AddOns in `core/addons/`. They are off by default and switched on per site by listing them under `addons` in `site/config.yml`:
 
 ```yaml
-addons: [ LanguageRedirect, Downloads ]
+addons: [ LanguageRedirect, Downloads, ProtectedAreas ]
 ```
 
 Everything an AddOn needs is in its folder, including its admin pages, so an AddOn that is not listed leaves no trace in the admin. Because `core/` is replaced by the [updater](#update), the built-in AddOns are updated together with the CMS. A project can still override one by placing an AddOn of the same name in `site/addons/`.
@@ -573,6 +573,18 @@ See the [LanguageRedirect README](core/addons/LanguageRedirect/README.md) and [M
 Hands out single files through cryptic, short lived links that are additionally protected by a six digit password, for sending a document to one recipient. Files are uploaded in the admin section "Downloads", which the AddOn brings along. A link expires one week after the upload or one hour after the first download, ten wrong passwords lock it, and expired files are deleted automatically. Files live in `local/downloads/`, outside the web root.
 
 See the [Downloads README](core/addons/Downloads/README.md) and the admin section [Downloads](#downloads).
+
+### ProtectedAreas
+
+Puts parts of the site behind a login. A protected area is a path prefix such as `/customers`, and every page below it is served only to a logged in user whose account lists a matching path, for example `/customers/acme`. The AddOn brings a login page rendered inside the site template, a logout URL, a limit on failed logins and the admin section "Protected Areas" for the accounts. What the protected pages contain is up to the site, so a customer area is just a folder of Markdown pages that you edit like any other.
+
+```yaml
+addons: [ ProtectedAreas ]
+protectedAreas:
+  areas: [ /customers ]
+```
+
+See the [ProtectedAreas README](core/addons/ProtectedAreas/README.md).
 
 ## AddOns
 
