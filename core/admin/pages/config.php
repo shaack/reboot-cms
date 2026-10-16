@@ -33,7 +33,8 @@ if ($configuration) {
                 }
             }
         }
-        file_put_contents($configPath, $configuration);
+        // Browsers submit textarea content with CRLF line endings, the file is kept with LF
+        file_put_contents($configPath, str_replace("\r\n", "\n", $configuration));
         return "Configuration saved";
     });
     $configSaveError = $result['error'];
