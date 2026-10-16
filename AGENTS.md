@@ -15,7 +15,7 @@ There is no database, no schema, and no build step for content.
 ## Project layout
 
 - `core/src/Shaack/` — CMS core classes (`Reboot`, `Site`, `Page`, `Block`, `Request`, `AddOn`, `AddOnLoader`)
-- `core/addons/<Name>/` — AddOns shipped with the CMS (`Downloads`, `LanguageRedirect`, `ProtectedAreas`), one folder each
+- `core/addons/<Name>/` — AddOns shipped with the CMS (`EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`, plus the deprecated alias `Downloads`), one folder each
 - `core/admin/` — admin interface (itself a Reboot CMS site)
 - `site/` — the site you edit:
   - `pages/` — content pages (`.md` or `.php`)

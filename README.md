@@ -83,7 +83,7 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 ## Directory Structure
 
 - `core/src/` — Core CMS classes (Reboot, Site, Page, Block, Request, AddOn)
-- `core/addons/` — AddOns shipped with Reboot CMS (`Downloads`, `LanguageRedirect`, `ProtectedAreas`)
+- `core/addons/` — AddOns shipped with Reboot CMS (`EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`)
 - `site/` — Site content: `pages/`, `blocks/`, `addons/`, `template.php`, `config.yml`
 - `web/` — Document root (`index.php`, `.htaccess`)
 - `local/` — Local environment config (`config.yml`, `.htpasswd`) — not in git
@@ -475,9 +475,9 @@ in your markdown pages.
 
 ![Media](web/media/screenshots/reboot-cms-admin-media.png)
 
-### Downloads
+### Secure Downloads
 
-The "Downloads" section hands out single files through cryptic, short lived links that are additionally protected by a six digit password. It is meant for sending a document to one recipient, not for public files. Those belong in "Media".
+The "Secure Downloads" section hands out single files through cryptic, short lived links that are additionally protected by a six digit password. It is meant for sending a document to one recipient, not for public files. Those belong in "Media".
 
 Upload a file and Reboot CMS creates a link plus a password:
 
@@ -492,20 +492,20 @@ The list shows for every download whether it was fetched already, when, and from
 
 A link expires **one week after the upload**, or **one hour after the first download**, whichever comes first. Within that hour the file may be fetched again, so an interrupted transfer does not ruin the link. After expiry the file is deleted from the server automatically; the entry stays in the list for 30 days, so the log remains readable. Ten wrong passwords lock a link for good, which is what keeps six digits from being guessable.
 
-Files live in `local/downloads/`, outside the web root and behind `local/.htaccess`, so nothing is ever served by the web server directly. Only the `Downloads` addon delivers a file, and only after the password was accepted. The password is stored in plain text next to the file, which is what makes it readable in the admin list later.
+Files live in `local/downloads/`, outside the web root and behind `local/.htaccess`, so nothing is ever served by the web server directly. Only the `SecureDownloads` addon delivers a file, and only after the password was accepted. The password is stored in plain text next to the file, which is what makes it readable in the admin list later.
 
-The whole feature is the built-in `Downloads` AddOn (see its [README](core/addons/Downloads/README.md)). Add it to `site/config.yml`:
+The whole feature is the built-in `SecureDownloads` AddOn (see its [README](core/addons/SecureDownloads/README.md)). Add it to `site/config.yml`:
 
 ```yaml
-addons: [ Downloads ]
+addons: [ SecureDownloads ]
 ```
 
-This enables the delivery of the files and mounts the "Downloads" section in the admin. Without the AddOn there is neither a menu entry nor an admin page.
+This enables the delivery of the files and mounts the "Secure Downloads" section in the admin. Without the AddOn there is neither a menu entry nor an admin page.
 
 The defaults need no configuration. All values can be changed per site:
 
 ```yaml
-downloads:
+secureDownloads:
   path: /downloads        # URL prefix of the links
   linkLifetime: 604800    # seconds a fresh link stays valid (one week)
   downloadWindow: 3600    # seconds after the first download (one hour)
@@ -542,6 +542,10 @@ The "Users" page in the admin interface allows you to manage accounts directly f
 Usernames may contain letters, numbers, and underscores (max 64 characters). Passwords must be at least 8 characters.
 Credentials are stored as APR1-MD5 hashes in `local/.htpasswd`, roles in `local/roles.yml`.
 
+### Stay signed in
+
+The login form offers "Stay signed in for 2 weeks". Without it the login lasts as long as the browser session. With it, Reboot CMS sets a second cookie with a random token that restores the session for two weeks, for example after a restart of the browser. Only a hash of the token is stored, in `local/remember-tokens.json`, and every token is good for one use, the next visit replaces it. Logging out, changing the password, disabling or deleting the account forgets the tokens of that user.
+
 ![Users](web/media/screenshots/reboot-cms-admin-users.png)
 
 You can also manage users via the command line:
@@ -574,7 +578,7 @@ It is recommended to make a backup of the project folder before updating.
 Some features of Reboot CMS are not part of the core but ship as AddOns in `core/addons/`. They are off by default and switched on per site by listing them under `addons` in `site/config.yml`:
 
 ```yaml
-addons: [ LanguageRedirect, Downloads, ProtectedAreas ]
+addons: [ LanguageRedirect, EmailObfuscation, SecureDownloads, ProtectedAreas ]
 ```
 
 Everything an AddOn needs is in its folder, including its admin pages, so an AddOn that is not listed leaves no trace in the admin. Because `core/` is replaced by the [updater](#update), the built-in AddOns are updated together with the CMS. A project can still override one by placing an AddOn of the same name in `site/addons/`.
@@ -587,11 +591,17 @@ Sends visitors of a multilingual site to the language version matching their pre
 
 See the [LanguageRedirect README](core/addons/LanguageRedirect/README.md) and [Multilingual sites](#multilingual-sites).
 
-### Downloads
+### EmailObfuscation
 
-Hands out single files through cryptic, short lived links that are additionally protected by a six digit password, for sending a document to one recipient. Files are uploaded in the admin section "Downloads", which the AddOn brings along. A link expires one week after the upload or one hour after the first download, ten wrong passwords lock it, and expired files are deleted automatically. Files live in `local/downloads/`, outside the web root.
+Hides e-mail addresses from harvesters. After a page has been rendered, every `mailto:` link and every address in the visible text is replaced by a small inline script that writes the original markup back into the page. Visitors see the address as before, a crawler without JavaScript sees only base64. Nothing to configure.
 
-See the [Downloads README](core/addons/Downloads/README.md) and the admin section [Downloads](#downloads).
+See the [EmailObfuscation README](core/addons/EmailObfuscation/README.md).
+
+### SecureDownloads
+
+Hands out single files through cryptic, short lived links that are additionally protected by a six digit password, for sending a document to one recipient. Files are uploaded in the admin section "Secure Downloads", which the AddOn brings along. A link expires one week after the upload or one hour after the first download, ten wrong passwords lock it, and expired files are deleted automatically. Files live in `local/downloads/`, outside the web root.
+
+See the [SecureDownloads README](core/addons/SecureDownloads/README.md) and the admin section [Secure Downloads](#secure-downloads). The AddOn was called `Downloads` before, the old name still works as a deprecated alias.
 
 ### ProtectedAreas
 
@@ -607,7 +617,7 @@ See the [ProtectedAreas README](core/addons/ProtectedAreas/README.md).
 
 ## AddOns
 
-In Reboot CMS you can extend the functionality of your site with **AddOns**. AddOns hook into the request lifecycle to add authentication, modify rendered content, inject headers, track analytics, or implement any custom logic. An AddOn can also bring its own pages to the admin, so a feature like [Downloads](#downloads) is one self-contained unit.
+In Reboot CMS you can extend the functionality of your site with **AddOns**. AddOns hook into the request lifecycle to add authentication, modify rendered content, inject headers, track analytics, or implement any custom logic. An AddOn can also bring its own pages to the admin, so a feature like [Secure Downloads](#secure-downloads) is one self-contained unit.
 
 ### Creating an AddOn
 
@@ -696,7 +706,7 @@ Three methods let you deviate from the convention:
 - `getAdminPages(): array` — the pages as `path => PHP file`, by default the content of `admin/`.
 - `getAdminMenu(): array` — the navigation entries as `label => path`. By default one entry for `admin/index.php`. Return `[]` to keep a page out of the menu, or a nested array to extend a dropdown: `['Admin' => ['Statistics' => '/myaddon']]` adds the page to the "Admin" menu. AddOn entries are shown to admins only and never override a built-in entry of the same name.
 
-See [core/addons/Downloads/](core/addons/Downloads/) for a complete AddOn with a frontend part, a helper class and an admin page.
+See [core/addons/SecureDownloads/](core/addons/SecureDownloads/) for a complete AddOn with a frontend part, a helper class and an admin page.
 
 ### Available Properties
 
@@ -753,4 +763,4 @@ $myAddOn = $site->getAddOn("MyAddOn");
 
 ### Examples
 
-See the included [ExampleAddOn](site/addons/ExampleAddOn/README.md) for a basic implementation and [Downloads](core/addons/Downloads/README.md) for a complete one. The admin interface is itself a Reboot CMS site and uses AddOns too: [Authentication](core/admin/addons/Authentication/Authentication.php) for login session handling and [Admin](core/admin/addons/Admin/Admin.php) for the bridge to the managed site, which also mounts the admin pages of its AddOns.
+See the included [ExampleAddOn](site/addons/ExampleAddOn/README.md) for a basic implementation and [SecureDownloads](core/addons/SecureDownloads/README.md) for a complete one. The admin interface is itself a Reboot CMS site and uses AddOns too: [Authentication](core/admin/addons/Authentication/Authentication.php) for login session handling and [Admin](core/admin/addons/Admin/Admin.php) for the bridge to the managed site, which also mounts the admin pages of its AddOns.
