@@ -22,6 +22,10 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
             'Symfony\\Component\\Yaml\\' => 23,
             'Shaack\\' => 7,
         ),
+        'P' =>
+        array (
+            'PHPMailer\\PHPMailer\\' => 20,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
@@ -40,6 +44,10 @@ class ComposerStaticInit0a20e9536e2f19d8e447e3d2a521cc70
         'Shaack\\' =>
         array (
             0 => __DIR__ . '/../..' . '/core/src/Shaack',
+        ),
+        'PHPMailer\\PHPMailer\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
     );
 

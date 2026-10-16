@@ -33,3 +33,17 @@ editor:
 # Page history: number of snapshots to keep per page
 history:
   maxVersions: 50
+
+# Mail: lets AddOns send mail, for example login links or form submissions.
+# Optional. The System Health page shows the state and sends a test mail.
+# transport: smtp (a mailbox of your hosting), mail (PHP mail()) or log (nothing is sent)
+# mail:
+#   transport: smtp
+#   host: mail.example.com
+#   port: 465
+#   encryption: ssl           # ssl (port 465), tls (STARTTLS, port 587) or none
+#   username: noreply@example.com
+#   password: "secret"
+#   from: noreply@example.com
+#   fromName: "Example Inc."
+#   replyTo: office@example.com

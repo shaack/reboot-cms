@@ -97,4 +97,13 @@ class Reboot
         return $this->config;
     }
 
+    /**
+     * Sends mail as configured in the `mail` section of `/local/config.yml`,
+     * see Mailer. Check `isConfigured()` before sending if mail is optional.
+     */
+    public function getMailer(): Mailer
+    {
+        return new Mailer($this->config['mail'] ?? []);
+    }
+
 }

@@ -127,7 +127,24 @@ editor:
 # Page history: number of snapshots to keep per page
 history:
   maxVersions: 50
+
+# Mail (optional): lets AddOns send mail, see "Sending mail" below
+mail:
+  transport: smtp           # smtp, mail (PHP mail()) or log (nothing is sent)
+  host: mail.example.com
+  port: 465
+  encryption: ssl           # ssl (465), tls (STARTTLS, 587) or none
+  username: noreply@example.com
+  password: "secret"
+  from: noreply@example.com
+  fromName: "Example Inc."
 ```
+
+### Sending mail
+
+Reboot CMS sends no mail by itself, but AddOns do, for example login links or form submissions. The `mail` section of `local/config.yml` configures how. The recommended transport is `smtp` with a mailbox of your hosting, because mail from an authenticated mailbox passes SPF and DKIM checks and lands in the inbox. `mail` uses PHP's `mail()` without a mailbox, `log` writes the mail to the log instead of sending it, which is handy during development. The credentials belong to the server, not to the site, which is why they live in `local/` and not in `site/config.yml`.
+
+The admin's System Health page shows the mail configuration and sends a test mail on request. Sending is done by [PHPMailer](https://github.com/PHPMailer/PHPMailer).
 
 Available editor tools: `Headings`, `Bold`, `Italic`, `Strikethrough`, `UnorderedList`, `OrderedList`,
 `InsertLink`, `InsertImage`. Use `"|"` for a separator. The admin tools (`InsertPageLink`, `InsertMedia`,
@@ -686,6 +703,14 @@ Inside your AddOn, you have access to:
 - `$this->reboot` — the [`Reboot`](core/src/Shaack/Reboot/Reboot.php) instance (base paths, config, redirects)
 - `$this->site` — the [`Site`](core/src/Shaack/Reboot/Site.php) instance (site config, paths, other addons)
 - `$this->dir` — the folder of the AddOn, `null` for the deprecated single file format
+- `$this->reboot->getMailer()` — the [`Mailer`](core/src/Shaack/Reboot/Mailer.php), configured in `local/config.yml` (see [Sending mail](#sending-mail)). Check `isConfigured()` if mail is optional for your AddOn, `send()` throws a `RuntimeException` when a mail cannot be handed over:
+
+```php
+$mailer = $this->reboot->getMailer();
+if ($mailer->isConfigured()) {
+    $mailer->send('alice@example.com', 'Your login link', "Open this link: $url", ['toName' => 'Alice']);
+}
+```
 
 ### Lifecycle Hooks
 

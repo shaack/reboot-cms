@@ -23,7 +23,8 @@
         "ext-dom": "*",
         "erusev/parsedown": "^1.7",
         "symfony/yaml": "^6.0",
-        "whitehat101/apr1-md5": "~1.0"
+        "whitehat101/apr1-md5": "~1.0",
+        "phpmailer/phpmailer": "^7.1"
     },
     "autoload": {
         "psr-4": {

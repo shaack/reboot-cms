@@ -4,10 +4,26 @@
 /** @var \Shaack\Reboot\Request $request */
 
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
+use Shaack\Reboot\CsrfProtection;
 
 if (!AdminHelper::requireAdmin($site, $reboot)) return;
 
 $baseFsPath = $reboot->getBaseFsPath();
+$mailer = $reboot->getMailer();
+
+// Test mail
+$error = null;
+$success = null;
+if ($request->getParam("action") === "test_mail") {
+    $result = AdminHelper::handleAction($request, function () use ($request, $mailer) {
+        $to = trim((string)$request->getParam("to"));
+        $mailer->send($to, "Reboot CMS test mail", "This test mail was sent from the System Health page of Reboot CMS. "
+            . "If you read this, the mail configuration in local/config.yml works.\n\nSent at " . date("Y-m-d H:i:s"));
+        return "Test mail sent to $to" . ($mailer->getTransport() === "log" ? " (log transport, written to the log only)" : "");
+    });
+    $error = $result['error'];
+    $success = $result['success'];
+}
 
 $checks = [];
 
@@ -143,6 +159,18 @@ $checks[] = [
         : '',
 ];
 
+// Mail
+$mailConfigured = $mailer->isConfigured();
+$checks[] = [
+    'label' => 'Mail',
+    'status' => $mailConfigured ? true : null,
+    'value' => $mailConfigured ? $mailer->describe() : 'not configured',
+    'hint' => $mailConfigured
+        ? ''
+        : 'Optional. Add a <code>mail:</code> section to <code>local/config.yml</code> to let AddOns send mail'
+            . ($mailer->configurationError() && $mailer->getTransport() !== '' ? ' (' . htmlspecialchars($mailer->configurationError()) . ')' : '') . '.',
+];
+
 $allOk = true;
 $hasWarnings = false;
 foreach ($checks as $check) {
@@ -152,6 +180,7 @@ foreach ($checks as $check) {
 ?>
 
 <div class="container-fluid max-width-lg">
+    <?= AdminHelper::renderStatusMessages($error, $success) ?>
     <div class="card">
         <div class="card-header">
             <h5 class="mb-0">System Health Check</h5>
@@ -194,6 +223,16 @@ foreach ($checks as $check) {
                 <?php } ?>
                 </tbody>
             </table>
+            <?php if ($mailConfigured) { ?>
+                <form method="post" action="health" class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                    <input type="hidden" name="action" value="test_mail">
+                    <label for="test-mail-to" class="small text-body-secondary">Send a test mail to</label>
+                    <input type="email" id="test-mail-to" name="to" class="form-control form-control-sm" style="max-width: 300px"
+                           required placeholder="you@example.com">
+                    <button class="btn btn-sm btn-outline-secondary">Send</button>
+                </form>
+            <?php } ?>
         </div>
     </div>
 </div>
