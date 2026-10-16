@@ -61,6 +61,7 @@ if ($action) {
                 throw new \InvalidArgumentException("Password must be at least 8 characters");
             }
             $htpasswd->changePassword($username, $password);
+            $authentication->forgetRememberedLogins($username);
             $authentication->refreshChecksum();
             return "Password changed for '$username'";
         } elseif ($action === "change_role") {
@@ -69,6 +70,9 @@ if ($action) {
             }
             $role = $request->getParam("role") ?? Authentication::ROLE_EDITOR;
             $authentication->setUserRole($username, $role);
+            if ($role === Authentication::ROLE_DISABLED) {
+                $authentication->forgetRememberedLogins($username);
+            }
             return "Role changed for '$username' to $role";
         } elseif ($action === "delete") {
             if ($username === $currentUser) {
@@ -76,6 +80,7 @@ if ($action) {
             }
             $htpasswd->deleteUser($username);
             $authentication->deleteUserRole($username);
+            $authentication->forgetRememberedLogins($username);
             $authentication->refreshChecksum();
             return "User '$username' deleted";
         }

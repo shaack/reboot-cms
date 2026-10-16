@@ -5,14 +5,19 @@ namespace Shaack\Reboot\AddOns;
 use Shaack\Htpasswd;
 use Shaack\Logger;
 use Shaack\Reboot\AddOn;
+use Shaack\Reboot\AddOns\Authentication\RememberMeStore;
 use Shaack\Reboot\Request;
 use Symfony\Component\Yaml\Yaml;
 
 class Authentication extends AddOn
 {
     private Htpasswd $htpasswd;
+    private RememberMeStore $rememberMe;
     private string $rolesFile;
     private array $roles = [];
+
+    /** The "Stay signed in" cookie, see RememberMeStore. */
+    const REMEMBER_COOKIE = "reboot_remember";
 
     const ROLE_ADMIN = "admin";
     const ROLE_EDITOR = "editor";
@@ -29,10 +34,68 @@ class Authentication extends AddOn
         ]);
         session_start();
         $this->htpasswd = new Htpasswd($this->reboot->getBaseFsPath() . "/local/.htpasswd");
+        $this->rememberMe = new RememberMeStore($this->reboot->getBaseFsPath());
         $this->rolesFile = $this->reboot->getBaseFsPath() . "/local/roles.yml";
         if (file_exists($this->rolesFile)) {
             $this->roles = Yaml::parseFile($this->rolesFile) ?? [];
         }
+        if (empty($_SESSION['user']) && isset($_COOKIE[self::REMEMBER_COOKIE])) {
+            $this->loginFromRememberCookie();
+        }
+    }
+
+    /**
+     * Restores the session from the "Stay signed in" cookie. The token is
+     * good for one use, a valid one is replaced by a fresh one, anything
+     * else clears the cookie.
+     */
+    private function loginFromRememberCookie(): void
+    {
+        $username = $this->rememberMe->consume($_COOKIE[self::REMEMBER_COOKIE]);
+        if ($username === null || !in_array($username, $this->htpasswd->getUsers(), true)
+            || $this->getUserRole($username) === self::ROLE_DISABLED) {
+            Logger::info("Stay signed in: cookie rejected");
+            $this->clearRememberCookie();
+            return;
+        }
+        Logger::info("Stay signed in: session restored for " . $username);
+        $this->startSession($username);
+        $this->issueRememberCookie($username);
+    }
+
+    private function startSession(string $username): void
+    {
+        session_regenerate_id(true);
+        $_SESSION['user'] = $username;
+        $_SESSION['checksum'] = $this->getChecksum();
+    }
+
+    private function issueRememberCookie(string $username): void
+    {
+        $token = $this->rememberMe->create($username);
+        setcookie(self::REMEMBER_COOKIE, $token, $this->rememberCookieOptions(time() + RememberMeStore::LIFETIME));
+        $_COOKIE[self::REMEMBER_COOKIE] = $token;
+    }
+
+    private function clearRememberCookie(): void
+    {
+        if (isset($_COOKIE[self::REMEMBER_COOKIE])) {
+            setcookie(self::REMEMBER_COOKIE, "", $this->rememberCookieOptions(1));
+            unset($_COOKIE[self::REMEMBER_COOKIE]);
+        }
+    }
+
+    private function rememberCookieOptions(int $expires): array
+    {
+        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+        return [
+            'expires' => $expires,
+            'path' => $this->site->getWebPath() ?: '/',
+            'secure' => $https,
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ];
     }
 
     /**
@@ -61,12 +124,15 @@ class Authentication extends AddOn
             return false;
         } else if ($user) {
             if (@$_SESSION['checksum'] !== $this->getChecksum()) {
-                $this->logout();
+                // The session is stale (password file, IP or browser changed). Only the session
+                // ends, a "Stay signed in" cookie restores it on the next request.
+                $this->endSession();
                 return false;
             }
             // Disabled accounts lose access immediately (skip if impersonating — admin retains access)
             if (!$this->isImpersonating() && $this->getUserRole($user) === self::ROLE_DISABLED) {
                 Logger::info("Access denied, account disabled: " . $user);
+                $this->rememberMe->deleteForUser($user);
                 $this->logout();
                 return false;
             }
@@ -99,16 +165,20 @@ class Authentication extends AddOn
         return md5($this->htpasswd->getChecksum() . $_SERVER['REMOTE_ADDR'] . $_SERVER['HTTP_ACCEPT_LANGUAGE']);
     }
 
-    public function login($username, $password): bool
+    /**
+     * @param bool $remember keep the user signed in for two weeks via the "Stay signed in" cookie
+     */
+    public function login($username, $password, bool $remember = false): bool
     {
         if ($this->htpasswd->validate($username, $password)) {
             if ($this->getUserRole($username) === self::ROLE_DISABLED) {
                 Logger::info("Login denied, account disabled: " . $username);
                 return false;
             }
-            session_regenerate_id(true);
-            $_SESSION['user'] = $username;
-            $_SESSION['checksum'] = $this->getChecksum();
+            $this->startSession($username);
+            if ($remember) {
+                $this->issueRememberCookie($username);
+            }
             return true;
         }
         return false;
@@ -138,9 +208,23 @@ class Authentication extends AddOn
         return $_SESSION['impersonator'] ?? null;
     }
 
+    /**
+     * Explicit logout: ends the session and forgets the "Stay signed in" cookie.
+     */
     public function logout()
     {
         Logger::info("logout " . $this->getUser());
+        $this->rememberMe->delete($_COOKIE[self::REMEMBER_COOKIE] ?? null);
+        $this->clearRememberCookie();
+        $this->endSession();
+    }
+
+    /**
+     * Ends the session and sends the browser to the admin, which asks for a
+     * login unless a "Stay signed in" cookie restores the session.
+     */
+    private function endSession(): void
+    {
         $_SESSION = [];
         session_regenerate_id(true);
         session_destroy();
@@ -163,6 +247,15 @@ class Authentication extends AddOn
     public function refreshChecksum(): void
     {
         $_SESSION['checksum'] = $this->getChecksum();
+    }
+
+    /**
+     * Forget the "Stay signed in" tokens of a user, after a password change,
+     * a deletion or when the account is disabled.
+     */
+    public function forgetRememberedLogins(string $username): void
+    {
+        $this->rememberMe->deleteForUser($username);
     }
 
     public function getUserRole(string $username): string

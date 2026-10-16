@@ -33,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Too many login attempts. Please try again later.";
     } else {
         CsrfProtection::validate($request);
-        if ($username && $authentication->login($username, $password)) {
+        $remember = !empty($_POST["remember"]);
+        if ($username && $authentication->login($username, $password, $remember)) {
             $attempts = array_filter($attempts, function($entry) use ($ip) {
                 return $entry['ip'] !== $ip;
             });
@@ -71,6 +72,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                type="password" required="required" value="">
                     </div>
                     <input id="check" name="check" type="hidden" value="">
+                    <div class="form-check mb-3">
+                        <input id="remember" name="remember" class="form-check-input" type="checkbox" value="1"<?= !empty($_POST["remember"]) ? " checked" : "" ?>>
+                        <label for="remember" class="form-check-label">Stay signed in for 2 weeks</label>
+                    </div>
                 </fieldset>
                 <button class="btn btn-primary btn-sm btn-block px-4" type="submit">Login</button>
             </form>
