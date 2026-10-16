@@ -354,6 +354,8 @@ Folder: `/site/blocks`
 
 Files in `site/blocks/` whose name starts with an underscore, for example `_helpers.php`, are not blocks but helpers the block templates `require_once`. The admin skips them when it collects block examples, so shared functions can live there without being declared twice.
 
+A block template is also rendered once with empty content when the admin collects the examples for the "Insert Block" menu, so every field may be missing. `nodeHtml()` takes that in stride, an empty list or `null` gives an empty string. If a template still throws, for example by indexing into a node list, the block is replaced by an error box with the message and the rest of the page, editor included, keeps working. The error is logged as well.
+
 A `Block` describes how a block is rendered. Blocks are written in PHP.
 
 The code for the "text-image" `Block` which was used in the page above, looks like this:

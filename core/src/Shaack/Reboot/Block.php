@@ -564,10 +564,15 @@ class Block
     }
 
     /**
-     * return the html content of a node
+     * Return the html content of a node. Null, for example from `item(n)` on
+     * a list that is shorter, gives an empty string, a missing optional field
+     * is a normal state and must not break the template.
      */
-    function nodeHtml(\DOMNode|\DOMNodeList $nodeOrNodeList, $descent = true): string
+    function nodeHtml(\DOMNode|\DOMNodeList|null $nodeOrNodeList, $descent = true): string
     {
+        if ($nodeOrNodeList === null) {
+            return '';
+        }
         $html = '';
         if (!$descent) {
             $children = $nodeOrNodeList->childNodes;
@@ -635,7 +640,19 @@ function renderBlock(Site $site, Block $block, ?Request $request): string
         Logger::error("Block not found at: " . $blockFilePath);
         return "<div class='w-100 p-3 border-1 border-top border-bottom text-danger text-center'>Block not found: \"" . htmlspecialchars($block->getName(), ENT_QUOTES, 'UTF-8') . "\"</div>";
     } else {
-        include $blockFilePath;
+        try {
+            include $blockFilePath;
+        } catch (\Throwable $e) {
+            // One faulty template must not take down the page, least of all the admin's
+            // editor, which renders every block once to collect the examples.
+            ob_end_clean();
+            $message = get_class($e) . ": " . $e->getMessage() . " in " . basename($e->getFile()) . " on line " . $e->getLine();
+            Logger::error("Block '" . $block->getName() . "' failed: " . $message);
+            $block->collectExample();
+            return "<div class='w-100 p-3 border-1 border-top border-bottom text-danger text-center'>Block error in \""
+                . htmlspecialchars($block->getName(), ENT_QUOTES, 'UTF-8') . "\": "
+                . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . "</div>";
+        }
         $contents = ob_get_contents();
         ob_end_clean();
         // Collect generated example

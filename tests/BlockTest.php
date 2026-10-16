@@ -4,6 +4,7 @@ namespace Shaack\Tests;
 
 require_once __DIR__ . "/TestHelper.php";
 
+use Shaack\Logger;
 use Shaack\Reboot\Block;
 
 class BlockTest
@@ -162,6 +163,39 @@ class BlockTest
         $html = $block->nodeHtml($node, false);
         Assert::contains("<strong>Bold</strong>", $html);
         Assert::contains("and normal", $html);
+    }
+
+    public function testNodeHtmlWithEmptyListAndNull(): void
+    {
+        $block = $this->createBlock("test", "");
+        $nodes = $block->xpath("//h3[part(2)]");
+        Assert::true($nodes instanceof \DOMNodeList);
+        Assert::equals("", $block->nodeHtml($nodes));
+        Assert::equals("", $block->nodeHtml($nodes->item(2)), "item() beyond the list gives null");
+        Assert::equals("", $block->nodeHtml(null, false));
+    }
+
+    public function testFaultyTemplateRendersErrorBoxInsteadOfDying(): void
+    {
+        $dir = sys_get_temp_dir() . "/test_block_" . uniqid();
+        mkdir($dir . "/blocks", 0755, true);
+        file_put_contents($dir . "/blocks/broken.php", '<?php echo "before"; throw new \RuntimeException("boom"); ?>');
+        file_put_contents($dir . "/blocks/fine.php", '<p>fine</p>');
+        $level = Logger::getLevel();
+        Logger::setLevel(3);
+        try {
+            $site = TestHelper::createSiteStub($dir, "");
+            $html = (new Block($site, "broken", ""))->render(null);
+            Assert::contains("Block error in \"broken\"", $html);
+            Assert::contains("RuntimeException: boom in broken.php on line 1", $html);
+            Assert::false(str_contains($html, "before"), "partial output is discarded");
+            Assert::equals("<p>fine</p>", (new Block($site, "fine", ""))->render(null), "output buffering is intact afterwards");
+        } finally {
+            Logger::setLevel($level);
+            array_map('unlink', glob($dir . "/blocks/*.php"));
+            rmdir($dir . "/blocks");
+            rmdir($dir);
+        }
     }
 
     // --- Validation ---
