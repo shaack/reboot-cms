@@ -30,7 +30,7 @@ On multilingual sites the paths are compared without the language prefix, so `/d
 
 ## Login and logout
 
-The login page is provided by the AddOn and rendered through the site template like a page in `site/pages/`, so it looks like the rest of the site. Its markup uses the classes `protected-areas-login`, `protected-areas-error`, `protected-areas-notice`, `protected-areas-button`, `protected-areas-link`, `protected-areas-link-form` and `protected-areas-password-form` for styling. The texts ship in English and German and follow the request language.
+The login page is provided by the AddOn and rendered through the site template like a page in `site/pages/`, so it looks like the rest of the site. Its markup carries Bootstrap classes (`form-label`, `form-control`, `btn btn-primary`, `alert`), so on a site built with Bootstrap it looks right out of the box, and a few default rules without specificity for sites without a framework. For your own styling use the classes `protected-areas-login`, `protected-areas-error`, `protected-areas-notice`, `protected-areas-button`, `protected-areas-link`, `protected-areas-link-form` and `protected-areas-password-form`, every rule of the site wins over the defaults. The texts ship in English and German and follow the request language.
 
 The logout URL ends the login and returns to the homepage. Both paths can be changed:
 
