@@ -15,6 +15,7 @@ class Site
     protected string $webPath; // The web path $domain . $baseUrl . $webPath
     protected array $config = []; // Global values for all pages in a site folder (`/site/config.yml`)
     protected array $addOns = []; // Site addons
+    protected array $missingAddOns = []; // names from `addons` that could not be loaded
 
     /**
      * @param $reboot Reboot
@@ -37,6 +38,8 @@ class Site
             $addOn = AddOnLoader::load($this->reboot, $this, (string)$addOnName);
             if ($addOn !== null) {
                 $this->addOns[$addOnName] = $addOn;
+            } else {
+                $this->missingAddOns[] = (string)$addOnName;
             }
         }
         Logger::debug("site->webPath: " . $this->webPath);
@@ -90,6 +93,16 @@ class Site
     public function getAddOn($addOnName)
     {
         return $this->addOns[$addOnName];
+    }
+
+    /**
+     * Names listed under `addons` in `site/config.yml` for which no AddOn was
+     * found or loaded. The admin shows them as an error.
+     * @return string[]
+     */
+    public function getMissingAddOns(): array
+    {
+        return $this->missingAddOns;
     }
 
     /**

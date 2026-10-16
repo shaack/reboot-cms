@@ -141,23 +141,37 @@ $checks[] = [
     'hint' => $hasUsers ? '' : 'No admin users found. Create one via the setup page.',
 ];
 
-// AddOns in the deprecated single file format
+// AddOns in the deprecated single file format, or deprecated themselves
 /** @var \Shaack\Reboot\AddOns\Admin $admin */
 $admin = $site->getAddOn("Admin");
 $legacyAddOns = [];
+$deprecationHints = [];
 foreach ($admin->getDefaultSite()->getAddOns() as $addOn) {
     if ($addOn->getDir() === null) {
         $legacyAddOns[] = $addOn->getName();
+        $deprecationHints['format'] = 'The single file format <code>site/addons/Name.php</code> is deprecated. Move each AddOn to <code>site/addons/Name/Name.php</code> and change its namespace to <code>Shaack\Reboot\AddOns</code>.';
+    } elseif ($addOn->getDeprecation() !== null) {
+        $legacyAddOns[] = $addOn->getName();
+        $deprecationHints[$addOn->getName()] = htmlspecialchars($addOn->getName()) . ': ' . htmlspecialchars($addOn->getDeprecation());
     }
 }
-$checks[] = [
-    'label' => 'AddOn format',
-    'status' => $legacyAddOns ? null : true,
-    'value' => $legacyAddOns ? 'deprecated: ' . htmlspecialchars(implode(', ', $legacyAddOns)) : 'ok',
-    'hint' => $legacyAddOns
-        ? 'The single file format <code>site/addons/Name.php</code> is deprecated. Move each AddOn to <code>site/addons/Name/Name.php</code> and change its namespace to <code>Shaack\Reboot\AddOns</code>.'
-        : '',
-];
+$missingAddOns = $admin->getDefaultSite()->getMissingAddOns();
+if ($missingAddOns) {
+    $checks[] = [
+        'label' => 'AddOns',
+        'status' => false,
+        'value' => 'not found: ' . htmlspecialchars(implode(', ', $missingAddOns)),
+        'hint' => 'These AddOns are listed in <code>site/config.yml</code> but there is no <code>site/addons/Name/Name.php</code> or <code>core/addons/Name/Name.php</code> for them. Remove the entry or check the spelling.'
+            . ($deprecationHints ? ' ' . implode(' ', $deprecationHints) : ''),
+    ];
+} else {
+    $checks[] = [
+        'label' => 'AddOns',
+        'status' => $legacyAddOns ? null : true,
+        'value' => $legacyAddOns ? 'deprecated: ' . htmlspecialchars(implode(', ', $legacyAddOns)) : 'ok',
+        'hint' => implode(' ', $deprecationHints),
+    ];
+}
 
 // Mail
 $mailConfigured = $mailer->isConfigured();

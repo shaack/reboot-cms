@@ -180,3 +180,14 @@ nav.navbar {
     border-radius: 50%;
     background-color: var(--bs-danger, #dc3545);
 }
+
+// Status toasts: wider than the Bootstrap default of 350px, so a message
+// with a file path stays readable, and long paths may break anywhere.
+.toast {
+    width: auto;
+    max-width: min(44rem, calc(100vw - 2rem));
+
+    .toast-body {
+        overflow-wrap: anywhere;
+    }
+}

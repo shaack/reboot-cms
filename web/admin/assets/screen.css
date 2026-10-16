@@ -165,4 +165,12 @@ nav.navbar {
   background-color: var(--bs-danger, #dc3545);
 }
 
+.toast {
+  width: auto;
+  max-width: min(44rem, 100vw - 2rem);
+}
+.toast .toast-body {
+  overflow-wrap: anywhere;
+}
+
 /*# sourceMappingURL=screen.css.map */

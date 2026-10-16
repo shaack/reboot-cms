@@ -45,7 +45,10 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
         window._toastQueue = []
         window._toastsReady = false
         function statusMessage(body, toastClass) {
-            var t = {body: body, toastClass: toastClass || "text-bg-success"}
+            toastClass = toastClass || "text-bg-success"
+            // Errors stay longer, they usually carry a hint that has to be read
+            var delay = toastClass.indexOf("danger") !== -1 ? 15000 : 5000
+            var t = {body: body, toastClass: toastClass, delay: delay}
             if (window._toastsReady) {
                 bootstrap.showToast(t)
             } else {

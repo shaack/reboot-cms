@@ -171,5 +171,14 @@ class AddOnLoaderTest
         $site = new Site($this->reboot, "/site", "");
         Assert::equals(['ViaSite'], array_keys($site->getAddOns()));
         Assert::true($site->getAddOn('ViaSite') instanceof AddOn);
+        Assert::equals(['Missing'], $site->getMissingAddOns());
+    }
+
+    public function testSiteWithoutProblemsReportsNoMissingAddOns(): void
+    {
+        $this->writeAddOn($this->tmpDir . "/site/addons/AllGood/AllGood.php", "AllGood", "Shaack\\Reboot\\AddOns");
+        file_put_contents($this->tmpDir . "/site/config.yml", "addons: [ AllGood ]\n");
+        $site = new Site($this->reboot, "/site", "");
+        Assert::equals([], $site->getMissingAddOns());
     }
 }
