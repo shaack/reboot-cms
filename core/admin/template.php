@@ -55,6 +55,76 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
             }
         }
     </script>
+    <?php
+    // The editor is an ES module tree with three levels of imports. Preloading every
+    // file lets the browser fetch them in one round instead of level by level, and the
+    // module script sits in the head so the downloads start before the body is parsed.
+    // A module script runs only after the document is parsed, so the DOM is complete.
+    $editorModules = [
+        'vendor/bootstrap-show-modal/src/ShowModal.js',
+        'vendor/cm-md-editor/src/MdEditor.js',
+        'vendor/cm-md-editor/src/tools/DefaultTools.js',
+        'vendor/cm-md-editor/src/tools/listBlock.js',
+        'vendor/cm-md-editor/src/tools/Separator.js',
+        'vendor/cm-md-editor/src/tools/Headings.js',
+        'vendor/cm-md-editor/src/tools/Bold.js',
+        'vendor/cm-md-editor/src/tools/Italic.js',
+        'vendor/cm-md-editor/src/tools/Strikethrough.js',
+        'vendor/cm-md-editor/src/tools/Highlight.js',
+        'vendor/cm-md-editor/src/tools/UnorderedList.js',
+        'vendor/cm-md-editor/src/tools/OrderedList.js',
+        'vendor/cm-md-editor/src/tools/InsertLink.js',
+        'vendor/cm-md-editor/src/tools/InsertImage.js',
+        'assets/InsertBlock.js',
+        'assets/InsertMedia.js',
+        'assets/InsertPageLink.js',
+    ];
+    foreach ($editorModules as $module) { ?>
+    <link rel="modulepreload" href="<?= $module ?>">
+    <?php } ?>
+<script type="module">
+    import "./vendor/bootstrap-show-modal/src/ShowModal.js"
+    import {MdEditor} from "./vendor/cm-md-editor/src/MdEditor.js"
+    import {Separator} from "./vendor/cm-md-editor/src/tools/Separator.js"
+    import {Headings} from "./vendor/cm-md-editor/src/tools/Headings.js"
+    import {Bold} from "./vendor/cm-md-editor/src/tools/Bold.js"
+    import {Italic} from "./vendor/cm-md-editor/src/tools/Italic.js"
+    import {Strikethrough} from "./vendor/cm-md-editor/src/tools/Strikethrough.js"
+    import {UnorderedList} from "./vendor/cm-md-editor/src/tools/UnorderedList.js"
+    import {OrderedList} from "./vendor/cm-md-editor/src/tools/OrderedList.js"
+    import {InsertLink} from "./vendor/cm-md-editor/src/tools/InsertLink.js"
+    import {InsertImage} from "./vendor/cm-md-editor/src/tools/InsertImage.js"
+    import {InsertBlock} from "./assets/InsertBlock.js"
+    import {InsertMedia} from "./assets/InsertMedia.js"
+    import {InsertPageLink} from "./assets/InsertPageLink.js"
+
+    const toolRegistry = {
+        Headings, Bold, Italic, Strikethrough,
+        UnorderedList, OrderedList, InsertLink, InsertImage
+    }
+    const configuredTools = <?= json_encode($editorTools) ?>;
+    const blockExamplesEl = document.getElementById('block-examples')
+    const blockExamples = blockExamplesEl ? JSON.parse(blockExamplesEl.textContent) : null
+    document.querySelectorAll("textarea.markdown").forEach(editor => {
+        const props = {wordWrap: <?= $editorWordWrap ?>}
+        const tools = configuredTools.map(name => {
+            if (name === '|') return Separator
+            if (toolRegistry[name]) return toolRegistry[name]
+            console.warn('Unknown editor tool:', name)
+            return null
+        }).filter(Boolean)
+        const extraTools = [
+            Separator,
+            [InsertPageLink, {pagesUrl: 'pages'}],
+            [InsertMedia, {mediaUrl: 'media'}]
+        ]
+        if (blockExamples && Object.keys(blockExamples).length > 0) {
+            extraTools.push([InsertBlock, {blocks: blockExamples}])
+        }
+        props.tools = [...tools, ...extraTools]
+        new MdEditor(editor, props)
+    })
+</script>
 </head>
 <body class="bg-body-tertiary">
 <?php $navbarConfig = $site->getConfig()['navbar']; ?>
@@ -149,48 +219,5 @@ echo($page->render($request));
     </script>
     <script src="assets/update-badge.js"></script>
 <?php } ?>
-<script type="module">
-    import "./vendor/bootstrap-show-modal/src/ShowModal.js"
-    import {MdEditor} from "./vendor/cm-md-editor/src/MdEditor.js"
-    import {Separator} from "./vendor/cm-md-editor/src/tools/Separator.js"
-    import {Headings} from "./vendor/cm-md-editor/src/tools/Headings.js"
-    import {Bold} from "./vendor/cm-md-editor/src/tools/Bold.js"
-    import {Italic} from "./vendor/cm-md-editor/src/tools/Italic.js"
-    import {Strikethrough} from "./vendor/cm-md-editor/src/tools/Strikethrough.js"
-    import {UnorderedList} from "./vendor/cm-md-editor/src/tools/UnorderedList.js"
-    import {OrderedList} from "./vendor/cm-md-editor/src/tools/OrderedList.js"
-    import {InsertLink} from "./vendor/cm-md-editor/src/tools/InsertLink.js"
-    import {InsertImage} from "./vendor/cm-md-editor/src/tools/InsertImage.js"
-    import {InsertBlock} from "./assets/InsertBlock.js"
-    import {InsertMedia} from "./assets/InsertMedia.js"
-    import {InsertPageLink} from "./assets/InsertPageLink.js"
-
-    const toolRegistry = {
-        Headings, Bold, Italic, Strikethrough,
-        UnorderedList, OrderedList, InsertLink, InsertImage
-    }
-    const configuredTools = <?= json_encode($editorTools) ?>;
-    const blockExamplesEl = document.getElementById('block-examples')
-    const blockExamples = blockExamplesEl ? JSON.parse(blockExamplesEl.textContent) : null
-    document.querySelectorAll("textarea.markdown").forEach(editor => {
-        const props = {wordWrap: <?= $editorWordWrap ?>}
-        const tools = configuredTools.map(name => {
-            if (name === '|') return Separator
-            if (toolRegistry[name]) return toolRegistry[name]
-            console.warn('Unknown editor tool:', name)
-            return null
-        }).filter(Boolean)
-        const extraTools = [
-            Separator,
-            [InsertPageLink, {pagesUrl: 'pages'}],
-            [InsertMedia, {mediaUrl: 'media'}]
-        ]
-        if (blockExamples && Object.keys(blockExamples).length > 0) {
-            extraTools.push([InsertBlock, {blocks: blockExamples}])
-        }
-        props.tools = [...tools, ...extraTools]
-        new MdEditor(editor, props)
-    })
-</script>
 </body>
 </html>
