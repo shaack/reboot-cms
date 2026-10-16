@@ -54,6 +54,14 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
                 window._toastQueue.push(t)
             }
         }
+        // The editor column is rendered hidden (class editor-loading) and shown once
+        // the Markdown editor is built. The load event is the fallback, so the column
+        // appears even if a module fails to load.
+        function showEditorColumn() {
+            var column = document.getElementById('editor-column')
+            if (column) column.classList.remove('editor-loading')
+        }
+        window.addEventListener('load', showEditorColumn)
     </script>
     <?php
     // The editor is an ES module tree with three levels of imports. Preloading every
@@ -124,6 +132,7 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
         props.tools = [...tools, ...extraTools]
         new MdEditor(editor, props)
     })
+    showEditorColumn()
 </script>
 </head>
 <body class="bg-body-tertiary">

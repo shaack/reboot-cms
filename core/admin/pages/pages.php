@@ -124,7 +124,7 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
                 </div>
             </div>
         </div>
-        <div class="col-12 col-lg-9 col-xl-10 order-md-1 order-0" id="editor-column">
+        <div class="col-12 col-lg-9 col-xl-10 order-md-1 order-0 editor-loading" id="editor-column">
             <?php if ($editPageName) {
                 $fullPath = $pagesDir . $editPageName;
                 $resolvedPath = realpath(dirname($fullPath));

@@ -25,6 +25,10 @@ textarea.cm-md-editor {
   margin-bottom: 1rem;
 }
 
+#editor-column.editor-loading {
+  display: none;
+}
+
 [data-bs-theme=dark] textarea.cm-md-editor {
   background-color: #1a1a1a;
 }

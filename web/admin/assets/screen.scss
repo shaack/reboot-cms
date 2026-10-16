@@ -29,7 +29,13 @@ pre {
 textarea.cm-md-editor {
     height: calc(100vh - 200px);
     margin-bottom: 1rem;
+}
 
+// The editor column stays hidden until the Markdown editor has built its
+// toolbar, so the page does not jump when the toolbar is inserted. The class
+// is removed by the editor script in the admin template.
+#editor-column.editor-loading {
+    display: none;
 }
 
 [data-bs-theme="dark"] textarea.cm-md-editor {
