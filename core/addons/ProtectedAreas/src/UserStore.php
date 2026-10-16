@@ -13,7 +13,7 @@ namespace Shaack\Reboot\AddOns\ProtectedAreas;
  * user may enter. Addresses are stored in lower case, so the login is not case
  * sensitive. Everything the file holds, keyed by address:
  *
- *   passwordHash  password_hash() of the password
+ *   passwordHash  password_hash() of the password, null for an account that logs in by link only
  *   paths         the paths the user may enter, e.g. ["/customers/acme"]
  *   createdAt     unix timestamp
  *   lastLoginAt   unix timestamp of the last successful login, or null
@@ -42,6 +42,7 @@ class UserStore
         $users = $this->read();
         ksort($users, SORT_NATURAL | SORT_FLAG_CASE);
         foreach ($users as &$user) {
+            $user['hasPassword'] = ($user['passwordHash'] ?? null) !== null;
             unset($user['passwordHash']);
         }
         return $users;
@@ -61,17 +62,23 @@ class UserStore
         return $this->read()[self::normalizeEmail($email)]['paths'] ?? [];
     }
 
-    public function addUser(string $email, string $password, array $paths): void
+    /**
+     * @param ?string $password null or empty for an account without password, which logs in by link only
+     */
+    public function addUser(string $email, ?string $password, array $paths): void
     {
         self::assertValidEmail($email);
-        self::assertValidPassword($password);
+        $password = (string)$password === '' ? null : $password;
+        if ($password !== null) {
+            self::assertValidPassword($password);
+        }
         $username = self::normalizeEmail($email);
         $this->withUsers(function (array &$users) use ($username, $password, $paths) {
             if (isset($users[$username])) {
                 throw new \InvalidArgumentException("An account for '$username' already exists");
             }
             $users[$username] = [
-                'passwordHash' => password_hash($password, PASSWORD_DEFAULT),
+                'passwordHash' => $password === null ? null : password_hash($password, PASSWORD_DEFAULT),
                 'paths' => AccessControl::normalizePaths($paths),
                 'createdAt' => time(),
                 'lastLoginAt' => null,
@@ -91,6 +98,26 @@ class UserStore
             $users[$username]['passwordHash'] = password_hash($password, PASSWORD_DEFAULT);
             return true;
         });
+    }
+
+    /**
+     * Removes the password, the account then logs in by link only.
+     */
+    public function removePassword(string $email): void
+    {
+        $username = self::normalizeEmail($email);
+        $this->withUsers(function (array &$users) use ($username) {
+            if (!isset($users[$username])) {
+                throw new \InvalidArgumentException("No account for '$username'");
+            }
+            $users[$username]['passwordHash'] = null;
+            return true;
+        });
+    }
+
+    public function hasPassword(string $email): bool
+    {
+        return ($this->read()[self::normalizeEmail($email)]['passwordHash'] ?? null) !== null;
     }
 
     public function setPaths(string $email, array $paths): void
@@ -118,9 +145,9 @@ class UserStore
     }
 
     /**
-     * True if the account exists and the password matches. Takes about the
-     * same time for unknown addresses, so the response does not reveal which
-     * accounts exist.
+     * True if the account exists, has a password and the password matches.
+     * Takes about the same time for unknown addresses and accounts without
+     * password, so the response does not reveal which accounts exist.
      */
     public function verify(string $email, string $password): bool
     {

@@ -162,7 +162,7 @@ class Authentication extends AddOn
      */
     private function getChecksum(): string
     {
-        return md5($this->htpasswd->getChecksum() . $_SERVER['REMOTE_ADDR'] . $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        return md5($this->htpasswd->getChecksum() . ($_SERVER['REMOTE_ADDR'] ?? '') . ($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? ''));
     }
 
     /**

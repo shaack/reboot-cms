@@ -104,6 +104,27 @@ class ProtectedAreasTest
         Assert::true(is_file($this->tmpDir . '/local/protected-areas/users.json'));
     }
 
+    public function testAccountWithoutPasswordLogsInByLinkOnly(): void
+    {
+        $store = new UserStore($this->tmpDir);
+        $store->addUser('link@example.com', null, ['/customers/acme']);
+        $store->addUser('empty@example.com', '', ['/customers/acme']);
+        Assert::true($store->hasUser('link@example.com'));
+        Assert::false($store->hasPassword('link@example.com'));
+        Assert::false($store->hasPassword('empty@example.com'));
+        Assert::false($store->verify('link@example.com', ''), 'no password means no password login');
+        Assert::false($store->verify('link@example.com', 'anything-at-all'));
+        Assert::false($store->getUsers()['link@example.com']['hasPassword']);
+        $store->setPassword('link@example.com', 'secret-password');
+        Assert::true($store->hasPassword('link@example.com'));
+        Assert::true($store->verify('link@example.com', 'secret-password'));
+        Assert::true($store->getUsers()['link@example.com']['hasPassword']);
+        $store->removePassword('link@example.com');
+        Assert::false($store->hasPassword('link@example.com'));
+        Assert::false($store->verify('link@example.com', 'secret-password'));
+        $this->expectException(fn() => $store->removePassword('nobody@example.com'), 'unknown account');
+    }
+
     public function testPasswordIsStoredHashed(): void
     {
         $store = new UserStore($this->tmpDir);

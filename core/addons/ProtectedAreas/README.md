@@ -49,7 +49,7 @@ The keys that can be overridden per language are `title`, `intro`, `emailLabel`,
 
 ## Login links by mail
 
-If the site can send mail (section `mail` in `local/config.yml`, see the main README), the login page offers a second way in: the visitor enters only the e-mail address and receives a link that logs them in. No password needed. The link is valid for 15 minutes and works once, afterwards the visitor stays logged in for 30 days through a cookie, also across browser restarts. The password login stays available below the link form. The site name in the mail is the `brand` of the `navbar` section or `title` of `site/config.yml`.
+If the site can send mail (section `mail` in `local/config.yml`, see the main README), the login page asks for the e-mail address only and sends a link that logs the visitor in. No password needed. The link is valid for 15 minutes and works once, afterwards the visitor stays logged in for 30 days through a cookie, also across browser restarts. The password login is folded away below the link form, for accounts that have a password. The site name in the mail is the `brand` of the `navbar` section or `title` of `site/config.yml`.
 
 The answer to the form is the same whether an account exists for the address or not, so the form cannot be used to find out which addresses have access. Link requests are limited to five per IP address and 15 minutes, separately from failed password logins. The link is built from the host of the request, set `baseUrl` if the site is reached through a proxy under another name:
 
@@ -79,7 +79,7 @@ To show the login state in the site template, ask the AddOn:
 
 ## Accounts
 
-Accounts are managed in the admin under "Protected Areas": e-mail address, password and the list of allowed paths. There is no self registration and no password reset by mail, the site owner hands out the credentials. The e-mail address is the account name. It is stored in lower case and the login does not care about case, so `Alice@Example.com` and `alice@example.com` are the same account. Passwords need at least eight characters and are stored as `password_hash()` hashes.
+Accounts are managed in the admin under "Protected Areas": e-mail address, the list of allowed paths and optionally a password. There is no self registration and no password reset by mail. The e-mail address is the account name. On a site that sends mail the password can be left empty, the account then logs in by link only, which is the simplest way for customers. A password can be set or removed later. Without a mail configuration every account needs a password. It is stored in lower case and the login does not care about case, so `Alice@Example.com` and `alice@example.com` are the same account. Passwords need at least eight characters and are stored as `password_hash()` hashes.
 
 Five failed logins from one IP address within 15 minutes block further attempts from that address until the window has passed. A successful login clears the counter.
 

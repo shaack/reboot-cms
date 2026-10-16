@@ -35,7 +35,7 @@ if ($action) {
         } elseif ($action === "set_password") {
             $store->setPassword($email, (string)$request->getParam("password"));
             $protectedAreas->getRememberStore()->deleteForSubject($email);
-            return "Password of '$email' changed";
+            return "Password of '$email' set";
         } elseif ($action === "set_paths") {
             $store->setPaths($email, $parsePaths($request->getParam("paths")));
             return "Paths of '$email' saved";
@@ -43,6 +43,10 @@ if ($action) {
             $store->deleteUser($email);
             $protectedAreas->getRememberStore()->deleteForSubject($email);
             return "Account '$email' deleted";
+        } elseif ($action === "remove_password") {
+            $store->removePassword($email);
+            $protectedAreas->getRememberStore()->deleteForSubject($email);
+            return "Password of '$email' removed, the account logs in by link only";
         } elseif ($action === "send_link") {
             $protectedAreas->sendLoginLink($email, $request);
             return "Login link sent to '$email'";
@@ -94,9 +98,11 @@ $linkLogin = $protectedAreas->canSendLoginLinks();
                            autocomplete="off" required>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label small mb-1" for="add-password">Password (min. 8 characters)</label>
+                    <label class="form-label small mb-1" for="add-password">
+                        <?= $linkLogin ? 'Password (optional, min. 8 characters)' : 'Password (min. 8 characters)' ?>
+                    </label>
                     <input type="text" id="add-password" name="password" class="form-control form-control-sm"
-                           autocomplete="off" required minlength="8">
+                           autocomplete="off" minlength="8"<?= $linkLogin ? ' placeholder="none, login by link"' : ' required' ?>>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label small mb-1" for="add-paths">Allowed paths, one per line</label>
@@ -109,6 +115,9 @@ $linkLogin = $protectedAreas->canSendLoginLinks();
             </div>
             <div class="form-text">
                 A user may open every page below one of their paths. The path <code>/</code> grants access to all areas.
+                <?php if ($linkLogin) { ?>
+                    Without a password the account logs in by mail link only, which is the simplest way for customers.
+                <?php } ?>
             </div>
         </div>
     </form>
@@ -122,7 +131,7 @@ $linkLogin = $protectedAreas->canSendLoginLinks();
                 <tr>
                     <th style="width: 260px">E-mail address</th>
                     <th>Allowed paths</th>
-                    <th style="width: 260px">New password</th>
+                    <th style="width: 280px">Password</th>
                     <th style="width: 150px">Last login</th>
                     <th style="width: 220px"></th>
                 </tr>
@@ -156,9 +165,19 @@ $linkLogin = $protectedAreas->canSendLoginLinks();
                                 <input type="hidden" name="action" value="set_password">
                                 <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
                                 <input type="text" name="password" class="form-control form-control-sm"
-                                       autocomplete="off" required minlength="8" placeholder="min. 8 characters">
+                                       autocomplete="off" required minlength="8" placeholder="<?= !empty($user['hasPassword']) ? 'new password, min. 8 characters' : 'min. 8 characters' ?>">
                                 <button class="btn btn-sm btn-outline-secondary text-nowrap">Set</button>
                             </form>
+                            <?php if (!empty($user['hasPassword'])) { ?>
+                                <form method="post" action="<?= htmlspecialchars($adminPath) ?>" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                                    <input type="hidden" name="action" value="remove_password">
+                                    <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
+                                    <button class="btn btn-sm btn-link text-body-secondary text-decoration-none p-0 mt-1 small">Remove password, login by link only</button>
+                                </form>
+                            <?php } else { ?>
+                                <div class="small text-body-secondary mt-1">No password, logs in by link only.</div>
+                            <?php } ?>
                         </td>
                         <td class="small">
                             <?php if (!empty($user['lastLoginAt'])) { ?>

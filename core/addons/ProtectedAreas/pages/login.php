@@ -23,6 +23,7 @@ $denied = $request->getParam('denied', 'get') === '1';
 $linkLogin = $protectedAreas->canSendLoginLinks();
 $error = null;
 $notice = null;
+$passwordFailed = false; // opens the password form again after a wrong password
 if ($request->getParam('sent', 'get') === '1') {
     $notice = $texts['linkSent'];
 } elseif ($request->getParam('invalid', 'get') === '1') {
@@ -46,6 +47,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $reboot->redirect($webPath . $protectedAreas->getLoginPath($request) . '?' . http_build_query($params));
             return;
         }
+        $passwordFailed = true;
         if ($protectedAreas->isThrottled($ip)) {
             $error = $texts['tooManyAttempts'];
         } elseif ($protectedAreas->login($email, $password, $ip)) {
@@ -97,9 +99,10 @@ $user = $protectedAreas->getUser();
                     <button type="submit" class="protected-areas-button"><?= htmlspecialchars($texts['linkSubmit']) ?></button>
                 </p>
             </form>
-            <h2><?= htmlspecialchars($texts['orPassword']) ?></h2>
+            <details class="protected-areas-password-form"<?= $passwordFailed ? ' open' : '' ?>>
+            <summary><?= htmlspecialchars($texts['orPassword']) ?></summary>
         <?php } ?>
-        <form method="post" action="<?= htmlspecialchars($webPath . $protectedAreas->getLoginPath($request)) ?>" class="protected-areas-password-form">
+        <form method="post" action="<?= htmlspecialchars($webPath . $protectedAreas->getLoginPath($request)) ?>"<?= $linkLogin ? '' : ' class="protected-areas-password-form"' ?>>
             <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
             <input type="hidden" name="next" value="<?= htmlspecialchars($next) ?>">
             <p>
@@ -114,5 +117,8 @@ $user = $protectedAreas->getUser();
                 <button type="submit" class="protected-areas-button"><?= htmlspecialchars($texts['submit']) ?></button>
             </p>
         </form>
+        <?php if ($linkLogin) { ?>
+            </details>
+        <?php } ?>
     <?php } ?>
 </div>
