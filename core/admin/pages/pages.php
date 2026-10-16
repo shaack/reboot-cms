@@ -133,6 +133,8 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
                     $editPageName = null;
                 } else {
                     $edited = $request->getParam("edited");
+                    // Browsers submit textarea content with CRLF line endings, the files are kept with LF
+                    $edited = str_replace("\r\n", "\n", $edited);
                     $validationErrors = [];
                     $pageChanged = false;
                     if ($edited !== null) {
