@@ -9,8 +9,9 @@ namespace Shaack\Reboot\AddOns\ProtectedAreas;
 
 /**
  * The accounts of the protected areas, stored in `local/protected-areas/users.json`.
- * An account is a user name, a password hash and the list of paths the user
- * may enter. Everything the file holds:
+ * An account is an e-mail address, a password hash and the list of paths the
+ * user may enter. Addresses are stored in lower case, so the login is not case
+ * sensitive. Everything the file holds, keyed by address:
  *
  *   passwordHash  password_hash() of the password
  *   paths         the paths the user may enter, e.g. ["/customers/acme"]
@@ -34,7 +35,7 @@ class UserStore
     }
 
     /**
-     * All accounts keyed by user name, sorted by name, without the password hashes.
+     * All accounts keyed by e-mail address, sorted, without the password hashes.
      */
     public function getUsers(): array
     {
@@ -46,27 +47,28 @@ class UserStore
         return $users;
     }
 
-    public function hasUser(string $username): bool
+    public function hasUser(string $email): bool
     {
-        return isset($this->read()[$username]);
+        return isset($this->read()[self::normalizeEmail($email)]);
     }
 
     /**
      * The paths a user may enter, empty for unknown users.
      * @return string[]
      */
-    public function getPaths(string $username): array
+    public function getPaths(string $email): array
     {
-        return $this->read()[$username]['paths'] ?? [];
+        return $this->read()[self::normalizeEmail($email)]['paths'] ?? [];
     }
 
-    public function addUser(string $username, string $password, array $paths): void
+    public function addUser(string $email, string $password, array $paths): void
     {
-        self::assertValidUsername($username);
+        self::assertValidEmail($email);
         self::assertValidPassword($password);
+        $username = self::normalizeEmail($email);
         $this->withUsers(function (array &$users) use ($username, $password, $paths) {
             if (isset($users[$username])) {
-                throw new \InvalidArgumentException("User '$username' already exists");
+                throw new \InvalidArgumentException("An account for '$username' already exists");
             }
             $users[$username] = [
                 'passwordHash' => password_hash($password, PASSWORD_DEFAULT),
@@ -78,34 +80,37 @@ class UserStore
         });
     }
 
-    public function setPassword(string $username, string $password): void
+    public function setPassword(string $email, string $password): void
     {
         self::assertValidPassword($password);
+        $username = self::normalizeEmail($email);
         $this->withUsers(function (array &$users) use ($username, $password) {
             if (!isset($users[$username])) {
-                throw new \InvalidArgumentException("User '$username' does not exist");
+                throw new \InvalidArgumentException("No account for '$username'");
             }
             $users[$username]['passwordHash'] = password_hash($password, PASSWORD_DEFAULT);
             return true;
         });
     }
 
-    public function setPaths(string $username, array $paths): void
+    public function setPaths(string $email, array $paths): void
     {
+        $username = self::normalizeEmail($email);
         $this->withUsers(function (array &$users) use ($username, $paths) {
             if (!isset($users[$username])) {
-                throw new \InvalidArgumentException("User '$username' does not exist");
+                throw new \InvalidArgumentException("No account for '$username'");
             }
             $users[$username]['paths'] = AccessControl::normalizePaths($paths);
             return true;
         });
     }
 
-    public function deleteUser(string $username): void
+    public function deleteUser(string $email): void
     {
+        $username = self::normalizeEmail($email);
         $this->withUsers(function (array &$users) use ($username) {
             if (!isset($users[$username])) {
-                throw new \InvalidArgumentException("User '$username' does not exist");
+                throw new \InvalidArgumentException("No account for '$username'");
             }
             unset($users[$username]);
             return true;
@@ -113,13 +118,14 @@ class UserStore
     }
 
     /**
-     * True if the user exists and the password matches. Takes about the same
-     * time for unknown users, so the response does not reveal which names exist.
+     * True if the account exists and the password matches. Takes about the
+     * same time for unknown addresses, so the response does not reveal which
+     * accounts exist.
      */
-    public function verify(string $username, string $password): bool
+    public function verify(string $email, string $password): bool
     {
         $users = $this->read();
-        $hash = $users[$username]['passwordHash'] ?? null;
+        $hash = $users[self::normalizeEmail($email)]['passwordHash'] ?? null;
         if ($hash === null) {
             // Burn the same time as a real comparison would
             password_verify($password, '$2y$10$usesomesillystringforsalt$');
@@ -128,8 +134,9 @@ class UserStore
         return password_verify($password, $hash);
     }
 
-    public function registerLogin(string $username): void
+    public function registerLogin(string $email): void
     {
+        $username = self::normalizeEmail($email);
         $this->withUsers(function (array &$users) use ($username) {
             if (!isset($users[$username])) {
                 return false;
@@ -139,16 +146,24 @@ class UserStore
         });
     }
 
-    public static function isValidUsername(string $username): bool
+    /**
+     * The address as it is stored and compared: trimmed and in lower case.
+     */
+    public static function normalizeEmail(string $email): string
     {
-        return preg_match('/^[a-zA-Z0-9][a-zA-Z0-9._@-]{0,63}$/', $username) === 1;
+        return strtolower(trim($email));
     }
 
-    public static function assertValidUsername(string $username): void
+    public static function isValidEmail(string $email): bool
     {
-        if (!self::isValidUsername($username)) {
-            throw new \InvalidArgumentException(
-                'User name may contain letters, digits, dots, underscores, hyphens and @, up to 64 characters');
+        $email = self::normalizeEmail($email);
+        return strlen($email) <= 254 && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    public static function assertValidEmail(string $email): void
+    {
+        if (!self::isValidEmail($email)) {
+            throw new \InvalidArgumentException("'" . trim($email) . "' is not a valid e-mail address");
         }
     }
 

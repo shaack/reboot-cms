@@ -88,23 +88,25 @@ class ProtectedAreasTest
     public function testAddVerifyAndListUsers(): void
     {
         $store = new UserStore($this->tmpDir);
-        $store->addUser('acme', 'secret-password', ['/customers/acme', 'customers/acme/', '']);
-        Assert::true($store->hasUser('acme'));
-        Assert::true($store->verify('acme', 'secret-password'));
-        Assert::false($store->verify('acme', 'wrong-password'));
-        Assert::false($store->verify('nobody', 'secret-password'));
-        Assert::equals(['/customers/acme'], $store->getPaths('acme'));
+        $store->addUser(' Acme@Example.com ', 'secret-password', ['/customers/acme', 'customers/acme/', '']);
+        Assert::true($store->hasUser('acme@example.com'));
+        Assert::true($store->hasUser('ACME@example.com'), 'addresses are not case sensitive');
+        Assert::true($store->verify('acme@example.com', 'secret-password'));
+        Assert::true($store->verify('Acme@Example.com', 'secret-password'));
+        Assert::false($store->verify('acme@example.com', 'wrong-password'));
+        Assert::false($store->verify('nobody@example.com', 'secret-password'));
+        Assert::equals(['/customers/acme'], $store->getPaths('acme@example.com'));
         $users = $store->getUsers();
-        Assert::equals(['acme'], array_keys($users));
-        Assert::false(array_key_exists('passwordHash', $users['acme']));
-        Assert::null($users['acme']['lastLoginAt']);
+        Assert::equals(['acme@example.com'], array_keys($users), 'stored trimmed and in lower case');
+        Assert::false(array_key_exists('passwordHash', $users['acme@example.com']));
+        Assert::null($users['acme@example.com']['lastLoginAt']);
         Assert::true(is_file($this->tmpDir . '/local/protected-areas/users.json'));
     }
 
     public function testPasswordIsStoredHashed(): void
     {
         $store = new UserStore($this->tmpDir);
-        $store->addUser('acme', 'secret-password', []);
+        $store->addUser('acme@example.com', 'secret-password', []);
         $raw = file_get_contents($this->tmpDir . '/local/protected-areas/users.json');
         Assert::false(str_contains($raw, 'secret-password'));
         Assert::true(str_contains($raw, '"passwordHash"'));
@@ -113,33 +115,37 @@ class ProtectedAreasTest
     public function testChangePasswordPathsAndDelete(): void
     {
         $store = new UserStore($this->tmpDir);
-        $store->addUser('acme', 'secret-password', ['/customers/acme']);
-        $store->setPassword('acme', 'another-password');
-        Assert::true($store->verify('acme', 'another-password'));
-        Assert::false($store->verify('acme', 'secret-password'));
-        $store->setPaths('acme', ['/customers/acme', '/customers/shared']);
-        Assert::equals(['/customers/acme', '/customers/shared'], $store->getPaths('acme'));
-        $store->registerLogin('acme');
-        Assert::true(is_int($store->getUsers()['acme']['lastLoginAt']));
-        $store->deleteUser('acme');
-        Assert::false($store->hasUser('acme'));
-        Assert::equals([], $store->getPaths('acme'));
+        $store->addUser('acme@example.com', 'secret-password', ['/customers/acme']);
+        $store->setPassword('acme@example.com', 'another-password');
+        Assert::true($store->verify('acme@example.com', 'another-password'));
+        Assert::false($store->verify('acme@example.com', 'secret-password'));
+        $store->setPaths('acme@example.com', ['/customers/acme', '/customers/shared']);
+        Assert::equals(['/customers/acme', '/customers/shared'], $store->getPaths('acme@example.com'));
+        $store->registerLogin('acme@example.com');
+        Assert::true(is_int($store->getUsers()['acme@example.com']['lastLoginAt']));
+        $store->deleteUser('acme@example.com');
+        Assert::false($store->hasUser('acme@example.com'));
+        Assert::equals([], $store->getPaths('acme@example.com'));
     }
 
     public function testRejectsInvalidInput(): void
     {
         $store = new UserStore($this->tmpDir);
         $this->expectException(fn() => $store->addUser('', 'secret-password', []));
-        $this->expectException(fn() => $store->addUser('../x', 'secret-password', []));
-        $this->expectException(fn() => $store->addUser('acme', 'short', []));
-        $store->addUser('acme', 'secret-password', []);
-        $this->expectException(fn() => $store->addUser('acme', 'secret-password', []), 'duplicate user');
-        $this->expectException(fn() => $store->setPassword('nobody', 'secret-password'), 'unknown user');
-        $this->expectException(fn() => $store->setPaths('nobody', []), 'unknown user');
-        $this->expectException(fn() => $store->deleteUser('nobody'), 'unknown user');
-        Assert::true(UserStore::isValidUsername('john.doe@example.com'));
-        Assert::false(UserStore::isValidUsername('.hidden'));
-        Assert::false(UserStore::isValidUsername('with space'));
+        $this->expectException(fn() => $store->addUser('acme', 'secret-password', []), 'not an address');
+        $this->expectException(fn() => $store->addUser('../x@example.com', 'secret-password', []));
+        $this->expectException(fn() => $store->addUser('acme@example.com', 'short', []));
+        $store->addUser('acme@example.com', 'secret-password', []);
+        $this->expectException(fn() => $store->addUser('ACME@example.com', 'secret-password', []), 'duplicate account');
+        $this->expectException(fn() => $store->setPassword('nobody@example.com', 'secret-password'), 'unknown user');
+        $this->expectException(fn() => $store->setPaths('nobody@example.com', []), 'unknown user');
+        $this->expectException(fn() => $store->deleteUser('nobody@example.com'), 'unknown user');
+        Assert::true(UserStore::isValidEmail('john.doe@example.com'));
+        Assert::true(UserStore::isValidEmail(' John.Doe@Example.com '));
+        Assert::false(UserStore::isValidEmail('john.doe'));
+        Assert::false(UserStore::isValidEmail('john doe@example.com'));
+        Assert::false(UserStore::isValidEmail('@example.com'));
+        Assert::equals('john@example.com', UserStore::normalizeEmail(' John@Example.COM '));
     }
 
     // --- LoginThrottle ---

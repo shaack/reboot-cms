@@ -45,7 +45,7 @@ protectedAreas:
       intro: "Bitte melden Sie sich mit den Zugangsdaten aus unserer E-Mail an."
 ```
 
-The keys that can be overridden per language are `title`, `intro`, `usernameLabel`, `passwordLabel`, `submit`, `wrongCredentials`, `tooManyAttempts`, `denied`, `loggedInAs`, `continue` and `logout`.
+The keys that can be overridden per language are `title`, `intro`, `emailLabel`, `passwordLabel`, `submit`, `wrongCredentials`, `tooManyAttempts`, `denied`, `loggedInAs`, `continue` and `logout`.
 
 To show the login state in the site template, ask the AddOn:
 
@@ -62,14 +62,14 @@ To show the login state in the site template, ask the AddOn:
 
 ## Accounts
 
-Accounts are managed in the admin under "Protected Areas": user name, password and the list of allowed paths. There is no self registration and no password reset by mail, the site owner hands out the credentials. User names may contain letters, digits, dots, underscores, hyphens and `@`, so an e-mail address works as a user name. Passwords need at least eight characters and are stored as `password_hash()` hashes.
+Accounts are managed in the admin under "Protected Areas": e-mail address, password and the list of allowed paths. There is no self registration and no password reset by mail, the site owner hands out the credentials. The e-mail address is the account name. It is stored in lower case and the login does not care about case, so `Alice@Example.com` and `alice@example.com` are the same account. Passwords need at least eight characters and are stored as `password_hash()` hashes.
 
 Five failed logins from one IP address within 15 minutes block further attempts from that address until the window has passed. A successful login clears the counter.
 
 ## Storage
 
 ```
-local/protected-areas/users.json           accounts, keyed by user name
+local/protected-areas/users.json           accounts, keyed by e-mail address
 local/protected-areas/login-attempts.json  failed logins for the throttle
 ```
 

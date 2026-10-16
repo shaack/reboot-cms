@@ -47,10 +47,10 @@ class ProtectedAreas extends AddOn
         'en' => [
             'title' => 'Login',
             'intro' => 'This area is protected. Please log in.',
-            'usernameLabel' => 'User name',
+            'emailLabel' => 'E-mail address',
             'passwordLabel' => 'Password',
             'submit' => 'Log in',
-            'wrongCredentials' => 'Unknown user name or wrong password.',
+            'wrongCredentials' => 'Unknown e-mail address or wrong password.',
             'tooManyAttempts' => 'Too many failed attempts. Please try again in a few minutes.',
             'denied' => 'Your account has no access to this page. Log in with another account to continue.',
             'loggedInAs' => 'You are logged in as %s.',
@@ -60,10 +60,10 @@ class ProtectedAreas extends AddOn
         'de' => [
             'title' => 'Anmeldung',
             'intro' => 'Dieser Bereich ist geschützt. Bitte melden Sie sich an.',
-            'usernameLabel' => 'Benutzername',
+            'emailLabel' => 'E-Mail-Adresse',
             'passwordLabel' => 'Passwort',
             'submit' => 'Anmelden',
-            'wrongCredentials' => 'Unbekannter Benutzername oder falsches Passwort.',
+            'wrongCredentials' => 'Unbekannte E-Mail-Adresse oder falsches Passwort.',
             'tooManyAttempts' => 'Zu viele Fehlversuche. Bitte versuchen Sie es in einigen Minuten erneut.',
             'denied' => 'Ihr Konto hat keinen Zugang zu dieser Seite. Melden Sie sich mit einem anderen Konto an, um fortzufahren.',
             'loggedInAs' => 'Sie sind angemeldet als %s.',
@@ -176,17 +176,18 @@ class ProtectedAreas extends AddOn
 
     /**
      * Checks the credentials and opens the session. Returns false for a wrong
-     * password, an unknown user or a throttled IP address.
+     * password, an unknown address or a throttled IP address.
      */
-    public function login(string $username, string $password, string $ip): bool
+    public function login(string $email, string $password, string $ip): bool
     {
+        $username = UserStore::normalizeEmail($email);
         $throttle = $this->getLoginThrottle();
         if ($throttle->isBlocked($ip)) {
             Logger::info("ProtectedAreas: throttled login from $ip");
             return false;
         }
         $store = $this->getUserStore();
-        if (!UserStore::isValidUsername($username) || !$store->verify($username, $password)) {
+        if (!UserStore::isValidEmail($username) || !$store->verify($username, $password)) {
             $throttle->registerFailure($ip);
             Logger::info("ProtectedAreas: failed login for '$username' from $ip");
             return false;

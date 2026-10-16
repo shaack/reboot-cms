@@ -7,6 +7,7 @@ $admin = $site->getAddOn("Admin");
 
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\AddOns\ProtectedAreas;
+use Shaack\Reboot\AddOns\ProtectedAreas\UserStore;
 use Shaack\Reboot\CsrfProtection;
 
 if (!AdminHelper::requireAdmin($site, $reboot)) return;
@@ -27,19 +28,19 @@ $success = null;
 $action = $request->getParam("action");
 if ($action) {
     $result = AdminHelper::handleAction($request, function () use ($action, $request, $store, $parsePaths) {
-        $username = trim((string)$request->getParam("username"));
+        $email = UserStore::normalizeEmail((string)$request->getParam("email"));
         if ($action === "add") {
-            $store->addUser($username, (string)$request->getParam("password"), $parsePaths($request->getParam("paths")));
-            return "User '$username' added";
+            $store->addUser($email, (string)$request->getParam("password"), $parsePaths($request->getParam("paths")));
+            return "Account '$email' added";
         } elseif ($action === "set_password") {
-            $store->setPassword($username, (string)$request->getParam("password"));
-            return "Password of '$username' changed";
+            $store->setPassword($email, (string)$request->getParam("password"));
+            return "Password of '$email' changed";
         } elseif ($action === "set_paths") {
-            $store->setPaths($username, $parsePaths($request->getParam("paths")));
-            return "Paths of '$username' saved";
+            $store->setPaths($email, $parsePaths($request->getParam("paths")));
+            return "Paths of '$email' saved";
         } elseif ($action === "delete") {
-            $store->deleteUser($username);
-            return "User '$username' deleted";
+            $store->deleteUser($email);
+            return "Account '$email' deleted";
         }
         throw new \InvalidArgumentException("Unknown action");
     });
@@ -69,15 +70,15 @@ $users = $store->getUsers();
     <?php } ?>
 
     <form method="post" action="<?= htmlspecialchars($adminPath) ?>" class="card mb-3">
-        <div class="card-header">Add user</div>
+        <div class="card-header">Add account</div>
         <div class="card-body">
             <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
             <input type="hidden" name="action" value="add">
             <div class="row g-2 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label small mb-1" for="add-username">User name</label>
-                    <input type="text" id="add-username" name="username" class="form-control form-control-sm"
-                           autocomplete="off" required pattern="[a-zA-Z0-9][a-zA-Z0-9._@-]{0,63}">
+                    <label class="form-label small mb-1" for="add-email">E-mail address</label>
+                    <input type="email" id="add-email" name="email" class="form-control form-control-sm"
+                           autocomplete="off" required>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small mb-1" for="add-password">Password (min. 8 characters)</label>
@@ -100,13 +101,13 @@ $users = $store->getUsers();
     </form>
 
     <?php if (empty($users)) { ?>
-        <p class="text-body-secondary">No users yet.</p>
+        <p class="text-body-secondary">No accounts yet.</p>
     <?php } else { ?>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead>
                 <tr>
-                    <th style="width: 200px">User</th>
+                    <th style="width: 260px">E-mail address</th>
                     <th>Allowed paths</th>
                     <th style="width: 260px">New password</th>
                     <th style="width: 150px">Last login</th>
@@ -114,11 +115,11 @@ $users = $store->getUsers();
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($users as $username => $user) {
-                    $formId = 'user-' . md5($username); ?>
+                <?php foreach ($users as $email => $user) {
+                    $formId = 'user-' . md5($email); ?>
                     <tr>
                         <td>
-                            <span class="fw-semibold"><?= htmlspecialchars($username) ?></span>
+                            <span class="fw-semibold"><?= htmlspecialchars($email) ?></span>
                             <div class="small text-body-secondary">
                                 since <?= date("Y-m-d", (int)($user['createdAt'] ?? 0)) ?>
                             </div>
@@ -127,7 +128,7 @@ $users = $store->getUsers();
                             <form method="post" action="<?= htmlspecialchars($adminPath) ?>" class="d-flex gap-2 align-items-start">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                 <input type="hidden" name="action" value="set_paths">
-                                <input type="hidden" name="username" value="<?= htmlspecialchars($username) ?>">
+                                <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
                                 <textarea name="paths" class="form-control form-control-sm font-monospace"
                                           rows="<?= max(1, count($user['paths'] ?? [])) ?>"><?= htmlspecialchars(implode("\n", $user['paths'] ?? [])) ?></textarea>
                                 <button class="btn btn-sm btn-outline-secondary text-nowrap">Save</button>
@@ -140,7 +141,7 @@ $users = $store->getUsers();
                             <form method="post" action="<?= htmlspecialchars($adminPath) ?>" class="d-flex gap-2">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                 <input type="hidden" name="action" value="set_password">
-                                <input type="hidden" name="username" value="<?= htmlspecialchars($username) ?>">
+                                <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
                                 <input type="text" name="password" class="form-control form-control-sm"
                                        autocomplete="off" required minlength="8" placeholder="min. 8 characters">
                                 <button class="btn btn-sm btn-outline-secondary text-nowrap">Set</button>
@@ -155,10 +156,10 @@ $users = $store->getUsers();
                         </td>
                         <td>
                             <form method="post" action="<?= htmlspecialchars($adminPath) ?>"
-                                  onsubmit="return confirm('Delete user \'<?= htmlspecialchars($username, ENT_QUOTES) ?>\'?')">
+                                  onsubmit="return confirm('Delete account \'<?= htmlspecialchars($email, ENT_QUOTES) ?>\'?')">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                 <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="username" value="<?= htmlspecialchars($username) ?>">
+                                <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
                                 <button class="btn btn-sm btn-outline-danger">Delete</button>
                             </form>
                         </td>

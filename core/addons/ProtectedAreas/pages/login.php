@@ -26,12 +26,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $ip = $_SERVER['REMOTE_ADDR'] ?? '';
     try {
         CsrfProtection::validate($request);
-        $username = trim((string)$request->getParam('username', 'post'));
+        $email = trim((string)$request->getParam('email', 'post'));
         $password = (string)$request->getParam('password', 'post');
         $next = AccessControl::sanitizeNext($request->getParam('next', 'post'), $homePath);
         if ($protectedAreas->isThrottled($ip)) {
             $error = $texts['tooManyAttempts'];
-        } elseif ($protectedAreas->login($username, $password, $ip)) {
+        } elseif ($protectedAreas->login($email, $password, $ip)) {
             $reboot->redirect($webPath . $next);
             return;
         } else {
@@ -67,8 +67,8 @@ $user = $protectedAreas->getUser();
             <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
             <input type="hidden" name="next" value="<?= htmlspecialchars($next) ?>">
             <p>
-                <label for="protected-areas-username"><?= htmlspecialchars($texts['usernameLabel']) ?></label><br>
-                <input type="text" id="protected-areas-username" name="username" autocomplete="username" required autofocus>
+                <label for="protected-areas-email"><?= htmlspecialchars($texts['emailLabel']) ?></label><br>
+                <input type="email" id="protected-areas-email" name="email" autocomplete="email" required autofocus>
             </p>
             <p>
                 <label for="protected-areas-password"><?= htmlspecialchars($texts['passwordLabel']) ?></label><br>
