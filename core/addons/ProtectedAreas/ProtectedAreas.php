@@ -124,7 +124,7 @@ class ProtectedAreas extends AddOn
         if ($path === $this->logoutPath) {
             $this->startSession();
             $this->logout();
-            $this->reboot->redirect($this->site->getWebPath() . $this->languagePrefix($request) . '/');
+            $this->reboot->redirect($this->site->getWebPath() . ($this->languagePrefix($request) ?: '/'));
             return false;
         }
         if ($path === $this->loginPath) {
