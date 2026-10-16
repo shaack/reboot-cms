@@ -21,6 +21,10 @@ class PageTreeHelper
             if (!array_key_exists("extension", $pagePathInfo) || $pagePathInfo["extension"] !== "md") {
                 continue;
             }
+            // Hidden files such as the AppleDouble ._index.md a macOS tar leaves behind are not pages
+            if (str_starts_with($pagePathInfo["basename"], ".")) {
+                continue;
+            }
             $relPath = str_replace($pagesDir, "", $page["name"]);
             $parts = explode("/", trim($relPath, "/"));
             $node = &$tree;

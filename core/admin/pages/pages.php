@@ -159,6 +159,12 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
                         Block::resetAllValidationErrors();
                         foreach (glob($blocksDir . '/*.php') as $blockFile) {
                             $blockName = basename($blockFile, '.php');
+                            // Files starting with an underscore are helpers shared by the block
+                            // templates (functions, partials), not blocks. Rendering them here would
+                            // declare their functions a second time.
+                            if (str_starts_with($blockName, '_')) {
+                                continue;
+                            }
                             $block = new Block($defaultSite, $blockName, '');
                             ob_start();
                             $block->render($request);

@@ -352,6 +352,8 @@ bouncing back.
 
 Folder: `/site/blocks`
 
+Files in `site/blocks/` whose name starts with an underscore, for example `_helpers.php`, are not blocks but helpers the block templates `require_once`. The admin skips them when it collects block examples, so shared functions can live there without being declared twice.
+
 A `Block` describes how a block is rendered. Blocks are written in PHP.
 
 The code for the "text-image" `Block` which was used in the page above, looks like this:
