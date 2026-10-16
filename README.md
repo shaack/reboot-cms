@@ -88,6 +88,7 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 - `web/` — Document root (`index.php`, `.htaccess`)
 - `local/` — Local environment config (`config.yml`, `.htpasswd`) — not in git
 - `core/admin/` — Admin interface (itself a Reboot CMS site)
+- `web/admin/vendor/` — The browser libraries of the admin (Bootstrap, the Markdown editor), copied from `node_modules/` by `web/admin/build-vendor.sh`. Only this folder is committed and shipped, `npm install` in `web/admin/` is needed just to update those libraries.
 
 ## Configuration
 

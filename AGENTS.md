@@ -108,7 +108,7 @@ preference. See the README for details.
 - Admin CSS is authored in `web/admin/assets/screen.scss`; `screen.css` is
   compiled output — never edit the `.css` directly.
 - Content and config are text under Git; prefer small, reviewable changes.
-- Do not edit anything under `vendor/` or `node_modules/`.
+- Do not edit anything under `vendor/`, `web/admin/vendor/` or `node_modules/`. The admin's browser libraries in `web/admin/vendor/` are copied from `node_modules/` by `web/admin/build-vendor.sh`, run it after `npm install` or `npm update` there.
 
 ## Local development
 

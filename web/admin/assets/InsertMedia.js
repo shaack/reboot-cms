@@ -15,7 +15,7 @@ export class InsertMedia {
         btn.style.cssText = 'background:none;border:none;border-radius:3px;cursor:pointer;padding:4px 6px;display:flex;align-items:center;justify-content:center;color:inherit;opacity:0.6;transition:opacity 0.15s,background 0.15s;position:relative;'
         btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor"></svg>'
             + '<span style="position:absolute;bottom:0;right:1px;font-size:7px;font-weight:bold;line-height:1;opacity:0.8;">Int.</span>'
-        fetch('node_modules/cm-md-editor/src/tools/icons/card-image.svg')
+        fetch('vendor/cm-md-editor/src/tools/icons/card-image.svg')
             .then(r => r.text())
             .then(svg => {
                 const span = btn.querySelector('span')

@@ -5,7 +5,8 @@
   "private": true,
   "main": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "vendor": "sh build-vendor.sh",
+    "postinstall": "sh build-vendor.sh"
   },
   "author": "shaack.com",
   "license": "UNLICENSED",

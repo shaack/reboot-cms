@@ -36,11 +36,10 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
     if (!$adminPageTitle) $adminPageTitle = 'Admin';
     ?>
     <title><?= htmlspecialchars($adminPageTitle) ?> – Reboot CMS Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Gelasio:wght@700&display=swap" rel="stylesheet">
-    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/screen.css" rel="stylesheet">
     <style>textarea.editor-font { font-family: <?= $editorFont ?>; font-size: <?= $editorFontSize ?>; line-height: <?= $editorLineHeight ?>; tab-size: <?= $editorTabSize ?>; -moz-tab-size: <?= $editorTabSize ?>; }</style>
-    <script src="node_modules/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
+    <script src="vendor/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
     <script>
         window._toastQueue = []
         window._toastsReady = false
@@ -132,9 +131,8 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
 <?php
 echo($page->render($request));
 ?>
-<!-- <script src="node_modules/jquery/jquery.min.js"></script> -->
-<script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="node_modules/bootstrap-show-toast/src/bootstrap-show-toast.js"></script>
+<script src="vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="vendor/bootstrap-show-toast/src/bootstrap-show-toast.js"></script>
 <script>
     window._toastQueue.forEach(function(t) { bootstrap.showToast(t) })
     window._toastsReady = true
@@ -152,17 +150,17 @@ echo($page->render($request));
     <script src="assets/update-badge.js"></script>
 <?php } ?>
 <script type="module">
-    import "./node_modules/bootstrap-show-modal/src/ShowModal.js"
-    import {MdEditor} from "./node_modules/cm-md-editor/src/MdEditor.js"
-    import {Separator} from "./node_modules/cm-md-editor/src/tools/Separator.js"
-    import {Headings} from "./node_modules/cm-md-editor/src/tools/Headings.js"
-    import {Bold} from "./node_modules/cm-md-editor/src/tools/Bold.js"
-    import {Italic} from "./node_modules/cm-md-editor/src/tools/Italic.js"
-    import {Strikethrough} from "./node_modules/cm-md-editor/src/tools/Strikethrough.js"
-    import {UnorderedList} from "./node_modules/cm-md-editor/src/tools/UnorderedList.js"
-    import {OrderedList} from "./node_modules/cm-md-editor/src/tools/OrderedList.js"
-    import {InsertLink} from "./node_modules/cm-md-editor/src/tools/InsertLink.js"
-    import {InsertImage} from "./node_modules/cm-md-editor/src/tools/InsertImage.js"
+    import "./vendor/bootstrap-show-modal/src/ShowModal.js"
+    import {MdEditor} from "./vendor/cm-md-editor/src/MdEditor.js"
+    import {Separator} from "./vendor/cm-md-editor/src/tools/Separator.js"
+    import {Headings} from "./vendor/cm-md-editor/src/tools/Headings.js"
+    import {Bold} from "./vendor/cm-md-editor/src/tools/Bold.js"
+    import {Italic} from "./vendor/cm-md-editor/src/tools/Italic.js"
+    import {Strikethrough} from "./vendor/cm-md-editor/src/tools/Strikethrough.js"
+    import {UnorderedList} from "./vendor/cm-md-editor/src/tools/UnorderedList.js"
+    import {OrderedList} from "./vendor/cm-md-editor/src/tools/OrderedList.js"
+    import {InsertLink} from "./vendor/cm-md-editor/src/tools/InsertLink.js"
+    import {InsertImage} from "./vendor/cm-md-editor/src/tools/InsertImage.js"
     import {InsertBlock} from "./assets/InsertBlock.js"
     import {InsertMedia} from "./assets/InsertMedia.js"
     import {InsertPageLink} from "./assets/InsertPageLink.js"
