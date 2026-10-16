@@ -16,7 +16,7 @@ use Shaack\Logger;
  * level and optional `src/` (helper classes) and `admin/` (admin pages) folders:
  *
  *     site/addons/MyAddOn/MyAddOn.php          project specific AddOn
- *     core/addons/Downloads/Downloads.php      AddOn shipped with Reboot CMS
+ *     core/addons/SecureDownloads/SecureDownloads.php  AddOn shipped with Reboot CMS
  *
  * The class lives in the namespace `Shaack\Reboot\AddOns`, the classes in `src/`
  * in `Shaack\Reboot\AddOns\<Name>\`. They are autoloaded as soon as the AddOn is

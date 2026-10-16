@@ -77,7 +77,7 @@ Both files live in `local/`, outside the web root and protected by `local/.htacc
 
 ## Limits
 
-The AddOn protects pages, not files. An image or PDF in `web/media/` referenced from a protected page is public like any other file in the web root. Use the [Downloads](../Downloads/README.md) AddOn for files that must stay private.
+The AddOn protects pages, not files. An image or PDF in `web/media/` referenced from a protected page is public like any other file in the web root. Use the [SecureDownloads](../SecureDownloads/README.md) AddOn for files that must stay private.
 
 The login shares the PHP session with the admin. Logging out of the admin in the same browser therefore ends a customer login as well, which only matters while testing.
 

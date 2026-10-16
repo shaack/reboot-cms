@@ -6,16 +6,17 @@
 $admin = $site->getAddOn("Admin");
 
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
-use Shaack\Reboot\AddOns\Downloads;
-use Shaack\Reboot\AddOns\Downloads\DownloadStore;
+use Shaack\Reboot\AddOns\SecureDownloads;
+use Shaack\Reboot\AddOns\SecureDownloads\DownloadStore;
 use Shaack\Reboot\CsrfProtection;
 
 if (!AdminHelper::requireAdmin($site, $reboot)) return;
 
-// This page is mounted by the Admin addon only while the Downloads addon is
+// This page is mounted by the Admin addon only while the SecureDownloads addon is
 // registered in site/config.yml, so the addon is always there.
-/** @var Downloads $downloads */
-$downloads = $admin->getDefaultSite()->getAddOn("Downloads");
+// The AddOn may still be registered under its deprecated name `Downloads`.
+/** @var SecureDownloads $downloads */
+$downloads = $admin->getDefaultSite()->getAddOns()['SecureDownloads'] ?? $admin->getDefaultSite()->getAddOn("Downloads");
 $linkPrefix = $downloads->getLinkPrefix();
 $adminPath = ltrim($downloads->getAdminPath(), '/');
 

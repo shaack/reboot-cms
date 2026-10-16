@@ -20,4 +20,4 @@ src/               optional helper classes
 admin/             optional admin pages
 ```
 
-See the section "AddOns" in the main README for the full description of the hooks, and `core/addons/Downloads/` for a complete AddOn with a helper class and an admin page.
+See the section "AddOns" in the main README for the full description of the hooks, and `core/addons/SecureDownloads/` for a complete AddOn with a helper class and an admin page.

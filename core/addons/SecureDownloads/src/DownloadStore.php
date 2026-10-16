@@ -5,7 +5,7 @@
  * License: MIT, see file 'LICENSE'
  */
 
-namespace Shaack\Reboot\AddOns\Downloads;
+namespace Shaack\Reboot\AddOns\SecureDownloads;
 
 /**
  * Stores files that are handed out as protected downloads, together with their
@@ -52,7 +52,7 @@ class DownloadStore
 
     /**
      * @param string $baseFsPath the CMS root in the file system
-     * @param array $config the `downloads` section of the site config
+     * @param array $config the `secureDownloads` section of the site config
      */
     public function __construct(string $baseFsPath, array $config = [])
     {

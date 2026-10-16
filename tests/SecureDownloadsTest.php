@@ -2,9 +2,15 @@
 
 namespace Shaack\Tests;
 
-use Shaack\Reboot\AddOns\Downloads\DownloadStore;
+use Shaack\Logger;
+use Shaack\Reboot\AddOnLoader;
+use Shaack\Reboot\AddOns\SecureDownloads;
+use Shaack\Reboot\AddOns\SecureDownloads\DownloadStore;
+use Shaack\Reboot\Reboot;
 
-class DownloadStoreTest
+require_once __DIR__ . "/TestHelper.php";
+
+class SecureDownloadsTest
 {
     private string $baseFsPath;
     private string $sourceFile;
@@ -237,5 +243,57 @@ class DownloadStoreTest
             is_dir($path) ? self::deleteDirectory($path) : unlink($path);
         }
         rmdir($dir);
+    }
+
+    // --- the AddOn itself, loaded from the real core/addons folder ---
+
+    private function loadAddOn(string $name, array $siteConfig = [])
+    {
+        $root = dirname(__DIR__);
+        $rebootRef = new \ReflectionClass(Reboot::class);
+        $reboot = $rebootRef->newInstanceWithoutConstructor();
+        $rebootRef->getProperty('baseFsPath')->setValue($reboot, $root);
+        $rebootRef->getProperty('baseWebPath')->setValue($reboot, "");
+        $rebootRef->getProperty('config')->setValue($reboot, []);
+        $site = TestHelper::createSiteStub($this->baseFsPath . "/site", "", $siteConfig);
+        $level = Logger::getLevel();
+        Logger::setLevel(3);
+        try {
+            return AddOnLoader::load($reboot, $site, $name);
+        } finally {
+            Logger::setLevel($level);
+        }
+    }
+
+    public function testLoadsSecureDownloadsFromCore(): void
+    {
+        $addOn = $this->loadAddOn("SecureDownloads", ['secureDownloads' => ['path' => '/files']]);
+        Assert::true($addOn instanceof SecureDownloads);
+        Assert::equals("SecureDownloads", $addOn->getName());
+        Assert::equals("/securedownloads", $addOn->getAdminPath());
+        Assert::equals(['Secure Downloads' => '/securedownloads'], $addOn->getAdminMenu());
+        Assert::true(isset($addOn->getAdminPages()['/securedownloads']), "admin page is mounted");
+        Assert::equals("/files", $addOn->getLinkPrefix());
+        Assert::null($addOn->getDeprecation());
+    }
+
+    public function testDeprecatedConfigKeyDownloadsStillWorks(): void
+    {
+        $addOn = $this->loadAddOn("SecureDownloads", ['downloads' => ['path' => '/old']]);
+        Assert::equals("/old", $addOn->getLinkPrefix());
+        $addOn = $this->loadAddOn("SecureDownloads", ['downloads' => ['path' => '/old'], 'secureDownloads' => ['path' => '/new']]);
+        Assert::equals("/new", $addOn->getLinkPrefix(), "the current key wins");
+    }
+
+    public function testDeprecatedAliasDownloadsLoadsTheSameAddOn(): void
+    {
+        $addOn = $this->loadAddOn("Downloads");
+        Assert::true($addOn instanceof SecureDownloads);
+        Assert::equals("Downloads", $addOn->getName());
+        Assert::equals("/downloads", $addOn->getAdminPath());
+        Assert::equals(['Secure Downloads' => '/downloads'], $addOn->getAdminMenu());
+        Assert::true(isset($addOn->getAdminPages()['/downloads']), "admin page is mounted under the old path");
+        Assert::true(str_ends_with($addOn->getDir(), "/core/addons/SecureDownloads"));
+        Assert::notNull($addOn->getDeprecation());
     }
 }

@@ -73,6 +73,15 @@ class AddOn
     }
 
     /**
+     * A notice if this AddOn is deprecated, for example an alias kept for an
+     * old name. Shown on the admin's health page. Null for a current AddOn.
+     */
+    public function getDeprecation(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Pages this AddOn adds to its own site, as `path => PHP file`. A page is
      * rendered like a PHP page in `pages/`, with `$reboot`, `$site`, `$page`
      * and `$request` available. A file in `pages/` of the same path wins.
@@ -84,7 +93,7 @@ class AddOn
 
     /**
      * The admin path of this AddOn, the folder `admin/` is mounted here. By
-     * default the lower case name, `/downloads` for the AddOn `Downloads`.
+     * default the lower case name, `/securedownloads` for the AddOn `SecureDownloads`.
      */
     public function getAdminPath(): string
     {
