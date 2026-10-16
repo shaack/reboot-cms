@@ -75,7 +75,7 @@ class RememberMeStoreTest
         $alice1 = $this->store->create("alice");
         $alice2 = $this->store->create("alice");
         $bob = $this->store->create("bob");
-        $this->store->deleteForUser("alice");
+        $this->store->deleteForSubject("alice");
         Assert::null($this->store->consume($alice1));
         Assert::null($this->store->consume($alice2));
         Assert::equals("bob", $this->store->consume($bob));

@@ -132,7 +132,7 @@ class Authentication extends AddOn
             // Disabled accounts lose access immediately (skip if impersonating — admin retains access)
             if (!$this->isImpersonating() && $this->getUserRole($user) === self::ROLE_DISABLED) {
                 Logger::info("Access denied, account disabled: " . $user);
-                $this->rememberMe->deleteForUser($user);
+                $this->rememberMe->deleteForSubject($user);
                 $this->logout();
                 return false;
             }
@@ -255,7 +255,7 @@ class Authentication extends AddOn
      */
     public function forgetRememberedLogins(string $username): void
     {
-        $this->rememberMe->deleteForUser($username);
+        $this->rememberMe->deleteForSubject($username);
     }
 
     public function getUserRole(string $username): string

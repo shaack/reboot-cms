@@ -20,7 +20,14 @@ $webPath = $site->getWebPath();
 $homePath = $request->getPath() !== $request->getPathWithoutLanguage() ? '/' . $request->getLanguage() : '/';
 $next = AccessControl::sanitizeNext($request->getParam('next', 'get'), $homePath);
 $denied = $request->getParam('denied', 'get') === '1';
+$linkLogin = $protectedAreas->canSendLoginLinks();
 $error = null;
+$notice = null;
+if ($request->getParam('sent', 'get') === '1') {
+    $notice = $texts['linkSent'];
+} elseif ($request->getParam('invalid', 'get') === '1') {
+    $error = $texts['linkInvalid'];
+}
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $ip = $_SERVER['REMOTE_ADDR'] ?? '';
@@ -29,6 +36,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $email = trim((string)$request->getParam('email', 'post'));
         $password = (string)$request->getParam('password', 'post');
         $next = AccessControl::sanitizeNext($request->getParam('next', 'post'), $homePath);
+        if ($linkLogin && $request->getParam('action', 'post') === 'link') {
+            // Login link: the answer is the same whether the account exists or not.
+            $protectedAreas->requestLoginLink($email, $ip, $request, $next);
+            $params = ['sent' => '1'];
+            if ($next !== $homePath) {
+                $params['next'] = $next;
+            }
+            $reboot->redirect($webPath . $protectedAreas->getLoginPath($request) . '?' . http_build_query($params));
+            return;
+        }
         if ($protectedAreas->isThrottled($ip)) {
             $error = $texts['tooManyAttempts'];
         } elseif ($protectedAreas->login($email, $password, $ip)) {
@@ -63,12 +80,31 @@ $user = $protectedAreas->getUser();
         <?php if ($error) { ?>
             <p class="protected-areas-error" role="alert"><?= htmlspecialchars($error) ?></p>
         <?php } ?>
-        <form method="post" action="<?= htmlspecialchars($webPath . $protectedAreas->getLoginPath($request)) ?>">
+        <?php if ($notice) { ?>
+            <p class="protected-areas-notice" role="status"><?= htmlspecialchars($notice) ?></p>
+        <?php } ?>
+        <?php if ($linkLogin) { ?>
+            <form method="post" action="<?= htmlspecialchars($webPath . $protectedAreas->getLoginPath($request)) ?>" class="protected-areas-link-form">
+                <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                <input type="hidden" name="action" value="link">
+                <input type="hidden" name="next" value="<?= htmlspecialchars($next) ?>">
+                <p><?= htmlspecialchars($texts['linkIntro']) ?></p>
+                <p>
+                    <label for="protected-areas-link-email"><?= htmlspecialchars($texts['emailLabel']) ?></label><br>
+                    <input type="email" id="protected-areas-link-email" name="email" autocomplete="email" required autofocus>
+                </p>
+                <p>
+                    <button type="submit" class="protected-areas-button"><?= htmlspecialchars($texts['linkSubmit']) ?></button>
+                </p>
+            </form>
+            <h2><?= htmlspecialchars($texts['orPassword']) ?></h2>
+        <?php } ?>
+        <form method="post" action="<?= htmlspecialchars($webPath . $protectedAreas->getLoginPath($request)) ?>" class="protected-areas-password-form">
             <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
             <input type="hidden" name="next" value="<?= htmlspecialchars($next) ?>">
             <p>
                 <label for="protected-areas-email"><?= htmlspecialchars($texts['emailLabel']) ?></label><br>
-                <input type="email" id="protected-areas-email" name="email" autocomplete="email" required autofocus>
+                <input type="email" id="protected-areas-email" name="email" autocomplete="email" required<?= $linkLogin ? '' : ' autofocus' ?>>
             </p>
             <p>
                 <label for="protected-areas-password"><?= htmlspecialchars($texts['passwordLabel']) ?></label><br>

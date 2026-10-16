@@ -27,20 +27,25 @@ $error = null;
 $success = null;
 $action = $request->getParam("action");
 if ($action) {
-    $result = AdminHelper::handleAction($request, function () use ($action, $request, $store, $parsePaths) {
+    $result = AdminHelper::handleAction($request, function () use ($action, $request, $store, $parsePaths, $protectedAreas) {
         $email = UserStore::normalizeEmail((string)$request->getParam("email"));
         if ($action === "add") {
             $store->addUser($email, (string)$request->getParam("password"), $parsePaths($request->getParam("paths")));
             return "Account '$email' added";
         } elseif ($action === "set_password") {
             $store->setPassword($email, (string)$request->getParam("password"));
+            $protectedAreas->getRememberStore()->deleteForSubject($email);
             return "Password of '$email' changed";
         } elseif ($action === "set_paths") {
             $store->setPaths($email, $parsePaths($request->getParam("paths")));
             return "Paths of '$email' saved";
         } elseif ($action === "delete") {
             $store->deleteUser($email);
+            $protectedAreas->getRememberStore()->deleteForSubject($email);
             return "Account '$email' deleted";
+        } elseif ($action === "send_link") {
+            $protectedAreas->sendLoginLink($email, $request);
+            return "Login link sent to '$email'";
         }
         throw new \InvalidArgumentException("Unknown action");
     });
@@ -49,6 +54,7 @@ if ($action) {
 }
 
 $users = $store->getUsers();
+$linkLogin = $protectedAreas->canSendLoginLinks();
 ?>
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
@@ -60,6 +66,13 @@ $users = $store->getUsers();
             <code>protectedAreas: { areas: [ /customers ] }</code>
         </div>
     <?php } else { ?>
+        <?php if (!$linkLogin) { ?>
+            <div class="alert alert-secondary small">
+                Login links by mail are off because no <code>mail</code> transport is configured in
+                <code>local/config.yml</code>. Visitors log in with their password only. See
+                <a href="health" class="alert-link">System Health</a>.
+            </div>
+        <?php } ?>
         <p class="text-body-secondary">
             Protected areas:
             <?php foreach ($areas as $area) { ?>
@@ -111,7 +124,7 @@ $users = $store->getUsers();
                     <th>Allowed paths</th>
                     <th style="width: 260px">New password</th>
                     <th style="width: 150px">Last login</th>
-                    <th style="width: 90px"></th>
+                    <th style="width: 220px"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -154,8 +167,16 @@ $users = $store->getUsers();
                                 <span class="text-body-secondary">never</span>
                             <?php } ?>
                         </td>
-                        <td>
-                            <form method="post" action="<?= htmlspecialchars($adminPath) ?>"
+                        <td class="text-nowrap">
+                            <?php if ($linkLogin) { ?>
+                                <form method="post" action="<?= htmlspecialchars($adminPath) ?>" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                                    <input type="hidden" name="action" value="send_link">
+                                    <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">
+                                    <button class="btn btn-sm btn-outline-secondary" title="Mail a link that logs this account in without a password">Send login link</button>
+                                </form>
+                            <?php } ?>
+                            <form method="post" action="<?= htmlspecialchars($adminPath) ?>" class="d-inline"
                                   onsubmit="return confirm('Delete account \'<?= htmlspecialchars($email, ENT_QUOTES) ?>\'?')">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                 <input type="hidden" name="action" value="delete">

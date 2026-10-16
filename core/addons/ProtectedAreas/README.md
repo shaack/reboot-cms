@@ -30,7 +30,7 @@ On multilingual sites the paths are compared without the language prefix, so `/d
 
 ## Login and logout
 
-The login page is provided by the AddOn and rendered through the site template like a page in `site/pages/`, so it looks like the rest of the site. Its markup uses the classes `protected-areas-login`, `protected-areas-error`, `protected-areas-button` and `protected-areas-link` for styling. The texts ship in English and German and follow the request language.
+The login page is provided by the AddOn and rendered through the site template like a page in `site/pages/`, so it looks like the rest of the site. Its markup uses the classes `protected-areas-login`, `protected-areas-error`, `protected-areas-notice`, `protected-areas-button`, `protected-areas-link`, `protected-areas-link-form` and `protected-areas-password-form` for styling. The texts ship in English and German and follow the request language.
 
 The logout URL ends the login and returns to the homepage. Both paths can be changed:
 
@@ -45,7 +45,24 @@ protectedAreas:
       intro: "Bitte melden Sie sich mit den Zugangsdaten aus unserer E-Mail an."
 ```
 
-The keys that can be overridden per language are `title`, `intro`, `emailLabel`, `passwordLabel`, `submit`, `wrongCredentials`, `tooManyAttempts`, `denied`, `loggedInAs`, `continue` and `logout`.
+The keys that can be overridden per language are `title`, `intro`, `emailLabel`, `passwordLabel`, `submit`, `wrongCredentials`, `tooManyAttempts`, `denied`, `loggedInAs`, `continue`, `logout`, `linkIntro`, `linkSubmit`, `linkSent`, `linkInvalid`, `orPassword`, `mailSubject` and `mailBody`. The mail texts are `sprintf()` patterns, `mailSubject` takes the site name, `mailBody` the site name, the URL and the lifetime in minutes.
+
+## Login links by mail
+
+If the site can send mail (section `mail` in `local/config.yml`, see the main README), the login page offers a second way in: the visitor enters only the e-mail address and receives a link that logs them in. No password needed. The link is valid for 15 minutes and works once, afterwards the visitor stays logged in for 30 days through a cookie, also across browser restarts. The password login stays available below the link form. The site name in the mail is the `brand` of the `navbar` section or `title` of `site/config.yml`.
+
+The answer to the form is the same whether an account exists for the address or not, so the form cannot be used to find out which addresses have access. Link requests are limited to five per IP address and 15 minutes, separately from failed password logins. The link is built from the host of the request, set `baseUrl` if the site is reached through a proxy under another name:
+
+```yaml
+protectedAreas:
+  areas: [ /customers ]
+  loginLinks: true          # false switches the link form off
+  baseUrl: https://example.com
+```
+
+The admin page "Protected Areas" has a button "Send login link" per account, for the first contact with a customer. Without a mail configuration the button and the form are not shown and the admin page says why.
+
+The 30 day login is a token in the cookie `protected_areas_remember`. Only a hash of it is stored, every token is good for one use and replaced on the next visit, and the cookie is marked `Secure` on HTTPS. Logging out, changing the password or deleting the account forgets the tokens of that account.
 
 To show the login state in the site template, ask the AddOn:
 
@@ -69,11 +86,14 @@ Five failed logins from one IP address within 15 minutes block further attempts 
 ## Storage
 
 ```
-local/protected-areas/users.json           accounts, keyed by e-mail address
-local/protected-areas/login-attempts.json  failed logins for the throttle
+local/protected-areas/users.json            accounts, keyed by e-mail address
+local/protected-areas/login-attempts.json   failed logins for the throttle
+local/protected-areas/link-requests.json    login link requests for the throttle
+local/protected-areas/login-links.json      hashes of the login link tokens, 15 minutes
+local/protected-areas/remember-tokens.json  hashes of the 30 day login tokens
 ```
 
-Both files live in `local/`, outside the web root and protected by `local/.htaccess`.
+All files live in `local/`, outside the web root and protected by `local/.htaccess`.
 
 ## Limits
 
@@ -84,10 +104,10 @@ The login shares the PHP session with the admin. Logging out of the admin in the
 ## Files
 
 ```
-ProtectedAreas.php      the AddOn: access check and logout in preRender(), login API
+ProtectedAreas.php      the AddOn: access check, login links and logout in preRender(), login API
 src/AccessControl.php   the path logic, static and without side effects
 src/UserStore.php       accounts in users.json with locking
-src/LoginThrottle.php   the limit on failed logins
+src/LoginThrottle.php   the limit on failed logins and link requests, one counter file each
 pages/login.php         the login page, mounted at the login path of every language
 admin/index.php         the admin page, mounted at /admin/protectedareas
 ```

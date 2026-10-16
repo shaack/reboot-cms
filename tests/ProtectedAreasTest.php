@@ -5,6 +5,7 @@ namespace Shaack\Tests;
 use Shaack\Reboot\AddOns\ProtectedAreas\AccessControl;
 use Shaack\Reboot\AddOns\ProtectedAreas\LoginThrottle;
 use Shaack\Reboot\AddOns\ProtectedAreas\UserStore;
+use Shaack\Reboot\TokenStore;
 
 class ProtectedAreasTest
 {
@@ -164,6 +165,34 @@ class ProtectedAreasTest
         Assert::false($throttle->isBlocked('10.0.0.1', $now + LoginThrottle::WINDOW + 1), 'the block expires');
         $throttle->clear('10.0.0.1', $now);
         Assert::false($throttle->isBlocked('10.0.0.1', $now), 'a successful login clears the attempts');
+    }
+
+    public function testThrottleCountersAreSeparatePerFile(): void
+    {
+        $logins = new LoginThrottle($this->tmpDir);
+        $links = new LoginThrottle($this->tmpDir, 'link-requests.json');
+        $now = 1000000;
+        for ($i = 0; $i < LoginThrottle::MAX_ATTEMPTS; $i++) {
+            $links->registerFailure('10.0.0.1', $now);
+        }
+        Assert::true($links->isBlocked('10.0.0.1', $now));
+        Assert::false($logins->isBlocked('10.0.0.1', $now), 'link requests do not block password logins');
+        Assert::true(is_file($this->tmpDir . '/local/protected-areas/link-requests.json'));
+    }
+
+    // --- Login link and remember tokens, see TokenStore ---
+
+    public function testLoginLinkTokenIsSingleUseAndShortLived(): void
+    {
+        $store = new TokenStore($this->tmpDir . '/local/protected-areas/login-links.json', 900);
+        $now = 1000000;
+        $token = $store->create('alice@example.com', $now);
+        Assert::null($store->consume($token, $now + 901), 'expired after 15 minutes');
+        $token = $store->create('alice@example.com', $now);
+        Assert::equals('alice@example.com', $store->consume($token, $now + 60));
+        Assert::null($store->consume($token, $now + 61), 'a link works once');
+        $raw = file_get_contents($this->tmpDir . '/local/protected-areas/login-links.json');
+        Assert::false(str_contains($raw, explode(':', $token)[1]), 'only the hash is stored');
     }
 
     private function expectException(callable $fn, string $what = ''): void

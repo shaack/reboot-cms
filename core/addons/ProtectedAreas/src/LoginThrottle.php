@@ -20,9 +20,12 @@ class LoginThrottle
 
     private string $file;
 
-    public function __construct(string $baseFsPath)
+    /**
+     * @param string $fileName the counter file in `local/protected-areas/`, one per kind of attempt
+     */
+    public function __construct(string $baseFsPath, string $fileName = 'login-attempts.json')
     {
-        $this->file = rtrim($baseFsPath, '/') . '/local/protected-areas/login-attempts.json';
+        $this->file = rtrim($baseFsPath, '/') . '/local/protected-areas/' . $fileName;
     }
 
     public function isBlocked(string $ip, ?int $now = null): bool

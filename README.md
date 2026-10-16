@@ -608,7 +608,7 @@ See the [SecureDownloads README](core/addons/SecureDownloads/README.md) and the 
 
 ### ProtectedAreas
 
-Puts parts of the site behind a login. A protected area is a path prefix such as `/customers`, and every page below it is served only to a logged in user whose account lists a matching path, for example `/customers/acme`. The AddOn brings a login page rendered inside the site template, a logout URL, a limit on failed logins and the admin section "Protected Areas" for the accounts. What the protected pages contain is up to the site, so a customer area is just a folder of Markdown pages that you edit like any other.
+Puts parts of the site behind a login. A protected area is a path prefix such as `/customers`, and every page below it is served only to a logged in user whose account lists a matching path, for example `/customers/acme`. Accounts are e-mail addresses. The AddOn brings a login page rendered inside the site template, a logout URL, a limit on failed logins and the admin section "Protected Areas" for the accounts. If the site can [send mail](#sending-mail), visitors can also request a login link by mail instead of typing a password, and stay logged in for 30 days. What the protected pages contain is up to the site, so a customer area is just a folder of Markdown pages that you edit like any other.
 
 ```yaml
 addons: [ ProtectedAreas ]
