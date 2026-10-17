@@ -1,4 +1,4 @@
-addons: ["ExampleAddOn"]
+addons: ["ExampleAddOn", "ProtectedAreas"]
 protectedAreas: { areas: [ /customers ] }
 navbar:
   brand: Reboot CMS
