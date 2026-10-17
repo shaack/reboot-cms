@@ -58,10 +58,20 @@ echo ""
 
 # Mailpit catches every mail the CMS sends. The CMS reaches it on the host's
 # published port, see local/config.local.yml.
-podman run -d --rm --replace --name "$MAIL_NAME" \
+MAIL_ID="$(podman run -d --rm --replace --name "$MAIL_NAME" \
     -p "$MAIL_PORT:1025" -p "$MAIL_UI_PORT:8025" \
-    "$MAIL_IMAGE" >/dev/null
-trap 'podman stop "$MAIL_NAME" >/dev/null 2>&1 || true' EXIT INT TERM
+    "$MAIL_IMAGE")"
+
+# Stop Mailpit when this script ends, but only the instance this script started.
+# A second run.sh replaces the containers of the first one, and the first must
+# not take the new Mailpit down with it on its way out.
+cleanup() {
+    current="$(podman inspect --format '{{.Id}}' "$MAIL_NAME" 2>/dev/null || true)"
+    if [ -n "$current" ] && [ "$current" = "$MAIL_ID" ]; then
+        podman stop "$MAIL_NAME" >/dev/null 2>&1 || true
+    fi
+}
+trap cleanup EXIT INT TERM
 
 # DocumentRoot points at web/ (the app's real docroot), so URLs are clean (/admin/,
 # not /web/admin/) and the per-directory .htaccess files apply exactly as intended.
