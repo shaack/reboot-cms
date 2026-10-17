@@ -173,6 +173,17 @@ if ($missingAddOns) {
     ];
 }
 
+// Local configuration: is a machine specific overlay active?
+$overrides = $reboot->getConfigOverrides();
+$checks[] = [
+    'label' => 'Local config',
+    'status' => true,
+    'value' => $overrides ? 'config.yml + config.local.yml' : 'config.yml',
+    'hint' => $overrides
+        ? '<code>local/config.local.yml</code> overrides ' . htmlspecialchars(implode(', ', $overrides)) . '. The file is for this machine only and not in Git.'
+        : 'Settings for this machine only, such as a local mail catcher, can go into <code>local/config.local.yml</code>, which is not in Git.',
+];
+
 // Mail
 $mailConfigured = $mailer->isConfigured();
 $checks[] = [

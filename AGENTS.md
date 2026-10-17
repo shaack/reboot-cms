@@ -113,7 +113,8 @@ preference. See the README for details.
 ## Local development
 
 ```bash
-./run.sh          # serve at http://localhost:8080 (./run.sh 3000 for another port)
+./run.sh          # Apache + PHP in Podman at http://localhost:21007, Mailpit at http://localhost:25007
+                  # writes local/config.local.yml on the first start (not in Git), ./run.sh 3000 3025 3080 for other ports
 ```
 
 ## Tests

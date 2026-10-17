@@ -57,14 +57,13 @@ git clone https://github.com/shaack/reboot-cms.git my-site
 
 ### Quick Start
 
-Run the CMS with PHP's built-in web server (no Apache or Docker needed):
+Run the CMS in a Podman container with Apache and PHP, the same setup as a typical hosting:
 
 ```bash
 ./run.sh
 ```
 
-The site is available at `http://localhost:8080`, the admin at `http://localhost:8080/admin`.
-You can specify a custom port: `./run.sh 3000`.
+The site is available at `http://localhost:21007`, the admin at `http://localhost:21007/admin`. The script also starts [Mailpit](https://mailpit.axllent.org), a mail catcher, at `http://localhost:25007`, so every mail the CMS sends, for example a login link, shows up there instead of leaving your machine. On the first start the script writes `local/config.local.yml`, which points the CMS at Mailpit and raises the log level. That file is for your machine only and ignored by Git, see [Configuration](#configuration). Other ports: `./run.sh 3000 3025 3080` for HTTP, SMTP and the Mailpit UI.
 
 ### Docker / Podman
 
@@ -94,7 +93,10 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 
 - `site/config.yml` — Site-wide settings: addon registration, navbar with `brand` and `structure`,
   and multilingual settings (see [Multilingual sites](#multilingual-sites))
-- `local/config.yml` — Local/environment settings (not committed to git):
+- `local/config.yml` — Settings of the installation: log level, editor, mail. The file ships with the CMS, so an installation runs out of the box, and is edited on the server.
+- `local/config.local.yml` — Optional, settings for one machine only, laid over `config.yml`. Sections are merged key by key, so a `mail` section here replaces only the keys it names, lists are replaced as a whole. The file is ignored by Git, `run.sh` writes one for development, and the health page shows which keys it overrides.
+
+The shipped `local/config.yml`:
 
 ```yaml
 # Logging: 0 = debug, 1 = info, 2 = error

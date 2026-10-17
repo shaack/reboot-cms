@@ -14,7 +14,8 @@ class Reboot
 {
     private string $baseFsPath; // the base/root dir of this reboot-cms in the file system, full path
     private string $baseWebPath; // the base url "https://" . [domain] . [baseWebPath}
-    private array $config; // Local configuration, defined in `/local/config.yml`
+    private array $config; // Local configuration, defined in `/local/config.yml`, overlaid by `/local/config.local.yml`
+    private array $configOverrides = []; // top level keys that `/local/config.local.yml` overrides
 
     /**
      * A path does NOT end with a "/". The root web path is ""
@@ -30,7 +31,7 @@ class Reboot
         ini_set('display_errors', '0');
         ini_set('log_errors', '1');
         $this->baseFsPath = $baseDir;
-        $this->config = Yaml::parseFile($this->baseFsPath . '/local/config.yml');
+        $this->config = self::loadLocalConfig($this->baseFsPath, $this->configOverrides);
         Logger::setLevel($this->config['logLevel'] ?? 2);
         $this->configureErrorDisplay();
         Logger::debug("Reboot CMS");
@@ -95,6 +96,58 @@ class Reboot
     public function getConfig(): array
     {
         return $this->config;
+    }
+
+    /**
+     * The top level keys of the configuration that `/local/config.local.yml`
+     * overrides, empty if that file does not exist. For the health page.
+     * @return string[]
+     */
+    public function getConfigOverrides(): array
+    {
+        return $this->configOverrides;
+    }
+
+    /**
+     * Reads `/local/config.yml` and lays `/local/config.local.yml` over it, if
+     * that file exists. The second file is meant for one machine only, for
+     * example a developer's Mailpit, and is ignored by Git, so the shipped
+     * `config.yml` stays untouched and an installation runs out of the box.
+     *
+     * @param string[] $overrides receives the top level keys the local file overrides
+     */
+    public static function loadLocalConfig(string $baseFsPath, ?array &$overrides = null): array
+    {
+        $config = Yaml::parseFile($baseFsPath . '/local/config.yml');
+        $config = is_array($config) ? $config : [];
+        $overrides = [];
+        $localFile = $baseFsPath . '/local/config.local.yml';
+        if (is_file($localFile)) {
+            $local = Yaml::parseFile($localFile);
+            if (is_array($local)) {
+                $overrides = array_keys($local);
+                $config = self::mergeConfig($config, $local);
+            }
+        }
+        return $config;
+    }
+
+    /**
+     * Lays `$override` over `$base`. Associative arrays are merged key by key,
+     * so `mail: { host: ... }` in the local file keeps the other mail settings.
+     * Lists such as `editor.tools` are replaced as a whole.
+     */
+    public static function mergeConfig(array $base, array $override): array
+    {
+        foreach ($override as $key => $value) {
+            $isAssoc = is_array($value) && $value !== [] && array_keys($value) !== range(0, count($value) - 1);
+            if ($isAssoc && isset($base[$key]) && is_array($base[$key])) {
+                $base[$key] = self::mergeConfig($base[$key], $value);
+            } else {
+                $base[$key] = $value;
+            }
+        }
+        return $base;
     }
 
     /**
