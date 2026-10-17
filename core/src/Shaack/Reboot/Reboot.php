@@ -67,6 +67,11 @@ class Reboot
     public function redirect($url)
     {
         Logger::info("=> redirect: " . $url);
+        // Weiterleitungen dürfen nicht gecacht werden. mod_expires gibt sonst auch
+        // einer 302-Antwort ein max-age mit, und der Browser folgt dann der alten
+        // Weiterleitung, ohne den Server zu fragen, etwa nach einem Sprachwechsel.
+        header("Cache-Control: no-store, no-cache, must-revalidate");
+        header("Expires: 0");
         header("Location: " . $url);
         exit;
     }
