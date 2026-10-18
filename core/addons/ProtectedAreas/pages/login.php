@@ -39,7 +39,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $next = AccessControl::sanitizeNext($request->getParam('next', 'post'), $homePath);
         if ($linkLogin && $request->getParam('action', 'post') === 'link') {
             // Login link: the answer is the same whether the account exists or not.
-            $protectedAreas->requestLoginLink($email, $ip, $request, $next);
+            // Without an explicit target the link carries none, the login then
+            // lands in the user's own area instead of on the home page.
+            $protectedAreas->requestLoginLink($email, $ip, $request, $next === $homePath ? null : $next);
             $params = ['sent' => '1'];
             if ($next !== $homePath) {
                 $params['next'] = $next;
@@ -51,6 +53,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         if ($protectedAreas->isThrottled($ip)) {
             $error = $texts['tooManyAttempts'];
         } elseif ($protectedAreas->login($email, $password, $ip)) {
+            // No target asked for: open the user's own area, not the home page
+            if ($next === $homePath) {
+                $next = $protectedAreas->firstPathOf($email) ?? $next;
+            }
             $reboot->redirect($webPath . $next);
             return;
         } else {

@@ -414,8 +414,11 @@ class ProtectedAreas extends AddOn
         return is_string($name) && $name !== '' ? $name : ($_SERVER['HTTP_HOST'] ?? 'this site');
     }
 
-    /** The first allowed path of an account, as the landing page after a link login. */
-    private function firstPathOf(string $email): ?string
+    /**
+     * The first path a user may enter, the landing page after a login without
+     * an explicit target. Null for an account without paths.
+     */
+    public function firstPathOf(string $email): ?string
     {
         $paths = $this->getUserStore()->getPaths($email);
         return $paths[0] ?? null;
