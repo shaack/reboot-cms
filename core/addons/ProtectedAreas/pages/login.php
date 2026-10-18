@@ -78,6 +78,24 @@ $user = $protectedAreas->getUser();
     :where(.protected-areas-login) :where(button, a.protected-areas-button) { display: inline-block; padding: 0.5rem 1.25rem; font: inherit; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 0.375rem; cursor: pointer; text-decoration: none; }
     :where(.protected-areas-login) :where(summary) { cursor: pointer; margin: 1.5rem 0 1rem; }
     :where(.protected-areas-login) :where(.protected-areas-error) { color: #b02a37; }
+    /* Sending a login link goes through SMTP and takes a moment. The button shows a
+       spinner while the form is on its way, so nobody clicks a second time. */
+    .protected-areas-login .protected-areas-busy::before {
+        content: "";
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        margin-right: 0.5em;
+        vertical-align: -0.15em;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: protected-areas-spin 0.7s linear infinite;
+    }
+    @keyframes protected-areas-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+        .protected-areas-login .protected-areas-busy::before { animation: none; opacity: 0.6; }
+    }
 </style>
 <div class="protected-areas-login">
     <h1><?= htmlspecialchars($texts['title']) ?></h1>
@@ -137,3 +155,43 @@ $user = $protectedAreas->getUser();
         <?php } ?>
     <?php } ?>
 </div>
+<script>
+    // One submit per form. Sending the login link runs through PHPMailer and takes a
+    // few seconds, in which an impatient second click would request a second link and
+    // invalidate the first. The button is disabled after the submit has started, not
+    // before, otherwise the browser would drop the request.
+    (function () {
+        var forms = document.querySelectorAll('.protected-areas-login form');
+        Array.prototype.forEach.call(forms, function (form) {
+            form.addEventListener('submit', function (event) {
+                if (form.dataset.submitting === '1') {
+                    event.preventDefault();
+                    return;
+                }
+                form.dataset.submitting = '1';
+                var buttons = form.querySelectorAll('button[type="submit"]');
+                Array.prototype.forEach.call(buttons, function (button) {
+                    button.classList.add('protected-areas-busy');
+                    button.setAttribute('aria-busy', 'true');
+                    window.setTimeout(function () { button.disabled = true; }, 0);
+                });
+            });
+        });
+        // Coming back via the back button restores the page from the cache, the form
+        // has to be usable again then.
+        window.addEventListener('pageshow', function (event) {
+            if (!event.persisted) {
+                return;
+            }
+            Array.prototype.forEach.call(forms, function (form) {
+                delete form.dataset.submitting;
+                var buttons = form.querySelectorAll('button[type="submit"]');
+                Array.prototype.forEach.call(buttons, function (button) {
+                    button.disabled = false;
+                    button.classList.remove('protected-areas-busy');
+                    button.removeAttribute('aria-busy');
+                });
+            });
+        });
+    })();
+</script>
