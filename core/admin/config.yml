@@ -9,5 +9,6 @@ navbar:
     Admin:
       Site Configuration: /config
       Users: /users
+      Backup: /backup
       System Health: /health
       Update: /update

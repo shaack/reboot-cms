@@ -66,6 +66,7 @@ MAIL_ID="$(podman run -d --rm --replace --name "$MAIL_NAME" \
 # A second run.sh replaces the containers of the first one, and the first must
 # not take the new Mailpit down with it on its way out.
 cleanup() {
+    podman stop "$NAME" >/dev/null 2>&1 || true
     current="$(podman inspect --format '{{.Id}}' "$MAIL_NAME" 2>/dev/null || true)"
     if [ -n "$current" ] && [ "$current" = "$MAIL_ID" ]; then
         podman stop "$MAIL_NAME" >/dev/null 2>&1 || true
@@ -78,7 +79,11 @@ trap cleanup EXIT INT TERM
 # The project root is still mounted so the app can reach vendor/, core/, site/ and
 # local/ one level up. Apache workers run as root so the container (rootless Podman
 # maps container-root to the host user) can write local/, site/ and web/media/.
-podman run --rm --replace --name "$NAME" \
+# Started detached, with only the log in the foreground. Attached, Podman would
+# forward every signal to the container, SIGWINCH included, which the terminal
+# sends to the foreground process on each window or pane resize. Apache reads
+# SIGWINCH as "graceful stop" and would shut down.
+podman run -d --rm --replace --name "$NAME" \
     -p "$PORT:80" \
     -v "$ROOT:/var/www/html" \
     "$IMAGE" \
@@ -91,4 +96,8 @@ podman run --rm --replace --name "$NAME" \
             > /etc/apache2/conf-available/reboot-cms.conf
         a2enconf reboot-cms >/dev/null
         exec apache2-foreground
-    '
+    ' >/dev/null
+
+# The log in the foreground, so Ctrl+C ends the script as before. The trap above
+# stops both containers.
+podman logs -f "$NAME"

@@ -36,10 +36,11 @@ working on a Reboot CMS project.
 
 ## Websites using Reboot CMS
 
-- [The Reboot CMS demo page](https://shaack.com/projekte/reboot-cms/)
+- [dsb.shaack.com](https://dsb.shaack.com)
 - [shaack.com](https://shaack.com)
 - [wukies.de](https://wukies.de)
 - [chesscoin032.com](https://chesscoin032.com)
+- [The Reboot CMS demo page](https://shaack.com/projekte/reboot-cms/)
 
 ## Minimum System Requirements
 
@@ -559,6 +560,23 @@ You can also manage users via the command line:
 cd local
 htpasswd .htpasswd admin
 ```
+
+### Backup
+
+The "Backup" page writes a zip archive of the content, that is `site/` with pages, blocks and configuration, plus the
+uploaded files in `web/media/`. The CMS itself (`core/`, `vendor/`, `web/admin/`) is not included, it comes from the
+release, and neither is `local/` with the configuration, the accounts and the archives themselves.
+
+An archive is named after the site and the moment it was written, for example
+`Backup_example.com_2026-10-19_1148.zip`. The page lists the existing archives with size and date, and offers download
+and delete for each. The files live in `local/backups/`, outside the document root, so they are only reachable through
+the admin page and never over a direct URL.
+
+The page needs the PHP extension `zip`. Without it the button stays disabled and the page says so, and the System
+Health page lists the extension as missing. The development container of `run.sh` ships without `zip`, so backups are
+a thing to try on a server.
+
+A backup restores by unpacking the archive over the project root, the paths inside match the project layout.
 
 ### Update
 

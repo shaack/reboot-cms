@@ -38,7 +38,7 @@ $checks[] = [
 ];
 
 // Required extensions
-foreach (['json', 'fileinfo', 'dom'] as $ext) {
+foreach (['json', 'fileinfo', 'dom', 'zip'] as $ext) {
     $loaded = extension_loaded($ext);
     $checks[] = [
         'label' => "PHP extension: $ext",
