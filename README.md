@@ -572,9 +572,9 @@ An archive is named after the site and the moment it was written, for example
 and delete for each. The files live in `local/backups/`, outside the document root, so they are only reachable through
 the admin page and never over a direct URL.
 
-The page needs the PHP extension `zip`. Without it the button stays disabled and the page says so, and the System
-Health page lists the extension as missing. The development container of `run.sh` ships without `zip`, so backups are
-a thing to try on a server.
+The archive is written with `PharData` from the core extension `phar`, which the updater needs anyway, so the optional
+extension `zip` is not required. With `zlib` the entries are deflated, without it they are stored uncompressed. Backups
+therefore also work in the development container of `run.sh`.
 
 A backup restores by unpacking the archive over the project root, the paths inside match the project layout.
 

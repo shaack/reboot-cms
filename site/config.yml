@@ -4,5 +4,7 @@ navbar:
   brand: Reboot CMS
   structure:
     Home: /
-    Testpages: /testpages
+    Blocks: /blocks
+    Blog: /blog
     Documentation: /documentation
+    GitHub: https://github.com/shaack/reboot-cms

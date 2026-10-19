@@ -53,7 +53,6 @@ try {
     $backups = [];
     $error = $error ?? $e->getMessage();
 }
-$zipAvailable = class_exists(\ZipArchive::class);
 ?>
 
 <div class="container-fluid max-width-lg">
@@ -65,7 +64,7 @@ $zipAvailable = class_exists(\ZipArchive::class);
             <form method="post" action="backup">
                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                 <input type="hidden" name="action" value="create">
-                <button class="btn btn-sm btn-primary" <?= $zipAvailable ? '' : 'disabled' ?>>Create backup</button>
+                <button class="btn btn-sm btn-primary">Create backup</button>
             </form>
         </div>
         <div class="card-body">
@@ -76,12 +75,6 @@ $zipAvailable = class_exists(\ZipArchive::class);
                 the server. The archives are stored in <code>local/backups/</code> and are not reachable over
                 the web.
             </p>
-            <?php if (!$zipAvailable) { ?>
-                <p class="alert alert-warning mt-3 mb-0">
-                    The PHP extension <code>zip</code> is missing, so no archive can be created.
-                    Enable <code>extension=zip</code> in the php.ini.
-                </p>
-            <?php } ?>
         </div>
     </div>
 

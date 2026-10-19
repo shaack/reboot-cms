@@ -21,6 +21,10 @@ use Shaack\Reboot\Reboot;
  * Not included are the CMS itself (`core/`, `vendor/`, `web/admin/`), which
  * comes from the release, and `local/` with the configuration, user accounts
  * and this very backup folder.
+ *
+ * The zip is written with PharData from the core extension `phar`, which the
+ * Updater needs anyway, so the optional extension `zip` is not required. With
+ * `zlib` the entries are deflated, without it they are stored as they are.
  */
 class BackupHelper
 {
@@ -53,32 +57,58 @@ class BackupHelper
     }
 
     /**
-     * Writes a new archive and returns its file name.
+     * Writes a new archive and returns its file name. An archive of the same
+     * minute is replaced.
      *
-     * @throws \RuntimeException if the zip extension is missing or the archive cannot be written
+     * @throws \RuntimeException if there is nothing to back up or the archive cannot be written
      */
     public static function create(Reboot $reboot, string $host): string
     {
-        if (!class_exists(\ZipArchive::class)) {
-            throw new \RuntimeException('The PHP extension "zip" is missing, no archive can be created.');
-        }
-        $basePath = $reboot->getBaseFsPath();
         $fileName = self::fileName($host);
         $target = self::directory($reboot) . '/' . $fileName;
+        self::remove($target);
 
-        $zip = new \ZipArchive();
-        if ($zip->open($target, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-            throw new \RuntimeException('Could not create the archive ' . $fileName);
+        try {
+            $archive = new \PharData($target);
+            // One call for all files. Adding them one by one rewrites the
+            // archive on every call, which takes minutes on a few thousand files.
+            $fileCount = count($archive->buildFromIterator(self::files($reboot->getBaseFsPath())));
+            if ($fileCount === 0) {
+                throw new \RuntimeException('There is nothing to back up, site/ and web/media/ are empty');
+            }
+            if (\Phar::canCompress(\Phar::GZ)) {
+                $archive->compressFiles(\Phar::GZ);
+            }
+        } catch (\RuntimeException $e) {
+            self::remove($target);
+            throw $e;
+        } catch (\Throwable $e) {
+            self::remove($target);
+            throw new \RuntimeException('Could not write the archive ' . $fileName . ': ' . $e->getMessage(), 0, $e);
+        } finally {
+            // PharData writes on every change, releasing the object closes the file
+            unset($archive);
         }
-        $fileCount = 0;
+        Logger::info("Backup written: $fileName ($fileCount files)");
+        return $fileName;
+    }
+
+    /**
+     * The files of all sources, the path inside the archive as key. Directory
+     * entries are left out on purpose, PharData writes them broken into a
+     * deflated zip, and they are implied by the file paths anyway.
+     *
+     * @return \Generator<string, string>
+     */
+    private static function files(string $basePath): \Generator
+    {
         foreach (self::SOURCES as $source) {
             $sourcePath = $basePath . '/' . $source;
             if (!is_dir($sourcePath)) {
                 continue;
             }
             $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($sourcePath, \FilesystemIterator::SKIP_DOTS),
-                \RecursiveIteratorIterator::SELF_FIRST
+                new \RecursiveDirectoryIterator($sourcePath, \FilesystemIterator::SKIP_DOTS)
             );
             foreach ($iterator as $item) {
                 /** @var \SplFileInfo $item */
@@ -87,20 +117,29 @@ class BackupHelper
                 if (str_starts_with($name, '._') || $name === '.DS_Store') {
                     continue;
                 }
-                $relative = $source . '/' . substr($item->getPathname(), strlen($sourcePath) + 1);
-                if ($item->isDir()) {
-                    $zip->addEmptyDir($relative);
-                } elseif ($item->isFile() && $item->isReadable()) {
-                    $zip->addFile($item->getPathname(), $relative);
-                    $fileCount++;
+                if (!$item->isFile() || !$item->isReadable()) {
+                    continue;
                 }
+                yield $source . '/' . substr($item->getPathname(), strlen($sourcePath) + 1) => $item->getPathname();
             }
         }
-        if (!$zip->close()) {
-            throw new \RuntimeException('Could not write the archive ' . $fileName);
+    }
+
+    /**
+     * Removes an archive file, also from the cache that phar keeps per process.
+     * A plain unlink would leave the cached instance behind, and the next
+     * PharData on the same path would append to the old content.
+     */
+    private static function remove(string $path): void
+    {
+        if (!is_file($path)) {
+            return;
         }
-        Logger::info("Backup written: $fileName ($fileCount files)");
-        return $fileName;
+        try {
+            \Phar::unlinkArchive($path);
+        } catch (\Throwable) {
+            @unlink($path);
+        }
     }
 
     /**
@@ -159,7 +198,9 @@ class BackupHelper
     public static function send(Reboot $reboot, string $name): never
     {
         $path = self::path($reboot, $name);
-        if (ob_get_level()) {
+        // The page renders inside nested output buffers (site, page, block),
+        // all of them have to go or their content ends up in front of the file
+        while (ob_get_level()) {
             ob_end_clean();
         }
         header('Content-Type: application/zip');

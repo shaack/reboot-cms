@@ -251,3 +251,158 @@ a:hover {
 ::selection {
     background: rgba(99, 102, 241, 0.3);
 }
+
+/* Footer */
+.site-footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+    opacity: 0.6;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
+}
+
+.site-footer .container-fluid {
+    display: contents;
+}
+
+/* Inline code */
+code {
+    color: #c7d2fe;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 0.3rem;
+    padding: 0.1em 0.35em;
+    font-size: 0.9em;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+}
+
+/* Screenshots in blocks */
+.block-cards .card-img-top {
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+
+/* Article with a box of links next to it */
+.block-article .article-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    align-items: flex-start;
+}
+
+@media (min-width: 992px) {
+    .block-article .article-layout {
+        flex-direction: row;
+    }
+}
+
+.block-article .article-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    max-width: 44em;
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.block-article .article-text h2 {
+    font-weight: 600;
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+    margin-top: 2.5rem;
+}
+
+.block-article .article-links {
+    flex: 0 0 auto;
+    width: 100%;
+    padding: 1.25rem 1.5rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+}
+
+@media (min-width: 992px) {
+    .block-article .article-links {
+        width: 18rem;
+        /* stays below the fixed navbar while scrolling */
+        position: sticky;
+        top: 6rem;
+    }
+}
+
+.block-article .article-links h2 {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin: 0 0 0.9rem;
+}
+
+.block-article .article-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.block-article .article-links li {
+    padding: 0 0 0.6rem;
+}
+
+/* Blog */
+time {
+    font-size: 0.9rem;
+    opacity: 0.6;
+}
+
+.block-text:has(+ .block-article) {
+    padding-bottom: 0;
+    margin-bottom: 2rem;
+}
+
+.blog-lead {
+    max-width: 44em;
+    margin-bottom: 3rem;
+}
+
+.blog-list {
+    display: grid;
+    gap: 1rem;
+    max-width: 52em;
+}
+
+.blog-teaser {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem 1.75rem;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.blog-teaser:hover {
+    background: var(--surface-hover);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.blog-teaser h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0.25rem 0 0.5rem;
+}
+
+.blog-teaser p {
+    margin: 0;
+    opacity: 0.75;
+}

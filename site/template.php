@@ -36,16 +36,19 @@ $pageConfig = $page->getConfig(); // the frontmatter config
                 $structure = $navbarConfig['structure'];
                 if ($structure) {
                     foreach ($structure as $label => $path) {
+                        // an entry with a full URL leaves the site, in a new tab
+                        $external = str_starts_with($path, "http://") || str_starts_with($path, "https://");
                         $active = false;
-                        if ($path === "/") {
-                            $active = $request->getPath() === $path;
+                        if ($external) {
+                            $href = $path;
                         } else {
-                            $active = str_starts_with($request->getPath(), $path);
+                            $href = $site->getWebPath() . $path;
+                            $active = $path === "/" ? $request->getPath() === $path : str_starts_with($request->getPath(), $path);
                         }
                         ?>
                         <li class="nav-item">
-                            <a class="nav-link <?= $active ? "active" : "" ?>"
-                               href="<?= $site->getWebPath() . $path ?>"><?= $label ?></a>
+                            <a class="nav-link <?= $active ? "active" : "" ?>" href="<?= $href ?>"
+                               <?= $external ? 'target="_blank" rel="noopener"' : "" ?>><?= $label ?></a>
                         </li>
                         <?php
                     }
@@ -61,6 +64,12 @@ $pageConfig = $page->getConfig(); // the frontmatter config
 echo $content;
 ?>
 </main>
+<footer class="site-footer">
+    <div class="container-fluid">
+        <span>Built with <a href="https://github.com/shaack/reboot-cms">Reboot CMS</a>, open source under the MIT license.</span>
+        <span><a href="https://github.com/shaack/reboot-cms">GitHub</a> · <a href="<?= $site->getWebPath() ?>/documentation">Documentation</a> · <a href="https://shaack.com">shaack.com</a></span>
+    </div>
+</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>

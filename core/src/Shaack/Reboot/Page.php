@@ -114,12 +114,14 @@ class Page
         $blocks = [];
         if ($offset !== false) {
             do {
-                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $contentForBlockSearch, $matches, 0, $offset);
+                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $contentForBlockSearch, $matches, PREG_OFFSET_CAPTURE, $offset);
                 if ($matches) {
-                    $offset += strlen($matches[0]) - 4;
+                    $offset += strlen($matches[0][0]) - 4;
                     try {
-                        $blockProps = \Symfony\Component\Yaml\Yaml::parse(trim($matches[1]));
-                        $blockContent = trim($matches[2]);
+                        $blockProps = \Symfony\Component\Yaml\Yaml::parse(trim($matches[1][0]));
+                        // the content comes from the original, not from the search copy,
+                        // where fenced code blocks are blanked out
+                        $blockContent = trim(substr($content, $matches[2][1], strlen($matches[2][0])));
                         $blockName = null;
                         if (is_string($blockProps)) {
                             $blockName = $blockProps;
@@ -177,12 +179,14 @@ class Page
         if ($offset !== false) {
             // find blocks
             do {
-                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $contentForBlockSearch, $matches, 0, $offset);
+                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $contentForBlockSearch, $matches, PREG_OFFSET_CAPTURE, $offset);
                 if ($matches) {
-                    $offset += strlen($matches[0]) - 4;
+                    $offset += strlen($matches[0][0]) - 4;
                     try {
-                        $blockProps = Yaml::parse(trim($matches[1]));
-                        $blockContent = trim($matches[2]);
+                        $blockProps = Yaml::parse(trim($matches[1][0]));
+                        // the content comes from the original, not from the search copy,
+                        // where fenced code blocks are blanked out
+                        $blockContent = trim(substr($content, $matches[2][1], strlen($matches[2][0])));
                         $blockName = null;
                         if (is_string($blockProps)) {
                             $blockName = $blockProps;

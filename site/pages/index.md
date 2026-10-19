@@ -1,6 +1,6 @@
 ---
-title: Reboot CMS
-description: Reboot CMS is a fast and small CMS, which needs no database.
+title: Reboot CMS, the flat file CMS with blocks
+description: Reboot CMS is a small and fast flat file CMS in PHP. Pages are Markdown, blocks give them structure, no database needed.
 author: shaack.com
 ---
 
@@ -8,84 +8,82 @@ author: shaack.com
 
 # Reboot CMS
 
-A flat file, markdown CMS with blocks
+The flat file CMS that thinks in blocks.
 
 ---
 
-The main idea is to have a **minimal CMS** without needing a database, but with the support of blocks.
+Your pages are **Markdown files**. Blocks give them structure, a small PHP core delivers them fast, and an admin interface lets you edit everything in the browser. No database, no build step, nothing to migrate.
 
 ---
 
-[Learn more](documentation)
-
-<!-- text-image -->
-
-## The "text-image" block
-
-The block above is a "hero" block. This one is a "text-image" block. You can define multiple blocks as you need.
-[Reboot CMS documentation](documentation)
-
-Shipped with this CMS are some default block types, but it is easy to create your own, if you know some PHP.
-
----
-
-![alt text](media/dummy.svg "Title Text")
+[View on GitHub](https://github.com/shaack/reboot-cms)
 
 <!-- three-columns -->
 
-### the
+### Just files
 
-Duis aute **irure** dolor in *reprehenderit* in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est.
-
----
-
-### "three-colums" Block
-
-Ut enim ad minim [veniam](/), quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+A page is a Markdown file, and its path is its URL. Put the site under Git and every change becomes a reviewable diff. Backups are a copy of a folder.
 
 ---
 
-### block
+### Structured with blocks
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Split a page into sections with a one line comment. Each block type is a single PHP template, so a hero, a gallery or a pricing table is a few lines of HTML away.
+
+---
+
+### Fast by default
+
+No database, no framework, no queries. Pages render in milliseconds and ship without the weight of a classic CMS. Sites built with Reboot CMS score 100 on PageSpeed Insights.
+
+<!-- text-image -->
+
+## Edit in the browser
+
+The admin interface edits pages in a Markdown editor with a block menu and a live preview, keeps a history of every page, and manages media, users, protected areas and secure downloads. Updates come straight from GitHub with one click, and a backup is one more.
+
+[See the admin in the documentation](documentation#admin-interface)
+
+---
+
+![The page editor of the admin](media/screenshots/reboot-cms-admin-page-edit.png "Editing a page")
 
 <!--
 text-image:
     image-position: left
 -->
 
-## Configure blocks in the block comment
+## Made for AI agents
 
-The `text-image` block can also display the image to the left.
+An agent does well with Reboot CMS for the same reason you do. Content is text, the URL names the file, and the whole core fits into a context window. The repository ships an `AGENTS.md` that orients coding assistants, so "add a page about pricing" is a task an agent completes on its own.
 
-```
-text-image:
-    image-position: left
-```
+[Read how it works](documentation#working-with-ai-agents)
 
 ---
 
-![alt text](media/dummy.svg "Title Text")
+![The media manager of the admin](media/screenshots/reboot-cms-admin-media.png "The media manager")
 
 <!-- cards -->
 
-## The block "cards"
+## The admin at a glance
 
-- ![This is](media/dummy.svg)
-- ![a dynamic list](media/dummy.svg)
-- ![of images.](media/dummy.svg)
-- ![4 is enough](media/dummy.svg)
+- ![Pages: a Markdown editor with block menu, preview and page history](media/screenshots/reboot-cms-admin-page-edit.png)
+- ![Media: upload and organise images and files](media/screenshots/reboot-cms-admin-media.png)
+- ![Site: edit the configuration and navigation](media/screenshots/reboot-cms-admin-site-configuration.png)
+- ![Update: install the latest release from GitHub](media/screenshots/reboot-cms-admin-update.png)
 
 <!-- text -->
 
-## This is the "text" block
+## Up and running in a minute
 
-A text block contains just one markdown part.
+Clone the repository and start it. The included script runs Apache and PHP in a container, the same setup as on a typical web host.
 
-### This is a h3
+```bash
+git clone https://github.com/shaack/reboot-cms.git my-site
+cd my-site
+./run.sh
+```
 
-Text block can contain
+The site is at `http://localhost:21007`, the admin at `http://localhost:21007/admin`. On a server, point the document root at `web/` and open `/admin` to create the first account.
 
-- lists
-- and [links](https://shaack.com)
-- and **everything else** in markdown.
+Reboot CMS is open source under the MIT license. Have a look at the [blocks of this demo](blocks), read the [blog](blog) and the [documentation](documentation), or go straight to the [repository on GitHub](https://github.com/shaack/reboot-cms).

@@ -1,9 +1,9 @@
 <!-- text -->
 
-# A standard text block.
+# Unknown block
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+The next block of this page uses a type that has no template in `site/blocks/`. The CMS logs the problem and renders the content as a text block instead of failing the page.
 
 <!-- unknown -->
 
-An unknown block.
+This is the content of the unknown block.
