@@ -67,10 +67,10 @@ An agent does well with Reboot CMS for the same reason you do. Content is text, 
 
 ## The admin at a glance
 
-- ![Pages: a Markdown editor with block menu, preview and page history](media/screenshots/reboot-cms-admin-page-edit.png)
-- ![Media: upload and organise images and files](media/screenshots/reboot-cms-admin-media.png)
-- ![Site: edit the configuration and navigation](media/screenshots/reboot-cms-admin-site-configuration.png)
-- ![Update: install the latest release from GitHub](media/screenshots/reboot-cms-admin-update.png)
+- ![Pages: a Markdown editor with block menu and live preview](media/screenshots/reboot-cms-admin-insert-block.png)
+- ![History: every save is kept and can be restored](media/screenshots/reboot-cms-admin-page-history.png)
+- ![Protected areas: customer logins by password or mail link](media/screenshots/reboot-cms-admin-protected-areas.png)
+- ![Secure downloads: send a file with a link and a password](media/screenshots/reboot-cms-admin-secure-downloads.png)
 
 <!-- text -->
 

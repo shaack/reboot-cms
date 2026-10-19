@@ -469,11 +469,17 @@ Pages are organized in a tree structure reflecting the folder hierarchy in `site
 A **live preview** panel can be toggled to see the rendered page side-by-side with the editor
 (available on screens lg and wider). The preview updates automatically as you type.
 
+![Edit a page](web/media/screenshots/reboot-cms-admin-page-edit.png)
+
+Besides the usual formatting, the toolbar inserts a link to another page of the site, an image from the media folder and a block. The block menu lists every block type of the site and inserts its example Markdown at the cursor, so the structure a block expects is already in place.
+
+![Insert a block](web/media/screenshots/reboot-cms-admin-insert-block.png)
+
 The editor tracks **page history** — every save creates a snapshot. You can view previous versions and
 restore them from the History dialog. The number of snapshots kept per page is configurable via
 `history.maxVersions` in `local/config.yml`.
 
-![Edit a page](web/media/screenshots/reboot-cms-admin-page-edit.png)
+![Page history](web/media/screenshots/reboot-cms-admin-page-history.png)
 
 ### Media
 
@@ -497,6 +503,8 @@ Password: 692072
 The real file name never appears in the link. The extension is cosmetic, the name is only sent in the `Content-Disposition` header, so the recipient still saves the file as `Passwords.pdf`. Send the link by mail and the password through another channel, then neither message alone is enough to open the file.
 
 The list shows for every download whether it was fetched already, when, and from which anonymized IP address. The optional note you enter when uploading is shown to the recipient above the password form, so they know what they are about to download without the file name being revealed.
+
+![Secure Downloads](web/media/screenshots/reboot-cms-admin-secure-downloads.png)
 
 A link expires **one week after the upload**, or **one hour after the first download**, whichever comes first. Within that hour the file may be fetched again, so an interrupted transfer does not ruin the link. After expiry the file is deleted from the server automatically; the entry stays in the list for 30 days, so the log remains readable. Ten wrong passwords lock a link for good, which is what keeps six digits from being guessable.
 
@@ -580,6 +588,14 @@ therefore also work in the development container of `run.sh`.
 
 A backup restores by unpacking the archive over the project root, the paths inside match the project layout.
 
+![Backup](web/media/screenshots/reboot-cms-admin-backup.png)
+
+### System health
+
+The "System Health" page checks the installation: the PHP version and the required extensions, URL rewriting, whether `local/` and `site/pages/` are writable and `local/` and `core/` are protected from the web, whether admin accounts exist, the registered AddOns and the local configuration. A problem is marked red with a hint how to fix it. The page also shows the mail settings and sends a test mail on request.
+
+![System health](web/media/screenshots/reboot-cms-admin-health.png)
+
 ### Update
 
 The "Update" page in the admin interface shows the currently installed version and checks for available updates from
@@ -639,6 +655,8 @@ protectedAreas:
 ```
 
 See the [ProtectedAreas README](core/addons/ProtectedAreas/README.md).
+
+![Protected Areas](web/media/screenshots/reboot-cms-admin-protected-areas.png)
 
 ## AddOns
 

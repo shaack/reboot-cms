@@ -1,84 +1,149 @@
+/**
+ * Captures the screenshots in web/media/screenshots/ with Puppeteer, see
+ * docs/screenshots.md. Usually started by docs/capture-screenshots.sh, which
+ * sets up a test instance with sample content and passes the settings below. The site and the admin are shown in dark mode, at
+ * 1280x800 CSS pixels with a device scale factor of 2.
+ *
+ *   BASE=http://localhost:21007 ADMIN_USER=admin ADMIN_PASSWORD=... \
+ *     NODE_PATH=$(npm root -g) node docs/capture-screenshots.mjs
+ *
+ * Shots of admin sections that are not available, for example an AddOn that
+ * is not registered, are skipped with a notice. Pages with little content are
+ * cut below it, so the image shows no empty area.
+ *
+ * HOST_RULES passes a host mapping to Chrome, so links and file names in the
+ * images show a neutral domain instead of localhost:
+ *
+ *   BASE=http://www.my-site.test HOST_RULES="MAP www.my-site.test 127.0.0.1:26007" ...
+ */
 import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const puppeteer = require('puppeteer');
 import { fileURLToPath } from 'url';
 import path from 'path';
+
+const require = createRequire(import.meta.url);
+const puppeteer = require('puppeteer');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const imgDir = path.join(__dirname, '..', 'web', 'media', 'screenshots');
 
-const BASE = 'http://localhost:8080';
+const BASE = (process.env.BASE || 'http://localhost:21007').replace(/\/$/, '');
 const ADMIN = `${BASE}/admin`;
-const WIDTH = 1280;
-const HEIGHT = 720;
+const USER = process.env.ADMIN_USER || 'admin';
+const PASSWORD = process.env.ADMIN_PASSWORD;
+if (!PASSWORD) {
+    console.error('Set ADMIN_PASSWORD, or run docs/capture-screenshots.sh');
+    process.exit(1);
+}
+const VIEWPORT = { width: 1280, height: 800, deviceScaleFactor: 2 };
+
+const pause = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function main() {
-    const browser = await puppeteer.launch({ headless: true });
+    const args = process.env.HOST_RULES ? [`--host-resolver-rules=${process.env.HOST_RULES}`] : [];
+    const browser = await puppeteer.launch({ headless: true, args });
     const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 2 });
+    await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }]);
+    await page.setViewport(VIEWPORT);
 
-    // 1. Front page (no auth needed)
-    console.log('Capturing front page...');
-    await page.goto(BASE, { waitUntil: 'networkidle0' });
-    await page.screenshot({ path: path.join(imgDir, 'reboot-cms-index.png') });
-    console.log('  -> reboot-cms-index.png');
+    // fit: end the image a little below the lowest visible element, but keep
+    // it at least 480 pixels high, so all images share a similar shape
+    const shot = async (name, fit = false) => {
+        const options = { path: path.join(imgDir, name) };
+        if (fit) {
+            const bottom = await page.evaluate(() => Math.max(...Array.from(document.body.querySelectorAll('*'))
+                .filter(el => el.offsetParent !== null)
+                .map(el => el.getBoundingClientRect().bottom)));
+            const height = Math.min(VIEWPORT.height, Math.max(480, Math.ceil(bottom + 32)));
+            options.clip = { x: 0, y: 0, width: VIEWPORT.width, height };
+        }
+        await page.screenshot(options);
+        console.log(`  -> ${name}`);
+    };
+    const open = async (url, wait = 600) => {
+        const response = await page.goto(url, { waitUntil: 'networkidle0' });
+        await pause(wait);
+        return response;
+    };
 
-    await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 2 });
+    // --- The site ---
 
-    // 2. Login page
-    console.log('Capturing login page...');
-    await page.goto(`${ADMIN}/login`, { waitUntil: 'networkidle0' });
-    await page.screenshot({ path: path.join(imgDir, 'reboot-cms-admin-login.png') });
-    console.log('  -> reboot-cms-admin-login.png');
+    console.log('Front page');
+    await open(BASE);
+    await shot('reboot-cms-index.png');
 
-    // 3. Log in
-    console.log('Logging in...');
-    await page.type('#username', 'admin');
-    await page.type('#password', 'd3v_p455');
-    await page.click('button[type="submit"]');
-    await page.waitForNavigation({ waitUntil: 'networkidle0' });
-    console.log('  Logged in, now at:', page.url());
+    console.log('Blog article with its box of links');
+    await open(`${BASE}/blog`);
+    const article = await page.$eval('.blog-teaser a', a => a.getAttribute('href'));
+    await open(`${BASE}/${article}`);
+    await shot('reboot-cms-blog-article.png');
 
-    // 4. Page editor (editing index.md) with preview
-    console.log('Capturing page editor...');
-    await page.goto(`${ADMIN}/pages?page=/index.md`, { waitUntil: 'networkidle0' });
-    await new Promise(r => setTimeout(r, 1000));
+    console.log('Gallery with an enlarged image');
+    await open(BASE);
+    await page.$eval('a[data-lightbox]', a => a.scrollIntoView({ block: 'center' }));
+    await page.click('a[data-lightbox]');
+    await pause(800);
+    await shot('reboot-cms-lightbox.png');
+    await page.keyboard.press('Escape');
+
+    // --- The admin ---
+
+    console.log('Login');
+    await open(`${ADMIN}/login`);
+    await shot('reboot-cms-admin-login.png');
+    await page.type('#username', USER);
+    await page.type('#password', PASSWORD);
+    await Promise.all([
+        page.waitForNavigation({ waitUntil: 'networkidle0' }),
+        page.click('button[type="submit"]'),
+    ]);
+    if (page.url().includes('/login')) {
+        throw new Error(`Login as "${USER}" failed, set ADMIN_USER and ADMIN_PASSWORD`);
+    }
+
+    console.log('Page editor with preview');
+    await open(`${ADMIN}/pages?page=/index.md`, 1000);
     await page.click('#preview-toggle');
-    await new Promise(r => setTimeout(r, 2000));
-    await page.screenshot({ path: path.join(imgDir, 'reboot-cms-admin-page-edit.png') });
-    console.log('  -> reboot-cms-admin-page-edit.png');
+    await pause(2000);
+    await shot('reboot-cms-admin-page-edit.png');
 
-    // 6. Site configuration
-    console.log('Capturing site configuration...');
-    await page.goto(`${ADMIN}/config`, { waitUntil: 'networkidle0' });
-    await new Promise(r => setTimeout(r, 1000));
-    await page.screenshot({ path: path.join(imgDir, 'reboot-cms-admin-site-configuration.png') });
-    console.log('  -> reboot-cms-admin-site-configuration.png');
+    console.log('Insert block menu');
+    await page.click('.mde-btn-insert-block');
+    await pause(400);
+    await shot('reboot-cms-admin-insert-block.png');
+    await page.keyboard.press('Escape');
 
-    // 7. Media manager
-    console.log('Capturing media manager...');
-    await page.goto(`${ADMIN}/media`, { waitUntil: 'networkidle0' });
-    await page.screenshot({ path: path.join(imgDir, 'reboot-cms-admin-media.png') });
-    console.log('  -> reboot-cms-admin-media.png');
+    console.log('Page history');
+    await open(`${ADMIN}/pages?page=/index.md`, 1000);
+    await page.evaluate(() => window.toggleHistory());
+    await page.waitForSelector('#page-history-modal.show', { timeout: 5000 });
+    await pause(1200);
+    await shot('reboot-cms-admin-page-history.png');
 
-    // 8. Users
-    console.log('Capturing users...');
-    await page.goto(`${ADMIN}/users`, { waitUntil: 'networkidle0' });
-    await page.screenshot({ path: path.join(imgDir, 'reboot-cms-admin-users.png') });
-    console.log('  -> reboot-cms-admin-users.png');
-
-    // 9. Update
-    console.log('Capturing update page...');
-    await page.goto(`${ADMIN}/update`, { waitUntil: 'networkidle0' });
-    await new Promise(r => setTimeout(r, 2000));
-    await page.screenshot({ path: path.join(imgDir, 'reboot-cms-admin-update.png') });
-    console.log('  -> reboot-cms-admin-update.png');
+    const sections = [
+        ['Media', `${ADMIN}/media?path=blog`, 'reboot-cms-admin-media.png', true],
+        ['Site configuration', `${ADMIN}/config`, 'reboot-cms-admin-site-configuration.png', false],
+        ['Users', `${ADMIN}/users`, 'reboot-cms-admin-users.png', true],
+        ['Protected areas', `${ADMIN}/protectedareas`, 'reboot-cms-admin-protected-areas.png', true],
+        ['Secure downloads', `${ADMIN}/securedownloads`, 'reboot-cms-admin-secure-downloads.png', true],
+        ['Backup', `${ADMIN}/backup`, 'reboot-cms-admin-backup.png', true],
+        ['System health', `${ADMIN}/health`, 'reboot-cms-admin-health.png', false],
+        ['Update', `${ADMIN}/update`, 'reboot-cms-admin-update.png', true],
+    ];
+    for (const [label, url, file, fit] of sections) {
+        console.log(label);
+        const response = await open(url, 1500);
+        if (!response || response.status() >= 400) {
+            console.log(`  skipped, ${url} answered ${response ? response.status() : 'nothing'}`);
+            continue;
+        }
+        await shot(file, fit);
+    }
 
     await browser.close();
-    console.log('\nDone! All screenshots saved to web/media/screenshots/');
+    console.log('\nDone, the screenshots are in web/media/screenshots/');
 }
 
 main().catch(err => {
-    console.error('Error:', err);
+    console.error('Error:', err.message);
     process.exit(1);
 });
