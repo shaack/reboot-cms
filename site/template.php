@@ -73,5 +73,7 @@ echo $content;
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
+<?php // the modification time as version, so a changed script is not served from the cache ?>
+<script src="./assets/scripts/lightbox.js?v=<?= @filemtime(dirname($site->getFsPath()) . "/web/assets/scripts/lightbox.js") ?>" defer></script>
 </body>
 </html>

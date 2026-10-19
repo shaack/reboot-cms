@@ -390,6 +390,8 @@ $imagePosition = @$block->getConfig()["image-position"];
 Elements in the markdown are queried and used as values for the block. The query syntax
 is [Xpath](https://devhints.io/xpath) with the addition of the `part(n)` function.
 
+A query returns a single node when it matches exactly one element, and a list otherwise. A query on any element, like `/*[part(2)]`, always returns a list, because it asks for a section of the content. `$block->nodeHtml()` renders a list with all its tags, so a section keeps its paragraphs, lists and links. A single element renders with what is inside it, tags included, which suits a template like `<h2><?= $block->nodeHtml($heading) ?></h2>`. A text node or an attribute gives its text.
+
 Use `$block->content()` to get the full block content as rendered HTML (without XPath querying).
 This is useful for simple blocks like "text":
 

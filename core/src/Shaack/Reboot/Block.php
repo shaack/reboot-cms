@@ -217,11 +217,25 @@ class Block
                     self::$allValidationErrors[] = $error;
                 }
             }
-            if ($nodeOrNodeList->length === 1) {
+            // A single match is handed out as the node itself, so a template can
+            // read its attributes or text directly. Not so for a query on any
+            // element, like `/*[part(2)]`: it asks for a section of the content,
+            // and that has to render with its markup whether it holds one
+            // element or several.
+            if ($nodeOrNodeList->length === 1 && !self::selectsAnyElement($originalExpression)) {
                 $nodeOrNodeList = $nodeOrNodeList->item(0);
             }
         }
         return $nodeOrNodeList;
+    }
+
+    /**
+     * Whether the last step of an expression selects any element, `*`, with or
+     * without predicates, for example `/*[part(1)]`.
+     */
+    private static function selectsAnyElement(string $expression): bool
+    {
+        return (bool)preg_match('/(^|\/)\*(\[[^\]]*\])*$/', trim($expression));
     }
 
     /**
@@ -564,9 +578,18 @@ class Block
     }
 
     /**
-     * Return the html content of a node. Null, for example from `item(n)` on
-     * a list that is shorter, gives an empty string, a missing optional field
-     * is a normal state and must not break the template.
+     * Return the html content of a node or list.
+     *
+     * - A list renders every node with its tags, so a section from
+     *   `/*[part(n)]` keeps its paragraphs, lists and links.
+     * - A single element renders what is inside it, tags included, so a
+     *   template can write `<h2><?= $block->nodeHtml($heading) ?></h2>` and
+     *   keeps the link or emphasis within the heading.
+     * - A text node or an attribute gives its text.
+     *
+     * Null, for example from `item(n)` on a list that is shorter, gives an
+     * empty string, a missing optional field is a normal state and must not
+     * break the template.
      */
     function nodeHtml(\DOMNode|\DOMNodeList|null $nodeOrNodeList, $descent = true): string
     {
@@ -597,9 +620,10 @@ class Block
             $html .= $nodeOrNodeList->textContent;
         } else if (@$nodeOrNodeList->childNodes) {
             Logger::debug("nodeHtml hasChildNodes");
-            $children = $nodeOrNodeList->childNodes;
-            foreach ($children as $child) {
-                $html .= $this->nodeHtml($child);
+            // the children with their own tags, descending further would strip
+            // every element below and leave only the text
+            foreach ($nodeOrNodeList->childNodes as $child) {
+                $html .= $nodeOrNodeList->ownerDocument->saveHTML($child);
             }
         } else {
             $tmp_doc = new \DOMDocument();

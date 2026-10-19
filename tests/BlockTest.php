@@ -165,6 +165,48 @@ class BlockTest
         Assert::contains("and normal", $html);
     }
 
+    public function testNodeHtmlOfASingleElementKeepsInnerMarkup(): void
+    {
+        $block = $this->createBlock("test", "## A [link](https://example.com) and **bold**");
+        $heading = $block->xpath("//h2");
+        Assert::true($heading instanceof \DOMElement, "a single match is the element itself");
+        Assert::equals('A <a href="https://example.com">link</a> and <strong>bold</strong>', $block->nodeHtml($heading));
+    }
+
+    public function testNodeHtmlEscapesTextInsideAnElement(): void
+    {
+        $block = $this->createBlock("test", "## Use `<div>` & more");
+        $html = $block->nodeHtml($block->xpath("//h2"));
+        Assert::contains("<code>&lt;div&gt;</code>", $html);
+        Assert::contains("&amp; more", $html);
+    }
+
+    public function testWildcardPartWithOneElementKeepsItsMarkup(): void
+    {
+        $block = $this->createBlock("test", "Text\n\n---\n\n- [One](/one)\n- [Two](/two)");
+        $part = $block->xpath("/*[part(2)]");
+        Assert::true($part instanceof \DOMNodeList, "a section stays a list");
+        Assert::equals(1, $part->length);
+        $html = $block->nodeHtml($part);
+        Assert::contains("<ul>", $html);
+        Assert::contains('<a href="/one">One</a>', $html);
+    }
+
+    public function testWildcardPartWithOneParagraphKeepsTheParagraph(): void
+    {
+        $block = $this->createBlock("test", "A [link](/x) in one paragraph");
+        Assert::equals('<p>A <a href="/x">link</a> in one paragraph</p>', $block->nodeHtml($block->xpath("/*[part(1)]")));
+        Assert::equals('<p>A <a href="/x">link</a> in one paragraph</p>', $block->nodeHtml($block->xpath("/*")));
+    }
+
+    public function testNamedSingleMatchIsStillTheElement(): void
+    {
+        $block = $this->createBlock("test", "![Alt](image.jpg)\n\n---\n\n# Title");
+        Assert::true($block->xpath("//img[part(1)]") instanceof \DOMElement);
+        Assert::true($block->xpath("/h1[part(2)]") instanceof \DOMElement);
+        Assert::true($block->xpath("//*[@src]") instanceof \DOMNodeList, "a wildcard with a predicate stays a list");
+    }
+
     public function testNodeHtmlWithEmptyListAndNull(): void
     {
         $block = $this->createBlock("test", "");

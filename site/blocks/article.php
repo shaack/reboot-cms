@@ -36,21 +36,15 @@ $text = $block->field("/*[part(1)]", "Article text", true, "md-editor");
 $aside = $block->field("/*[part(2)]", "Links", false, "md-editor");
 $hasAside = $aside instanceof \DOMNode || ($aside instanceof \DOMNodeList && $aside->length > 0);
 
-// A query with a single match returns the element itself, and nodeHtml() renders
-// only what is inside it. A part that is just one list would lose its list and
-// link tags that way, so a single element is written out as a whole.
-$outerHtml = fn(\DOMNode|\DOMNodeList $node): string => $node instanceof \DOMElement
-    ? (string)$node->ownerDocument->saveHTML($node)
-    : $block->nodeHtml($node);
 ?>
 <section class="block block-article">
     <div class="container-fluid">
         <div class="article-layout<?= $hasAside ? '' : ' article-layout-plain' ?>">
-            <div class="article-text"><?= $outerHtml($text) ?></div>
+            <div class="article-text"><?= $block->nodeHtml($text) ?></div>
             <?php if ($hasAside) { ?>
                 <aside class="article-links" aria-label="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>">
                     <h2><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></h2>
-                    <?= $outerHtml($aside) ?>
+                    <?= $block->nodeHtml($aside) ?>
                 </aside>
             <?php } ?>
         </div>

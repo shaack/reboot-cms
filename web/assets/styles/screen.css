@@ -200,6 +200,17 @@ main {
     border-radius: 1rem;
     overflow: hidden;
     margin: 0.375rem;
+    color: inherit;
+    cursor: zoom-in;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.block-cards .card:hover,
+.block-cards .card:focus-visible {
+    background: var(--surface-hover) !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    transform: translateY(-2px);
+    color: inherit;
 }
 
 .block-cards .card-img-top {
@@ -207,9 +218,109 @@ main {
 }
 
 .block-cards .card-body {
+    display: block;
     font-size: 0.9rem;
     opacity: 0.7;
     padding: 1rem 1.5rem 1.5rem;
+}
+
+/* Lightbox, see assets/scripts/lightbox.js */
+.lightbox-open {
+    overflow: hidden;
+}
+
+.lightbox {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+}
+
+.lightbox::backdrop {
+    background: rgba(5, 5, 10, 0.88);
+    backdrop-filter: blur(6px);
+}
+
+.lightbox-figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    height: 100%;
+    margin: 0;
+    padding: 4rem 4.5rem 2rem;
+}
+
+.lightbox-image {
+    max-width: 100%;
+    max-height: calc(100% - 3rem);
+    object-fit: contain;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    cursor: default;
+}
+
+.lightbox-caption {
+    font-size: 0.95rem;
+    opacity: 0.8;
+    text-align: center;
+}
+
+.lightbox-button {
+    position: absolute;
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    font-size: 1.75rem;
+    line-height: 1;
+    transition: background 0.2s;
+}
+
+.lightbox-button:hover,
+.lightbox-button:focus-visible {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.lightbox-prev,
+.lightbox-next {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.lightbox-prev {
+    left: 1rem;
+}
+
+.lightbox-next {
+    right: 1rem;
+}
+
+.lightbox-close {
+    top: 1rem;
+    right: 1rem;
+}
+
+@media (max-width: 575px) {
+    .lightbox-figure {
+        padding: 4rem 0.75rem 5.5rem;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+        top: auto;
+        bottom: 1.25rem;
+        transform: none;
+    }
 }
 
 /* Text Block */
