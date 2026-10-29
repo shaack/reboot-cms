@@ -9,6 +9,7 @@ namespace Shaack\Reboot\AddOns;
 
 use Shaack\Logger;
 use Shaack\Reboot\AddOn;
+use Shaack\Reboot\AdminSession;
 use Shaack\Reboot\AddOns\ProtectedAreas\AccessControl;
 use Shaack\Reboot\AddOns\ProtectedAreas\LoginThrottle;
 use Shaack\Reboot\AddOns\ProtectedAreas\UserStore;
@@ -32,6 +33,7 @@ use Shaack\Reboot\TokenStore;
  *       areas: [ /customers ]   # protected path prefixes, without language prefix
  *       loginPath: /login       # the login page, provided by the AddOn
  *       logoutPath: /logout     # logs out and returns to the homepage
+ *       adminAccess: true       # admins of the backend may enter every area (default)
  *       texts:                  # override the built-in texts per language
  *         de:
  *           title: "Kundenbereich"
@@ -39,6 +41,10 @@ use Shaack\Reboot\TokenStore;
  * On multilingual sites the paths are compared without the language prefix,
  * so `/de/customers/acme` is protected like `/customers/acme`, and the login
  * page exists for every language, `/de/login` speaks German.
+ *
+ * A visitor logged in to the admin with the role "admin" may enter every
+ * protected area without an account of their own, unless `adminAccess` is
+ * false. Pages that only admins should see check isBackendAdmin().
  */
 class ProtectedAreas extends AddOn
 {
@@ -163,6 +169,10 @@ class ProtectedAreas extends AddOn
         }
 
         $this->startSession();
+        if ($this->isBackendAdmin()) {
+            $this->sendNoStoreHeaders();
+            return true;
+        }
         $user = $this->getUser();
         $next = $request->getPath();
         if ($user === null) {
@@ -175,12 +185,19 @@ class ProtectedAreas extends AddOn
             $this->reboot->redirect($this->getLoginUrl($request, $next, true));
             return false;
         }
-        // A protected page must never end up in a shared cache, web/.htaccess
-        // sets a generous default expiry for HTML.
+        $this->sendNoStoreHeaders();
+        return true;
+    }
+
+    /**
+     * A protected page must never end up in a shared cache, web/.htaccess
+     * sets a generous default expiry for HTML.
+     */
+    private function sendNoStoreHeaders(): void
+    {
         header('Cache-Control: no-store, private');
         header('Pragma: no-cache');
         header('Expires: 0');
-        return true;
     }
 
     // Public API, used by the login page, the admin page and site templates
@@ -202,6 +219,25 @@ class ProtectedAreas extends AddOn
             $user = $this->restoreRememberedLogin();
         }
         return $user;
+    }
+
+    /**
+     * True if the visitor is logged in to the admin with the role "admin" and
+     * `adminAccess` is not switched off. Safe to call from any page, a session
+     * is only opened if the browser brings a session cookie.
+     */
+    public function isBackendAdmin(): bool
+    {
+        if (($this->config['adminAccess'] ?? true) === false) {
+            return false;
+        }
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            if (empty($_COOKIE[session_name()])) {
+                return false;
+            }
+            $this->startSession();
+        }
+        return AdminSession::getAdmin($this->reboot->getBaseFsPath()) !== null;
     }
 
     /**

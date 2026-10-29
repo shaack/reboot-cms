@@ -5,6 +5,7 @@ namespace Shaack\Reboot\AddOns;
 use Shaack\Htpasswd;
 use Shaack\Logger;
 use Shaack\Reboot\AddOn;
+use Shaack\Reboot\AdminSession;
 use Shaack\Reboot\AddOns\Authentication\RememberMeStore;
 use Shaack\Reboot\Request;
 use Symfony\Component\Yaml\Yaml;
@@ -162,7 +163,7 @@ class Authentication extends AddOn
      */
     private function getChecksum(): string
     {
-        return md5($this->htpasswd->getChecksum() . ($_SERVER['REMOTE_ADDR'] ?? '') . ($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? ''));
+        return AdminSession::checksum($this->htpasswd);
     }
 
     /**
