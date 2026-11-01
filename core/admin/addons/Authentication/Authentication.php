@@ -137,6 +137,12 @@ class Authentication extends AddOn
                 $this->logout();
                 return false;
             }
+            // Already signed in, for example restored from the "Stay signed in" cookie,
+            // the login form is not needed
+            if ($request->getPath() === "/login" && $_SERVER['REQUEST_METHOD'] === 'GET') {
+                $this->reboot->redirect($this->site->getWebPath() . "/pages");
+                return false;
+            }
             // Restrict editor access to allowed pages only (skip if impersonating — admin retains access)
             if (!$this->isImpersonating() && $this->getUserRole($user) === self::ROLE_EDITOR) {
                 $path = $request->getPath();
