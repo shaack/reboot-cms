@@ -109,5 +109,5 @@ src/AccessControl.php   the path logic, static and without side effects
 src/UserStore.php       accounts in users.json with locking
 src/LoginThrottle.php   the limit on failed logins and link requests, one counter file each
 pages/login.php         the login page, mounted at the login path of every language
-admin/index.php         the admin page, mounted at /admin/protectedareas
+admin/index.php         the admin page, mounted at /admin/addons/protectedareas
 ```

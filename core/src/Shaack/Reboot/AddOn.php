@@ -93,11 +93,13 @@ class AddOn
 
     /**
      * The admin path of this AddOn, the folder `admin/` is mounted here. By
-     * default the lower case name, `/securedownloads` for the AddOn `SecureDownloads`.
+     * default the lower case name below `/addons`, `/addons/securedownloads`
+     * for the AddOn `SecureDownloads`, so it is `/admin/addons/securedownloads`
+     * in the browser.
      */
     public function getAdminPath(): string
     {
-        return '/' . strtolower($this->getName());
+        return '/addons/' . strtolower($this->getName());
     }
 
     /**
@@ -142,6 +144,8 @@ class AddOn
     /**
      * Entries this AddOn contributes to the admin navigation, as `label => path`.
      * By default one entry named after the AddOn, if it has an `admin/index.php`.
+     * Flat entries are listed in the menu "AddOns (n)". Without one, the AddOn
+     * appears there with its info page, which shows its `README.md`.
      *
      * A nested array adds entries to the dropdown of that name,
      * `['Admin' => ['Statistics' => '/statistics']]` extends the "Admin" menu.

@@ -43,6 +43,18 @@ class AdminHelper
     }
 
     /**
+     * The heading of an admin page, for example the name of an AddOn above its
+     * help text. `$note` is shown small next to it, like the folder of the AddOn.
+     */
+    public static function renderPageTitle(string $title, string $note = ""): string
+    {
+        return '<div class="admin-page-title">'
+            . '<h1>' . htmlspecialchars($title) . '</h1>'
+            . ($note !== "" ? '<code>' . htmlspecialchars($note) . '</code>' : '')
+            . '</div>';
+    }
+
+    /**
      * A collapsed help text for an admin page, opened by a click on its summary.
      * `$html` is markup written in the page itself, it is not escaped.
      */

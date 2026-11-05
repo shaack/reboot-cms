@@ -6,6 +6,7 @@
 $admin = $site->getAddOn("Admin");
 
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminMenu;
 use Shaack\Reboot\AddOns\SecureDownloads;
 use Shaack\Reboot\AddOns\SecureDownloads\DownloadStore;
 use Shaack\Reboot\CsrfProtection;
@@ -14,9 +15,8 @@ if (!AdminHelper::requireAdmin($site, $reboot)) return;
 
 // This page is mounted by the Admin addon only while the SecureDownloads addon is
 // registered in site/config.yml, so the addon is always there.
-// The AddOn may still be registered under its deprecated name `Downloads`.
 /** @var SecureDownloads $downloads */
-$downloads = $admin->getDefaultSite()->getAddOns()['SecureDownloads'] ?? $admin->getDefaultSite()->getAddOn("Downloads");
+$downloads = $admin->getDefaultSite()->getAddOn("SecureDownloads");
 $linkPrefix = $downloads->getLinkPrefix();
 $adminPath = ltrim($downloads->getAdminPath(), '/');
 
@@ -83,9 +83,44 @@ $entries = $store->getEntries();
 $scheme = (($_SERVER['HTTPS'] ?? '') && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $baseUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . $reboot->getBaseWebPath();
 
+// "7 days", "1 hour", for the help text
+$duration = function ($seconds): string {
+    $seconds = (int)$seconds;
+    foreach ([86400 => 'day', 3600 => 'hour', 60 => 'minute'] as $unit => $name) {
+        if ($seconds >= $unit && $seconds % $unit === 0) {
+            $n = intdiv($seconds, $unit);
+            return $n . ' ' . $name . ($n === 1 ? '' : 's');
+        }
+    }
+    return $seconds . ' seconds';
+};
+$config = $downloads->getConfig();
+
 ?>
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
+    <?= AdminHelper::renderPageTitle(AdminMenu::infoLabel($downloads)) ?>
+    <?= AdminHelper::renderHelp('
+        <p>Secure downloads hand out a single file to one recipient, for example a contract or an invoice. Each upload gets a link that cannot be guessed and a six digit password. For files everyone may see, use <a href="media">Media</a> instead.</p>
+        <h6>Sending a file</h6>
+        <ul>
+            <li>Upload the file. The note is optional and shown to the recipient above the password form, so they know what they download.</li>
+            <li>Send the link by mail and the password through another channel, for example by phone or text message. Then neither message alone opens the file.</li>
+            <li>The link does not reveal the file name. The recipient still saves the file under its real name.</li>
+        </ul>
+        <h6>Lifetime</h6>
+        <ul>
+            <li>A link expires ' . $duration($config['linkLifetime'] ?? DownloadStore::DEFAULT_LINK_LIFETIME) . ' after the upload, or ' . $duration($config['downloadWindow'] ?? DownloadStore::DEFAULT_DOWNLOAD_WINDOW) . ' after the first download, whichever comes first. Within that time the file can be fetched again, in case the transfer broke off.</li>
+            <li>After ' . DownloadStore::MAX_FAILED_ATTEMPTS . ' wrong passwords the link is locked for good. Upload the file again to send a new link.</li>
+            <li>Expired files are deleted from the server. The entry stays in this list for another ' . $duration($config['logRetention'] ?? DownloadStore::DEFAULT_LOG_RETENTION) . ', so you can still see whether and when it was downloaded.</li>
+        </ul>
+        <h6>Good to know</h6>
+        <ul>
+            <li>The list shows for each link when it was downloaded and from which shortened IP address.</li>
+            <li>Files are stored in <code>local/downloads/</code>, outside the public web folder. Only the link with the right password delivers them.</li>
+            <li>Lifetimes, the link prefix <code>' . htmlspecialchars($linkPrefix) . '</code> and the texts of the download page can be changed in <a href="config">Site Configuration</a>, see <code>core/addons/SecureDownloads/README.md</code>.</li>
+        </ul>
+    ') ?>
 
     <form method="post" action="<?= htmlspecialchars($adminPath) ?>" enctype="multipart/form-data" class="card mb-3">
         <div class="card-body d-flex flex-wrap align-items-center gap-2">

@@ -73,7 +73,7 @@ The AddOn was called `Downloads` until version 3.14. The alias under that name w
 ```
 SecureDownloads.php    the AddOn: answers the download links in preRender()
 src/DownloadStore.php  storage, passwords, expiry and cleanup
-admin/index.php        the admin page, mounted at /admin/securedownloads
+admin/index.php        the admin page, mounted at /admin/addons/securedownloads
 ```
 
 The store is independent of the request and can be used from scripts or tests: `new DownloadStore($baseFsPath, $config)`.

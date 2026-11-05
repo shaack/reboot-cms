@@ -676,7 +676,7 @@ An AddOn is a folder in `site/addons/`, named after its class. The class file si
 site/addons/MyAddOn/
   MyAddOn.php          # the AddOn class, namespace Shaack\Reboot\AddOns
   src/                 # helper classes, namespace Shaack\Reboot\AddOns\MyAddOn\, autoloaded
-  admin/               # admin pages, mounted at /admin/myaddon (see below)
+  admin/               # admin pages, mounted at /admin/addons/myaddon (see below)
 ```
 
 ```php
@@ -733,12 +733,12 @@ The AddOns shipped in `core/addons/` need no folder in `site/addons/`, just list
 An AddOn adds pages to the admin by putting PHP files into its `admin/` folder. The folder is mounted at the AddOn's admin path, which is its lower case name by default:
 
 ```
-site/addons/MyAddOn/admin/index.php      → /admin/myaddon
-site/addons/MyAddOn/admin/log.php        → /admin/myaddon/log
-site/addons/MyAddOn/admin/api/list.php   → /admin/myaddon/api/list
+site/addons/MyAddOn/admin/index.php      → /admin/addons/myaddon
+site/addons/MyAddOn/admin/log.php        → /admin/addons/myaddon/log
+site/addons/MyAddOn/admin/api/list.php   → /admin/addons/myaddon/api/list
 ```
 
-An `admin/index.php` also adds a menu entry named after the AddOn to the admin navigation. Pages and menu entry exist only while the AddOn is listed in `site/config.yml`, so disabling an AddOn removes its admin section as well. The pages are rendered inside the admin template with `$reboot`, `$site` (the admin site), `$page` and `$request` available, like the built-in admin pages. Start every page with the admin role check, and reach your AddOn through the admin's view of the site:
+An `admin/index.php` also adds an entry named after the AddOn to the admin menu "AddOns (n)", which lists every registered AddOn. An AddOn without an admin page is listed there too and links to an info page at `/admin/addons/<name>`, the same address its admin page would have, which shows the `README.md` of its folder, so every AddOn should bring one. Pages and menu entry exist only while the AddOn is listed in `site/config.yml`, so disabling an AddOn removes its admin section as well. The pages are rendered inside the admin template with `$reboot`, `$site` (the admin site), `$page` and `$request` available, like the built-in admin pages. Start every page with the admin role check, and reach your AddOn through the admin's view of the site:
 
 ```php
 <?php
@@ -751,9 +751,9 @@ $myAddOn = $site->getAddOn("Admin")->getDefaultSite()->getAddOn("MyAddOn");
 
 Three methods let you deviate from the convention:
 
-- `getAdminPath(): string` — the mount point, `/myaddon` by default.
+- `getAdminPath(): string` — the mount point, `/addons/myaddon` by default. Until version 3.18 it was `/myaddon`, the admin redirects such old addresses.
 - `getAdminPages(): array` — the pages as `path => PHP file`, by default the content of `admin/`.
-- `getAdminMenu(): array` — the navigation entries as `label => path`. By default one entry for `admin/index.php`. Return `[]` to keep a page out of the menu, or a nested array to extend a dropdown: `['Admin' => ['Statistics' => '/myaddon']]` adds the page to the "Admin" menu. AddOn entries are shown to admins only and never override a built-in entry of the same name.
+- `getAdminMenu(): array` — the navigation entries as `label => path`, placed in the menu "AddOns (n)". By default one entry for `admin/index.php`. Return `[]` to keep a page out of the menu, or a nested array to extend a dropdown: `['Admin' => ['Statistics' => '/addons/myaddon']]` adds the page to the "Admin" menu. AddOn entries are shown to admins only and never override a built-in entry of the same name.
 
 See [core/addons/SecureDownloads/](core/addons/SecureDownloads/) for a complete AddOn with a frontend part, a helper class and an admin page.
 

@@ -258,3 +258,90 @@ nav.navbar {
         }
     }
 }
+
+// The README of an AddOn on its info page, see core/admin/addons/Admin/pages/addon-info.php
+.addon-info {
+    // as wide as the help text of the other AddOn pages, long lines are hard to read
+    > * {
+        max-width: 60rem;
+    }
+
+    h2 {
+        margin-top: 1.5rem;
+        font-size: 1.15rem;
+        font-weight: 600;
+    }
+
+    h3, h4 {
+        margin-top: 1.25rem;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    pre {
+        padding: 0.75rem 1rem;
+        background-color: var(--bs-tertiary-bg);
+        border-radius: var(--bs-border-radius);
+        font-size: 0.85rem;
+    }
+
+    > :last-child {
+        margin-bottom: 0;
+    }
+}
+
+// YAML highlighting of the Site Configuration, see assets/YamlEditor.js. The
+// colors follow the Markdown editor, they work on light and dark backgrounds.
+.yaml-editor {
+    position: relative;
+}
+
+.yaml-editor-backdrop {
+    position: absolute;
+    overflow: hidden;
+    pointer-events: none;
+    background-color: var(--bs-body-bg);
+}
+
+.yaml-editor-layer {
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    color: var(--bs-body-color);
+}
+
+textarea.yaml-editor-input {
+    position: relative;
+    z-index: 1;
+    caret-color: var(--bs-body-color);
+
+    // .form-control:focus sets both again
+    &, &:focus {
+        color: transparent;
+        background-color: transparent;
+    }
+}
+
+.yaml-key { color: rgb(100, 160, 255); }
+.yaml-comment { color: rgb(128, 128, 128); }
+.yaml-string { color: rgb(100, 200, 150); }
+.yaml-number, .yaml-constant { color: rgb(255, 180, 80); }
+.yaml-punct { color: rgb(128, 128, 128); }
+
+// The heading of an admin page, see AdminHelper::renderPageTitle()
+.admin-page-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+    margin-bottom: 0.5rem;
+
+    h1 {
+        margin-bottom: 0;
+        font-size: 1.75rem;
+    }
+
+    code {
+        font-size: 0.8rem;
+    }
+}

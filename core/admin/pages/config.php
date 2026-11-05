@@ -80,7 +80,7 @@ try {
                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                 <div class="form-group">
                     <label for="configFile" class="visually-hidden">Configuration file</label>
-                    <textarea name="configuration"
+                    <textarea name="configuration" data-yaml-editor spellcheck="false"
                               class="mb-3 form-control editor-font simple-edit <?= $configHasErrors ? "border-danger" : "" ?>" id="configFile"
                               rows="20"><?= htmlspecialchars($configFile) ?></textarea>
                 </div>
@@ -100,3 +100,4 @@ try {
         </div>
     </div>
 </div>
+<script src="assets/YamlEditor.js?v=<?= @filemtime($reboot->getBaseFsPath() . "/web/admin/assets/YamlEditor.js") ?>"></script>

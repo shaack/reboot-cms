@@ -28,7 +28,7 @@ editor:
     - OrderedList
     - "|"
     - InsertLink
-    - InsertImage
+#    - InsertImage
 
 # Page history: number of snapshots to keep per page
 history:

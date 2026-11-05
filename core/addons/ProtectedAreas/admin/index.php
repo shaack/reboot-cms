@@ -6,6 +6,7 @@
 $admin = $site->getAddOn("Admin");
 
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\AdminMenu;
 use Shaack\Reboot\AddOns\ProtectedAreas;
 use Shaack\Reboot\AddOns\ProtectedAreas\UserStore;
 use Shaack\Reboot\CsrfProtection;
@@ -62,6 +63,7 @@ $linkLogin = $protectedAreas->canSendLoginLinks();
 ?>
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
+    <?= AdminHelper::renderPageTitle(AdminMenu::infoLabel($protectedAreas)) ?>
     <?= AdminHelper::renderHelp('
         <p>Protected areas put parts of the website behind a login, for example a customer area with one folder per customer. Pages outside the areas stay public.</p>
         <h6>Setting up</h6>

@@ -144,13 +144,13 @@ class AddOnLoaderTest
         file_put_contents("$dir/admin/notes.txt", "ignored");
         file_put_contents("$dir/admin/bad name.php", "ignored");
         $addOn = AddOnLoader::load($this->reboot, $this->site, "WithAdmin");
-        Assert::equals('/withadmin', $addOn->getAdminPath());
+        Assert::equals('/addons/withadmin', $addOn->getAdminPath());
         Assert::equals([
-            '/withadmin' => "$dir/admin/index.php",
-            '/withadmin/api/list' => "$dir/admin/api/list.php",
-            '/withadmin/log' => "$dir/admin/log.php",
+            '/addons/withadmin' => "$dir/admin/index.php",
+            '/addons/withadmin/api/list' => "$dir/admin/api/list.php",
+            '/addons/withadmin/log' => "$dir/admin/log.php",
         ], $addOn->getAdminPages());
-        Assert::equals(['WithAdmin' => '/withadmin'], $addOn->getAdminMenu());
+        Assert::equals(['WithAdmin' => '/addons/withadmin'], $addOn->getAdminMenu());
     }
 
     public function testNoMenuEntryWithoutAdminIndex(): void
@@ -160,7 +160,7 @@ class AddOnLoaderTest
         mkdir("$dir/admin", 0755, true);
         file_put_contents("$dir/admin/log.php", "log");
         $addOn = AddOnLoader::load($this->reboot, $this->site, "NoIndex");
-        Assert::equals(['/noindex/log' => "$dir/admin/log.php"], $addOn->getAdminPages());
+        Assert::equals(['/addons/noindex/log' => "$dir/admin/log.php"], $addOn->getAdminPages());
         Assert::equals([], $addOn->getAdminMenu());
     }
 

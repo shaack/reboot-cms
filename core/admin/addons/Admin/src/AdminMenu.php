@@ -14,10 +14,13 @@ use Shaack\Reboot\AddOn;
  * Builds the admin navigation from the static structure in `core/admin/config.yml`
  * and the entries the site's AddOns contribute through `AddOn::getAdminMenu()`.
  *
- * Flat AddOn entries are placed after the static flat entries and before the
- * first dropdown. Nested entries extend a dropdown of the same name or, if there
- * is none, open a new dropdown at the end. A static entry is never overridden by
- * an AddOn, and invalid entries are logged and skipped.
+ * Every registered AddOn gets an entry in the dropdown "AddOns (n)", placed
+ * after the static flat entries and before the first static dropdown. The
+ * entry is the AddOn's own flat menu entry, or, for an AddOn without one, its
+ * info page (see `infoPath()`), which describes what the AddOn does. Nested
+ * entries extend a dropdown of the same name or, if there is none, open a new
+ * dropdown at the end. A static entry is never overridden by an AddOn, and
+ * invalid entries are logged and skipped.
  */
 class AdminMenu
 {
@@ -27,18 +30,44 @@ class AdminMenu
      */
     public static function build(array $structure, iterable $addOns): array
     {
-        $flat = [];
+        $addOnEntries = [];
+        $count = 0;
         $dropdowns = [];
         foreach ($addOns as $addOn) {
+            $count++;
+            $own = [];
             foreach (self::sanitize($addOn->getAdminMenu(), get_class($addOn)) as $label => $entry) {
                 if (is_array($entry)) {
                     $dropdowns[$label] = array_merge($dropdowns[$label] ?? [], $entry);
                 } else {
-                    $flat[$label] = $entry;
+                    $own[$label] = $entry;
                 }
             }
+            if (!$own) {
+                $own = [self::infoLabel($addOn) => self::infoPath($addOn)];
+            }
+            $addOnEntries += $own; // the AddOn listed first keeps a label
         }
+        $flat = $count ? ["AddOns ($count)" => $addOnEntries] : [];
         return self::merge($structure, $flat, $dropdowns);
+    }
+
+    /**
+     * The admin path of the info page of an AddOn, `/addons/emailobfuscation`.
+     * The same as the default admin path, an own `admin/index.php` takes its place.
+     */
+    public static function infoPath(AddOn $addOn): string
+    {
+        return '/addons/' . strtolower($addOn->getName());
+    }
+
+    /**
+     * The menu label of an AddOn without an own entry, "Email Obfuscation".
+     */
+    public static function infoLabel(AddOn $addOn): string
+    {
+        $label = preg_replace('/(?<=[a-z0-9])(?=[A-Z])/', ' ', $addOn->getName());
+        return str_replace('Add On', 'AddOn', $label);
     }
 
     /**

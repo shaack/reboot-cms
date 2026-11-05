@@ -227,4 +227,90 @@ nav.navbar {
   margin-bottom: 0;
 }
 
+.addon-info > * {
+  max-width: 60rem;
+}
+.addon-info h2 {
+  margin-top: 1.5rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.addon-info h3, .addon-info h4 {
+  margin-top: 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.addon-info pre {
+  padding: 0.75rem 1rem;
+  background-color: var(--bs-tertiary-bg);
+  border-radius: var(--bs-border-radius);
+  font-size: 0.85rem;
+}
+.addon-info > :last-child {
+  margin-bottom: 0;
+}
+
+.yaml-editor {
+  position: relative;
+}
+
+.yaml-editor-backdrop {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--bs-body-bg);
+}
+
+.yaml-editor-layer {
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  color: var(--bs-body-color);
+}
+
+textarea.yaml-editor-input {
+  position: relative;
+  z-index: 1;
+  caret-color: var(--bs-body-color);
+}
+textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
+  color: transparent;
+  background-color: transparent;
+}
+
+.yaml-key {
+  color: rgb(100, 160, 255);
+}
+
+.yaml-comment {
+  color: rgb(128, 128, 128);
+}
+
+.yaml-string {
+  color: rgb(100, 200, 150);
+}
+
+.yaml-number, .yaml-constant {
+  color: rgb(255, 180, 80);
+}
+
+.yaml-punct {
+  color: rgb(128, 128, 128);
+}
+
+.admin-page-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  margin-bottom: 0.5rem;
+}
+.admin-page-title h1 {
+  margin-bottom: 0;
+  font-size: 1.75rem;
+}
+.admin-page-title code {
+  font-size: 0.8rem;
+}
+
 /*# sourceMappingURL=screen.css.map */

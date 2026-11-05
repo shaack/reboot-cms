@@ -270,9 +270,9 @@ class SecureDownloadsTest
         $addOn = $this->loadAddOn("SecureDownloads", ['secureDownloads' => ['path' => '/files']]);
         Assert::true($addOn instanceof SecureDownloads);
         Assert::equals("SecureDownloads", $addOn->getName());
-        Assert::equals("/securedownloads", $addOn->getAdminPath());
-        Assert::equals(['Secure Downloads' => '/securedownloads'], $addOn->getAdminMenu());
-        Assert::true(isset($addOn->getAdminPages()['/securedownloads']), "admin page is mounted");
+        Assert::equals("/addons/securedownloads", $addOn->getAdminPath());
+        Assert::equals(['Secure Downloads' => '/addons/securedownloads'], $addOn->getAdminMenu());
+        Assert::true(isset($addOn->getAdminPages()['/addons/securedownloads']), "admin page is mounted");
         Assert::equals("/files", $addOn->getLinkPrefix());
         Assert::null($addOn->getDeprecation());
     }

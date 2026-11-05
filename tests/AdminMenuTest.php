@@ -33,30 +33,37 @@ class AdminMenuTest
         Assert::equals(self::STRUCTURE, AdminMenu::build(self::STRUCTURE, []));
     }
 
-    public function testAddOnWithoutMenuAddsNothing(): void
+    public function testAddOnWithoutMenuLinksItsInfoPage(): void
     {
         $result = AdminMenu::build(self::STRUCTURE, [$this->addOn([])]);
-        Assert::equals(self::STRUCTURE, $result);
+        Assert::equals(['Pages', 'Media', 'AddOns (1)', 'Admin'], array_keys($result));
+        Assert::equals(['Menu AddOn Stub' => '/addons/menuaddonstub'], $result['AddOns (1)']);
     }
 
-    public function testFlatEntryIsInsertedBeforeFirstDropdown(): void
+    public function testFlatEntryGoesIntoTheAddOnsDropdownBeforeFirstDropdown(): void
     {
         $result = AdminMenu::build(self::STRUCTURE, [$this->addOn(['Downloads' => '/downloads'])]);
-        Assert::equals(['Pages', 'Media', 'Downloads', 'Admin'], array_keys($result));
-        Assert::equals('/downloads', $result['Downloads']);
+        Assert::equals(['Pages', 'Media', 'AddOns (1)', 'Admin'], array_keys($result));
+        Assert::equals(['Downloads' => '/downloads'], $result['AddOns (1)']);
     }
 
-    public function testFlatEntryIsAppendedWhenThereIsNoDropdown(): void
+    public function testAddOnsDropdownIsAppendedWhenThereIsNoDropdown(): void
     {
         $structure = ['Pages' => '/pages'];
         $result = AdminMenu::build($structure, [$this->addOn(['Downloads' => '/downloads'])]);
-        Assert::equals(['Pages' => '/pages', 'Downloads' => '/downloads'], $result);
+        Assert::equals(['Pages' => '/pages', 'AddOns (1)' => ['Downloads' => '/downloads']], $result);
+    }
+
+    public function testInfoLabelSplitsTheClassName(): void
+    {
+        Assert::equals('Menu AddOn Stub', AdminMenu::infoLabel($this->addOn([])), "AddOn stays one word");
     }
 
     public function testNestedEntryExtendsExistingDropdown(): void
     {
         $result = AdminMenu::build(self::STRUCTURE, [$this->addOn(['Admin' => ['Statistics' => '/statistics']])]);
-        Assert::equals(['Pages', 'Media', 'Admin'], array_keys($result));
+        Assert::equals(['Pages', 'Media', 'AddOns (1)', 'Admin'], array_keys($result));
+        Assert::equals(['Menu AddOn Stub' => '/addons/menuaddonstub'], $result['AddOns (1)'], "no own flat entry, so the info page");
         Assert::equals(['Site Configuration', 'Update', 'Statistics'], array_keys($result['Admin']));
         Assert::equals('/statistics', $result['Admin']['Statistics']);
     }
@@ -64,7 +71,7 @@ class AdminMenuTest
     public function testNestedEntryOpensNewDropdownAtTheEnd(): void
     {
         $result = AdminMenu::build(self::STRUCTURE, [$this->addOn(['Tools' => ['Backup' => '/backup']])]);
-        Assert::equals(['Pages', 'Media', 'Admin', 'Tools'], array_keys($result));
+        Assert::equals(['Pages', 'Media', 'AddOns (1)', 'Admin', 'Tools'], array_keys($result));
         Assert::equals(['Backup' => '/backup'], $result['Tools']);
     }
 
@@ -85,7 +92,8 @@ class AdminMenuTest
             $this->addOn(['Downloads' => '/downloads']),
             $this->addOn(['Forms' => '/forms', 'Admin' => ['Logs' => '/logs']]),
         ]);
-        Assert::equals(['Pages', 'Media', 'Downloads', 'Forms', 'Admin'], array_keys($result));
+        Assert::equals(['Pages', 'Media', 'AddOns (2)', 'Admin'], array_keys($result));
+        Assert::equals(['Downloads', 'Forms'], array_keys($result['AddOns (2)']));
         Assert::equals('/logs', $result['Admin']['Logs']);
     }
 
@@ -106,7 +114,7 @@ class AdminMenuTest
         } finally {
             Logger::setLevel($level);
         }
-        Assert::equals(['Pages', 'Media', 'Admin', 'Mixed'], array_keys($result));
+        Assert::equals(['Pages', 'Media', 'AddOns (1)', 'Admin', 'Mixed'], array_keys($result));
         Assert::equals(['Good' => '/good'], $result['Mixed']);
     }
 }

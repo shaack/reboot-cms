@@ -12,7 +12,7 @@ Remove it from the list, or delete the folder, when you set up your own site.
 
 ## Layout
 
-An AddOn is a folder named after its class. This one needs only the class file. Helper classes go into `src/` and are autoloaded under `Shaack\Reboot\AddOns\ExampleAddOn\`, admin pages go into `admin/` and are mounted at `/admin/exampleaddon`.
+An AddOn is a folder named after its class. This one needs only the class file. Helper classes go into `src/` and are autoloaded under `Shaack\Reboot\AddOns\ExampleAddOn\`, admin pages go into `admin/` and are mounted at `/admin/addons/exampleaddon`.
 
 ```
 ExampleAddOn.php   the AddOn, namespace Shaack\Reboot\AddOns
