@@ -86,6 +86,13 @@ class BlockTest
         Assert::equals("https://example.com", $block->nodeHtml($href));
     }
 
+    public function testNodeHtmlEscapesTextAndAttributes(): void
+    {
+        $block = $this->createBlock("test", "# Hi &lt;img src=x onerror=alert(1)&gt;\n\n![x\" onerror=\"alert(1)](a.jpg)");
+        Assert::equals("Hi &lt;img src=x onerror=alert(1)&gt;", $block->nodeHtml($block->xpath("//h1/text()")));
+        Assert::equals("x&quot; onerror=&quot;alert(1)", $block->nodeHtml($block->xpath("//img/@alt")));
+    }
+
     public function testXpathImage(): void
     {
         $block = $this->createBlock("test", "![Alt text](image.jpg)");

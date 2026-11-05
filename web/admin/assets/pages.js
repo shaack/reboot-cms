@@ -12,48 +12,60 @@
         var form = document.querySelector('form[action^="pages?page="]');
         if (!form) return;
         var formData = new FormData(form);
+        // what is saved, typing during the request stays unsaved
+        var sentContent = editorTextarea ? editorTextarea.value : '';
+        var notSaved = function (reason) {
+            statusMessage("<strong>The page was not saved.</strong> " + reason, "text-bg-danger");
+        };
         fetch(form.action, {
             method: 'POST',
             body: formData
         }).then(function (response) {
-            if (response.ok) {
-                return response.text().then(function (html) {
-                    var parser = new DOMParser();
-                    var doc = parser.parseFromString(html, 'text/html');
-                    var resultEl = doc.getElementById('save-result');
-                    if (resultEl) {
-                        var data = JSON.parse(resultEl.textContent);
-                        if (!data.changed) {
-                            statusMessage("No changes", "text-bg-secondary");
-                            return;
-                        }
-                        pageUnsaved = false;
-                        savedContent = editorTextarea ? editorTextarea.value : '';
-                        if (data.validationErrors && data.validationErrors.length > 0) {
-                            var list = data.validationErrors.map(function (e) { return "<li>" + e + "</li>"; }).join("");
-                            var msg = "Page saved with " + data.validationErrors.length + " schema warning(s):<ul class='mb-0 mt-1'>" + list + "</ul>";
-                            var failingBlocks = {};
-                            data.validationErrors.forEach(function (e) {
-                                var m = e.match(/^Block '([^']+)':/);
-                                if (m && data.examples[m[1]]) failingBlocks[m[1]] = true;
-                            });
-                            for (var blockName in failingBlocks) {
-                                msg += "<hr class='my-2'><strong>Expected markdown for &quot;" + blockName + "&quot;:</strong>";
-                                msg += "<pre class='mb-1 p-1 bg-light text-dark rounded' style='font-size:0.8rem;white-space:pre-wrap'>" + data.examples[blockName].replace(/</g, "&lt;") + "</pre>";
-                            }
-                            statusMessage(msg, "text-bg-warning");
-                        } else {
-                            statusMessage("Page saved");
-                        }
-                    } else {
-                        statusMessage("Page saved");
-                    }
-                });
-            } else {
-                statusMessage("Error saving page", "text-bg-danger");
+            if (!response.ok) {
+                notSaved("The server answered with error " + response.status + ".");
+                return;
             }
+            return response.text().then(function (html) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+                var resultEl = doc.getElementById('save-result');
+                if (!resultEl) {
+                    // fetch follows the redirect to the login, which answers with 200
+                    notSaved(response.redirected
+                        ? "Your session has expired. Log in again in a new tab, then save here once more."
+                        : "The answer of the server was unexpected.");
+                    return;
+                }
+                var data = JSON.parse(resultEl.textContent);
+                if (data.error) {
+                    notSaved(escapeHtml(data.error));
+                    return;
+                }
+                savedContent = sentContent;
+                pageUnsaved = editorTextarea ? editorTextarea.value !== savedContent : false;
+                if (!data.changed) {
+                    statusMessage("No changes", "text-bg-secondary");
+                    return;
+                }
+                if (data.validationErrors && data.validationErrors.length > 0) {
+                    var list = data.validationErrors.map(function (e) { return "<li>" + escapeHtml(e) + "</li>"; }).join("");
+                    var msg = "Page saved with " + data.validationErrors.length + " schema warning(s):<ul class='mb-0 mt-1'>" + list + "</ul>";
+                    var failingBlocks = {};
+                    data.validationErrors.forEach(function (e) {
+                        var m = e.match(/^Block '([^']+)':/);
+                        if (m && data.examples[m[1]]) failingBlocks[m[1]] = true;
+                    });
+                    for (var blockName in failingBlocks) {
+                        msg += "<hr class='my-2'><strong>Expected markdown for &quot;" + escapeHtml(blockName) + "&quot;:</strong>";
+                        msg += "<pre class='mb-1 p-1 bg-light text-dark rounded' style='font-size:0.8rem;white-space:pre-wrap'>" + escapeHtml(data.examples[blockName]) + "</pre>";
+                    }
+                    statusMessage(msg, "text-bg-warning");
+                } else {
+                    statusMessage("Page saved");
+                }
+            });
         }).catch(function () {
-            statusMessage("Error saving page", "text-bg-danger");
+            notSaved("The server could not be reached.");
         });
     };
 

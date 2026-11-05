@@ -7,6 +7,8 @@
 
 namespace Shaack\Reboot\AddOns\ProtectedAreas;
 
+use Shaack\Utils\FileSystemUtils;
+
 /**
  * The accounts of the protected areas, stored in `local/protected-areas/users.json`.
  * An account is an e-mail address, a password hash and the list of paths the
@@ -214,38 +216,14 @@ class UserStore
 
     /**
      * Runs `$fn(array &$users)` under an exclusive lock and writes the file
-     * back if the callback returns true.
+     * back atomically if the callback returns true. A damaged file throws
+     * instead of being overwritten with only the new change.
      */
     private function withUsers(callable $fn): void
     {
         if (!is_dir($this->dir) && !@mkdir($this->dir, 0700, true) && !is_dir($this->dir)) {
             throw new \RuntimeException('Could not create ' . $this->dir);
         }
-        $handle = fopen($this->file, 'c+');
-        if ($handle === false) {
-            throw new \RuntimeException('Could not open ' . $this->file);
-        }
-        try {
-            if (!flock($handle, LOCK_EX)) {
-                throw new \RuntimeException('Could not lock ' . $this->file);
-            }
-            $raw = stream_get_contents($handle);
-            $users = [];
-            if ($raw !== false && trim($raw) !== '') {
-                $decoded = json_decode($raw, true);
-                $users = is_array($decoded) ? $decoded : [];
-            }
-            if ($fn($users)) {
-                $json = json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-                ftruncate($handle, 0);
-                rewind($handle);
-                fwrite($handle, $json . "\n");
-                fflush($handle);
-            }
-        } finally {
-            flock($handle, LOCK_UN);
-            fclose($handle);
-        }
-        @chmod($this->file, 0600);
+        FileSystemUtils::updateJson($this->file, $fn);
     }
 }

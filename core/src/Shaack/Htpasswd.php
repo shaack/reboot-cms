@@ -7,6 +7,7 @@
 
 namespace Shaack;
 
+use Shaack\Utils\FileSystemUtils;
 use WhiteHat101\Crypt\APR1_MD5;
 
 /**
@@ -53,6 +54,16 @@ class Htpasswd
     function isEmpty(): bool
     {
         return empty($this->htpasswdUsers);
+    }
+
+    /**
+     * True if the file has content but no valid user. Such a file is not
+     * treated as "no users yet", that would open the setup of a new admin
+     * to anyone.
+     */
+    function isDamaged(): bool
+    {
+        return $this->isEmpty() && is_file($this->filePath) && trim((string)@file_get_contents($this->filePath)) !== "";
     }
 
     function getChecksum()
@@ -111,7 +122,7 @@ class Htpasswd
             $lines[] = $line;
             $checksum = md5($checksum . $line);
         }
-        file_put_contents($this->filePath, implode("\n", $lines) . "\n");
+        FileSystemUtils::writeAtomic($this->filePath, implode("\n", $lines) . "\n", 0600);
         $this->checksum = $checksum;
     }
 }

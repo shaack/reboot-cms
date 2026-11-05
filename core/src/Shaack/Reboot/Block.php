@@ -585,7 +585,9 @@ class Block
      * - A single element renders what is inside it, tags included, so a
      *   template can write `<h2><?= $block->nodeHtml($heading) ?></h2>` and
      *   keeps the link or emphasis within the heading.
-     * - A text node or an attribute gives its text.
+     * - A text node or an attribute gives its text, escaped for HTML, so it
+     *   fits between tags and into an attribute value alike. An alt text
+     *   with a `"` or an `&lt;` in a heading stays text.
      *
      * Null, for example from `item(n)` on a list that is shorter, gives an
      * empty string, a missing optional field is a normal state and must not
@@ -608,7 +610,7 @@ class Block
         }
         if ($nodeOrNodeList instanceof \DOMText) {
             Logger::debug("nodeHtml is DOMText");
-            $html .= $nodeOrNodeList->textContent;
+            return htmlspecialchars($nodeOrNodeList->textContent, ENT_QUOTES, 'UTF-8');
         }
         if ($nodeOrNodeList instanceof \DOMNodeList) {
             Logger::debug("nodeHtml is DOMNodeList");
@@ -617,7 +619,7 @@ class Block
             }
         } else if ($nodeOrNodeList instanceof \DOMAttr) {
             Logger::debug("nodeHtml is DOMAttr");
-            $html .= $nodeOrNodeList->textContent;
+            $html .= htmlspecialchars($nodeOrNodeList->textContent, ENT_QUOTES, 'UTF-8');
         } else if (@$nodeOrNodeList->childNodes) {
             Logger::debug("nodeHtml hasChildNodes");
             // the children with their own tags, descending further would strip

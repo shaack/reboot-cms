@@ -10,6 +10,7 @@ use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Shaack\Reboot\CsrfProtection;
+use Shaack\Utils\FileSystemUtils;
 
 if (!AdminHelper::requireAdmin($site, $reboot)) return;
 
@@ -44,7 +45,7 @@ if ($configuration) {
             }
         }
         // Browsers submit textarea content with CRLF line endings, the file is kept with LF
-        file_put_contents($configPath, str_replace("\r\n", "\n", $configuration));
+        FileSystemUtils::writeAtomic($configPath, str_replace("\r\n", "\n", $configuration));
         return "Configuration saved";
     });
     $configSaveError = $result['error'];

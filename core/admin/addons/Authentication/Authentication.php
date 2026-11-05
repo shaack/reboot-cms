@@ -8,6 +8,7 @@ use Shaack\Reboot\AddOn;
 use Shaack\Reboot\AdminSession;
 use Shaack\Reboot\AddOns\Authentication\RememberMeStore;
 use Shaack\Reboot\Request;
+use Shaack\Utils\FileSystemUtils;
 use Symfony\Component\Yaml\Yaml;
 
 class Authentication extends AddOn
@@ -38,7 +39,12 @@ class Authentication extends AddOn
         $this->rememberMe = new RememberMeStore($this->reboot->getBaseFsPath());
         $this->rolesFile = $this->reboot->getBaseFsPath() . "/local/roles.yml";
         if (file_exists($this->rolesFile)) {
-            $this->roles = Yaml::parseFile($this->rolesFile) ?? [];
+            $roles = Yaml::parseFile($this->rolesFile);
+            // users without an entry are admins, so a damaged file must not count as empty
+            if (!is_array($roles)) {
+                throw new \RuntimeException("local/roles.yml is damaged, restore it from a backup");
+            }
+            $this->roles = $roles;
         }
         if (empty($_SESSION['user']) && isset($_COOKIE[self::REMEMBER_COOKIE])) {
             $this->loginFromRememberCookie();
@@ -104,6 +110,12 @@ class Authentication extends AddOn
      */
     public function preRender(Request $request): bool
     {
+        if ($this->htpasswd->isDamaged()) {
+            Logger::error("local/.htpasswd has content but no valid user");
+            http_response_code(503);
+            echo "The user file local/.htpasswd is damaged. Restore it from a backup, or delete it to create a new admin account.";
+            return false;
+        }
         if ($this->htpasswd->isEmpty()) {
             if ($request->getPath() !== "/setup") {
                 $this->reboot->redirect($this->site->getWebPath() . "/setup");
@@ -294,6 +306,6 @@ class Authentication extends AddOn
 
     private function saveRoles(): void
     {
-        file_put_contents($this->rolesFile, Yaml::dump($this->roles));
+        FileSystemUtils::writeAtomic($this->rolesFile, Yaml::dump($this->roles), 0600);
     }
 }

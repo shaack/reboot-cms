@@ -7,6 +7,8 @@
 
 namespace Shaack\Reboot\AddOns\SecureDownloads;
 
+use Shaack\Utils\FileSystemUtils;
+
 /**
  * Stores files that are handed out as protected downloads, together with their
  * metadata. Everything lives in `local/downloads`, which is outside the web
@@ -374,41 +376,16 @@ class DownloadStore
 
     /**
      * Reads the index under an exclusive lock, hands it to the callback by
-     * reference and writes it back if the callback returns true. Concurrent
-     * requests cannot lose each other's changes this way.
+     * reference and writes it back atomically if the callback returns true.
+     * Concurrent requests cannot lose each other's changes this way, and a
+     * damaged index throws instead of being overwritten.
      *
      * @param callable $fn function (array &$index): bool
      */
     private function withIndex(callable $fn): void
     {
         $this->ensureDirs();
-        $handle = fopen($this->indexFile, 'c+');
-        if ($handle === false) {
-            throw new \RuntimeException('Could not open ' . $this->indexFile);
-        }
-        try {
-            if (!flock($handle, LOCK_EX)) {
-                throw new \RuntimeException('Could not lock ' . $this->indexFile);
-            }
-            $raw = stream_get_contents($handle);
-            $index = [];
-            if ($raw !== false && trim($raw) !== '') {
-                $decoded = json_decode($raw, true);
-                $index = is_array($decoded) ? $decoded : [];
-            }
-            $changed = $fn($index);
-            if ($changed) {
-                $json = json_encode($index, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-                ftruncate($handle, 0);
-                rewind($handle);
-                fwrite($handle, $json . "\n");
-                fflush($handle);
-            }
-        } finally {
-            flock($handle, LOCK_UN);
-            fclose($handle);
-        }
-        @chmod($this->indexFile, 0600);
+        FileSystemUtils::updateJson($this->indexFile, $fn);
     }
 
     private function ensureDirs(): void

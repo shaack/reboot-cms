@@ -27,6 +27,18 @@ class HtpasswdTest
         Assert::equals([], $htpasswd->getUsers());
     }
 
+    public function testDamagedFile(): void
+    {
+        file_put_contents($this->tmpFile, "");
+        $htpasswd = new Htpasswd($this->tmpFile);
+        Assert::true($htpasswd->isEmpty());
+        Assert::false($htpasswd->isDamaged(), "an empty file means no users yet");
+        file_put_contents($this->tmpFile, "garbage without a hash\n");
+        $htpasswd = new Htpasswd($this->tmpFile);
+        Assert::true($htpasswd->isEmpty());
+        Assert::true($htpasswd->isDamaged(), "content without a user must not open the setup");
+    }
+
     public function testAddUser(): void
     {
         $htpasswd = new Htpasswd($this->tmpFile);

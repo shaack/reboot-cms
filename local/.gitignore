@@ -8,3 +8,4 @@
 /remember-tokens.json
 /config.local.yml
 /backups
+/*.lock

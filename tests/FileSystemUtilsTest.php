@@ -121,4 +121,69 @@ class FileSystemUtilsTest
         Assert::false(FileSystemUtils::isInside(false, "/site/pages"));
         Assert::false(FileSystemUtils::isInside("/site/pages", false));
     }
+
+    public function testWriteAtomic(): void
+    {
+        $file = $this->tmpDir . "/data.txt";
+        FileSystemUtils::writeAtomic($file, "one");
+        Assert::equals("one", file_get_contents($file));
+        chmod($file, 0640);
+        FileSystemUtils::writeAtomic($file, "two");
+        Assert::equals("two", file_get_contents($file));
+        Assert::equals(0640, fileperms($file) & 0777, "an existing file keeps its permissions");
+        FileSystemUtils::writeAtomic($file, "three", 0600);
+        Assert::equals(0600, fileperms($file) & 0777);
+        Assert::equals(["data.txt"], array_values(array_diff(scandir($this->tmpDir), [".", ".."])), "no temporary file is left");
+    }
+
+    public function testWriteAtomicFollowsSymlink(): void
+    {
+        $target = $this->tmpDir . "/target.txt";
+        $link = $this->tmpDir . "/link.txt";
+        file_put_contents($target, "old");
+        symlink($target, $link);
+        FileSystemUtils::writeAtomic($link, "new");
+        Assert::true(is_link($link), "the link stays a link");
+        Assert::equals("new", file_get_contents($target));
+    }
+
+    public function testWriteAtomicFailsWithoutReplacing(): void
+    {
+        Assert::throws(\RuntimeException::class, function () {
+            FileSystemUtils::writeAtomic($this->tmpDir . "/missing-dir/data.txt", "x");
+        });
+    }
+
+    public function testUpdateJson(): void
+    {
+        $file = $this->tmpDir . "/store.json";
+        FileSystemUtils::updateJson($file, function (array &$data) {
+            $data["a"] = 1;
+            return true;
+        });
+        FileSystemUtils::updateJson($file, function (array &$data) {
+            $data["b"] = 2;
+            return true;
+        });
+        Assert::equals(["a" => 1, "b" => 2], json_decode(file_get_contents($file), true));
+        Assert::equals(0600, fileperms($file) & 0777);
+        FileSystemUtils::updateJson($file, function (array &$data) {
+            $data["c"] = 3;
+            return false;
+        });
+        Assert::equals(["a" => 1, "b" => 2], json_decode(file_get_contents($file), true), "false writes nothing");
+    }
+
+    public function testUpdateJsonKeepsDamagedFile(): void
+    {
+        $file = $this->tmpDir . "/store.json";
+        file_put_contents($file, '{"a": 1, "b"');
+        Assert::throws(\RuntimeException::class, function () use ($file) {
+            FileSystemUtils::updateJson($file, function (array &$data) {
+                $data["c"] = 3;
+                return true;
+            });
+        });
+        Assert::equals('{"a": 1, "b"', file_get_contents($file), "a damaged file is not overwritten with only the new entry");
+    }
 }

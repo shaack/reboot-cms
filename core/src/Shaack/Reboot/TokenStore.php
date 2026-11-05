@@ -7,6 +7,8 @@
 
 namespace Shaack\Reboot;
 
+use Shaack\Utils\FileSystemUtils;
+
 /**
  * One-time tokens with a lifetime, bound to a subject such as a user name or
  * an e-mail address. Used for "Stay signed in" cookies and login links sent by
@@ -136,7 +138,8 @@ class TokenStore
     }
 
     /**
-     * Read, modify and write the file under an exclusive lock.
+     * Read, modify and write the file under an exclusive lock. A damaged file
+     * counts as empty, the tokens are only a convenience.
      */
     private function update(callable $modify): void
     {
@@ -144,22 +147,9 @@ class TokenStore
         if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
             throw new \RuntimeException('Cannot create ' . $dir);
         }
-        $handle = fopen($this->file, 'c+');
-        if ($handle === false) {
-            throw new \RuntimeException('Cannot open ' . $this->file);
-        }
-        try {
-            flock($handle, LOCK_EX);
-            $data = json_decode((string)stream_get_contents($handle), true);
-            $tokens = $modify(is_array($data) ? $data : []);
-            ftruncate($handle, 0);
-            rewind($handle);
-            fwrite($handle, json_encode($tokens, JSON_PRETTY_PRINT));
-            fflush($handle);
-            flock($handle, LOCK_UN);
-        } finally {
-            fclose($handle);
-        }
-        @chmod($this->file, 0600);
+        FileSystemUtils::withLock($this->file, function () use ($modify) {
+            $tokens = $modify($this->read());
+            FileSystemUtils::writeAtomic($this->file, json_encode($tokens, JSON_PRETTY_PRINT), 0600);
+        });
     }
 }

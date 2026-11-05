@@ -26,7 +26,8 @@ if ($action) {
         $password = $request->getParam("password") ?? "";
 
         // Require admin password re-entry for sensitive actions
-        if (in_array($action, ["add", "change_password", "delete"])) {
+        // change_role too: a script in a page, run by a logged in admin, could make an editor an admin
+        if (in_array($action, ["add", "change_password", "change_role", "delete"])) {
             $adminPassword = $request->getParam("admin_password") ?? "";
             $adminUser = $authentication->getImpersonator() ?? $currentUser;
             if (!$htpasswd->validate($adminUser, $adminPassword)) {
@@ -115,11 +116,11 @@ $users = $htpasswd->getUsers();
                     <div class="d-flex flex-wrap align-items-center gap-2">
                         <strong style="min-width: 120px"><?= htmlspecialchars($user) ?></strong>
                         <?php if ($user !== $currentUser) { ?>
-                            <form method="post" action="users" class="d-inline">
+                            <form method="post" action="users" class="d-inline admin-password-form">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                 <input type="hidden" name="action" value="change_role">
                                 <input type="hidden" name="username" value="<?= htmlspecialchars($user) ?>">
-                                <select name="role" class="form-select form-select-sm" style="width: auto" onchange="this.form.submit()">
+                                <select name="role" class="form-select form-select-sm" style="width: auto" onchange="this.form.requestSubmit()">
                                     <option value="<?= Authentication::ROLE_ADMIN ?>" <?= $userRole === Authentication::ROLE_ADMIN ? 'selected' : '' ?>>Admin</option>
                                     <option value="<?= Authentication::ROLE_EDITOR ?>" <?= $userRole === Authentication::ROLE_EDITOR ? 'selected' : '' ?>>Editor</option>
                                     <option value="<?= Authentication::ROLE_DISABLED ?>" <?= $userRole === Authentication::ROLE_DISABLED ? 'selected' : '' ?>>Disabled</option>
@@ -193,8 +194,10 @@ $users = $htpasswd->getUsers();
             }
             const confirmMessage = form.dataset.confirm
             if (confirmMessage && !confirm(confirmMessage)) {
+                form.reset()
                 return
             }
+            let submitted = false
             bootstrap.showModal({
                 title: "Confirm your password",
                 body: '<input type="password" class="form-control" placeholder="Your password" id="admin-password-input" required>',
@@ -220,9 +223,14 @@ $users = $htpasswd->getUsers();
                         hiddenInput.name = "admin_password"
                         hiddenInput.value = input.value
                         form.appendChild(hiddenInput)
+                        submitted = true
                         modal.hide()
                         form.submit()
                     })
+                },
+                // canceled: the role select shows the current role again
+                onDispose: function () {
+                    if (!submitted) form.reset()
                 }
             })
         })

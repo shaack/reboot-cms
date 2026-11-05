@@ -160,14 +160,20 @@ description: Shown by search engines
                     $edited = $request->getParam("edited");
                     $validationErrors = [];
                     $pageChanged = false;
+                    $saveError = null;
                     if ($edited !== null) {
                         // Browsers submit textarea content with CRLF line endings, the files are kept with LF
                         $edited = str_replace("\r\n", "\n", (string)$edited);
                         CsrfProtection::validate($request);
                         $pageChanged = !file_exists($fullPath) || file_get_contents($fullPath) !== $edited;
                         if ($pageChanged) {
-                            PageHistoryHelper::savePageSnapshot($fullPath, $pagesDir, $historyDir, $historyMaxVersions);
-                            file_put_contents($fullPath, $edited);
+                            try {
+                                PageHistoryHelper::savePageSnapshot($fullPath, $pagesDir, $historyDir, $historyMaxVersions);
+                                FileSystemUtils::writeAtomic($fullPath, $edited);
+                            } catch (\RuntimeException $e) {
+                                Logger::error("Saving " . $editPageName . " failed: " . $e->getMessage());
+                                $saveError = $e->getMessage();
+                            }
                         }
                         Block::resetAllValidationErrors();
                         $validationPage = new Page($reboot, $defaultSite);
@@ -251,6 +257,7 @@ description: Shown by search engines
                 <?php if ($edited !== null) { ?>
                 <script id="save-result" type="application/json"><?= json_encode([
                     'changed' => $pageChanged,
+                    'error' => $saveError,
                     'validationErrors' => $validationErrors,
                     'examples' => $blockExamples ?? []
                 ]) ?></script>
