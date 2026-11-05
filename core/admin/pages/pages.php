@@ -258,10 +258,14 @@ description: Shown by search engines
                 <?php } ?>
             <?php } ?>
         </div>
-        <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 203px);">
-            <div style="position:relative;width:100%;height:100%;">
+        <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;">
+            <div style="position:relative;width:100%;height:calc(100vh - 203px);">
                 <iframe id="preview-iframe-a" name="preview-iframe-a" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;visibility:hidden;"></iframe>
                 <iframe id="preview-iframe-b" name="preview-iframe-b" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;visibility:hidden;"></iframe>
+            </div>
+            <div class="form-check form-switch small mt-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="preview-follow" checked>
+                <label class="form-check-label text-body-secondary" for="preview-follow">Follow the cursor</label>
             </div>
         </div>
     </div>

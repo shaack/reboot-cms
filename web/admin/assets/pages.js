@@ -452,7 +452,7 @@
     }
 
     function scrollPreviewToCursor(iframe, smooth) {
-        if (!previewActive || !iframe || !iframe.contentDocument || !iframe.contentDocument.body) {
+        if (!previewActive || !followCursor || !iframe || !iframe.contentDocument || !iframe.contentDocument.body) {
             return;
         }
         var win = iframe.contentWindow;
@@ -464,9 +464,21 @@
         win.scrollTo({top: Math.max(0, y - win.innerHeight / 3), behavior: smooth ? 'smooth' : 'auto'});
     }
 
+    // on by default, the switch below the preview turns it off for this browser
+    var followCursor = localStorage.getItem('reboot_preview_follow') !== 'false';
+    var followSwitch = document.getElementById('preview-follow');
+    if (followSwitch) {
+        followSwitch.checked = followCursor;
+        followSwitch.addEventListener('change', function () {
+            followCursor = followSwitch.checked;
+            localStorage.setItem('reboot_preview_follow', followCursor);
+            if (followCursor) scrollPreviewToCursor(getFrontIframe(), true);
+        });
+    }
+
     var cursorScrollTimer = null;
     function scheduleScrollToCursor() {
-        if (!previewActive || !previewInitialized) return;
+        if (!previewActive || !previewInitialized || !followCursor) return;
         if (cursorScrollTimer) clearTimeout(cursorScrollTimer);
         cursorScrollTimer = setTimeout(function () {
             scrollPreviewToCursor(getFrontIframe(), true);
