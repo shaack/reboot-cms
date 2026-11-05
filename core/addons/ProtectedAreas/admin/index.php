@@ -62,6 +62,29 @@ $linkLogin = $protectedAreas->canSendLoginLinks();
 ?>
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
+    <?= AdminHelper::renderHelp('
+        <p>Protected areas put parts of the website behind a login, for example a customer area with one folder per customer. Pages outside the areas stay public.</p>
+        <h6>Setting up</h6>
+        <ul>
+            <li>The areas are path prefixes in <a href="config">Site Configuration</a>, for example <code>protectedAreas: { areas: [ /customers ] }</code>. Everything below such a path needs a login.</li>
+            <li>Create the pages as usual, for example <code>customers/acme/index</code>, and add an account here with the allowed path <code>/customers/acme</code>.</li>
+        </ul>
+        <h6>Accounts</h6>
+        <ul>
+            <li>The e-mail address is the account name. A path allows its page and every page below it, so <code>/customers/acme</code> opens <code>/customers/acme/status</code> but not <code>/customers/beta</code>. The path <code>/</code> opens all areas.</li>
+            <li>' . ($linkLogin
+                ? 'The site can send mail, so a password is optional. Visitors enter their address on the login page and get a link that is valid for 15 minutes and works once. They then stay logged in for 30 days. <em>Send login link</em> mails such a link right away, for the first contact.'
+                : 'Every account needs a password of at least 8 characters. With a <code>mail</code> configuration in <code>local/config.yml</code>, visitors could also log in by a link sent to their address.') . '</li>
+            <li>There is no self registration and no password reset by mail. Set a new password here if a customer forgot theirs.</li>
+            <li>After five failed password logins from one IP address, further attempts from there are blocked for 15 minutes.</li>
+        </ul>
+        <h6>Good to know</h6>
+        <ul>
+            <li>While you are logged in to this admin, you can open every protected page without a customer account.</li>
+            <li>Only pages are protected. Files in <a href="media">Media</a> stay reachable for everyone who knows their address, so do not put confidential documents there. For those, use secure downloads if the AddOn is enabled.</li>
+        </ul>
+        <p>Login and logout paths, texts of the login page and more are described in <code>core/addons/ProtectedAreas/README.md</code>.</p>
+    ') ?>
 
     <?php if (empty($areas)) { ?>
         <div class="alert alert-warning">

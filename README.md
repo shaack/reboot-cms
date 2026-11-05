@@ -162,7 +162,13 @@ The file `site/template.php` is the main HTML template. It receives three variab
 - `$page` — the `Page` object
 - `$request` — the `Request` object
 
-Call `$page->render($request)` to render the page content and `$page->getConfig()` to access the YAML front matter.
+Call `$page->render($request)` to render the page content. Afterwards `$page->meta('title', 'My Site')` returns a value of the YAML front matter, escaped for HTML, with an optional default. Pass `false` as the third parameter to get a string as written, for JSON, a URL or HTML you put into the front matter on purpose. Values that are no strings, like `hide-nav: true`, come back unchanged. `$page->getConfig()` returns the whole front matter as an array, unescaped.
+
+```php
+<?php $content = $page->render($request); ?>
+<title><?= $page->meta('title', 'My Site') ?></title>
+<meta name="description" content="<?= $page->meta('description', '') ?>">
+```
 
 ## Documentation
 

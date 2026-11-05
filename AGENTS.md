@@ -51,6 +51,8 @@ hide-nav: true
 ---
 ```
 
+Templates read it with `$page->meta('title', 'Default')`, escaped for HTML; `$page->meta('key', null, false)` returns a string unescaped.
+
 A page is split into **blocks** with HTML comments. Without any block comment
 the whole file renders as a single `text` block:
 

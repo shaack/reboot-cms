@@ -5,18 +5,17 @@
 /** @var Shaack\Reboot\Request $request */
 
 $content = $page->render($request);
-$pageConfig = $page->getConfig(); // the frontmatter config
 $e = fn($value) => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 ?>
 <!doctype html>
 <html lang="en">
 <head>
     <base href="<?= $e($site->getWebPath()) ?>/"/>
-    <title><?= $e($pageConfig['title'] ?? 'Reboot CMS') ?></title>
+    <title><?= $page->meta('title', 'Reboot CMS') ?></title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="<?= $e($pageConfig['description'] ?? '') ?>">
-    <meta name="author" content="<?= $e($pageConfig['author'] ?? 'shaack.com') ?>">
+    <meta name="description" content="<?= $page->meta('description', '') ?>">
+    <meta name="author" content="<?= $page->meta('author', 'shaack.com') ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="./assets/styles/screen.css" rel="stylesheet">
@@ -26,7 +25,7 @@ $e = fn($value) => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 <nav class="navbar navbar-expand-md fixed-top navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand me-5 text-muted" href="<?= $e($site->getWebPath()) ?>/"><?php echo $navbarConfig["brand"] ?? "" ?></a>
-        <?php if(!@$pageConfig["hide-nav"]) { ?>
+        <?php if(!$page->meta('hide-nav')) { ?>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

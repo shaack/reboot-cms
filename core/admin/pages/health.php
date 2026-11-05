@@ -4,6 +4,7 @@
 /** @var \Shaack\Reboot\Request $request */
 
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\MediaHelper;
 use Shaack\Reboot\CsrfProtection;
 
 if (!AdminHelper::requireAdmin($site, $reboot)) return;
@@ -20,6 +21,14 @@ if ($request->getParam("action") === "test_mail") {
         $mailer->send($to, "Reboot CMS test mail", "This test mail was sent from the System Health page of Reboot CMS. "
             . "If you read this, the mail configuration in local/config.yml works.\n\nSent at " . date("Y-m-d H:i:s"));
         return "Test mail sent to $to" . ($mailer->getTransport() === "log" ? " (log transport, written to the log only)" : "");
+    });
+    $error = $result['error'];
+    $success = $result['success'];
+}
+if ($request->getParam("action") === "add_media_sandbox") {
+    $result = AdminHelper::handleAction($request, function () use ($baseFsPath) {
+        MediaHelper::addSandbox($baseFsPath . '/web/media/.htaccess');
+        return "Sandbox added to web/media/.htaccess";
     });
     $error = $result['error'];
     $success = $result['success'];
@@ -97,15 +106,31 @@ $checks[] = [
     'hint' => $pagesWritable ? '' : 'Make <code>site/pages/</code> writable so pages can be edited.',
 ];
 
-// Directory: site/media/ writable (if exists)
-$mediaDir = $baseFsPath . '/site/media';
+// Directory: web/media/ writable (if exists)
+$mediaDir = $baseFsPath . '/web/media';
 if (is_dir($mediaDir)) {
     $mediaWritable = is_writable($mediaDir);
     $checks[] = [
-        'label' => 'Directory: site/media/',
+        'label' => 'Directory: web/media/',
         'status' => $mediaWritable,
         'value' => $mediaWritable ? 'writable' : 'not writable',
-        'hint' => $mediaWritable ? '' : 'Make <code>site/media/</code> writable for media uploads.',
+        'hint' => $mediaWritable ? '' : 'Make <code>web/media/</code> writable for media uploads.',
+    ];
+
+    // web/media/.htaccess is not replaced by the Updater, an older one lacks the
+    // sandbox for SVG and XML files. A warning only, uploads are checked anyway.
+    $mediaSandboxed = MediaHelper::hasSandbox($mediaDir . '/.htaccess');
+    $checks[] = [
+        'label' => 'Media folder sandbox',
+        'status' => $mediaSandboxed ? true : null,
+        'value' => $mediaSandboxed ? 'active' : 'missing',
+        'hint' => $mediaSandboxed ? '' : '<code>web/media/.htaccess</code> should contain this block, so an SVG or XML file can never run a script. '
+            . 'The button appends it, the rest of the file stays as it is.'
+            . '<pre class="mt-1 mb-0 small">' . htmlspecialchars(MediaHelper::HTACCESS_SANDBOX) . '</pre>',
+        'action' => $mediaSandboxed ? '' : '<form method="post" action="health" class="mt-2">'
+            . '<input type="hidden" name="csrf_token" value="' . CsrfProtection::getToken() . '">'
+            . '<input type="hidden" name="action" value="add_media_sandbox">'
+            . '<button class="btn btn-sm btn-outline-primary">Add sandbox</button></form>',
     ];
 }
 
@@ -243,6 +268,7 @@ foreach ($checks as $check) {
                             <?php if ($check['hint']) { ?>
                                 <br><small class="text-muted"><?= $check['hint'] ?></small>
                             <?php } ?>
+                            <?= $check['action'] ?? '' ?>
                         </td>
                     </tr>
                 <?php } ?>

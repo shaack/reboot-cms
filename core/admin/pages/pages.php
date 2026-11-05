@@ -90,6 +90,31 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
 ?>
 <div class="container-fluid">
     <?= AdminHelper::renderStatusMessages($pageActionError, $pageActionSuccess) ?>
+    <?= AdminHelper::renderHelp('
+        <p>Every page is a Markdown file in <code>site/pages/</code>, and its path is its address. <code>index</code> is the homepage <code>/</code>, <code>about</code> is <code>/about</code>, <code>blog/index</code> is <code>/blog</code>. Pages written in PHP are not listed here.</p>
+        <h6>Writing</h6>
+        <ul>
+            <li>Markdown formats the text: <code># Heading</code>, <code>**bold**</code>, <code>[link](/about)</code>, lists with <code>-</code>. The toolbar inserts it for you, also links to other pages and images from <a href="media">Media</a>.</li>
+            <li>An optional block at the very top sets the page title and other values for the template:
+                <pre class="mb-1">---
+title: About us
+description: Shown by search engines
+---</pre></li>
+        </ul>
+        <h6>Blocks</h6>
+        <ul>
+            <li>A comment like <code>&lt;!-- hero --&gt;</code> starts a block, a section with its own layout from <code>site/blocks/</code>. It runs up to the next block. A line with <code>---</code> separates the parts of a block, for example heading and text.</li>
+            <li>The toolbar button <em>Insert block</em> inserts a block with example content. If a block misses a part it needs, saving shows a warning with the expected structure.</li>
+            <li>A comment that is no block name, like <code>&lt;!-- TODO: check prices --&gt;</code>, stays an invisible note.</li>
+        </ul>
+        <h6>Saving and history</h6>
+        <ul>
+            <li>Save with the button or <kbd>⌘ S</kbd> / <kbd>Ctrl S</kbd>. Leaving the page with unsaved changes asks first.</li>
+            <li><em>Preview</em> shows the page with your changes next to the editor, before saving. It needs a wide window.</li>
+            <li>Every save keeps the previous version. <em>… › History</em> shows the last ' . (int)$historyMaxVersions . ' versions and restores one; the current text is kept as a version too.</li>
+            <li><em>…</em> also renames, moves and deletes the page. <em>+ Page</em> and <em>+ Folder</em> below the page list create new ones, a folder starts with an empty <code>index</code> page.</li>
+        </ul>
+    ') ?>
     <div class="row gx-2">
         <div class="col-md-3 col-xl-2 col-sidebar order-md-0 order-1 mt-4 mt-md-0">
             <nav class="nav nav-compact flex-column">
@@ -233,7 +258,7 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
                 <?php } ?>
             <?php } ?>
         </div>
-        <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 167px);">
+        <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;height:calc(100vh - 203px);">
             <div style="position:relative;width:100%;height:100%;">
                 <iframe id="preview-iframe-a" name="preview-iframe-a" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;visibility:hidden;"></iframe>
                 <iframe id="preview-iframe-b" name="preview-iframe-b" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;visibility:hidden;"></iframe>
@@ -248,4 +273,4 @@ window.pagesConfig = {
     allFolders: <?= json_encode($allFolders) ?>
 };
 </script>
-<script src="assets/pages.js"></script>
+<script src="assets/pages.js?v=<?= @filemtime($reboot->getBaseFsPath() . "/web/admin/assets/pages.js") ?>"></script>

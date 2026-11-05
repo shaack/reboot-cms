@@ -109,6 +109,26 @@ class Page
     }
 
     /**
+     * A value of the frontmatter, ready to be printed into HTML. Strings are
+     * escaped, other values like `hide-nav: true` or lists come back unchanged.
+     * Available after `render()`.
+     *
+     * `<title><?= $page->meta('title', 'My Site') ?></title>`
+     *
+     * @param mixed $default used if the frontmatter has no such key, escaped like a value
+     * @param bool $escaped false returns a string as written, for JSON, URLs or HTML on purpose
+     * @return mixed
+     */
+    public function meta(string $key, $default = null, bool $escaped = true)
+    {
+        $value = $this->config[$key] ?? $default;
+        if ($escaped && is_string($value)) {
+            return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        }
+        return $value;
+    }
+
+    /**
      * Parse a markdown file into blocks and collect field definitions with current values.
      * Renders each block to trigger field() calls, then returns the field metadata.
      * @param string $pageFsPath Absolute path to the .md file

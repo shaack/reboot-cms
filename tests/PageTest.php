@@ -293,6 +293,27 @@ class PageTest
         Assert::equals($level, ob_get_level());
     }
 
+    // --- meta() ---
+
+    public function testMetaEscapesStringsByDefault(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/meta.md", "---\ntitle: Tom & \"Jerry\" <b>\nhide-nav: true\ntags: [a, b]\n---\n\nBody");
+        $this->page->render("/meta");
+        Assert::equals("Tom &amp; &quot;Jerry&quot; &lt;b&gt;", $this->page->meta("title"));
+        Assert::equals('Tom & "Jerry" <b>', $this->page->meta("title", null, false));
+        Assert::equals(true, $this->page->meta("hide-nav"), "non-strings come back unchanged");
+        Assert::equals(["a", "b"], $this->page->meta("tags"));
+    }
+
+    public function testMetaDefault(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/nometa.md", "Body");
+        $this->page->render("/nometa");
+        Assert::null($this->page->meta("title"));
+        Assert::equals("A &amp; B", $this->page->meta("title", "A & B"));
+        Assert::equals(false, $this->page->meta("hide-nav", false));
+    }
+
     // --- Preview, 404 and paths ---
 
     public function testPreviewContentIsRenderedWithoutTouchingTheFile(): void

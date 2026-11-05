@@ -43,6 +43,18 @@ class AdminHelper
     }
 
     /**
+     * A collapsed help text for an admin page, opened by a click on its summary.
+     * `$html` is markup written in the page itself, it is not escaped.
+     */
+    public static function renderHelp(string $html, string $summary = "Help"): string
+    {
+        return '<details class="admin-help">'
+            . '<summary>' . htmlspecialchars($summary) . '</summary>'
+            . '<div class="admin-help-body">' . $html . '</div>'
+            . '</details>';
+    }
+
+    /**
      * Validate CSRF token and execute an action callback within a try/catch.
      * Returns ['error' => ?string, 'success' => ?string] plus any extra keys from the callback.
      * The callback should return a success message string or an array with 'success' and extra keys.

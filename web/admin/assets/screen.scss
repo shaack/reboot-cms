@@ -27,7 +27,8 @@ pre {
 }
 
 textarea.cm-md-editor {
-    height: calc(100vh - 200px);
+    // the viewport minus navbar, help line and button row
+    height: calc(100vh - 236px);
     margin-bottom: 1rem;
 }
 
@@ -195,5 +196,65 @@ nav.navbar {
 
     .toast-body {
         overflow-wrap: anywhere;
+    }
+}
+
+// Collapsed help text of an admin page, see AdminHelper::renderHelp()
+.admin-help {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+
+    > summary {
+        display: inline-block;
+        cursor: pointer;
+        color: var(--bs-secondary-color);
+
+        &::before {
+            content: "?";
+            display: inline-block;
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-right: 0.35rem;
+            border: 1px solid currentColor;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            line-height: 1rem;
+            text-align: center;
+        }
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        &:hover {
+            color: var(--bs-body-color);
+        }
+    }
+
+    .admin-help-body {
+        max-width: 60rem;
+        margin-top: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-left: 3px solid var(--bs-border-color);
+        background-color: var(--bs-tertiary-bg);
+        border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
+
+        h6 {
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+
+            &:first-child {
+                margin-top: 0;
+            }
+        }
+
+        p, ul {
+            margin-bottom: 0.5rem;
+        }
+
+        > :last-child {
+            margin-bottom: 0;
+        }
     }
 }

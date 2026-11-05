@@ -12,6 +12,8 @@ $editorFont = $editor['font'] ?? 'ui-monospace, SFMono-Regular, "SF Mono", Menlo
 $editorFontSize = $editor['fontSize'] ?? '1rem';
 $editorLineHeight = $editor['lineHeight'] ?? '1.5';
 $editorTabSize = $editor['tabSize'] ?? '4';
+// the admin site lives in core/admin, its assets in web/admin/assets
+$adminAssetsDir = dirname($site->getFsPath(), 2) . "/web/admin/assets";
 $editorWordWrap = ($editor['wordWrap'] ?? true) ? 'true' : 'false';
 $defaultEditorTools = ['Headings', '|', 'Bold', 'Italic', 'Strikethrough', '|',
     'UnorderedList', 'OrderedList', '|', 'InsertLink', 'InsertImage'];
@@ -37,7 +39,8 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
     ?>
     <title><?= htmlspecialchars($adminPageTitle) ?> – Reboot CMS Admin</title>
     <link href="vendor/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/screen.css" rel="stylesheet">
+    <?php // the modification time as version, so a changed file is not served from the cache after an update ?>
+    <link href="assets/screen.css?v=<?= @filemtime($adminAssetsDir . "/screen.css") ?>" rel="stylesheet">
     <style>textarea.editor-font { font-family: <?= $editorFont ?>; font-size: <?= $editorFontSize ?>; line-height: <?= $editorLineHeight ?>; tab-size: <?= $editorTabSize ?>; -moz-tab-size: <?= $editorTabSize ?>; }</style>
     <script src="vendor/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
     <script>
@@ -226,7 +229,7 @@ echo($page->render($request));
             branch: "distrib"
         }
     </script>
-    <script src="assets/update-badge.js"></script>
+    <script src="assets/update-badge.js?v=<?= @filemtime($adminAssetsDir . "/update-badge.js") ?>"></script>
 <?php } ?>
 </body>
 </html>

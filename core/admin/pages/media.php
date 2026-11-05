@@ -36,18 +36,20 @@ if ($request->getParam("list")) {
     return;
 }
 
+$allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg',
+    'mp4', 'webm', 'ogg', 'mp3', 'wav',
+    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp',
+    'txt', 'csv', 'json', 'xml', 'yml', 'yaml',
+    'zip', 'gz', 'tar', 'woff', 'woff2', 'ttf', 'otf', 'eot', 'ico'];
+
 $action = $request->getParam("action");
 if ($action) {
-    $result = AdminHelper::handleAction($request, function() use ($action, $request, $resolvedPath, $mediaDir) {
-        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg',
-            'mp4', 'webm', 'ogg', 'mp3', 'wav',
-            'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp',
-            'txt', 'csv', 'json', 'xml', 'yml', 'yaml',
-            'zip', 'gz', 'tar', 'woff', 'woff2', 'ttf', 'otf', 'eot', 'ico'];
+    $result = AdminHelper::handleAction($request, function() use ($action, $request, $resolvedPath, $mediaDir, $allowedExtensions) {
 
         if ($action === "upload" && isset($_FILES["files"])) {
             $uploadCount = 0;
             $skipped = [];
+            $active = [];
             $files = $_FILES["files"];
             for ($i = 0; $i < count($files["name"]); $i++) {
                 if ($files["error"][$i] !== UPLOAD_ERR_OK) {
@@ -64,14 +66,25 @@ if ($action) {
                     $skipped[] = $fileName;
                     continue;
                 }
+                if (MediaHelper::hasActiveContent($files["tmp_name"][$i], $ext)) {
+                    $active[] = $fileName;
+                    continue;
+                }
                 $targetPath = $resolvedPath . "/" . $fileName;
                 if (move_uploaded_file($files["tmp_name"][$i], $targetPath)) {
                     $uploadCount++;
                 }
             }
+            $errors = [];
+            if ($skipped) {
+                $errors[] = "Blocked: " . implode(", ", $skipped) . " (extension not allowed)";
+            }
+            if ($active) {
+                $errors[] = "Blocked: " . implode(", ", $active) . " (contains scripts or event handlers)";
+            }
             return [
                 'success' => $uploadCount > 0 ? "$uploadCount file(s) uploaded" : null,
-                'error' => !empty($skipped) ? "Blocked: " . implode(", ", $skipped) . " (extension not allowed)" : null,
+                'error' => $errors ? implode(". ", $errors) : null,
             ];
         } elseif ($action === "create_folder") {
             $folderName = trim($request->getParam("folder_name") ?? "");
@@ -105,6 +118,11 @@ if ($action) {
             $replaceExt = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
             if (!in_array($replaceExt, $allowedExtensions)) {
                 throw new \InvalidArgumentException("File extension not allowed");
+            }
+            // the file is served under the name of the target, so both extensions count
+            if (MediaHelper::hasActiveContent($file["tmp_name"], $replaceExt)
+                || MediaHelper::hasActiveContent($file["tmp_name"], pathinfo($targetName, PATHINFO_EXTENSION))) {
+                throw new \InvalidArgumentException("File contains scripts or event handlers");
             }
             if (move_uploaded_file($file["tmp_name"], $resolvedTarget)) {
                 return "File '$targetName' replaced";
@@ -175,6 +193,20 @@ $mediaWebPath = $reboot->getBaseWebPath() . "/media";
 ?>
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
+    <?= AdminHelper::renderHelp('
+        <p>Images and files for the website. Everything here is stored in <code>web/media/</code> and is reachable by everyone at <code>' . htmlspecialchars($mediaWebPath) . '/…</code>, also files that are only used on pages of a protected area.</p>
+        <h6>Using files on a page</h6>
+        <p>In the page editor, the toolbar button <em>Insert image from media</em> opens this library and inserts the chosen file. Click a file name here to open the file and copy its address.</p>
+        <h6>Uploading</h6>
+        <ul>
+            <li>Several files can be uploaded at once, up to ' . htmlspecialchars(ini_get('upload_max_filesize')) . ' per file and ' . htmlspecialchars(ini_get('post_max_size')) . ' per upload (limits of the server).</li>
+            <li>Allowed types: <code>' . implode('</code> <code>', $allowedExtensions) . '</code></li>
+            <li>An SVG or XML file that contains scripts or event handlers is rejected, as are file names starting with a dot.</li>
+            <li>A file with the same name is overwritten.</li>
+        </ul>
+        <h6>Replacing and deleting</h6>
+        <p>Replace keeps the file name, so every page that uses the file shows the new version without being edited. Browsers may show the old one for a while because of their cache. Before deleting a file, make sure no page uses it any more. Folders can only be deleted when they are empty.</p>
+    ') ?>
 
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
         <nav aria-label="breadcrumb" class="me-auto">
