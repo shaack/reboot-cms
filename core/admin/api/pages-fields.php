@@ -13,7 +13,7 @@ while (ob_get_level()) {
 }
 header('Content-Type: application/json; charset=utf-8');
 
-if (!$resolvedPath || strncmp($resolvedPath, $pagesDir, strlen($pagesDir)) !== 0 || !is_file($pagePath)) {
+if (!$resolvedPath || !\Shaack\Utils\FileSystemUtils::isInside($resolvedPath, $pagesDir) || !is_file($pagePath)) {
     http_response_code(404);
     echo json_encode(['error' => 'Page not found']);
     exit;

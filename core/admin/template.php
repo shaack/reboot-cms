@@ -20,7 +20,7 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
 <head>
-    <base href="<?= $site->getWebPath() ?>/"/>
+    <base href="<?= htmlspecialchars($site->getWebPath(), ENT_QUOTES) ?>/"/>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -190,7 +190,7 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
                 <span class="me-3 navbar-text opacity-75 mt-2 mt-md-0">
                     <?php if ($authentication->isImpersonating()) { ?>
                         Impersonating <strong><?= htmlspecialchars($authentication->getUser()) ?></strong>
-                        <a href="<?= $site->getWebPath() ?>/users?action=stop_impersonate" class="ms-1 text-warning">(stop)</a>
+                        <a href="<?= htmlspecialchars($site->getWebPath(), ENT_QUOTES) ?>/users?action=stop_impersonate" class="ms-1 text-warning">(stop)</a>
                     <?php } else { ?>
                         Logged in as <?= $authentication->getUser() ?>
                     <?php } ?>

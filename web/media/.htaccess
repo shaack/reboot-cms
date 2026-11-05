@@ -1,7 +1,20 @@
 # Prevent PHP execution in media directory
-<FilesMatch "\.(php|phtml|php3|php4|php5|phps)$">
-    Order Deny,Allow
-    Deny from all
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|php8|phps|phar)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
 </FilesMatch>
 
-Options -Indexes
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    # An SVG or XML file with a script, opened directly, would run on the origin
+    # of the site and its admin. The sandbox does not affect <img> embedding.
+    # Not for all files, Chrome refuses to show a sandboxed PDF.
+    <FilesMatch "\.(svgz?|xml|xsl|html?|xhtml)$">
+        Header set Content-Security-Policy "sandbox; default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'"
+    </FilesMatch>
+</IfModule>

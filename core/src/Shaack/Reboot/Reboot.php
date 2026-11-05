@@ -37,7 +37,9 @@ class Reboot
         Logger::debug("Reboot CMS");
         Logger::debug("you should set the loglevel to 2 (error) in production (/local/config.yml)");
         Logger::info("--- " . $_SERVER["REQUEST_URI"]);
-        $this->baseWebPath = preg_replace('/(\/web)?(\/admin)?\/index\.php$/', '', $_SERVER['PHP_SELF']);
+        // SCRIPT_NAME, not PHP_SELF: PHP_SELF carries the PATH_INFO of a request
+        // like `/index.php/<anything>` into every link of the page.
+        $this->baseWebPath = preg_replace('/(\/web)?(\/admin)?\/index\.php$/', '', $_SERVER['SCRIPT_NAME']);
         Logger::debug("reboot->baseFsPath: " . $this->baseFsPath);
         Logger::debug("reboot->baseWebPath: " . $this->baseWebPath);
         $site = new Site($this, $sitePath, $siteWebPath);

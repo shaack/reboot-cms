@@ -232,6 +232,98 @@ class PageTest
         $noBlockError = !str_contains($html, "Block not found");
         Assert::true($noBlockError, "Fenced code blocks should not be parsed as CMS blocks");
     }
+
+    // --- Comments, frontmatter and other input that must not take a page down ---
+
+    public function testPlainCommentsDoNotBreakThePage(): void
+    {
+        foreach (["<!-- TODO: fix: now -->", "<!-- 123 -->", "<!-- -->", "<!-- note: just text -->"] as $i => $comment) {
+            file_put_contents($this->tmpDir . "/pages/c$i.md", "<!-- text -->\n\nBefore\n\n$comment\n\nAfter");
+            $html = $this->page->render("/c$i");
+            Assert::contains("Before", $html, $comment);
+            Assert::contains("After", $html, "content after $comment stays in the block before it");
+            Assert::false(str_contains($html, "Block not found"), "$comment is no block");
+        }
+    }
+
+    public function testPageWithOnlyAPlainCommentRendersAsMarkdown(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/c.md", "<!-- TODO: fix: now -->\n\nHello");
+        Assert::contains("Hello", $this->page->render("/c"));
+    }
+
+    public function testBlockWithConfigMapping(): void
+    {
+        file_put_contents($this->tmpDir . "/blocks/cfgblock.php", '<?= $block->getConfig()["mode"] ?? "none" ?>');
+        file_put_contents($this->tmpDir . "/pages/b.md", "<!-- cfgblock: {mode: dark} -->\n\nx\n\n<!-- cfgblock: -->\n\ny");
+        Assert::equals("darknone", $this->page->render("/b"));
+    }
+
+    public function testLeadingHorizontalRuleIsNoFrontmatter(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/hr.md", "---\n\nText\n\n---\n\nmore");
+        $html = $this->page->render("/hr");
+        Assert::contains("Text", $html);
+        Assert::contains("more", $html);
+        Assert::equals([], $this->page->getConfig());
+    }
+
+    public function testInvalidOrScalarFrontmatterDoesNotThrow(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/bad.md", "---\ntitle: a: b\n---\n\nBody");
+        Assert::contains("Body", $this->page->render("/bad"));
+        Assert::equals([], $this->page->getConfig());
+        file_put_contents($this->tmpDir . "/pages/scalar.md", "---\njust text\n---\n\nBody");
+        Assert::contains("Body", $this->page->render("/scalar"));
+        Assert::equals([], $this->page->getConfig());
+    }
+
+    public function testFrontmatterDelimiterMustBeALine(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/fm3.md", "---\ntitle: a---b\n---\n\nBody");
+        $this->page->render("/fm3");
+        Assert::equals("a---b", $this->page->getConfig()["title"]);
+    }
+
+    public function testMissingBlockLeavesNoOutputBuffer(): void
+    {
+        $level = ob_get_level();
+        file_put_contents($this->tmpDir . "/pages/missing.md", "<!-- nonexistent-block -->\n\nx");
+        Assert::contains("Block not found", $this->page->render("/missing"));
+        Assert::equals($level, ob_get_level());
+    }
+
+    // --- Preview, 404 and paths ---
+
+    public function testPreviewContentIsRenderedWithoutTouchingTheFile(): void
+    {
+        $file = $this->tmpDir . "/pages/draft.md";
+        file_put_contents($file, "Published");
+        $this->page->setPreviewContent($file, "Draft");
+        Assert::contains("Draft", $this->page->render("/draft"));
+        Assert::equals("Published", file_get_contents($file));
+    }
+
+    public function testCustom404PhpPageGetsTheRequest(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/404.php", '<?php echo "Not here: " . $request->getPath();');
+        $request = new Request($this->site, "", "/missing", []);
+        Assert::equals("Not here: /missing", $this->page->render($request));
+    }
+
+    public function testInvalidRequestPathIs404(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/about.md", "About");
+        $request = new Request($this->site, "", "/about%00", []);
+        Assert::equals("", $this->page->render($request));
+    }
+
+    public function testSiblingFolderWithSamePrefixIsNotServed(): void
+    {
+        mkdir($this->tmpDir . "/pages-old", 0755, true);
+        file_put_contents($this->tmpDir . "/pages-old/secret.md", "Secret");
+        Assert::equals("", $this->page->render("/../pages-old/secret"));
+    }
 }
 
 class PagesAddOnStub extends AddOn

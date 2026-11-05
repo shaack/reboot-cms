@@ -70,6 +70,21 @@ class ProtectedAreasTest
         Assert::false(AccessControl::canAccess('/customers/acme', []));
     }
 
+    public function testDotSegmentsCannotLeaveAnArea(): void
+    {
+        Assert::false(AccessControl::canAccess('/customers/acme/../beta', ['/customers/acme']));
+        Assert::true(AccessControl::isProtected('/blog/../customers', ['/customers']));
+        Assert::true(AccessControl::isProtected('/./customers', ['/customers']));
+    }
+
+    public function testProtectionIgnoresCaseAccessDoesNot(): void
+    {
+        // a case-insensitive file system serves /Customers from customers/
+        Assert::true(AccessControl::isProtected('/Customers', ['/customers']));
+        Assert::true(AccessControl::isProtected('/CUSTOMERS/acme', ['/customers']));
+        Assert::false(AccessControl::canAccess('/customers/ACME', ['/customers/acme']));
+    }
+
     public function testSanitizeNext(): void
     {
         Assert::equals('/customers/acme', AccessControl::sanitizeNext('/customers/acme', '/'));

@@ -47,4 +47,18 @@ class FileSystemUtils
         $d->close();
         return $directoryStructure;
     }
+
+    /**
+     * True if `$path` is `$dir` itself or lies below it. Both should come from
+     * realpath(). Compared with the separator, so `/site/pages-old` is not
+     * inside `/site/pages`. A `false` from realpath() is never inside.
+     */
+    static function isInside(string|false $path, string|false $dir): bool
+    {
+        if ($path === false || $dir === false || $dir === "") {
+            return false;
+        }
+        $dir = rtrim($dir, DIRECTORY_SEPARATOR);
+        return $path === $dir || str_starts_with($path, $dir . DIRECTORY_SEPARATOR);
+    }
 }

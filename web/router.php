@@ -31,12 +31,12 @@ if ($uri !== '/' && is_file(__DIR__ . $uri)) {
 // Admin routes → admin/index.php
 if (preg_match('#^/admin(/|$)#', $uri)) {
     $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/admin/index.php';
-    $_SERVER['PHP_SELF'] = '/admin/index.php';
+    $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'] = '/admin/index.php';
     require __DIR__ . '/admin/index.php';
     return;
 }
 
 // Site routes → index.php
 $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/index.php';
-$_SERVER['PHP_SELF'] = '/index.php';
+$_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'] = '/index.php';
 require __DIR__ . '/index.php';

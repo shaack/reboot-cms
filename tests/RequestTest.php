@@ -150,4 +150,43 @@ class RequestTest
         Assert::equals("en", $request->getLanguage());
         Assert::equals("/fr/contact", $request->getPathWithoutLanguage());
     }
+
+    // --- Canonical paths, see Request::canonicalizePath() ---
+
+    public function testDotSegmentsResolved(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "");
+        Assert::equals("/customers", (new Request($site, "", "/./customers", []))->getPath());
+        Assert::equals("/customers", (new Request($site, "", "/blog/../customers", []))->getPath());
+        Assert::equals("/customers/beta", (new Request($site, "", "/customers/acme/../beta/", []))->getPath());
+        Assert::equals("/etc/passwd", (new Request($site, "", "/../../etc/passwd", []))->getPath(), ".. never leaves the root");
+    }
+
+    public function testRepeatedSlashesCollapsed(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "");
+        Assert::equals("/", (new Request($site, "", "///", []))->getPath());
+        Assert::equals("/customers", (new Request($site, "", "/.//customers", []))->getPath());
+        Assert::equals("/evil.com/x", (new Request($site, "", "//evil.com/x", []))->getPath(), "no host is parsed from the path");
+    }
+
+    public function testPercentEncodingDecoded(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "");
+        Assert::equals("/über", (new Request($site, "", "/%C3%BCber", []))->getPath());
+        Assert::equals("/customers", (new Request($site, "", "/%2e/customers", []))->getPath());
+        Assert::equals("/customers", (new Request($site, "", "/blog/%2e%2e/customers", []))->getPath());
+        $request = new Request($site, "", "/search?q=a%20b", []);
+        Assert::equals("/search", $request->getPath());
+        Assert::equals("a b", $request->getParam("q"));
+    }
+
+    public function testControlCharactersAndBackslashInvalid(): void
+    {
+        $site = TestHelper::createSiteStub("/tmp/site", "");
+        Assert::true((new Request($site, "", "/about", []))->isValidPath());
+        Assert::false((new Request($site, "", "/about%00.md", []))->isValidPath());
+        Assert::false((new Request($site, "", "/a%5C..%5Cb", []))->isValidPath());
+        Assert::false((new Request($site, "", "/a%0Ab", []))->isValidPath());
+    }
 }

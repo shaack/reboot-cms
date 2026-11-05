@@ -30,19 +30,19 @@ usort($pages, function($a, $b) {
 
 // JSON API endpoints
 if ($request->getParam("list")) {
-    require __DIR__ . "/api/pages-list.php";
+    require __DIR__ . "/../api/pages-list.php";
     return;
 }
 if ($request->getParam("history")) {
-    require __DIR__ . "/api/pages-history.php";
+    require __DIR__ . "/../api/pages-history.php";
     return;
 }
 if ($request->getParam("preview") && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    require __DIR__ . "/api/pages-preview.php";
+    require __DIR__ . "/../api/pages-preview.php";
     return;
 }
 if ($request->getParam("fields")) {
-    require __DIR__ . "/api/pages-fields.php";
+    require __DIR__ . "/../api/pages-fields.php";
     return;
 }
 
@@ -128,7 +128,7 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
             <?php if ($editPageName) {
                 $fullPath = $pagesDir . $editPageName;
                 $resolvedPath = realpath(dirname($fullPath));
-                if ($resolvedPath === false || strncmp($resolvedPath, $pagesDir, strlen($pagesDir)) !== 0) {
+                if (!FileSystemUtils::isInside($resolvedPath, $pagesDir)) {
                     Logger::error("Path traversal attempt blocked: " . $editPageName);
                     $editPageName = null;
                 } else {

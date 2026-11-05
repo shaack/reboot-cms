@@ -23,7 +23,7 @@ $success = null;
 
 // API endpoint for fetching remote version via AJAX
 if ($request->getParam("check_version")) {
-    require __DIR__ . "/api/update-check.php";
+    require __DIR__ . "/../api/update-check.php";
     return;
 }
 

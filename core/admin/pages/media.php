@@ -8,6 +8,7 @@ $admin = $site->getAddOn("Admin");
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\AddOns\Admin\MediaHelper;
 use Shaack\Reboot\CsrfProtection;
+use Shaack\Utils\FileSystemUtils;
 
 $mediaDir = $reboot->getBaseFsPath() . "/web/media";
 if (!is_dir($mediaDir)) {
@@ -23,7 +24,7 @@ $currentPath = preg_replace('#/+#', '/', $currentPath);
 
 $fullCurrentPath = $mediaDir . ($currentPath ? "/" . $currentPath : "");
 $resolvedPath = realpath($fullCurrentPath);
-if ($resolvedPath === false || strncmp($resolvedPath, realpath($mediaDir), strlen(realpath($mediaDir))) !== 0) {
+if (!FileSystemUtils::isInside($resolvedPath, realpath($mediaDir))) {
     $currentPath = "";
     $fullCurrentPath = $mediaDir;
     $resolvedPath = realpath($mediaDir);
@@ -31,7 +32,7 @@ if ($resolvedPath === false || strncmp($resolvedPath, realpath($mediaDir), strle
 
 // JSON API endpoint
 if ($request->getParam("list")) {
-    require __DIR__ . "/api/media-list.php";
+    require __DIR__ . "/../api/media-list.php";
     return;
 }
 
@@ -54,7 +55,8 @@ if ($action) {
                 }
                 $fileName = basename($files["name"][$i]);
                 $fileName = preg_replace('/[^\w\s\-.]/', '_', $fileName);
-                if (empty($fileName) || $fileName === "." || $fileName === "..") {
+                // no dotfiles, a `.htaccess` would reconfigure the folder
+                if (empty($fileName) || str_starts_with($fileName, ".")) {
                     continue;
                 }
                 $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
@@ -73,7 +75,7 @@ if ($action) {
             ];
         } elseif ($action === "create_folder") {
             $folderName = trim($request->getParam("folder_name") ?? "");
-            if (!preg_match('/^[\w\s\-.]+$/', $folderName)) {
+            if (!preg_match('/^[\w\s\-.]+$/', $folderName) || str_starts_with($folderName, ".")) {
                 throw new \InvalidArgumentException("Invalid folder name");
             }
             $newFolderPath = $resolvedPath . "/" . $folderName;
@@ -86,12 +88,14 @@ if ($action) {
             return "Folder '$folderName' created";
         } elseif ($action === "replace" && isset($_FILES["replace_file"])) {
             $targetName = basename($request->getParam("name") ?? "");
-            if (empty($targetName) || $targetName === "." || $targetName === "..") {
+            // Only files the upload would accept, never a dotfile like `.htaccess`
+            if (empty($targetName) || str_starts_with($targetName, ".")
+                || !in_array(strtolower(pathinfo($targetName, PATHINFO_EXTENSION)), $allowedExtensions)) {
                 throw new \InvalidArgumentException("Invalid file name");
             }
             $targetPath = $resolvedPath . "/" . $targetName;
             $resolvedTarget = realpath($targetPath);
-            if ($resolvedTarget === false || !is_file($resolvedTarget) || strncmp($resolvedTarget, realpath($mediaDir), strlen(realpath($mediaDir))) !== 0) {
+            if ($resolvedTarget === false || !is_file($resolvedTarget) || !FileSystemUtils::isInside($resolvedTarget, realpath($mediaDir))) {
                 throw new \InvalidArgumentException("Invalid target file");
             }
             $file = $_FILES["replace_file"];
@@ -108,9 +112,12 @@ if ($action) {
             throw new \RuntimeException("Failed to replace file");
         } elseif ($action === "delete") {
             $deleteName = basename($request->getParam("name") ?? "");
+            if ($deleteName === "" || str_starts_with($deleteName, ".")) {
+                throw new \InvalidArgumentException("Invalid path");
+            }
             $deletePath = $resolvedPath . "/" . $deleteName;
             $resolvedDeletePath = realpath($deletePath);
-            if ($resolvedDeletePath === false || strncmp($resolvedDeletePath, realpath($mediaDir), strlen(realpath($mediaDir))) !== 0) {
+            if (!FileSystemUtils::isInside($resolvedDeletePath, realpath($mediaDir))) {
                 throw new \InvalidArgumentException("Invalid path");
             }
             if (is_dir($resolvedDeletePath)) {

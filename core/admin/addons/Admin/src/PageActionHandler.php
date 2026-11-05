@@ -8,6 +8,7 @@
 namespace Shaack\Reboot\AddOns\Admin;
 
 use Shaack\Reboot\Request;
+use Shaack\Utils\FileSystemUtils;
 
 class PageActionHandler
 {
@@ -137,6 +138,9 @@ class PageActionHandler
             throw new \InvalidArgumentException("Invalid name.");
         }
         $oldDir = $this->resolveAndValidateDir($targetName);
+        if ($oldDir === $this->pagesDir) {
+            throw new \InvalidArgumentException("Cannot rename the pages root folder.");
+        }
         $newDir = dirname($oldDir) . "/" . $newName;
         if (file_exists($newDir)) {
             throw new \InvalidArgumentException("A folder with that name already exists.");
@@ -160,7 +164,7 @@ class PageActionHandler
         $relPath = preg_replace('/\.md$/', '', $targetName);
         $snapshotFile = $this->historyDir . $relPath . "/" . $version;
         $resolvedSnapshot = realpath($snapshotFile);
-        if (!$resolvedSnapshot || strncmp($resolvedSnapshot, realpath($this->historyDir), strlen(realpath($this->historyDir))) !== 0 || !is_file($resolvedSnapshot)) {
+        if (!$resolvedSnapshot || !FileSystemUtils::isInside($resolvedSnapshot, realpath($this->historyDir)) || !is_file($resolvedSnapshot)) {
             throw new \InvalidArgumentException("Invalid version.");
         }
         PageHistoryHelper::savePageSnapshot($pagePath, $this->pagesDir, $this->historyDir, $this->historyMaxVersions);
@@ -173,7 +177,7 @@ class PageActionHandler
     private function resolveAndValidateFile(string $targetName): string
     {
         $path = realpath($this->pagesDir . $targetName);
-        if (!$path || strncmp($path, $this->pagesDir, strlen($this->pagesDir)) !== 0 || !is_file($path)) {
+        if (!FileSystemUtils::isInside($path, $this->pagesDir) || !is_file($path)) {
             throw new \InvalidArgumentException("Invalid page.");
         }
         return $path;
@@ -182,7 +186,7 @@ class PageActionHandler
     private function resolveAndValidateDir(string $targetName): string
     {
         $path = realpath($this->pagesDir . "/" . $targetName);
-        if (!$path || strncmp($path, $this->pagesDir, strlen($this->pagesDir)) !== 0 || !is_dir($path)) {
+        if (!FileSystemUtils::isInside($path, $this->pagesDir) || !is_dir($path)) {
             throw new \InvalidArgumentException("Invalid folder.");
         }
         return $path;

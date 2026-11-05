@@ -7,6 +7,8 @@
 
 namespace Shaack\Reboot\AddOns\ProtectedAreas;
 
+use Shaack\Reboot\Request;
+
 /**
  * The pure path logic of the ProtectedAreas AddOn: which paths are protected,
  * which paths a user may enter, and which redirect targets are safe.
@@ -16,11 +18,11 @@ class AccessControl
 {
     /**
      * A path with exactly one leading slash and no trailing slash. "/" stays "/".
+     * "." and ".." are resolved, so "/customers/acme/../beta" is "/customers/beta".
      */
     public static function normalizePath(string $path): string
     {
-        $path = '/' . trim($path, '/');
-        return preg_replace('#/+#', '/', $path);
+        return Request::canonicalizePath($path);
     }
 
     /**
@@ -57,13 +59,16 @@ class AccessControl
     }
 
     /**
-     * True if the path lies in one of the protected areas.
+     * True if the path lies in one of the protected areas. Compared without
+     * regard to case, on a case-insensitive file system "/Customers" serves
+     * the same file as "/customers". `canAccess()` stays exact, so in doubt
+     * a path counts as protected and is still denied.
      * @param string[] $areas
      */
     public static function isProtected(string $path, array $areas): bool
     {
         foreach ($areas as $area) {
-            if (self::isBelow($path, $area)) {
+            if (self::isBelow(strtolower($path), strtolower($area))) {
                 return true;
             }
         }

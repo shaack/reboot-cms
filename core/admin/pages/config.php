@@ -21,6 +21,16 @@ $configSaved = false;
 if ($configuration) {
     $result = AdminHelper::handleAction($request, function() use ($configuration, $configPath, $reboot, $defaultSite) {
         $parsed = Yaml::parse($configuration);
+        // Anything else than a mapping, like a file of comments only, would take
+        // down the site and this admin with it, see Site::__construct()
+        if (!is_array($parsed) || $parsed !== [] && array_keys($parsed) === range(0, count($parsed) - 1)) {
+            throw new \InvalidArgumentException("The configuration must be a YAML mapping of keys and values.");
+        }
+        foreach (['addons' => 'list', 'navbar' => 'mapping'] as $key => $type) {
+            if (isset($parsed[$key]) && !is_array($parsed[$key])) {
+                throw new \InvalidArgumentException("'$key' must be a $type.");
+            }
+        }
         if (isset($parsed["addons"]) && is_array($parsed["addons"])) {
             foreach ($parsed["addons"] as $addonName) {
                 $addonName = (string)$addonName;

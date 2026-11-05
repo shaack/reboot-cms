@@ -9,13 +9,21 @@ class Request
     private string $path; // the requestPath, relative to the $baseWebPath
     private string $language; // language code from the path prefix, or the site's default language
     private bool $pathHasLanguagePrefix = false; // whether $path starts with a configured language segment
+    private bool $validPath = true; // false if the path contains characters no page name can have
     private array $paramsGet = []; // http post params
     private array $paramsPost = []; // http post params
 
     public function __construct(Site $site, string $baseWebPath, string $requestUri, array $post)
     {
-        $parsed = parse_url($requestUri);
-        $this->path = rtrim($parsed["path"], "/");
+        // Not parse_url(), it fails on "///" and reads "//host/x" as a host
+        $queryPos = strpos($requestUri, "?");
+        $rawPath = $queryPos === false ? $requestUri : substr($requestUri, 0, $queryPos);
+        $parsed = $queryPos === false ? [] : ["query" => substr($requestUri, $queryPos + 1)];
+        $decodedPath = rawurldecode($rawPath);
+        if (preg_match('/[\x00-\x1f\x7f\\\\]/', $decodedPath)) {
+            $this->validPath = false;
+        }
+        $this->path = rtrim(self::canonicalizePath($decodedPath), "/");
         if (substr($this->path, 0, strlen($baseWebPath)) == $baseWebPath) {
             $this->path = substr($this->path, strlen($baseWebPath));
             if (!$this->path) {
@@ -61,6 +69,37 @@ class Request
         }
         Logger::debug("request->path: " . $this->path);
         Logger::debug("request->language: " . $this->language);
+    }
+
+    /**
+     * The path as the file system sees it: "." and ".." segments resolved and
+     * repeated slashes collapsed, like a browser does it (RFC 3986, 5.2.4).
+     * Everything that matches on paths, ProtectedAreas above all, must see the
+     * same path that Page later resolves to a file. ".." never leaves the root.
+     */
+    public static function canonicalizePath(string $path): string
+    {
+        $segments = [];
+        foreach (explode("/", $path) as $segment) {
+            if ($segment === "" || $segment === ".") {
+                continue;
+            }
+            if ($segment === "..") {
+                array_pop($segments);
+                continue;
+            }
+            $segments[] = $segment;
+        }
+        return "/" . implode("/", $segments);
+    }
+
+    /**
+     * False if the path contains control characters or a backslash. No page can
+     * have such a name, Page answers with a 404.
+     */
+    public function isValidPath(): bool
+    {
+        return $this->validPath;
     }
 
     /**

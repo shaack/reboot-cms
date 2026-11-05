@@ -8,6 +8,7 @@
 namespace Shaack\Reboot;
 
 use Shaack\Logger;
+use Shaack\Utils\FileSystemUtils;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -16,6 +17,8 @@ class Page
     private $reboot;
     private $site;
     private $config = []; // If the page contains frontmatter, it will be stored here after rendering
+    private ?string $previewFsPath = null; // see setPreviewContent()
+    private ?string $previewContent = null;
 
     /**
      * @param Reboot $reboot
@@ -25,6 +28,17 @@ class Page
     {
         $this->reboot = $reboot;
         $this->site = $site;
+    }
+
+    /**
+     * Render the Markdown file `$fsPath` with `$content` instead of what is on
+     * disk. The admin's live preview uses it, so a draft never touches the
+     * published file.
+     */
+    public function setPreviewContent(string $fsPath, string $content): void
+    {
+        $this->previewFsPath = realpath($fsPath) ?: $fsPath;
+        $this->previewContent = $content;
     }
 
     /**
@@ -38,7 +52,18 @@ class Page
         if ($pathOrRequest instanceof Request) {
             $path = $pathOrRequest->getPath();
             $request = $pathOrRequest;
+            if (!$request->isValidPath()) {
+                return $this->render404($path, $request);
+            }
         }
+        return $this->renderPath($path, $request) ?? $this->render404($path, $request);
+    }
+
+    /**
+     * The rendered page for `$path`, or null if there is none.
+     */
+    private function renderPath(string $path, ?Request $request): ?string
+    {
         $pagesDir = realpath($this->site->getFsPath() . '/pages');
         $requestedFsPath = $pagesDir . $path;
 
@@ -46,9 +71,10 @@ class Page
             $requestedFsPath .= "/index";
         }
 
-        // Resolve symlinks and '..' to prevent path traversal
+        // Resolve symlinks and '..' to prevent path traversal. The separator keeps
+        // a sibling folder like `pages-old` out.
         $resolvedDir = realpath(dirname($requestedFsPath));
-        $insidePagesDir = $resolvedDir !== false && strncmp($resolvedDir, $pagesDir, strlen($pagesDir)) === 0;
+        $insidePagesDir = FileSystemUtils::isInside($resolvedDir, $pagesDir);
         $pathInfo = pathinfo($path);
         if ($insidePagesDir && !array_key_exists("extension", $pathInfo)) {
             if (file_exists($requestedFsPath . ".md")) {
@@ -66,18 +92,15 @@ class Page
             Logger::info("AddOn page: " . $path);
             return $this->renderPHP($addOnPage, $request);
         }
-        return $this->render404($path);
+        return null;
     }
 
-    public function render404($path)
+    public function render404($path, ?Request $request = null)
     {
         Logger::info("[404] response for path: " . $path);
         http_response_code(404);
-        if (file_exists($this->site->getFsPath() . '/pages/404.md') ||
-            file_exists($this->site->getFsPath() . '/pages/404.php')) {
-            return $this->render("/404"); // put a 404 file in /pages to create your own
-        }
-        return "";
+        // put a 404.md or 404.php in /pages to create your own
+        return $this->renderPath("/404", $request) ?? "";
     }
 
     public function getConfig(): array
@@ -95,57 +118,110 @@ class Page
     {
         $content = trim(file_get_contents($pageFsPath));
         if (!$content) return [];
+        [, $content] = self::splitFrontmatter($content);
 
-        // Strip frontmatter
-        $offset = strpos($content, "---");
-        if ($offset === 0) {
-            $offset += 3;
-            $end = strpos($content, "---", $offset);
-            if ($end !== false) {
-                $content = substr($content, $end + 3);
+        $blocks = [];
+        foreach (self::parseBlocks($content) as [$blockName, $blockProps, $blockContent]) {
+            try {
+                $block = new Block($this->site, $blockName, $blockContent, $blockProps);
+                // Render to collect field definitions
+                $block->render(null);
+                $blocks[] = [
+                    'name' => $blockName,
+                    'config' => $blockProps,
+                    'fields' => $block->getFieldsWithValues(),
+                ];
+            } catch (\Throwable $e) {
+                Logger::error("Error parsing block: " . $e->getMessage());
             }
         }
+        return $blocks;
+    }
 
-        // Parse blocks (same logic as renderMarkdown)
+    /**
+     * Split a page into its frontmatter and the rest. Frontmatter is a YAML
+     * mapping between a `---` on the first line and the next `---` line. If
+     * that is no valid mapping, the page has no frontmatter and the `---`
+     * are horizontal rules, so a page that starts with a rule loses nothing.
+     * @return array [array $config, string $content]
+     */
+    public static function splitFrontmatter(string $content): array
+    {
+        if (!preg_match('/\A---[ \t]*\R(.*?)^---[ \t]*$/ms', $content, $matches)) {
+            return [[], $content];
+        }
+        try {
+            $config = Yaml::parse($matches[1]);
+        } catch (ParseException $e) {
+            Logger::error("Error: could not parse frontmatter: " . $e->getMessage());
+            return [[], $content];
+        }
+        if ($config !== null && !is_array($config)) {
+            return [[], $content];
+        }
+        return [$config ?? [], substr($content, strlen($matches[0]))];
+    }
+
+    /**
+     * Find the blocks of a page. A block starts with an HTML comment that holds
+     * its name, optionally with a config mapping (`<!-- hero -->`,
+     * `<!-- hero: {dark: true} -->`), and runs up to the next comment. Any other
+     * comment, like `<!-- TODO: check -->`, is no block and stays part of the
+     * content of the block before it. Comments in fenced code are ignored.
+     * @return array of [string $name, array $config, string $content]
+     */
+    public static function parseBlocks(string $content): array
+    {
+        // replace fenced code blocks with same-length placeholder to preserve offsets
         $contentForBlockSearch = preg_replace_callback('/```[\s\S]*?```/', function ($m) {
             return str_repeat(" ", strlen($m[0]));
         }, $content);
-        $offset = strpos($contentForBlockSearch, "<!--");
         $blocks = [];
-        if ($offset !== false) {
-            do {
-                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $contentForBlockSearch, $matches, PREG_OFFSET_CAPTURE, $offset);
-                if ($matches) {
-                    $offset += strlen($matches[0][0]) - 4;
-                    try {
-                        $blockProps = \Symfony\Component\Yaml\Yaml::parse(trim($matches[1][0]));
-                        // the content comes from the original, not from the search copy,
-                        // where fenced code blocks are blanked out
-                        $blockContent = trim(substr($content, $matches[2][1], strlen($matches[2][0])));
-                        $blockName = null;
-                        if (is_string($blockProps)) {
-                            $blockName = $blockProps;
-                            $blockProps = [];
-                        } else {
-                            $blockName = array_keys($blockProps)[0];
-                            $blockProps = $blockProps[$blockName];
-                        }
-                        $block = new Block($this->site, $blockName, $blockContent, $blockProps ?? []);
-                        // Render to collect field definitions
-                        $block->render(null);
-                        $blocks[] = [
-                            'name' => $blockName,
-                            'config' => $blockProps ?? [],
-                            'fields' => $block->getFieldsWithValues(),
-                        ];
-                    } catch (\Exception $e) {
-                        Logger::error("Error parsing block: " . $e->getMessage());
-                    }
-                }
-            } while ($matches);
+        $offset = strpos($contentForBlockSearch, "<!--");
+        if ($offset === false) {
+            return $blocks;
         }
-
+        while (preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $contentForBlockSearch, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+            $offset = $matches[3][1];
+            $header = self::parseBlockHeader($matches[1][0]);
+            // the content comes from the original, not from the search copy,
+            // where fenced code blocks are blanked out
+            if ($header !== null) {
+                $blocks[] = [$header[0], $header[1], substr($content, $matches[2][1], strlen($matches[2][0]))];
+            } else if ($blocks) {
+                $blocks[count($blocks) - 1][2] .= substr($content, $matches[0][1], $offset - $matches[0][1]);
+            }
+            if ($offset >= strlen($contentForBlockSearch)) {
+                break;
+            }
+        }
+        foreach ($blocks as &$block) {
+            $block[2] = trim($block[2]);
+        }
         return $blocks;
+    }
+
+    /**
+     * [name, config] if the comment text names a block, otherwise null.
+     */
+    private static function parseBlockHeader(string $comment): ?array
+    {
+        try {
+            $props = Yaml::parse(trim($comment));
+        } catch (ParseException $e) {
+            return null;
+        }
+        if (is_string($props) && $props !== "") {
+            return [$props, []];
+        }
+        if (is_array($props) && count($props) === 1) {
+            $name = array_key_first($props);
+            $config = $props[$name];
+            if (is_string($name) && $name !== "" && ($config === null || is_array($config))) {
+                return [$name, $config ?? []];
+            }
+        }
+        return null;
     }
 
     /**
@@ -154,55 +230,20 @@ class Page
      */
     private function renderMarkdown(string $pagePath, ?Request $request): string
     {
-        $content = trim(file_get_contents($pagePath));
+        $content = $this->previewContent !== null && (realpath($pagePath) ?: $pagePath) === $this->previewFsPath
+            ? $this->previewContent
+            : file_get_contents($pagePath);
+        $content = trim($content);
+        $this->config = [];
         if (!$content) {
             return "";
         }
-        // parse frontmatter
-        $this->config = [];
-        $offset = strpos($content, "---");
-        if ($offset === 0) {
-            $offset += 3;
-            $end = strpos($content, "---", $offset);
-            if ($end !== false) {
-                $frontmatter = substr($content, $offset, $end - $offset);
-                $this->config = Yaml::parse($frontmatter);
-                $content = substr($content, $end + 3);
-            }
-        }
-        // replace fenced code blocks with same-length placeholder to preserve offsets
-        $contentForBlockSearch = preg_replace_callback('/```[\s\S]*?```/', function ($m) {
-            return str_repeat(" ", strlen($m[0]));
-        }, $content);
-        $offset = strpos($contentForBlockSearch, "<!--");
+        [$this->config, $content] = self::splitFrontmatter($content);
+
         $blocks = array();
-        if ($offset !== false) {
-            // find blocks
-            do {
-                preg_match('/<!--(.*)-->(.*)(<!--|$)/sU', $contentForBlockSearch, $matches, PREG_OFFSET_CAPTURE, $offset);
-                if ($matches) {
-                    $offset += strlen($matches[0][0]) - 4;
-                    try {
-                        $blockProps = Yaml::parse(trim($matches[1][0]));
-                        // the content comes from the original, not from the search copy,
-                        // where fenced code blocks are blanked out
-                        $blockContent = trim(substr($content, $matches[2][1], strlen($matches[2][0])));
-                        $blockName = null;
-                        if (is_string($blockProps)) {
-                            $blockName = $blockProps;
-                            $blockProps = [];
-                        } else {
-                            $blockName = array_keys($blockProps)[0];
-                            $blockProps = $blockProps[$blockName];
-                        }
-                        Logger::debug("found block: " . $blockName);
-                        $block = new Block($this->site, $blockName, $blockContent, $blockProps);
-                        $blocks[] = $block;
-                    } catch (ParseException $e) {
-                        Logger::error("Error: could not parse block config: " . trim($matches[1]));
-                    }
-                }
-            } while ($matches);
+        foreach (self::parseBlocks($content) as [$blockName, $blockProps, $blockContent]) {
+            Logger::debug("found block: " . $blockName);
+            $blocks[] = new Block($this->site, $blockName, $blockContent, $blockProps);
         }
 
         if (!count($blocks)) {
@@ -240,7 +281,7 @@ class Page
 }
 
 /** @noinspection PhpUnusedParameterInspection */
-function renderPHPPage(Reboot $reboot, Site $site, Page $page, Request $request, string $path)
+function renderPHPPage(Reboot $reboot, Site $site, Page $page, ?Request $request, string $path)
 {
     ob_start();
     include $path;
@@ -248,4 +289,3 @@ function renderPHPPage(Reboot $reboot, Site $site, Page $page, Request $request,
     ob_end_clean();
     return $contents;
 }
-

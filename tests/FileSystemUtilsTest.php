@@ -110,4 +110,15 @@ class FileSystemUtilsTest
         $list2 = FileSystemUtils::getFileList($this->tmpDir);
         Assert::equals(count($list1), count($list2));
     }
+
+    public function testIsInside(): void
+    {
+        Assert::true(FileSystemUtils::isInside("/site/pages", "/site/pages"));
+        Assert::true(FileSystemUtils::isInside("/site/pages/a/b.md", "/site/pages"));
+        Assert::true(FileSystemUtils::isInside("/site/pages/a", "/site/pages/"));
+        Assert::false(FileSystemUtils::isInside("/site/pages-old/a.md", "/site/pages"), "a sibling with the same prefix");
+        Assert::false(FileSystemUtils::isInside("/site", "/site/pages"));
+        Assert::false(FileSystemUtils::isInside(false, "/site/pages"));
+        Assert::false(FileSystemUtils::isInside("/site/pages", false));
+    }
 }
