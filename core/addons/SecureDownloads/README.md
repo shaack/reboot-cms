@@ -66,7 +66,7 @@ local/downloads/files/<token>  the payload, stored without an extension
 
 ## Renamed from Downloads
 
-The AddOn was called `Downloads` until version 3.14. The old name still works as a deprecated alias in `core/addons/Downloads/`, with the admin page under `/admin/downloads`, and the health page points out the rename. The old configuration key `downloads:` is still read, `secureDownloads:` wins if both exist. Storage in `local/downloads/` and the link prefix `/downloads` are unchanged, so existing links survive the switch. To migrate, replace `Downloads` by `SecureDownloads` in the `addons` list and rename the configuration key.
+The AddOn was called `Downloads` until version 3.14. The alias under that name was removed in version 3.19, a site that still lists `Downloads` in `site/config.yml` loads no download AddOn and the admin reports it as missing. The old configuration key `downloads:` is still read, `secureDownloads:` wins if both exist. Storage in `local/downloads/` and the link prefix `/downloads` are unchanged, so existing links survive the switch. To migrate, replace `Downloads` by `SecureDownloads` in the `addons` list and rename the configuration key.
 
 ## Files
 

@@ -648,7 +648,7 @@ See the [EmailObfuscation README](core/addons/EmailObfuscation/README.md).
 
 Hands out single files through cryptic, short lived links that are additionally protected by a six digit password, for sending a document to one recipient. Files are uploaded in the admin section "Secure Downloads", which the AddOn brings along. A link expires one week after the upload or one hour after the first download, ten wrong passwords lock it, and expired files are deleted automatically. Files live in `local/downloads/`, outside the web root.
 
-See the [SecureDownloads README](core/addons/SecureDownloads/README.md) and the admin section [Secure Downloads](#secure-downloads). The AddOn was called `Downloads` before, the old name still works as a deprecated alias.
+See the [SecureDownloads README](core/addons/SecureDownloads/README.md) and the admin section [Secure Downloads](#secure-downloads). The AddOn was called `Downloads` before version 3.15, sites that still list that name must switch to `SecureDownloads`.
 
 ### ProtectedAreas
 

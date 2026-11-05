@@ -284,16 +284,4 @@ class SecureDownloadsTest
         $addOn = $this->loadAddOn("SecureDownloads", ['downloads' => ['path' => '/old'], 'secureDownloads' => ['path' => '/new']]);
         Assert::equals("/new", $addOn->getLinkPrefix(), "the current key wins");
     }
-
-    public function testDeprecatedAliasDownloadsLoadsTheSameAddOn(): void
-    {
-        $addOn = $this->loadAddOn("Downloads");
-        Assert::true($addOn instanceof SecureDownloads);
-        Assert::equals("Downloads", $addOn->getName());
-        Assert::equals("/downloads", $addOn->getAdminPath());
-        Assert::equals(['Secure Downloads' => '/downloads'], $addOn->getAdminMenu());
-        Assert::true(isset($addOn->getAdminPages()['/downloads']), "admin page is mounted under the old path");
-        Assert::true(str_ends_with($addOn->getDir(), "/core/addons/SecureDownloads"));
-        Assert::notNull($addOn->getDeprecation());
-    }
 }
