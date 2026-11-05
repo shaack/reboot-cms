@@ -278,6 +278,14 @@ class PageTest
         Assert::equals([], $this->page->getConfig());
     }
 
+    public function testFrontmatterWithWindowsLineEnds(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/crlf.md", "---\r\ntitle: Windows\r\n---\r\n\r\nBody");
+        $html = $this->page->render("/crlf");
+        Assert::equals("Windows", $this->page->getConfig()["title"] ?? null);
+        Assert::false(str_contains($html, "title:"), "the frontmatter is not rendered as text");
+    }
+
     public function testFrontmatterDelimiterMustBeALine(): void
     {
         file_put_contents($this->tmpDir . "/pages/fm3.md", "---\ntitle: a---b\n---\n\nBody");
@@ -323,6 +331,34 @@ class PageTest
         $this->page->setPreviewContent($file, "Draft");
         Assert::contains("Draft", $this->page->render("/draft"));
         Assert::equals("Published", file_get_contents($file));
+    }
+
+    public function testPreviewMarksTheSourceLineOfEveryBlock(): void
+    {
+        $file = $this->tmpDir . "/pages/lines.md";
+        file_put_contents($file, "Published");
+        // line 0 is empty, the frontmatter takes lines 1-3, the blocks start at 5 and 9
+        $draft = "\n---\ntitle: x\n---\n\n<!-- text -->\n\nA\n\n<!-- text -->\n\nB\n";
+        $this->page->setPreviewContent($file, $draft);
+        $html = $this->page->render("/lines");
+        preg_match_all('/<!--reboot-preview-line:(\d+)(:end)?-->/', $html, $m);
+        Assert::equals(["5", "9", "12"], $m[1]);
+        Assert::equals(["", "", ":end"], $m[2]);
+    }
+
+    public function testPreviewMarksAFlatPageAndCountsWindowsLineEnds(): void
+    {
+        $file = $this->tmpDir . "/pages/flat.md";
+        file_put_contents($file, "Published");
+        $this->page->setPreviewContent($file, "---\r\ntitle: x\r\n---\r\n\r\nText");
+        preg_match_all('/<!--reboot-preview-line:(\d+)/', $this->page->render("/flat"), $m);
+        Assert::equals(["2", "5"], $m[1]);
+    }
+
+    public function testNoPreviewMarkersOutsideThePreview(): void
+    {
+        file_put_contents($this->tmpDir . "/pages/plain.md", "<!-- text -->\n\nA");
+        Assert::false(str_contains($this->page->render("/plain"), "reboot-preview-line"));
     }
 
     public function testCustom404PhpPageGetsTheRequest(): void

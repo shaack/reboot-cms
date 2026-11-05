@@ -167,7 +167,7 @@ class Page
      */
     public static function splitFrontmatter(string $content): array
     {
-        if (!preg_match('/\A---[ \t]*\R(.*?)^---[ \t]*$/ms', $content, $matches)) {
+        if (!preg_match('/\A---[ \t]*\R(.*?)^---[ \t]*\r?$/ms', $content, $matches)) {
             return [[], $content];
         }
         try {
@@ -188,7 +188,8 @@ class Page
      * `<!-- hero: {dark: true} -->`), and runs up to the next comment. Any other
      * comment, like `<!-- TODO: check -->`, is no block and stays part of the
      * content of the block before it. Comments in fenced code are ignored.
-     * @return array of [string $name, array $config, string $content]
+     * @return array of [string $name, array $config, string $content, int $offset],
+     *     the offset is the position of the block comment in `$content`
      */
     public static function parseBlocks(string $content): array
     {
@@ -207,7 +208,7 @@ class Page
             // the content comes from the original, not from the search copy,
             // where fenced code blocks are blanked out
             if ($header !== null) {
-                $blocks[] = [$header[0], $header[1], substr($content, $matches[2][1], strlen($matches[2][0]))];
+                $blocks[] = [$header[0], $header[1], substr($content, $matches[2][1], strlen($matches[2][0])), $matches[0][1]];
             } else if ($blocks) {
                 $blocks[count($blocks) - 1][2] .= substr($content, $matches[0][1], $offset - $matches[0][1]);
             }
@@ -250,20 +251,25 @@ class Page
      */
     private function renderMarkdown(string $pagePath, ?Request $request): string
     {
-        $content = $this->previewContent !== null && (realpath($pagePath) ?: $pagePath) === $this->previewFsPath
-            ? $this->previewContent
-            : file_get_contents($pagePath);
-        $content = trim($content);
+        $isPreview = $this->previewContent !== null && (realpath($pagePath) ?: $pagePath) === $this->previewFsPath;
+        $source = $isPreview ? $this->previewContent : file_get_contents($pagePath);
+        $content = trim($source);
         $this->config = [];
         if (!$content) {
             return "";
         }
-        [$this->config, $content] = self::splitFrontmatter($content);
+        [$this->config, $body] = self::splitFrontmatter($content);
+        // the line in the source where $body starts, for the preview markers
+        $bodyLine = substr_count($source, "\n", 0, strlen($source) - strlen(ltrim($source)))
+            + substr_count($content, "\n", 0, strlen($content) - strlen($body));
+        $content = $body;
 
         $blocks = array();
-        foreach (self::parseBlocks($content) as [$blockName, $blockProps, $blockContent]) {
+        $blockLines = array();
+        foreach (self::parseBlocks($content) as [$blockName, $blockProps, $blockContent, $blockOffset]) {
             Logger::debug("found block: " . $blockName);
             $blocks[] = new Block($this->site, $blockName, $blockContent, $blockProps);
+            $blockLines[] = $bodyLine + substr_count($content, "\n", 0, $blockOffset);
         }
 
         if (!count($blocks)) {
@@ -271,6 +277,7 @@ class Page
             Logger::info("No blocks found, rendering as flat markdown file");
             $block = new Block($this->site, "text", $content);
             $blocks[] = $block;
+            $blockLines[] = $bodyLine;
         } else {
             $blockNames = [];
             foreach ($blocks as $block) {
@@ -281,8 +288,15 @@ class Page
 
         // render blocks
         $html = "";
-        foreach ($blocks as $block) {
+        foreach ($blocks as $i => $block) {
+            if ($isPreview) {
+                // where the block starts in the editor, the admin scrolls the preview to the cursor with it
+                $html .= "<!--reboot-preview-line:" . $blockLines[$i] . "-->";
+            }
             $html .= $block->render($request);
+        }
+        if ($isPreview) {
+            $html .= "<!--reboot-preview-line:" . ($bodyLine + substr_count($content, "\n") + 1) . ":end-->";
         }
 
         return $html;

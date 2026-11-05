@@ -283,6 +283,7 @@
             previewInitialized = true;
             if (back.contentDocument) {
                 back.contentDocument.documentElement.scrollTop = savedScrollTop;
+                scrollPreviewToCursor(back, false);
             }
             // Swap: show back, hide front
             back.style.visibility = 'visible';
@@ -332,6 +333,152 @@
     if (previewActive && currentPage && window.innerWidth >= 992) {
         previewActive = false;
         window.togglePreview();
+    }
+
+    // --- Preview follows the cursor ---
+    // In the preview, Page marks every block with a comment that holds the editor
+    // line where the block starts, `<!--reboot-preview-line:12-->`, and the end
+    // with `<!--reboot-preview-line:40:end-->`. The preview scrolls to the element
+    // that shows the text of the cursor line, or else to the matching share of
+    // the block the cursor is in.
+
+    function previewMarkers(doc) {
+        var markers = [];
+        var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_COMMENT);
+        var node;
+        while ((node = walker.nextNode())) {
+            var match = node.nodeValue.match(/^reboot-preview-line:(\d+)(:end)?$/);
+            if (match) {
+                markers.push({node: node, line: parseInt(match[1], 10), end: !!match[2]});
+            }
+        }
+        return markers;
+    }
+
+    function siblingElement(node, forward) {
+        var sibling = forward ? node.nextSibling : node.previousSibling;
+        while (sibling && sibling.nodeType !== Node.ELEMENT_NODE) {
+            sibling = forward ? sibling.nextSibling : sibling.previousSibling;
+        }
+        return sibling;
+    }
+
+    // the document position of a marker: the top of the block after it, for the
+    // end marker the bottom of the block before it
+    function markerY(marker, win) {
+        var element = siblingElement(marker.node, !marker.end) || marker.node.parentNode;
+        var rect = element.getBoundingClientRect();
+        return (marker.end ? rect.bottom : rect.top) + win.scrollY;
+    }
+
+    function normalizeText(text) {
+        return text.replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+
+    // the visible text of a Markdown line, without its syntax
+    function lineNeedle(line) {
+        var text = line
+            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+            .replace(/^\s*(#{1,6}\s+|[-*+]\s+|\d+[.)]\s+|>\s*)+/, '')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/[*_`~]/g, '');
+        return normalizeText(text).substring(0, 60);
+    }
+
+    // the innermost element between two markers that shows the cursor line
+    function findLineElement(start, next, line) {
+        var image = line.match(/!\[[^\]]*\]\(\s*([^)\s]+)/);
+        var needle = image ? null : lineNeedle(line);
+        if (!image && needle.length < 3) {
+            return null;
+        }
+        for (var el = siblingElement(start.node, true); el && (!next || el.compareDocumentPosition(next.node) & Node.DOCUMENT_POSITION_FOLLOWING); el = siblingElement(el, true)) {
+            if (image) {
+                var images = el.tagName === 'IMG' ? [el] : el.querySelectorAll('img');
+                for (var i = 0; i < images.length; i++) {
+                    if (images[i].getAttribute('src') === image[1]) {
+                        return images[i];
+                    }
+                }
+            } else if (normalizeText(el.textContent).indexOf(needle) !== -1) {
+                var found = el;
+                var descend = true;
+                while (descend) {
+                    descend = false;
+                    for (var c = 0; c < found.children.length; c++) {
+                        if (normalizeText(found.children[c].textContent).indexOf(needle) !== -1) {
+                            found = found.children[c];
+                            descend = true;
+                            break;
+                        }
+                    }
+                }
+                return found;
+            }
+        }
+        return null;
+    }
+
+    function previewYForCursor(doc, win) {
+        var markers = previewMarkers(doc);
+        if (!markers.length || !editorTextarea) {
+            return null;
+        }
+        var text = editorTextarea.value;
+        var before = text.substring(0, editorTextarea.selectionStart);
+        var line = before.split('\n').length - 1;
+        var lineText = text.substring(before.lastIndexOf('\n') + 1).split('\n')[0];
+        if (line < markers[0].line) {
+            return 0; // the frontmatter
+        }
+        var index = 0;
+        for (var i = 0; i < markers.length; i++) {
+            if (!markers[i].end && markers[i].line <= line) {
+                index = i;
+            }
+        }
+        var start = markers[index];
+        var next = markers[index + 1] || null;
+        var element = findLineElement(start, next, lineText);
+        if (element) {
+            return element.getBoundingClientRect().top + win.scrollY;
+        }
+        var startY = markerY(start, win);
+        if (!next) {
+            return startY;
+        }
+        var share = (line - start.line) / Math.max(1, next.line - start.line);
+        return startY + (markerY(next, win) - startY) * share;
+    }
+
+    function scrollPreviewToCursor(iframe, smooth) {
+        if (!previewActive || !iframe || !iframe.contentDocument || !iframe.contentDocument.body) {
+            return;
+        }
+        var win = iframe.contentWindow;
+        var y = previewYForCursor(iframe.contentDocument, win);
+        if (y === null) {
+            return;
+        }
+        // the cursor position in the upper third of the preview
+        win.scrollTo({top: Math.max(0, y - win.innerHeight / 3), behavior: smooth ? 'smooth' : 'auto'});
+    }
+
+    var cursorScrollTimer = null;
+    function scheduleScrollToCursor() {
+        if (!previewActive || !previewInitialized) return;
+        if (cursorScrollTimer) clearTimeout(cursorScrollTimer);
+        cursorScrollTimer = setTimeout(function () {
+            scrollPreviewToCursor(getFrontIframe(), true);
+        }, 120);
+    }
+
+    if (editorTextarea) {
+        // typing reloads the preview, which then scrolls on its own
+        editorTextarea.addEventListener('click', scheduleScrollToCursor);
+        editorTextarea.addEventListener('keyup', function (e) {
+            if (/^(Arrow|Page|Home|End)/.test(e.key)) scheduleScrollToCursor();
+        });
     }
 
     // --- Structured Editor ---
