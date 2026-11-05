@@ -285,9 +285,15 @@
                 back.contentDocument.documentElement.scrollTop = savedScrollTop;
                 scrollPreviewToCursor(back, false);
             }
-            // Swap: show back, hide front
+            // Swap: show back, hide front. Safari sends the scroll wheel to the
+            // iframe on top even when it is hidden, so the visible one has to be
+            // on top and the hidden one must not take events.
             back.style.visibility = 'visible';
+            back.style.zIndex = '1';
+            back.style.pointerEvents = '';
             front.style.visibility = 'hidden';
+            front.style.zIndex = '0';
+            front.style.pointerEvents = 'none';
             previewFront = (previewFront === 'a') ? 'b' : 'a';
         };
         form.submit();
