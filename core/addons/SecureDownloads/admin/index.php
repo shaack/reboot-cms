@@ -99,8 +99,7 @@ $config = $downloads->getConfig();
 ?>
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
-    <?= AdminHelper::renderPageTitle(AdminMenu::infoLabel($downloads)) ?>
-    <?= AdminHelper::renderHelp('
+    <?= AdminHelper::renderPageTitle(AdminMenu::infoLabel($downloads), '', '
         <p>Secure downloads hand out a single file to one recipient, for example a contract or an invoice. Each upload gets a link that cannot be guessed and a six digit password. For files everyone may see, use <a href="media">Media</a> instead.</p>
         <h6>Sending a file</h6>
         <ul>

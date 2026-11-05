@@ -106,6 +106,56 @@
         return text.split('\n').map(highlightLine).join('\n') + (text.endsWith('\n') ? ' ' : '')
     }
 
+    const INDENT = '  ' // YAML indents with spaces, two by convention
+
+    // Replaces the selection like typing does, so undo works as usual
+    function insert(textarea, text) {
+        textarea.focus()
+        if (!document.execCommand('insertText', false, text)) {
+            textarea.setRangeText(text, textarea.selectionStart, textarea.selectionEnd, 'end')
+            textarea.dispatchEvent(new Event('input'))
+        }
+    }
+
+    // Tab inserts two spaces, or indents every selected line. Shift-Tab removes
+    // up to two spaces from the start of the current or every selected line.
+    function indent(textarea, outdent) {
+        const value = textarea.value
+        const start = textarea.selectionStart
+        const end = textarea.selectionEnd
+        const multiline = value.substring(start, end).includes('\n')
+        if (!outdent && !multiline) {
+            insert(textarea, INDENT)
+            return
+        }
+        const blockStart = value.lastIndexOf('\n', start - 1) + 1
+        // a selection that ends at the start of a line leaves that line alone
+        const blockEnd = end > start && value[end - 1] === '\n' ? end - 1 : end
+        const lines = value.substring(blockStart, blockEnd).split('\n')
+        let removedFirst = 0
+        let removedTotal = 0
+        const changed = lines.map(function (line, i) {
+            if (!outdent) {
+                return INDENT + line
+            }
+            const removed = line.match(/^ {0,2}/)[0].length
+            if (i === 0) removedFirst = removed
+            removedTotal += removed
+            return line.substring(removed)
+        })
+        if (outdent && removedTotal === 0) {
+            return
+        }
+        textarea.setSelectionRange(blockStart, blockEnd)
+        insert(textarea, changed.join('\n'))
+        if (outdent) {
+            const newStart = Math.max(blockStart, start - removedFirst)
+            textarea.setSelectionRange(newStart, multiline ? end - removedTotal : newStart)
+        } else {
+            textarea.setSelectionRange(start === blockStart ? start : start + INDENT.length, end + INDENT.length * lines.length)
+        }
+    }
+
     function attach(textarea) {
         const wrapper = document.createElement('div')
         wrapper.className = 'yaml-editor'
@@ -144,6 +194,19 @@
         }
         textarea.addEventListener('input', update)
         textarea.addEventListener('scroll', syncScroll)
+        textarea.addEventListener('keydown', function (e) {
+            if (e.key === 'Tab' && !e.altKey && !e.ctrlKey && !e.metaKey) {
+                e.preventDefault()
+                indent(textarea, e.shiftKey)
+            } else if (e.key === 'Enter' && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey && !e.isComposing) {
+                e.preventDefault()
+                // the new line starts in the column of the current one
+                const value = textarea.value
+                const lineStart = value.lastIndexOf('\n', textarea.selectionStart - 1) + 1
+                const indentation = value.substring(lineStart, textarea.selectionStart).match(/^[ \t]*/)[0]
+                insert(textarea, '\n' + indentation)
+            }
+        })
         new ResizeObserver(() => {
             syncStyles()
             update()

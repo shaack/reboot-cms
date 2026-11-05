@@ -63,8 +63,7 @@ $linkLogin = $protectedAreas->canSendLoginLinks();
 ?>
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
-    <?= AdminHelper::renderPageTitle(AdminMenu::infoLabel($protectedAreas)) ?>
-    <?= AdminHelper::renderHelp('
+    <?= AdminHelper::renderPageTitle(AdminMenu::infoLabel($protectedAreas), '', '
         <p>Protected areas put parts of the website behind a login, for example a customer area with one folder per customer. Pages outside the areas stay public.</p>
         <h6>Setting up</h6>
         <ul>

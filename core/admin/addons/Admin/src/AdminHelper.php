@@ -43,27 +43,25 @@ class AdminHelper
     }
 
     /**
-     * The heading of an admin page, for example the name of an AddOn above its
-     * help text. `$note` is shown small next to it, like the folder of the AddOn.
+     * The heading of an admin page. `$note` is shown small next to it, like the
+     * folder of an AddOn. With `$help`, a "Help" button follows, which opens the
+     * text below the heading. `$help` is markup written in the page itself, it
+     * is not escaped.
      */
-    public static function renderPageTitle(string $title, string $note = ""): string
+    public static function renderPageTitle(string $title, string $note = "", string $help = ""): string
     {
-        return '<div class="admin-page-title">'
+        $html = '<div class="admin-page-title">'
             . '<h1>' . htmlspecialchars($title) . '</h1>'
-            . ($note !== "" ? '<code>' . htmlspecialchars($note) . '</code>' : '')
-            . '</div>';
-    }
-
-    /**
-     * A collapsed help text for an admin page, opened by a click on its summary.
-     * `$html` is markup written in the page itself, it is not escaped.
-     */
-    public static function renderHelp(string $html, string $summary = "Help"): string
-    {
-        return '<details class="admin-help">'
-            . '<summary>' . htmlspecialchars($summary) . '</summary>'
-            . '<div class="admin-help-body">' . $html . '</div>'
-            . '</details>';
+            . ($note !== "" ? '<code>' . htmlspecialchars($note) . '</code>' : '');
+        if ($help !== "") {
+            $html .= '<button type="button" class="admin-help-toggle" data-bs-toggle="collapse"'
+                . ' data-bs-target="#admin-help" aria-expanded="false" aria-controls="admin-help">Help</button>';
+        }
+        $html .= '</div>';
+        if ($help !== "") {
+            $html .= '<div class="collapse" id="admin-help"><div class="admin-help-body">' . $help . '</div></div>';
+        }
+        return $html;
     }
 
     /**

@@ -90,7 +90,7 @@ $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
 ?>
 <div class="container-fluid">
     <?= AdminHelper::renderStatusMessages($pageActionError, $pageActionSuccess) ?>
-    <?= AdminHelper::renderHelp('
+    <?= AdminHelper::renderPageTitle('Pages', '', '
         <p>Every page is a Markdown file in <code>site/pages/</code>, and its path is its address. <code>index</code> is the homepage <code>/</code>, <code>about</code> is <code>/about</code>, <code>blog/index</code> is <code>/blog</code>. Pages written in PHP are not listed here.</p>
         <h6>Writing</h6>
         <ul>
@@ -259,7 +259,7 @@ description: Shown by search engines
             <?php } ?>
         </div>
         <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;">
-            <div style="position:relative;width:100%;height:calc(100vh - 203px);">
+            <div style="position:relative;width:100%;height:calc(100vh - 213px);">
                 <iframe id="preview-iframe-a" name="preview-iframe-a" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;visibility:hidden;"></iframe>
                 <iframe id="preview-iframe-b" name="preview-iframe-b" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;visibility:hidden;"></iframe>
             </div>
