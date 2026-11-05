@@ -235,7 +235,9 @@
 
     // --- Preview (double-buffered) ---
 
-    var previewActive = localStorage.getItem('reboot_preview') === 'true';
+    // open by default on wide screens, until the preview button saves a choice
+    var previewStored = localStorage.getItem('reboot_preview');
+    var previewActive = previewStored === null ? window.innerWidth >= 1200 : previewStored === 'true';
     var previewDebounceTimer = null;
     var previewInitialized = false;
     var previewFront = 'a';
@@ -339,6 +341,10 @@
     if (previewActive && currentPage && window.innerWidth >= 992) {
         previewActive = false;
         window.togglePreview();
+        if (previewStored === null) {
+            // the default is no choice, togglePreview() saved it
+            localStorage.removeItem('reboot_preview');
+        }
     }
 
     // --- Preview follows the cursor ---
