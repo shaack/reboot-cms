@@ -1,8 +1,8 @@
 <?php return array(
     'root' => array(
         'name' => 'shaack/reboot-cms',
-        'pretty_version' => '3.17.0',
-        'version' => '3.17.0.0',
+        'pretty_version' => '3.19.2',
+        'version' => '3.19.2.0',
         'reference' => null,
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
@@ -29,8 +29,8 @@
             'dev_requirement' => false,
         ),
         'shaack/reboot-cms' => array(
-            'pretty_version' => '3.17.0',
-            'version' => '3.17.0.0',
+            'pretty_version' => '3.19.2',
+            'version' => '3.19.2.0',
             'reference' => null,
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
@@ -38,9 +38,9 @@
             'dev_requirement' => false,
         ),
         'symfony/deprecation-contracts' => array(
-            'pretty_version' => 'v3.7.1',
-            'version' => '3.7.1.0',
-            'reference' => 'f3202fa1b5097b0af062dc978b32ecf63404e31d',
+            'pretty_version' => 'v3.8.1',
+            'version' => '3.8.1.0',
+            'reference' => 'feb1edf4e546af3b85c5caebe8359a20db230ca3',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/deprecation-contracts',
             'aliases' => array(),
@@ -56,9 +56,9 @@
             'dev_requirement' => false,
         ),
         'symfony/yaml' => array(
-            'pretty_version' => 'v6.4.49',
-            'version' => '6.4.49.0',
-            'reference' => 'bbefb7d9cd1bf804148bd1c306a9acc87f335196',
+            'pretty_version' => 'v6.4.50',
+            'version' => '6.4.50.0',
+            'reference' => '0dddc068a050ce2e3608506cd9def5396ee9c626',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/yaml',
             'aliases' => array(),

@@ -38,12 +38,12 @@ $checks = [];
 
 // PHP version
 $phpVersion = PHP_VERSION;
-$phpOk = version_compare($phpVersion, '8.0.0', '>=');
+$phpOk = version_compare($phpVersion, '8.1.0', '>=');
 $checks[] = [
     'label' => 'PHP version',
     'status' => $phpOk,
     'value' => $phpVersion,
-    'hint' => $phpOk ? '' : 'PHP 8.0 or higher is required.',
+    'hint' => $phpOk ? '' : 'PHP 8.1 or higher is required.',
 ];
 
 // Required extensions
