@@ -21,7 +21,7 @@ pre {
 }
 
 textarea.cm-md-editor {
-  height: calc(100vh - 236px);
+  height: calc(100vh - 246px);
   margin-bottom: 1rem;
 }
 
@@ -177,16 +177,14 @@ nav.navbar {
   overflow-wrap: anywhere;
 }
 
-.admin-help {
-  margin-bottom: 1rem;
+.admin-help-toggle {
+  padding: 0;
+  border: 0;
+  background: none;
   font-size: 0.875rem;
-}
-.admin-help > summary {
-  display: inline-block;
-  cursor: pointer;
   color: var(--bs-secondary-color);
 }
-.admin-help > summary::before {
+.admin-help-toggle::before {
   content: "?";
   display: inline-block;
   width: 1.1rem;
@@ -198,32 +196,34 @@ nav.navbar {
   line-height: 1rem;
   text-align: center;
 }
-.admin-help > summary::-webkit-details-marker {
-  display: none;
-}
-.admin-help > summary:hover {
+.admin-help-toggle:hover, .admin-help-toggle[aria-expanded=true] {
   color: var(--bs-body-color);
 }
-.admin-help .admin-help-body {
+
+#admin-help {
+  font-size: 0.875rem;
+}
+
+.admin-help-body {
   max-width: 60rem;
-  margin-top: 0.5rem;
+  margin-bottom: 1rem;
   padding: 0.75rem 1rem;
   border-left: 3px solid var(--bs-border-color);
   background-color: var(--bs-tertiary-bg);
   border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
 }
-.admin-help .admin-help-body h6 {
+.admin-help-body h6 {
   margin-top: 0.75rem;
   font-size: 0.875rem;
   font-weight: 600;
 }
-.admin-help .admin-help-body h6:first-child {
+.admin-help-body h6:first-child {
   margin-top: 0;
 }
-.admin-help .admin-help-body p, .admin-help .admin-help-body ul {
+.admin-help-body p, .admin-help-body ul {
   margin-bottom: 0.5rem;
 }
-.admin-help .admin-help-body > :last-child {
+.admin-help-body > :last-child {
   margin-bottom: 0;
 }
 
@@ -303,7 +303,7 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.25rem 1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 .admin-page-title h1 {
   margin-bottom: 0;
@@ -311,6 +311,35 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
 }
 .admin-page-title code {
   font-size: 0.8rem;
+}
+.admin-page-title .admin-help-toggle {
+  align-self: center;
+}
+
+.media-stats {
+  font-size: 0.875rem;
+}
+.media-stats .card-header {
+  font-weight: 600;
+}
+.media-stats .table {
+  --bs-table-bg: transparent;
+}
+.media-stats .table tr:last-child > * {
+  border-bottom: 0;
+}
+.media-stats .table th {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.media-stats .table td {
+  text-align: right;
+  white-space: nowrap;
+  color: var(--bs-secondary-color);
+}
+.media-stats .table th, .media-stats .table td {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }
 
 /*# sourceMappingURL=screen.css.map */

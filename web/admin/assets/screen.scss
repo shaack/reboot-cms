@@ -27,8 +27,8 @@ pre {
 }
 
 textarea.cm-md-editor {
-    // the viewport minus navbar, help line and button row
-    height: calc(100vh - 236px);
+    // the viewport minus navbar, page title and button row
+    height: calc(100vh - 246px);
     margin-bottom: 1rem;
 }
 
@@ -199,63 +199,61 @@ nav.navbar {
     }
 }
 
-// Collapsed help text of an admin page, see AdminHelper::renderHelp()
-.admin-help {
-    margin-bottom: 1rem;
+// The "Help" button next to the page title and the text it opens below,
+// see AdminHelper::renderPageTitle()
+.admin-help-toggle {
+    padding: 0;
+    border: 0;
+    background: none;
     font-size: 0.875rem;
+    color: var(--bs-secondary-color);
 
-    > summary {
+    &::before {
+        content: "?";
         display: inline-block;
-        cursor: pointer;
-        color: var(--bs-secondary-color);
+        width: 1.1rem;
+        height: 1.1rem;
+        margin-right: 0.35rem;
+        border: 1px solid currentColor;
+        border-radius: 50%;
+        font-size: 0.75rem;
+        line-height: 1rem;
+        text-align: center;
+    }
 
-        &::before {
-            content: "?";
-            display: inline-block;
-            width: 1.1rem;
-            height: 1.1rem;
-            margin-right: 0.35rem;
-            border: 1px solid currentColor;
-            border-radius: 50%;
-            font-size: 0.75rem;
-            line-height: 1rem;
-            text-align: center;
-        }
+    &:hover, &[aria-expanded="true"] {
+        color: var(--bs-body-color);
+    }
+}
 
-        &::-webkit-details-marker {
-            display: none;
-        }
+#admin-help {
+    font-size: 0.875rem;
+}
 
-        &:hover {
-            color: var(--bs-body-color);
+.admin-help-body {
+    max-width: 60rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid var(--bs-border-color);
+    background-color: var(--bs-tertiary-bg);
+    border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
+
+    h6 {
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+
+        &:first-child {
+            margin-top: 0;
         }
     }
 
-    .admin-help-body {
-        max-width: 60rem;
-        margin-top: 0.5rem;
-        padding: 0.75rem 1rem;
-        border-left: 3px solid var(--bs-border-color);
-        background-color: var(--bs-tertiary-bg);
-        border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
+    p, ul {
+        margin-bottom: 0.5rem;
+    }
 
-        h6 {
-            margin-top: 0.75rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-
-            &:first-child {
-                margin-top: 0;
-            }
-        }
-
-        p, ul {
-            margin-bottom: 0.5rem;
-        }
-
-        > :last-child {
-            margin-bottom: 0;
-        }
+    > :last-child {
+        margin-bottom: 0;
     }
 }
 
@@ -334,7 +332,7 @@ textarea.yaml-editor-input {
     flex-wrap: wrap;
     align-items: baseline;
     gap: 0.25rem 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 
     h1 {
         margin-bottom: 0;
@@ -343,5 +341,43 @@ textarea.yaml-editor-input {
 
     code {
         font-size: 0.8rem;
+    }
+
+    // the help button after the heading and the note
+    .admin-help-toggle {
+        align-self: center;
+    }
+}
+
+// The side column of the media page with the statistics
+.media-stats {
+    font-size: 0.875rem;
+
+    .card-header {
+        font-weight: 600;
+    }
+
+    .table {
+        --bs-table-bg: transparent;
+
+        tr:last-child > * {
+            border-bottom: 0;
+        }
+
+        th {
+            font-weight: 500;
+            overflow-wrap: anywhere;
+        }
+
+        td {
+            text-align: right;
+            white-space: nowrap;
+            color: var(--bs-secondary-color);
+        }
+
+        th, td {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
     }
 }

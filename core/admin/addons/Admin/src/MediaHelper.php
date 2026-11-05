@@ -63,8 +63,68 @@ HTACCESS;
         }
     }
 
+    /** File types for the statistics, by extension */
+    private const TYPE_GROUPS = [
+        'Images' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'svg', 'ico'],
+        'Documents' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp'],
+        'Video' => ['mp4', 'webm'],
+        'Audio' => ['mp3', 'wav', 'ogg'],
+        'Data' => ['txt', 'csv', 'json', 'xml', 'yml', 'yaml'],
+        'Archives' => ['zip', 'gz', 'tar'],
+        'Fonts' => ['woff', 'woff2', 'ttf', 'otf', 'eot'],
+    ];
+
+    /**
+     * Counts the files below `$dir`, for the side column of the media page.
+     * Dotfiles like `.htaccess` are left out, as in the list.
+     * @return array{files: int, folders: int, size: int, types: array<string, array{count: int, size: int}>, largest: array<int, array{path: string, size: int}>}
+     */
+    public static function collectStats(string $dir, int $largestCount = 5): array
+    {
+        $stats = ['files' => 0, 'folders' => 0, 'size' => 0, 'types' => [], 'largest' => []];
+        if (!is_dir($dir)) {
+            return $stats;
+        }
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveCallbackFilterIterator(
+                new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+                fn(\SplFileInfo $file) => $file->getFilename()[0] !== '.'
+            ),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+        foreach ($iterator as $file) {
+            if ($file->isDir()) {
+                $stats['folders']++;
+                continue;
+            }
+            $size = $file->getSize();
+            $stats['files']++;
+            $stats['size'] += $size;
+            $type = self::typeGroup($file->getExtension());
+            $stats['types'][$type]['count'] = ($stats['types'][$type]['count'] ?? 0) + 1;
+            $stats['types'][$type]['size'] = ($stats['types'][$type]['size'] ?? 0) + $size;
+            $stats['largest'][] = ['path' => substr($file->getPathname(), strlen($dir) + 1), 'size' => $size];
+        }
+        uasort($stats['types'], fn($a, $b) => $b['size'] <=> $a['size']);
+        usort($stats['largest'], fn($a, $b) => $b['size'] <=> $a['size']);
+        $stats['largest'] = array_slice($stats['largest'], 0, $largestCount);
+        return $stats;
+    }
+
+    private static function typeGroup(string $extension): string
+    {
+        $extension = strtolower($extension);
+        foreach (self::TYPE_GROUPS as $group => $extensions) {
+            if (in_array($extension, $extensions, true)) {
+                return $group;
+            }
+        }
+        return 'Other';
+    }
+
     public static function formatFileSize(int $bytes): string
     {
+        if ($bytes >= 1073741824) return round($bytes / 1073741824, 1) . " GB";
         if ($bytes >= 1048576) return round($bytes / 1048576, 1) . " MB";
         if ($bytes >= 1024) return round($bytes / 1024, 1) . " KB";
         return $bytes . " B";

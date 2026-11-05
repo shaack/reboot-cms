@@ -190,10 +190,15 @@ if ($currentPath) {
 
 $mediaWebPath = $reboot->getBaseWebPath() . "/media";
 
+// for the side column
+$libraryStats = MediaHelper::collectStats(realpath($mediaDir));
+$folderStats = $currentPath ? MediaHelper::collectStats($resolvedPath) : null;
+$freeSpace = @disk_free_space($mediaDir);
+
 ?>
-<div class="container-fluid max-width-xxl">
+<div class="container-fluid">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
-    <?= AdminHelper::renderHelp('
+    <?= AdminHelper::renderPageTitle('Media', '', '
         <p>Images and files for the website. Everything here is stored in <code>web/media/</code> and is reachable by everyone at <code>' . htmlspecialchars($mediaWebPath) . '/…</code>, also files that are only used on pages of a protected area.</p>
         <h6>Using files on a page</h6>
         <p>In the page editor, the toolbar button <em>Insert image from media</em> opens this library and inserts the chosen file. Click a file name here to open the file and copy its address.</p>
@@ -207,6 +212,8 @@ $mediaWebPath = $reboot->getBaseWebPath() . "/media";
         <h6>Replacing and deleting</h6>
         <p>Replace keeps the file name, so every page that uses the file shows the new version without being edited. Browsers may show the old one for a while because of their cache. Before deleting a file, make sure no page uses it any more. Folders can only be deleted when they are empty.</p>
     ') ?>
+    <div class="row gx-4">
+    <div class="col-12 col-lg-8">
 
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
         <nav aria-label="breadcrumb" class="me-auto">
@@ -311,4 +318,66 @@ $mediaWebPath = $reboot->getBaseWebPath() . "/media";
             </table>
         </div>
     <?php } ?>
+    </div>
+    <aside class="col-12 col-lg-4 mt-4 mt-lg-0 media-stats">
+        <?php
+        $statsRows = function (array $stats) {
+            return '<tr><th>Files</th><td>' . $stats['files'] . '</td></tr>'
+                . '<tr><th>Folders</th><td>' . $stats['folders'] . '</td></tr>'
+                . '<tr><th>Total size</th><td>' . MediaHelper::formatFileSize($stats['size']) . '</td></tr>';
+        };
+        ?>
+        <?php if ($folderStats !== null) { ?>
+            <div class="card mb-3">
+                <div class="card-header">This folder <span class="text-body-secondary">with subfolders</span></div>
+                <table class="table table-sm mb-0"><?= $statsRows($folderStats) ?></table>
+            </div>
+        <?php } ?>
+        <div class="card mb-3">
+            <div class="card-header">Library</div>
+            <table class="table table-sm mb-0">
+                <?= $statsRows($libraryStats) ?>
+                <?php if ($freeSpace !== false) { ?>
+                    <tr><th>Free disk space</th><td><?= MediaHelper::formatFileSize((int)$freeSpace) ?></td></tr>
+                <?php } ?>
+            </table>
+        </div>
+        <?php if ($libraryStats['types']) { ?>
+            <div class="card mb-3">
+                <div class="card-header">By type</div>
+                <table class="table table-sm mb-0">
+                    <?php foreach ($libraryStats['types'] as $type => $typeStats) { ?>
+                        <tr>
+                            <th><?= htmlspecialchars($type) ?></th>
+                            <td><?= $typeStats['count'] ?></td>
+                            <td><?= MediaHelper::formatFileSize($typeStats['size']) ?></td>
+                        </tr>
+                    <?php } ?>
+                </table>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header">Largest files</div>
+                <table class="table table-sm mb-0">
+                    <?php foreach ($libraryStats['largest'] as $file) {
+                        $folder = dirname($file['path']); ?>
+                        <tr>
+                            <th>
+                                <a href="media?path=<?= urlencode($folder === '.' ? '' : $folder) ?>"><?= htmlspecialchars(basename($file['path'])) ?></a>
+                                <?php if ($folder !== '.') { ?><div class="small text-body-secondary fw-normal"><?= htmlspecialchars($folder) ?>/</div><?php } ?>
+                            </th>
+                            <td><?= MediaHelper::formatFileSize($file['size']) ?></td>
+                        </tr>
+                    <?php } ?>
+                </table>
+            </div>
+        <?php } ?>
+        <div class="card">
+            <div class="card-header">Upload limits</div>
+            <table class="table table-sm mb-0">
+                <tr><th>Per file</th><td><?= htmlspecialchars(ini_get('upload_max_filesize')) ?></td></tr>
+                <tr><th>Per upload</th><td><?= htmlspecialchars(ini_get('post_max_size')) ?></td></tr>
+            </table>
+        </div>
+    </aside>
+    </div>
 </div>
