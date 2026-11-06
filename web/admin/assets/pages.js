@@ -226,28 +226,49 @@
         form.submit();
     }
 
-    window.renamePage = function () {
-        if (!currentPage) return;
-        var baseName = currentPage.replace(/\.md$/, '').split('/').pop();
+    // The page actions take the path of a page like "/blog/post.md", without
+    // one they act on the open page. Folder paths have no leading slash.
+
+    function pageBaseName(page) {
+        return page.replace(/\.md$/, '').split('/').pop();
+    }
+
+    window.renamePage = function (page) {
+        page = page || currentPage;
+        if (!page) return;
+        var baseName = pageBaseName(page);
         var newName = prompt('Rename page:', baseName);
         if (newName === null || newName === baseName) return;
-        submitPageAction('rename_page', currentPage, {new_name: newName});
+        submitPageAction('rename_page', page, {new_name: newName});
     };
 
-    window.movePage = function () {
-        if (!currentPage) return;
-        var currentFolder = currentPage.replace(/\/[^/]+$/, '') || '/';
+    window.movePage = function (page) {
+        page = page || currentPage;
+        if (!page) return;
+        var currentFolder = page.replace(/\/[^/]+$/, '') || '/';
         var dest = prompt('Move page to folder:', currentFolder);
         if (dest === null || dest === currentFolder) return;
         dest = dest.replace(/^\//, '').replace(/\/$/, '');
-        submitPageAction('move_page', currentPage, {destination: dest});
+        submitPageAction('move_page', page, {destination: dest});
     };
 
-    window.deletePage = function () {
-        if (!currentPage) return;
-        var baseName = currentPage.replace(/\.md$/, '').split('/').pop();
-        if (!confirm('Delete page \'' + baseName + '\'?')) return;
-        submitPageAction('delete_page', currentPage);
+    window.deletePage = function (page) {
+        page = page || currentPage;
+        if (!page) return;
+        if (!confirm('Delete page \'' + pageBaseName(page) + '\'?')) return;
+        submitPageAction('delete_page', page);
+    };
+
+    window.newPage = function (folder) {
+        var name = prompt(folder ? 'New page in ' + folder + '/:' : 'New page:', '');
+        if (name === null || !name.trim()) return;
+        submitPageAction('add_page', (folder ? folder + '/' : '') + name.trim().replace(/^\/+/, ''));
+    };
+
+    window.newFolder = function (folder) {
+        var name = prompt(folder ? 'New folder in ' + folder + '/:' : 'New folder:', '');
+        if (name === null || !name.trim()) return;
+        submitPageAction('add_folder', (folder ? folder + '/' : '') + name.trim().replace(/^\/+/, ''));
     };
 
     window.renameFolder = function (folderPath, folderName) {
@@ -260,6 +281,188 @@
         if (!confirm('Delete empty folder \'' + folderName + '\'?')) return;
         submitPageAction('delete_folder', folderPath);
     };
+
+    // --- Context menu of the page list ---
+    // A right click, or touch and hold on a touch screen, on a page, a folder or
+    // the free space of the page list. The keyboard opens it with the context
+    // menu key or Shift F10 on a focused entry.
+
+    var pageTreeNav = document.getElementById('page-tree-nav');
+    var treeMenu = null;
+    var treeMenuTarget = null;
+
+    function closeTreeMenu(restoreFocus) {
+        if (!treeMenu) return;
+        treeMenu.remove();
+        treeMenu = null;
+        if (treeMenuTarget) {
+            treeMenuTarget.classList.remove('page-tree-menu-target');
+            if (restoreFocus) treeMenuTarget.focus();
+        }
+        treeMenuTarget = null;
+    }
+
+    function treeMenuItems(target) {
+        if (target && target.classList.contains('page-tree-file')) {
+            var page = '/' + target.getAttribute('data-path');
+            var folder = target.getAttribute('data-path').replace(/\/?[^/]+$/, '');
+            return {
+                header: target.getAttribute('data-path'),
+                items: [
+                    ['New page here', function () { window.newPage(folder); }],
+                    ['New folder here', function () { window.newFolder(folder); }],
+                    null,
+                    ['Rename page', function () { window.renamePage(page); }],
+                    ['Move page', function () { window.movePage(page); }],
+                    null,
+                    ['Delete page', function () { window.deletePage(page); }, true]
+                ]
+            };
+        }
+        if (target && target.classList.contains('page-tree-folder')) {
+            var path = target.getAttribute('data-path');
+            var name = path.split('/').pop();
+            return {
+                header: path + '/',
+                items: [
+                    ['New page in folder', function () { window.newPage(path); }],
+                    ['New folder in folder', function () { window.newFolder(path); }],
+                    null,
+                    ['Rename folder', function () { window.renameFolder(path, name); }],
+                    null,
+                    ['Delete folder', function () { window.deleteFolder(path, name); }, true]
+                ]
+            };
+        }
+        return {
+            header: null,
+            items: [
+                ['New page', function () { window.newPage(''); }],
+                ['New folder', function () { window.newFolder(''); }]
+            ]
+        };
+    }
+
+    function openTreeMenu(target, x, y) {
+        closeTreeMenu(false);
+        var spec = treeMenuItems(target);
+        treeMenu = document.createElement('div');
+        treeMenu.className = 'dropdown-menu page-tree-menu shadow';
+        treeMenu.setAttribute('role', 'menu');
+        if (spec.header) {
+            var header = document.createElement('h6');
+            header.className = 'dropdown-header';
+            header.textContent = spec.header;
+            treeMenu.appendChild(header);
+        }
+        spec.items.forEach(function (item) {
+            if (!item) {
+                var divider = document.createElement('hr');
+                divider.className = 'dropdown-divider';
+                treeMenu.appendChild(divider);
+                return;
+            }
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'dropdown-item' + (item[2] ? ' text-danger' : '');
+            button.setAttribute('role', 'menuitem');
+            button.textContent = item[0];
+            button.addEventListener('click', function () {
+                closeTreeMenu(false);
+                item[1]();
+            });
+            treeMenu.appendChild(button);
+        });
+        document.body.appendChild(treeMenu);
+        // keep the menu inside the window
+        var rect = treeMenu.getBoundingClientRect();
+        treeMenu.style.left = Math.max(4, Math.min(x, window.innerWidth - rect.width - 4)) + 'px';
+        treeMenu.style.top = Math.max(4, Math.min(y, window.innerHeight - rect.height - 4)) + 'px';
+        treeMenuTarget = target;
+        if (target) target.classList.add('page-tree-menu-target');
+        treeMenu.querySelector('.dropdown-item').focus({preventScroll: true});
+    }
+
+    // Bootstrap handles the keys of every .dropdown-menu with a capturing
+    // listener on the document and would move the focus to the navbar
+    // dropdowns. A capturing listener on the window runs before it.
+    window.addEventListener('keydown', function (e) {
+        if (!treeMenu || !treeMenu.contains(e.target)) return;
+        var items = Array.from(treeMenu.querySelectorAll('.dropdown-item'));
+        var index = items.indexOf(document.activeElement);
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            e.stopPropagation();
+            var next = (index + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+            items[next].focus();
+        } else if (e.key === 'Escape' || e.key === 'Tab') {
+            e.preventDefault();
+            e.stopPropagation();
+            closeTreeMenu(true);
+        }
+    }, true);
+
+    if (pageTreeNav) {
+        var sidebarEl = document.getElementById('pages-sidebar');
+        var treeTargetOf = function (el) {
+            return el.closest('.page-tree-file, .page-tree-folder');
+        };
+        var lastTouchMenu = 0;
+        sidebarEl.addEventListener('contextmenu', function (e) {
+            if (e.target.closest('input, .page-tree-tools')) return;
+            e.preventDefault();
+            // Android fires contextmenu after the long press opened the menu
+            if (Date.now() - lastTouchMenu < 1000) return;
+            var target = treeTargetOf(e.target);
+            var x = e.clientX, y = e.clientY;
+            if (!x && !y && target) {
+                // from the keyboard, at the entry
+                var r = target.getBoundingClientRect();
+                x = r.left + 16;
+                y = r.bottom;
+            }
+            openTreeMenu(target, x, y);
+        });
+
+        // touch and hold
+        var pressTimer = null, pressStart = null, suppressClick = false;
+        sidebarEl.addEventListener('pointerdown', function (e) {
+            // iOS sends no click after a long press, so the flag of the last one ends here
+            suppressClick = false;
+            if (e.pointerType !== 'touch' || e.target.closest('input, .page-tree-tools')) return;
+            pressStart = {x: e.clientX, y: e.clientY};
+            var target = treeTargetOf(e.target);
+            clearTimeout(pressTimer);
+            pressTimer = setTimeout(function () {
+                pressTimer = null;
+                suppressClick = true;
+                lastTouchMenu = Date.now();
+                openTreeMenu(target, pressStart.x, pressStart.y);
+            }, 500);
+        });
+        var cancelPress = function () {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+        };
+        sidebarEl.addEventListener('pointermove', function (e) {
+            if (pressTimer && pressStart && Math.hypot(e.clientX - pressStart.x, e.clientY - pressStart.y) > 10) cancelPress();
+        });
+        sidebarEl.addEventListener('pointerup', cancelPress);
+        sidebarEl.addEventListener('pointercancel', cancelPress);
+        // the click after a long press must not open the page or fold the folder
+        sidebarEl.addEventListener('click', function (e) {
+            if (!suppressClick) return;
+            suppressClick = false;
+            e.preventDefault();
+            e.stopPropagation();
+        }, true);
+
+        document.addEventListener('pointerdown', function (e) {
+            if (treeMenu && !treeMenu.contains(e.target)) closeTreeMenu(false);
+        }, true);
+        window.addEventListener('resize', function () { closeTreeMenu(false); });
+        window.addEventListener('scroll', function () { closeTreeMenu(false); }, true);
+    }
 
     // --- History ---
 

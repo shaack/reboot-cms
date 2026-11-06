@@ -132,41 +132,22 @@ description: Shown by search engines
             <li>Save with the button or <kbd>⌘ S</kbd> / <kbd>Ctrl S</kbd>. A yellow dot next to the page name and on <em>Save</em> shows that there is something to save. Leaving the page with unsaved changes asks first.</li>
             <li>The eye in the editor toolbar opens the <em>preview</em>. It shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column. Drag the bar between editor and preview to change their widths, a double click resets them.</li>
             <li>Every save keeps the previous version. <em>… › History</em> shows the last ' . (int)$historyMaxVersions . ' versions and restores one; the current text is kept as a version too.</li>
-            <li><em>…</em> also renames, moves and deletes the page. The two buttons above the page list create a new page or folder, a folder starts with an empty <code>index</code> page, marked with a house. From 30 pages on a field there finds a page by its name.</li>
+            <li>A right click in the page list, on a touch screen touch and hold, opens a menu. On a page it creates a new page or folder next to it, renames, moves or deletes the page. On a folder it does the same inside the folder, an empty folder can be deleted. On the free space below it creates pages and folders at the top level. A new folder starts with an empty <code>index</code> page, marked with a house. <em>…</em> below the editor has the same actions for the open page. From 30 pages on a field above the list finds a page by its name.</li>
             <li>The button next to the title hides the page list, so editor and preview get the whole width. The address next to the file name opens the page in a new tab.</li>
         </ul>
     ', $titleExtra) ?>
     <div class="row gx-2" id="pages-row">
     <script>try { if (localStorage.getItem('reboot_sidebar_collapsed') === 'true') document.getElementById('pages-row').classList.add('sidebar-collapsed') } catch (e) {}</script>
         <div class="col-md-3 col-xl-2 col-sidebar order-md-0 order-1 mt-4 mt-md-0" id="pages-sidebar">
-            <div class="page-tree-tools">
-                <?php if ($pageCount >= 30) { ?>
+            <?php if ($pageCount >= 30) { ?>
+                <div class="page-tree-tools">
                     <input type="search" class="form-control form-control-sm" id="page-filter" placeholder="Find page" aria-label="Find page">
-                <?php } else { ?>
-                    <span class="flex-grow-1"></span>
-                <?php } ?>
-                <button type="button" class="btn btn-sm btn-link text-body-secondary p-0" data-bs-toggle="collapse" data-bs-target="#add-page-form" title="New page" aria-label="New page"><?= AdminHelper::icon('file-plus') ?></button>
-                <button type="button" class="btn btn-sm btn-link text-body-secondary p-0" data-bs-toggle="collapse" data-bs-target="#add-folder-form" title="New folder" aria-label="New folder"><?= AdminHelper::icon('folder-plus') ?></button>
-            </div>
-            <div class="collapse" id="add-page-form" data-bs-parent="#pages-sidebar">
-                <form method="post" action="pages" class="d-flex gap-1 mb-2">
-                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-                    <input type="hidden" name="action" value="add_page">
-                    <input type="text" name="name" class="form-control form-control-sm" placeholder="New page: path/name" aria-label="New page" required pattern="[\w\-\/]+">
-                    <button class="btn btn-sm btn-primary text-nowrap">Add</button>
-                </form>
-            </div>
-            <div class="collapse" id="add-folder-form" data-bs-parent="#pages-sidebar">
-                <form method="post" action="pages" class="d-flex gap-1 mb-2">
-                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-                    <input type="hidden" name="action" value="add_folder">
-                    <input type="text" name="name" class="form-control form-control-sm" placeholder="New folder: path/folder" aria-label="New folder" required pattern="[\w\-\/]+">
-                    <button class="btn btn-sm btn-primary text-nowrap">Add</button>
-                </form>
-            </div>
-            <nav class="nav nav-compact flex-column">
+                </div>
+            <?php } ?>
+            <nav class="nav nav-compact flex-column" id="page-tree-nav">
                 <?= $treeHtml ?>
             </nav>
+            <p class="page-tree-hint">Right click or touch and hold for new pages and folders, renaming and deleting.</p>
         </div>
         <div class="col-12 col-lg-9 col-xl-10 order-md-1 order-0 editor-loading" id="editor-column">
             <?php if ($editPageName) {

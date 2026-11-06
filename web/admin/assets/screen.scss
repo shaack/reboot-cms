@@ -340,27 +340,38 @@ nav.navbar {
     }
 }
 
-.folder-actions {
-    display: none;
-    gap: 2px;
-    margin-left: auto;
+// Long press opens the context menu, not the link preview of iOS
+.page-tree-file, .page-tree-folder {
+    -webkit-touch-callout: none;
 }
 
-.page-tree-folder-item:hover .folder-actions {
-    display: flex;
+.page-tree-hint {
+    margin: 1rem 0 3rem;
+    padding: 0 8px;
+    font-size: 0.75rem;
+    color: var(--bs-tertiary-color);
 }
 
-.folder-action {
-    text-decoration: none;
-    color: var(--bs-body-color);
-    opacity: 0.4;
-    font-size: 0.8rem;
-    padding: 0 3px;
-    line-height: 1;
+// context menu of the page list (pages.js)
+.page-tree-menu {
+    position: fixed;
+    z-index: 1070;
+    display: block;
+    min-width: 12rem;
+    font-size: 0.875rem;
 
-    &:hover {
-        opacity: 1;
+    .dropdown-header {
+        max-width: 16rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
+}
+
+.page-tree-menu-target {
+    outline: 1px solid rgba(var(--bs-primary-rgb), 0.6);
+    outline-offset: -1px;
+    border-radius: 3px;
 }
 
 .max-width-md {

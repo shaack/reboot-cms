@@ -112,13 +112,10 @@ class PageTreeHelper
             $folderPath = $prefix . $folderName;
             $html .= "<li class='page-tree-folder-item'>";
             $html .= "<div class='d-flex align-items-center'>";
-            $html .= "<a class='page-tree-folder flex-grow-1' data-bs-toggle='collapse' href='#" . $folderId . "' role='button' aria-expanded='" . ($expanded ? "true" : "false") . "'>";
+            $html .= "<a class='page-tree-folder flex-grow-1' data-bs-toggle='collapse' href='#" . $folderId . "' role='button' aria-expanded='" . ($expanded ? "true" : "false") . "'"
+                . " data-path='" . htmlspecialchars($folderPath, ENT_QUOTES) . "'>";
             $html .= AdminHelper::icon("folder") . "<span>" . htmlspecialchars($folderName) . "</span>" . AdminHelper::icon("chevron", "folder-icon");
             $html .= "</a>";
-            $html .= "<span class='folder-actions'>";
-            $html .= "<a href='#' class='folder-action' title='Rename folder' onclick='renameFolder(" . AdminHelper::jsArg($folderPath) . ", " . AdminHelper::jsArg($folderName) . "); return false;'>&#9998;</a>";
-            $html .= "<a href='#' class='folder-action' title='Delete empty folder' onclick='deleteFolder(" . AdminHelper::jsArg($folderPath) . ", " . AdminHelper::jsArg($folderName) . "); return false;'>&#10005;</a>";
-            $html .= "</span>";
             $html .= "</div>";
             $html .= "<div class='collapse" . ($expanded ? " show" : "") . "' id='" . $folderId . "'>";
             $html .= self::renderTree($children, $editPageName, $editable, $prefix . $folderName . "/");
