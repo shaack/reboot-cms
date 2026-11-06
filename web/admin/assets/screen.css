@@ -29,6 +29,54 @@ textarea.cm-md-editor {
   display: none;
 }
 
+@media (min-width: 992px) {
+  #pages-row.preview-split #editor-column {
+    flex: calc(1 - var(--preview-share, 0.4)) 1 0;
+    width: auto;
+    min-width: 0;
+  }
+  #pages-row.preview-split #preview-column {
+    flex: var(--preview-share, 0.4) 1 0;
+    width: auto;
+    min-width: 0;
+  }
+}
+#preview-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -2px;
+  width: 8px;
+  z-index: 2;
+  cursor: col-resize;
+  touch-action: none;
+}
+#preview-resizer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 4px;
+  border-radius: 2px;
+  background-color: transparent;
+  transition: background-color 0.15s;
+}
+#preview-resizer:hover::after, #preview-resizer:focus-visible::after, #preview-resizer.dragging::after {
+  background-color: var(--bs-primary);
+}
+#preview-resizer:focus-visible {
+  outline: none;
+}
+
+body.preview-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+body.preview-resizing iframe {
+  pointer-events: none !important;
+}
+
 [data-bs-theme=dark] textarea.cm-md-editor {
   background-color: #1a1a1a;
 }

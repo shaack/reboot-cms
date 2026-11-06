@@ -39,6 +39,61 @@ textarea.cm-md-editor {
     display: none;
 }
 
+// With the preview open, editor and preview share the space next to the
+// sidebar in the ratio of --preview-share, set by dragging #preview-resizer
+// (pages.js). Below lg the preview is hidden and the Bootstrap columns apply.
+@media (min-width: 992px) {
+    #pages-row.preview-split {
+        #editor-column {
+            flex: calc(1 - var(--preview-share, 0.4)) 1 0;
+            width: auto;
+            min-width: 0;
+        }
+        #preview-column {
+            flex: var(--preview-share, 0.4) 1 0;
+            width: auto;
+            min-width: 0;
+        }
+    }
+}
+
+#preview-resizer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -2px;
+    width: 8px;
+    z-index: 2;
+    cursor: col-resize;
+    touch-action: none;
+    &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 2px;
+        width: 4px;
+        border-radius: 2px;
+        background-color: transparent;
+        transition: background-color 0.15s;
+    }
+    &:hover::after, &:focus-visible::after, &.dragging::after {
+        background-color: var(--bs-primary);
+    }
+    &:focus-visible {
+        outline: none;
+    }
+}
+
+// the iframes would swallow the pointer events while dragging
+body.preview-resizing {
+    cursor: col-resize;
+    user-select: none;
+    iframe {
+        pointer-events: none !important;
+    }
+}
+
 [data-bs-theme="dark"] textarea.cm-md-editor {
     background-color: #1a1a1a;
 }

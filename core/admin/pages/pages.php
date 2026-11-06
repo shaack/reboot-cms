@@ -110,12 +110,12 @@ description: Shown by search engines
         <h6>Saving and history</h6>
         <ul>
             <li>Save with the button or <kbd>⌘ S</kbd> / <kbd>Ctrl S</kbd>. Leaving the page with unsaved changes asks first.</li>
-            <li><em>Preview</em> shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column.</li>
+            <li><em>Preview</em> shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column. Drag the bar between editor and preview to change their widths, a double click resets them.</li>
             <li>Every save keeps the previous version. <em>… › History</em> shows the last ' . (int)$historyMaxVersions . ' versions and restores one; the current text is kept as a version too.</li>
             <li><em>…</em> also renames, moves and deletes the page. <em>+ Page</em> and <em>+ Folder</em> below the page list create new ones, a folder starts with an empty <code>index</code> page.</li>
         </ul>
     ') ?>
-    <div class="row gx-2">
+    <div class="row gx-2" id="pages-row">
         <div class="col-md-3 col-xl-2 col-sidebar order-md-0 order-1 mt-4 mt-md-0">
             <nav class="nav nav-compact flex-column">
                 <?php
@@ -266,6 +266,7 @@ description: Shown by search engines
             <?php } ?>
         </div>
         <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;">
+            <div id="preview-resizer" role="separator" aria-orientation="vertical" aria-label="Resize the preview" tabindex="0" title="Drag to resize, double click to reset"></div>
             <div id="preview-frames" style="position:relative;width:100%;height:calc(100vh - 213px);overflow:hidden;border:1px solid rgba(128,128,128,0.3);border-radius:4px;">
                 <iframe id="preview-iframe-a" name="preview-iframe-a" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;transform-origin:0 0;visibility:hidden;"></iframe>
                 <iframe id="preview-iframe-b" name="preview-iframe-b" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;transform-origin:0 0;visibility:hidden;"></iframe>

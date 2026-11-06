@@ -342,6 +342,7 @@
         if (previewActive) {
             editorCol.classList.remove('col-lg-9', 'col-xl-10');
             editorCol.classList.add('col-lg-5', 'col-xl-6');
+            editorCol.parentElement.classList.add('preview-split');
             previewCol.classList.remove('d-lg-none');
             previewCol.classList.add('d-lg-block');
             toggleBtn.classList.remove('btn-outline-secondary');
@@ -353,6 +354,7 @@
         } else {
             editorCol.classList.remove('col-lg-5', 'col-xl-6');
             editorCol.classList.add('col-lg-9', 'col-xl-10');
+            editorCol.parentElement.classList.remove('preview-split');
             previewCol.classList.remove('d-lg-block');
             previewCol.classList.add('d-lg-none');
             toggleBtn.classList.remove('btn-secondary');
@@ -551,6 +553,64 @@
         new ResizeObserver(applyPreviewZoom).observe(previewFrames);
     }
     applyPreviewZoom();
+
+    // --- Width of editor and preview ---
+    // The bar on the left edge of the preview sets the share of the preview in
+    // the space next to the sidebar, saved for this browser.
+    var PREVIEW_SHARE_MIN = 0.2, PREVIEW_SHARE_MAX = 0.8;
+    var pagesRow = document.getElementById('pages-row');
+    var resizer = document.getElementById('preview-resizer');
+
+    function setPreviewShare(share, save) {
+        if (share === null || !(share > 0)) {
+            pagesRow.style.removeProperty('--preview-share');
+            if (save) store.remove('reboot_preview_share');
+            return;
+        }
+        share = Math.min(PREVIEW_SHARE_MAX, Math.max(PREVIEW_SHARE_MIN, share));
+        pagesRow.style.setProperty('--preview-share', share.toFixed(3));
+        if (save) store.set('reboot_preview_share', share.toFixed(3));
+    }
+
+    if (pagesRow && resizer) {
+        setPreviewShare(parseFloat(store.get('reboot_preview_share')), false);
+        var editorColumn = document.getElementById('editor-column');
+        var previewColumn = document.getElementById('preview-column');
+        var shareAt = function (x) {
+            var left = editorColumn.getBoundingClientRect().left;
+            var right = previewColumn.getBoundingClientRect().right;
+            return (right - x) / (right - left);
+        };
+        var currentShare = function () {
+            return shareAt(previewColumn.getBoundingClientRect().left);
+        };
+        resizer.addEventListener('pointerdown', function (e) {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            resizer.setPointerCapture(e.pointerId);
+            resizer.classList.add('dragging');
+            document.body.classList.add('preview-resizing');
+        });
+        resizer.addEventListener('pointermove', function (e) {
+            if (resizer.classList.contains('dragging')) setPreviewShare(shareAt(e.clientX), false);
+        });
+        var endDrag = function () {
+            if (!resizer.classList.contains('dragging')) return;
+            resizer.classList.remove('dragging');
+            document.body.classList.remove('preview-resizing');
+            setPreviewShare(parseFloat(pagesRow.style.getPropertyValue('--preview-share')), true);
+        };
+        resizer.addEventListener('pointerup', endDrag);
+        resizer.addEventListener('pointercancel', endDrag);
+        resizer.addEventListener('dblclick', function () {
+            setPreviewShare(null, true);
+        });
+        resizer.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            setPreviewShare(currentShare() + (e.key === 'ArrowLeft' ? 0.02 : -0.02), true);
+        });
+    }
 
     var cursorScrollTimer = null;
     function scheduleScrollToCursor() {
