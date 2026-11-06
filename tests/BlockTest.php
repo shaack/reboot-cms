@@ -328,7 +328,17 @@ class BlockTest
         $block = $this->createBlock("test", "![photo](img.jpg)");
         $block->xpath("//img", ["description" => "Photo"]);
         $example = $block->generateExample();
-        Assert::contains("![Photo](image-url)", $example);
+        Assert::contains("![dummy](/media/dummy.svg)", $example);
+    }
+
+    public function testGenerateExampleShowsOneImageForSrcAltAndTitle(): void
+    {
+        $block = $this->createBlock("test", "Text\n\n---\n\n![photo](img.jpg)");
+        $block->field("//p[part(1)]", "Text");
+        $block->field("//img[part(2)]/@src", "Image", true, "media");
+        $block->field("//img[part(2)]/@alt", "Alt text");
+        $block->field("//img[part(2)]/@title", "Title");
+        Assert::equals("Text\n\n---\n\n![dummy](/media/dummy.svg)", $block->generateExample());
     }
 
     public function testGenerateExampleWithParts(): void

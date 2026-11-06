@@ -512,14 +512,20 @@ class Block
             }
             if (isset($parts[$p])) {
                 $firstField = true;
+                $partLines = [];
                 foreach ($parts[$p] as $field) {
+                    $description = $field['props']['description'] ?? 'content';
+                    $min = $field['props']['min'] ?? 1;
+                    $line = $this->xpathToMarkdown($field['expression'], $description);
+                    // fields for src, alt and title of one image give the same line
+                    if (str_contains($line, self::EXAMPLE_IMAGE) && in_array($line, $partLines, true)) {
+                        continue;
+                    }
+                    $partLines[] = $line;
                     if (!$firstField) {
                         $lines[] = '';
                     }
                     $firstField = false;
-                    $description = $field['props']['description'] ?? 'content';
-                    $min = $field['props']['min'] ?? 1;
-                    $line = $this->xpathToMarkdown($field['expression'], $description);
                     $repeatCount = max(1, $min);
                     for ($i = 0; $i < $repeatCount; $i++) {
                         $lines[] = $line;
@@ -538,6 +544,9 @@ class Block
         return implode("\n", $lines);
     }
 
+    /** The image in a generated example, web/media/dummy.svg ships with the CMS */
+    const EXAMPLE_IMAGE = "![dummy](/media/dummy.svg)";
+
     /**
      * Map an xpath expression to a markdown snippet.
      */
@@ -549,11 +558,12 @@ class Block
         $clean = ltrim($clean, '/');
 
         // Detect element type from the expression
+        // an image is a placeholder that renders, src, alt and title are one image
         if (preg_match('/^(\/\/)?li\/img/', $clean)) {
-            return "- ![$description](image-url)";
+            return "- " . self::EXAMPLE_IMAGE;
         }
         if (preg_match('/^(\/\/)?img/', $clean)) {
-            return "![$description](image-url)";
+            return self::EXAMPLE_IMAGE;
         }
         if (preg_match('/^(\/\/)?a/', $clean)) {
             return "[$description](url)";
