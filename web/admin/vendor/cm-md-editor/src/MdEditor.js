@@ -64,6 +64,18 @@ export class MdEditor {
             colorEscape: "128,128,128",
             colorFrontMatter: "128,128,200",
             wordWrap: true,
+            // Optional function (index, line) => class name or null, called for every
+            // line on each highlight pass. A returned class wraps that line in a span
+            // over the full width, so CSS can give whole lines a background, e.g. to
+            // mark lines the application treats in a special way. It may also return
+            // {className, label}, the label is set as data-label on the span, for CSS
+            // to show with content: attr(data-label).
+            lineClass: null,
+            // Optional function (text) => array of {start, end, className}, called on each
+            // highlight pass with the whole text. Each range, given as offsets into the
+            // text, gets a span with that class, e.g. to give a part of a line a background.
+            // Unlike lineClass the span covers only the characters, not the full width.
+            rangeClass: null,
             iconsPath: new URL('./tools/icons/', import.meta.url).href,
             tools: defaultTools,
             ...props
@@ -193,6 +205,8 @@ export class MdEditor {
         toolbar.style.cssText = `order:-1;display:flex;gap:1px;padding:2px;flex-wrap:wrap;background:rgba(${chrome},0.15);border:1px solid rgba(${chrome},0.3);border-bottom:none;border-radius:4px 4px 0 0;box-sizing:border-box;width:100%;`
         wrapper.appendChild(toolbar)
         this.element.style.borderRadius = '0 0 4px 4px'
+        // The toolbar takes over the space the page reserved for it before the script ran
+        this.element.classList.remove('mde-pending')
         // WAI-ARIA toolbar pattern: one tab stop, arrow keys move between the
         // buttons (roving tabindex), Escape returns to the textarea.
         this.toolbarElement = toolbar
@@ -232,9 +246,10 @@ export class MdEditor {
         this.wrapButton.tabIndex = -1
         this.wrapButton.setAttribute('aria-label', this.wrapButton.title)
         toolbar.appendChild(this.wrapButton)
-        // Apply saved wrap state
+        // Apply saved wrap state. break-spaces instead of the textarea default pre-wrap, so spaces at a
+        // soft wrap break to the next line instead of hanging past the edge and dragging the caret along
+        this.element.style.whiteSpace = this.wrapEnabled ? 'break-spaces' : 'pre'
         if (!this.wrapEnabled) {
-            this.element.style.whiteSpace = 'pre'
             this.element.style.overflowX = 'auto'
         }
         // Which button the toolbar is entered on; moves with the focus so re-entering
@@ -368,7 +383,12 @@ export class MdEditor {
         // Copy textarea computed styles to backdrop
         const cs = window.getComputedStyle(this.element)
         this.backdrop.style.cssText = `position:absolute;overflow:hidden;pointer-events:none;z-index:1;`
-        this.highlightLayer.style.cssText = `white-space:pre-wrap;word-wrap:break-word;overflow-wrap:break-word;`
+        // Kerning and ligatures off on both layers: WebKit doesn't kern or ligate across the span
+        // boundaries of the highlight layer, so with a proportional font the layer runs wider than
+        // the textarea and the two drift apart along the line
+        this.highlightLayer.style.cssText = `white-space:break-spaces;word-wrap:break-word;overflow-wrap:break-word;font-kerning:none;font-variant-ligatures:none;`
+        this.element.style.fontKerning = 'none'
+        this.element.style.fontVariantLigatures = 'none'
 
         const syncStyles = () => {
             const cs = window.getComputedStyle(this.element)
@@ -543,25 +563,95 @@ export class MdEditor {
 
             html += prefix + this.highlightInline(rest)
         }
+        if (typeof this.props.lineClass === 'function') {
+            html = this.decorateLines(html, lines)
+        }
         // Trailing newline so the backdrop height matches the textarea
         this.highlightLayer.innerHTML = html + '\n'
+        if (typeof this.props.rangeClass === 'function') {
+            const ranges = this.props.rangeClass(text) || []
+            ranges.forEach(range => this.markRange(range.start, range.end, range.className))
+        }
+    }
+
+    /**
+     * Wraps the characters from start to end of the highlight layer in spans with
+     * the class. The text of the layer is the text of the textarea, so the offsets
+     * are the same. A range over several colored spans gets one span per piece.
+     */
+    markRange(start, end, className) {
+        if (!(end > start) || !className) {
+            return
+        }
+        const walker = document.createTreeWalker(this.highlightLayer, NodeFilter.SHOW_TEXT)
+        const pieces = []
+        let offset = 0
+        for (let node = walker.nextNode(); node && offset < end; node = walker.nextNode()) {
+            const length = node.nodeValue.length
+            const from = Math.max(start, offset) - offset
+            const to = Math.min(end, offset + length) - offset
+            if (to > from) {
+                pieces.push([node, from, to])
+            }
+            offset += length
+        }
+        // the text nodes are split after the walk, so the walk sees the unchanged layer
+        pieces.forEach(([node, from, to]) => {
+            let piece = node
+            if (from > 0) {
+                piece = piece.splitText(from)
+            }
+            if (to - from < piece.nodeValue.length) {
+                piece.splitText(to - from)
+            }
+            const span = document.createElement('span')
+            span.className = className
+            piece.parentNode.insertBefore(span, piece)
+            span.appendChild(piece)
+        })
+    }
+
+    /**
+     * Wraps the lines for which props.lineClass returns a class name in a span
+     * over the full width. The highlighted html has one entry per source line,
+     * joined with newlines, and no span runs over a line end, so it can be split.
+     * An empty line gets the height of a line, so a run of marked lines has no gaps.
+     */
+    decorateLines(html, lines) {
+        const parts = html.split('\n')
+        if (parts.length !== lines.length) {
+            return html // a plugin rendered a line break, the lines no longer line up
+        }
+        return parts.map((part, i) => {
+            const result = this.props.lineClass(i, lines[i])
+            const className = result && typeof result === 'object' ? result.className : result
+            if (!className) {
+                return part
+            }
+            const label = result && typeof result === 'object' && result.label
+                ? ' data-label="' + this.escapeHtml(String(result.label)).replace(/"/g, '&quot;') + '"' : ''
+            return '<span class="' + this.escapeHtml(String(className)) + '"' + label + ' style="display:inline-block;width:100%;min-height:1lh;vertical-align:top">' + part + '</span>'
+        }).join('\n')
     }
 
     highlightInline(line, opts = {}) {
-        // Split the line into protected tokens (inline code and bare URLs) and plain text.
-        // Protected tokens are emitted verbatim (only HTML-escaped), so markdown inside them
-        // — e.g. the underscores in https://host/a_b_c — is never treated as formatting.
+        // Split the line into protected tokens (inline code, html tags and bare URLs) and
+        // plain text. Protected tokens never reach the emphasis rules, so markdown inside
+        // them — e.g. the underscores in https://host/a_b_c or in <game pairing="a_b-c_d"/>
+        // — is never treated as formatting. Emphasis torn across a tag would inject spans
+        // into the tag's attributes and desynchronize the backdrop from the textarea.
         const segments = []
         let lastIndex = 0
-        // Inline code, OR an autolink: an http(s) URL not part of markdown link / html
-        // attribute syntax (that context is handled by highlightTextSegment instead).
-        const tokenRegex = /`[^`]+`|https?:\/\/[^\s<>()\[\]"'`]+/g
+        // Inline code, OR an html tag (quoted attribute values may contain any character),
+        // OR an autolink: an http(s) URL not part of markdown link syntax.
+        const tokenRegex = /`[^`]+`|<\/?[a-zA-Z][\w-]*(?:"[^"]*"|'[^']*'|[^<>"'])*>|https?:\/\/[^\s<>()\[\]"'`]+/g
         let match
 
         while ((match = tokenRegex.exec(line)) !== null) {
             const token = match[0]
             const isCode = token[0] === '`'
-            if (!isCode) {
+            const isTag = token[0] === '<'
+            if (!isCode && !isTag) {
                 // Only autolink a *bare* URL. When the character before it belongs to
                 // markdown/html syntax, leave the URL in the text so its surrounding
                 // construct (e.g. [text](url)) is highlighted as a whole.
@@ -573,7 +663,7 @@ export class MdEditor {
             if (match.index > lastIndex) {
                 segments.push({type: 'text', content: line.substring(lastIndex, match.index)})
             }
-            segments.push({type: isCode ? 'code' : 'url', content: token})
+            segments.push({type: isCode ? 'code' : isTag ? 'tag' : 'url', content: token})
             lastIndex = tokenRegex.lastIndex
         }
         if (lastIndex < line.length) {
@@ -587,6 +677,8 @@ export class MdEditor {
         for (const seg of segments) {
             if (seg.type === 'code') {
                 result += this.colorSpan('colorCode', this.escapeHtml(seg.content))
+            } else if (seg.type === 'tag') {
+                result += this.highlightHtmlTag(this.escapeHtml(seg.content))
             } else if (seg.type === 'url') {
                 result += '<span style="color:rgba(' + this.props.colorLink + ',1);text-decoration:underline">'
                     + this.escapeHtml(seg.content) + '</span>'
@@ -644,26 +736,14 @@ export class MdEditor {
         result = result.replace(/(\*\*)(.*?)(\*\*)/g, (_, p1, p2, p3) =>
             this.colorSpan('colorBold', p1) + this.colorSpan('colorBold', p2) + this.colorSpan('colorBold', p3))
 
-        // Italic _text_ or *text* (single asterisk, after bold has been handled)
-        result = result.replace(/((?:^|[^\\*]))(\_)(.*?[^\\])(\_)/g, (_, pre, p1, p2, p3) =>
+        // Italic _text_ or *text* (single asterisk, after bold has been handled).
+        // An underscore inside a word (snake_case, user names like Jan_Eric) is not an
+        // emphasis delimiter, per CommonMark: the opener must not follow a word character
+        // and the closer must not precede one.
+        result = result.replace(/((?:^|[^\\*\w]))(\_)(.*?[^\\])(\_)(?!\w)/g, (_, pre, p1, p2, p3) =>
             pre + this.colorSpan('colorItalic', p1) + this.colorSpan('colorItalic', p2) + this.colorSpan('colorItalic', p3))
         result = result.replace(/((?:^|[^\\*]))(\*)((?!\*).+?[^\\])(\*)/g, (_, pre, p1, p2, p3) =>
             pre + this.colorSpan('colorItalic', p1) + this.colorSpan('colorItalic', p2) + this.colorSpan('colorItalic', p3))
-
-        // HTML tags, three-tone: syntax characters (< / > = " ') in colorHtmlTagBracket,
-        // tag name in colorHtmlTag, attribute names in colorHtmlTagAttribute, attribute
-        // values in colorHtmlTagValue
-        result = result.replace(/(&lt;\/?)([a-zA-Z]\w*)(.*?)(\/?&gt;)/g, (_, p1, p2, p3, p4) => {
-            const attrs = p3.replace(/([\w-]+)(\s*=\s*)(["'])(.*?)\3/g, (m, name, eq, quote, value) =>
-                this.colorSpan('colorHtmlTagAttribute', name)
-                + this.colorSpan('colorHtmlTagBracket', eq + quote)
-                + this.colorSpan('colorHtmlTagValue', value)
-                + this.colorSpan('colorHtmlTagBracket', quote))
-            return this.colorSpan('colorHtmlTagBracket', p1)
-                + this.colorSpan('colorHtmlTag', p2)
-                + this.colorSpan('colorHtmlTag', attrs)
-                + this.colorSpan('colorHtmlTagBracket', p4)
-        })
 
         // Tool inline highlighting
         for (const tool of this.tools) {
@@ -675,13 +755,31 @@ export class MdEditor {
         return result
     }
 
+    // HTML tags, three-tone: syntax characters (< / > = " ') in colorHtmlTagBracket,
+    // tag name in colorHtmlTag, attribute names in colorHtmlTagAttribute, attribute
+    // values in colorHtmlTagValue. Receives one escaped tag token from highlightInline;
+    // tags are protected segments there, so no inline rule ever runs inside a tag.
+    highlightHtmlTag(escaped) {
+        return escaped.replace(/(&lt;\/?)([a-zA-Z][\w-]*)([\s\S]*?)(\/?&gt;)$/, (_, p1, p2, p3, p4) => {
+            const attrs = p3.replace(/([\w-]+)(\s*=\s*)(["'])(.*?)\3/g, (m, name, eq, quote, value) =>
+                this.colorSpan('colorHtmlTagAttribute', name)
+                + this.colorSpan('colorHtmlTagBracket', eq + quote)
+                + this.colorSpan('colorHtmlTagValue', value)
+                + this.colorSpan('colorHtmlTagBracket', quote))
+            return this.colorSpan('colorHtmlTagBracket', p1)
+                + this.colorSpan('colorHtmlTag', p2)
+                + this.colorSpan('colorHtmlTag', attrs)
+                + this.colorSpan('colorHtmlTagBracket', p4)
+        })
+    }
+
     toggleWrapMode() {
         this.wrapEnabled = !this.wrapEnabled
         localStorage.setItem(this.wrapStorageKey, this.wrapEnabled)
         const wrap = this.wrapEnabled
-        this.element.style.whiteSpace = wrap ? 'pre-wrap' : 'pre'
+        this.element.style.whiteSpace = wrap ? 'break-spaces' : 'pre'
         this.element.style.overflowX = wrap ? 'hidden' : 'auto'
-        this.highlightLayer.style.whiteSpace = wrap ? 'pre-wrap' : 'pre'
+        this.highlightLayer.style.whiteSpace = wrap ? 'break-spaces' : 'pre'
         this.highlightLayer.style.overflowWrap = wrap ? 'break-word' : 'normal'
         this.wrapButton.style.opacity = wrap ? '0.9' : '0.4'
         this.updateHighlight()

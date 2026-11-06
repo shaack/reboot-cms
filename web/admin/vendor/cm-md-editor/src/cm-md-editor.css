@@ -25,6 +25,17 @@ textarea {
     resize: vertical;
 }
 
+/* Before the editor script has run: reserve the 33px of the toolbar above the textarea, so
+   neither the textarea nor the content below it jumps when the toolbar is inserted. The shadow,
+   shifted up by the same 33px, paints the toolbar background into the reserved space.
+   The editor removes the class when it creates the toolbar. */
+textarea.mde-pending {
+    display: block; /* as inside the editor's flex wrapper, no inline baseline gap below */
+    margin-top: 33px;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 -33px 0 rgba(128, 128, 128, 0.15);
+}
+
 @media (prefers-color-scheme: dark) {
     body {
         background-color: #212529;
