@@ -50,7 +50,7 @@ The admin interface edits pages in a Markdown editor with a block menu and a liv
 
 <!--
 text-image:
-    image-position: left
+    image-position: right
 -->
 
 ## Made for AI agents
