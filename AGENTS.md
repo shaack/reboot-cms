@@ -14,12 +14,14 @@ There is no database, no schema, and no build step for content.
 
 ## Project layout
 
-- `core/src/Shaack/` — CMS core classes (`Reboot`, `Site`, `Page`, `Block`, `Request`, `AddOn`, `AddOnLoader`)
+- `core/src/Shaack/` — CMS core classes (`Reboot`, `Site`, `Page`, `Block`, `Collection`, `Request`, `AddOn`, `AddOnLoader`)
 - `core/addons/<Name>/` — AddOns shipped with the CMS (`EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`), one folder each
 - `core/admin/` — admin interface (itself a Reboot CMS site)
 - `site/` — the site you edit:
   - `pages/` — content pages (`.md` or `.php`)
   - `blocks/` — PHP templates for content blocks
+  - `data/<collection>/` — records with fixed fields, one Markdown file per entry
+  - `blueprints/<collection>.yml` — the fields of a collection
   - `addons/<Name>/<Name>.php` — site-specific addons, one folder each with optional `src/` and `admin/`
   - `template.php` — main HTML template
   - `config.yml` — navigation, addon registration, multilingual settings
@@ -70,6 +72,10 @@ Each block name maps to `site/blocks/{name}.php`. A block template is plain PHP
 and receives a `$block` object — `$block->content()`, `$block->xpath()`,
 `$block->getConfig()`. Adding a block type means adding one PHP file; there is
 no framework or build step in between.
+
+## Data
+
+Records with fixed fields (seminars, events, people) are no pages. Each entry is a Markdown file in `site/data/<collection>/`, its fields in the frontmatter, the Markdown below it is the field `body`. `site/blueprints/<collection>.yml` lists the fields with `type`, `required`, `default` and `options`. Templates and blocks query them with `$site->collection("seminars")->where("date", ">=", "today")->sortBy("date")->limit(3)`. Entries that don't match the blueprint and drafts (`draft: true`) are left out. See the README section "Data".
 
 ## Multilingual
 

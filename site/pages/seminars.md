@@ -1,0 +1,12 @@
+---
+title: Seminars
+description: Seminars on Reboot CMS. An example of data that lives apart from the pages.
+---
+
+<!-- text -->
+
+# Seminars
+
+The seminars on this page are no pages. Each one is a Markdown file in `site/data/seminars/`, and the blueprint `site/blueprints/seminars.yml` names their fields. The block below lists the coming dates, past seminars and drafts drop out on their own.
+
+<!-- seminar-teaser: {count: 20} -->

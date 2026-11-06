@@ -1,0 +1,18 @@
+# The fields of the entries in site/data/seminars/, see the README section "Data".
+# Query them in a block or a PHP page with $site->collection("seminars").
+title: Seminars
+sort: date
+columns: [date, title, location, price, seats]   # the table in the admin
+fields:
+  title:      {type: text, required: true}
+  date:       {type: date, required: true}
+  time:       {type: text, label: Time, default: "10:00-17:00"}
+  location:   {type: text, required: true}
+  level:      {type: select, options: [Beginner, Intermediate, Advanced], default: Beginner}
+  price:      {type: number, label: "Price (€)", required: true, min: 0}
+  seats:      {type: number, label: Free seats, min: 0}
+  booked-out: {type: boolean, label: Booked out, default: false}
+  image:      {type: image, default: /media/dummy.svg}
+  teaser:     {type: textarea, label: Teaser}
+  link:       {type: url, label: Booking link}
+  body:       {type: markdown, label: Description}

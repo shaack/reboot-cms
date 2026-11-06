@@ -26,7 +26,7 @@ class Authentication extends AddOn
     const ROLE_ADMIN = "admin";
     const ROLE_EDITOR = "editor";
     const ROLE_DISABLED = "disabled";
-    const EDITOR_PAGES = ["/pages", "/media"];
+    const EDITOR_PAGES = ["/pages", "/data", "/media"];
 
     /**
      * @see AddOn::init()

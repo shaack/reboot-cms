@@ -683,4 +683,42 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   padding-right: 0.75rem;
 }
 
+.data-collections .page-tree-file {
+  align-items: center;
+  gap: 6px;
+}
+
+.data-count {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.data-table tr[data-href] {
+  cursor: pointer;
+}
+
+.data-table a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.data-table .data-draft td {
+  opacity: 0.6;
+}
+
+.data-back a {
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.data-image-preview {
+  display: block;
+  max-width: 240px;
+  max-height: 120px;
+  margin-top: 6px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
 /*# sourceMappingURL=screen.css.map */

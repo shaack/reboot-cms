@@ -5,6 +5,7 @@ navbar:
   brand: Reboot CMS
   structure:
     Pages: /pages
+    Data: /data
     Media: /media
     Admin:
       Site Configuration: /config

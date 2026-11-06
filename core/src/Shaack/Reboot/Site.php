@@ -16,6 +16,7 @@ class Site
     protected array $config = []; // Global values for all pages in a site folder (`/site/config.yml`)
     protected array $addOns = []; // Site addons
     protected array $missingAddOns = []; // names from `addons` that could not be loaded
+    protected array $collections = []; // collections read in this request, by name
 
     /**
      * @param $reboot Reboot
@@ -112,6 +113,15 @@ class Site
     public function getAddOns(): array
     {
         return $this->addOns;
+    }
+
+    /**
+     * The entries of `site/data/<name>/` without drafts and invalid entries,
+     * sorted as `site/blueprints/<name>.yml` says. Read once per request.
+     */
+    public function collection(string $name): Collection
+    {
+        return $this->collections[$name] ??= Collection::load($this, $name);
     }
 
     /**

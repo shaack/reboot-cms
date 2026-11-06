@@ -82,9 +82,9 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 
 ## Directory Structure
 
-- `core/src/` — Core CMS classes (Reboot, Site, Page, Block, Request, AddOn)
+- `core/src/` — Core CMS classes (Reboot, Site, Page, Block, Collection, Request, AddOn)
 - `core/addons/` — AddOns shipped with Reboot CMS (`EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`)
-- `site/` — Site content: `pages/`, `blocks/`, `addons/`, `template.php`, `config.yml`
+- `site/` — Site content: `pages/`, `blocks/`, `data/`, `blueprints/`, `addons/`, `template.php`, `config.yml`
 - `web/` — Document root (`index.php`, `.htaccess`)
 - `local/` — Local environment config (`config.yml`, `.htpasswd`) — not in git
 - `core/admin/` — Admin interface (itself a Reboot CMS site)
@@ -457,6 +457,74 @@ For list fields (like the "cards" block), use `min` to require a minimum number 
 $images = $block->xpath("//li/img", ["min" => 1, "description" => "Card images"]);
 ```
 
+### Data
+
+Pages hold text and layout. Records with fixed fields, like seminars, events or team members, live apart from the pages in `site/data/`. A page decides where they show up, with a block or a PHP page that queries them.
+
+A collection is a folder `site/data/<name>/` with one Markdown file per entry. The fields are the frontmatter, the Markdown below it is the field `body`. The file name is the slug of the entry, a date in front keeps the folder in order.
+
+```markdown
+<!-- site/data/seminars/2027-03-12-photo-basics.md -->
+---
+title: Photo Basics
+date: 2027-03-12
+location: Bremen
+price: 290
+---
+
+A day on aperture, exposure and composition.
+```
+
+A blueprint `site/blueprints/<name>.yml` describes the fields. A collection without a blueprint stays empty and logs an error.
+
+```yaml
+title: Seminars
+sort: date            # or "date desc"
+fields:
+  title:    {type: text, required: true}
+  date:     {type: date, required: true}
+  location: {type: text}
+  price:    {type: number, label: "Price (€)", min: 0}
+  level:    {type: select, options: [Beginner, Advanced], default: Beginner}
+  body:     {type: markdown, label: Description}
+```
+
+| Prop | Description |
+|------|-------------|
+| `type` | `text` (default), `textarea`, `markdown`, `number`, `date`, `boolean`, `select`, `image`, `url` |
+| `label` | Name shown in messages and forms, defaults to the field name |
+| `required` | The field must have a value |
+| `default` | Value used when the entry has none |
+| `options` | The allowed values of a `select` |
+| `min`, `max` | Limits of a `number` |
+| `help` | A hint shown below the field in the admin |
+
+`columns: [date, title, price]` next to `fields` sets the columns of the table in the admin, by default the first four fields that are no `textarea` or `markdown`.
+
+A date is written as `2027-03-12` and read as that text, so dates compare and sort as text. An entry that does not match its blueprint is left out of the website and its errors are logged. An entry with `draft: true` is left out as well.
+
+Query a collection in a block, a PHP page or the template:
+
+```php
+<?php
+$next = $site->collection("seminars")
+    ->where("date", ">=", "today")
+    ->sortBy("date")
+    ->limit(3);
+foreach ($next as $seminar) { ?>
+    <article>
+        <time><?= $seminar->date("date", "d.m.Y") ?></time>
+        <h3><?= $seminar->get("title") ?></h3>
+        <?= $seminar->html("body") ?>
+    </article>
+<?php } ?>
+```
+
+- `$site->collection($name)` reads a collection once per request, sorted as the blueprint says.
+- `where($field, $operator, $value)` with `=`, `!=`, `<`, `<=`, `>`, `>=`, `contains` and `in`, `"today"` stands for the current date. `filter(fn($entry) => ...)` takes any condition.
+- `sortBy($field, "asc"|"desc")`, `limit($count, $offset)`, `first()`, `find($slug)`, `count()`. Every query returns a new collection.
+- `$entry->get($field)` returns a field escaped for HTML, `get($field, $default, false)` as written. `html($field)` renders a Markdown field, `date($field, $format)` formats a date, `getSlug()` returns the file name without `.md`.
+
 ## Admin interface
 
 You find the admin interface at `/admin`.
@@ -486,6 +554,10 @@ restore them from the History dialog. The number of snapshots kept per page is c
 `history.maxVersions` in `local/config.yml`.
 
 ![Page history](web/media/screenshots/reboot-cms-admin-page-history.png)
+
+### Data
+
+The menu entry "Data" lists the collections of `site/data/`, one per blueprint, see [Data](#data). A collection opens as a table of its entries, a click on a row opens the entry as a form made from the blueprint: a date picker for a `date`, a list for a `select`, a switch for a `boolean`, the media browser for an `image` and the Markdown editor for a `markdown` field. Required fields are marked, and the fields that do not fit the blueprint are named after saving. Such an entry is saved anyway, marked in the table and left out of the website until it is fixed. *Draft* keeps an entry off the website. A new entry gets its file name from its first date and text field, `2027-03-12-photo-basics.md`, and keeps it. Every save and delete keeps the previous version in `local/history/data/`. Editors can use the page like Pages and Media.
 
 ### Media
 

@@ -18,6 +18,12 @@ Your pages are **Markdown files**. Blocks give them structure, a small PHP core 
 
 [View on GitHub](https://github.com/shaack/reboot-cms)
 
+<!-- seminar-teaser: {count: 3} -->
+
+## Upcoming seminars
+
+[All seminars](seminars)
+
 <!-- three-columns -->
 
 ### Just files
