@@ -967,8 +967,9 @@
 
     // --- Protected structure lines ---
     // The block comments and the "---" between the parts of a block do not take
-    // typing, a backspace or a deleted selection that would change them, not even
-    // a selection of everything. The lock in the toolbar switches this off.
+    // typing or a backspace that would change them. A selection of the whole
+    // line, or of everything, can delete or replace it, so a block can still be
+    // removed on purpose. The lock in the toolbar switches this off.
 
     if (editorTextarea) {
         // The editor gives every block a background, the protected lines a
@@ -1026,7 +1027,9 @@
                 var fmFrom = st.lineStarts[1] - 1, fmTo = st.lineStarts[st.frontmatterEnd] - 1;
                 var inFm = function (offset) { return offset >= fmFrom && offset <= fmTo; };
                 var data = e.data || (e.dataTransfer ? e.dataTransfer.getData('text/plain') : '') || '';
-                var fmBlocked = (
+                // the whole frontmatter, both "---" included, may go at once
+                var wholeFm = s === 0 && en >= st.lineStarts[st.frontmatterEnd] + st.lines[st.frontmatterEnd].length;
+                var fmBlocked = !wholeFm && (
                     ((isBreak || data.indexOf('\n') !== -1) && inFm(s))
                     || (s === en && backward && text.charAt(s - 1) === '\n' && inFm(s - 1))
                     || (s === en && forward && text.charAt(s) === '\n' && inFm(s))
@@ -1040,15 +1043,15 @@
             var blocked = st.spans.some(function (span) {
                 if (span.key) {
                     // the value starts right after the colon, typing there is fine
-                    if (s !== en) return en > span.start && s < span.end;
+                    if (s !== en) return en > span.start && s < span.end && !(s <= span.start && en >= span.end && wholeFm);
                     if (s > span.start && s < span.end) return true;
                     if (s === span.start) return true;
                     if (s === span.end) return backward;
                     return false;
                 }
-                // also a selection of the whole line or of everything, deleting
-                // a structure line needs the lock switched off
-                if (s !== en) return en > span.start && s < span.end;
+                // a selection may delete or replace a structure line as a whole,
+                // so a block, or everything, can still be removed on purpose
+                if (s !== en) return en > span.start && s < span.end && !(s <= span.start && en >= span.end);
                 if (s > span.start && s < span.end) return true;
                 if (s === span.start) {
                     if (isBreak) return false;
@@ -1068,7 +1071,7 @@
             });
             if (blocked) {
                 e.preventDefault();
-                showEditorHint('Block lines are protected. To change them, switch off the lock in the toolbar.');
+                showEditorHint('Block lines are protected. Select the whole line to delete it, or switch off the lock in the toolbar.');
             }
         });
     }
