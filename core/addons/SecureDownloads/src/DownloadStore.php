@@ -142,25 +142,26 @@ class DownloadStore
      * Returns true only for a token that exists, is neither expired nor locked
      * and whose password matches. The comparison is constant time, wrong
      * attempts are counted and lock the token after MAX_FAILED_ATTEMPTS.
+     * Check and count happen in one step under the lock of the index, so
+     * parallel guesses cannot all pass the check before the first is counted.
      */
     public function verifyPassword(string $token, string $password): bool
     {
-        $entry = $this->find($token);
-        if (!$entry || $this->isExpired($entry) || $this->isLocked($entry)) {
-            return false;
-        }
         $password = preg_replace('/\D/', '', $password);
-        if ($password !== '' && hash_equals($entry['password'], $password)) {
-            return true;
-        }
-        $this->withIndex(function (array &$index) use ($token) {
-            if (isset($index[$token])) {
-                $index[$token]['failedAttempts'] = ($index[$token]['failedAttempts'] ?? 0) + 1;
-                return true;
+        $verified = false;
+        $this->withIndex(function (array &$index) use ($token, $password, &$verified) {
+            $entry = $index[$token] ?? null;
+            if (!$entry || $this->isExpired($entry) || $this->isLocked($entry)) {
+                return false;
             }
-            return false;
+            if ($password !== '' && hash_equals($entry['password'], $password)) {
+                $verified = true;
+                return false;
+            }
+            $index[$token]['failedAttempts'] = ($entry['failedAttempts'] ?? 0) + 1;
+            return true;
         });
-        return false;
+        return $verified;
     }
 
     /**

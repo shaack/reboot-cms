@@ -9,7 +9,8 @@ class EmailObfuscationTest
     public function testObfuscateHtmlEncodesBase64(): void
     {
         $result = EmailObfuscator::obfuscateHtml('info@example.com');
-        Assert::equals("<script>document.write(atob('" . base64_encode('info@example.com') . "'));</script>", $result);
+        Assert::contains("atob('" . base64_encode('info@example.com') . "')", $result);
+        Assert::contains("TextDecoder", $result, "UTF-8 labels are decoded as UTF-8");
     }
 
     public function testFindsAddressesInVisibleTextOnly(): void
@@ -46,5 +47,23 @@ class EmailObfuscationTest
     {
         $html = '<html><body><p>Nothing to see @ here.</p></body></html>';
         Assert::equals($html, EmailObfuscator::obfuscatePage($html));
+    }
+
+    public function testAddressesOutsideVisibleTextStay(): void
+    {
+        $html = '<html><head><title>info@example.com</title><meta name="author" content="info@example.com">'
+            . '<script>var a = "info@example.com";</script></head><body><p>info@example.com</p></body></html>';
+        $result = EmailObfuscator::obfuscatePage($html);
+        Assert::contains('<title>info@example.com</title>', $result);
+        Assert::contains('content="info@example.com"', $result);
+        Assert::contains('var a = "info@example.com";', $result);
+        Assert::contains('<p>' . EmailObfuscator::obfuscateHtml('info@example.com') . '</p>', $result);
+    }
+
+    public function testTextAroundTagsDoesNotRunTogether(): void
+    {
+        Assert::equals(['x@b.de'], EmailObfuscator::findEmailAddresses('<p>x@b.de</p><p>document.write</p>'));
+        $result = EmailObfuscator::obfuscatePage('<p>x@b.de</p><p>document.write</p>');
+        Assert::false(str_contains($result, 'x@b.de'));
     }
 }

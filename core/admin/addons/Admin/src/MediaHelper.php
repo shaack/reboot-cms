@@ -152,10 +152,15 @@ HTACCESS;
         }
         // entities would hide a "javascript:" in an attribute
         $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5 | ENT_XML1, 'UTF-8');
-        return (bool)preg_match(
+        if (preg_match(
             '/<\s*(\w+:)?(script|foreignObject|iframe|embed|object|handler)\b'
-            . '|\son\w+\s*=|javascript\s*:|<\?xml-stylesheet/i',
+            . '|\son\w+\s*=|<\?xml-stylesheet/i',
             $content
-        );
+        )) {
+            return true;
+        }
+        // browsers drop whitespace and control characters in a URL, "java&#x0A;script:" is "javascript:"
+        $compact = preg_replace('/[\x00-\x20\x7f]+/', '', $content);
+        return (bool)preg_match('/(java|vb)script:|data:text\/html/i', $compact);
     }
 }

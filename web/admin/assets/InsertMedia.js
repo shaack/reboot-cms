@@ -67,7 +67,7 @@ export class InsertMedia {
         let accumulated = ''
         for (const part of parts) {
             accumulated += (accumulated ? '/' : '') + part
-            bc += ' / <a href="#" data-path="' + accumulated + '" style="color:inherit;">' + part + '</a>'
+            bc += ' / <a href="#" data-path="' + this.escapeHtml(accumulated) + '" style="color:inherit;">' + this.escapeHtml(part) + '</a>'
         }
         breadcrumb.innerHTML = bc
         breadcrumb.querySelectorAll('a').forEach(a => {
@@ -126,8 +126,10 @@ export class InsertMedia {
     }
 
     insertImage(webPath, fileName) {
-        const altText = fileName.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ')
-        const markdown = '![' + altText + '](' + webPath + ')'
+        const altText = fileName.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ').replace(/[\[\]]/g, '')
+        // Markdown ends the address at a space or a parenthesis, so those are encoded
+        const url = encodeURI(webPath).replace(/\(/g, '%28').replace(/\)/g, '%29')
+        const markdown = '![' + altText + '](' + url + ')'
         this.editor.element.focus()
         this.editor.insertTextAtCursor(markdown)
         this.editor.updateHighlight()

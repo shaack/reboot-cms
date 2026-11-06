@@ -195,7 +195,7 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
                         Impersonating <strong><?= htmlspecialchars($authentication->getUser()) ?></strong>
                         <a href="<?= htmlspecialchars($site->getWebPath(), ENT_QUOTES) ?>/users?action=stop_impersonate" class="ms-1 text-warning">(stop)</a>
                     <?php } else { ?>
-                        Logged in as <?= $authentication->getUser() ?>
+                        Logged in as <?= htmlspecialchars($authentication->getUser()) ?>
                     <?php } ?>
                 </span>
                 <ul class="navbar-nav">

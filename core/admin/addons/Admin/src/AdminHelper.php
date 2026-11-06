@@ -32,14 +32,36 @@ class AdminHelper
      */
     public static function renderStatusMessages(?string $error, ?string $success): string
     {
+        // the toast shows the body as HTML, so escaped for HTML, then written as a JS string
         $html = '';
         if ($error) {
-            $html .= '<script>statusMessage("' . htmlspecialchars($error, ENT_QUOTES) . '", "text-bg-danger")</script>';
+            $html .= '<script>statusMessage(' . self::jsValue(htmlspecialchars($error, ENT_QUOTES)) . ', "text-bg-danger")</script>';
         }
         if ($success) {
-            $html .= '<script>statusMessage("' . htmlspecialchars($success, ENT_QUOTES) . '")</script>';
+            $html .= '<script>statusMessage(' . self::jsValue(htmlspecialchars($success, ENT_QUOTES)) . ')</script>';
         }
         return $html;
+    }
+
+    /**
+     * A value as a JavaScript literal, safe inside a `<script>` element. Quotes,
+     * `<`, `>` and `&` are written as unicode escapes, so nothing ends the
+     * string or the script.
+     */
+    public static function jsValue($value): string
+    {
+        return json_encode($value, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * A value as a JavaScript literal for an event handler attribute like
+     * `onclick="deleteFolder(<?= AdminHelper::jsArg($name) ?>)"`. The browser
+     * decodes HTML entities before it runs the handler, so escaping for HTML
+     * alone would let an apostrophe in a file name end the string.
+     */
+    public static function jsArg($value): string
+    {
+        return htmlspecialchars(self::jsValue($value), ENT_QUOTES);
     }
 
     /**

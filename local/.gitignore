@@ -9,3 +9,4 @@
 /config.local.yml
 /backups
 /*.lock
+/trusted-hosts.json

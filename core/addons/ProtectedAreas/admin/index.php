@@ -220,7 +220,7 @@ $linkLogin = $protectedAreas->canSendLoginLinks();
                                 </form>
                             <?php } ?>
                             <form method="post" action="<?= htmlspecialchars($adminPath) ?>" class="d-inline"
-                                  onsubmit="return confirm('Delete account \'<?= htmlspecialchars($email, ENT_QUOTES) ?>\'?')">
+                                  onsubmit="return confirm(<?= AdminHelper::jsArg("Delete account '" . $email . "'?") ?>)">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>">

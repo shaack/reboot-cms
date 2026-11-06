@@ -8,6 +8,8 @@ use Shaack\Reboot\AddOn;
 use Shaack\Reboot\AdminSession;
 use Shaack\Reboot\AddOns\Authentication\RememberMeStore;
 use Shaack\Reboot\Request;
+use Shaack\Reboot\Session;
+use Shaack\Reboot\TrustedHosts;
 use Shaack\Utils\FileSystemUtils;
 use Symfony\Component\Yaml\Yaml;
 
@@ -30,11 +32,7 @@ class Authentication extends AddOn
      * @see AddOn::init()
      */
     protected function init() {
-        session_set_cookie_params([
-            'httponly' => true,
-            'samesite' => 'Strict'
-        ]);
-        session_start();
+        Session::start('Strict');
         $this->htpasswd = new Htpasswd($this->reboot->getBaseFsPath() . "/local/.htpasswd");
         $this->rememberMe = new RememberMeStore($this->reboot->getBaseFsPath());
         $this->rolesFile = $this->reboot->getBaseFsPath() . "/local/roles.yml";
@@ -94,8 +92,7 @@ class Authentication extends AddOn
 
     private function rememberCookieOptions(int $expires): array
     {
-        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+        $https = Session::isHttps();
         return [
             'expires' => $expires,
             'path' => $this->site->getWebPath() ?: '/',
@@ -149,6 +146,8 @@ class Authentication extends AddOn
                 $this->logout();
                 return false;
             }
+            // the host a user of the admin reaches the site under, for links in mails
+            (new TrustedHosts($this->reboot->getBaseFsPath()))->rememberRequestHost();
             // Already signed in, for example restored from the "Stay signed in" cookie,
             // the login form is not needed
             if ($request->getPath() === "/login" && $_SERVER['REQUEST_METHOD'] === 'GET') {

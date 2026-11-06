@@ -38,6 +38,9 @@ class MediaHelperTest
         Assert::true($this->active("<svg><rect\nONCLICK = 'x'/></svg>"));
         Assert::true($this->active('<svg><a href="javascript:alert(1)">x</a></svg>'));
         Assert::true($this->active('<svg><a href="&#106;avascript:alert(1)">x</a></svg>'), "entity encoded");
+        Assert::true($this->active('<svg><a href="java&#x0A;script:alert(1)">x</a></svg>'), "a newline the browser drops");
+        Assert::true($this->active("<svg><a href=\"java\tscript:alert(1)\">x</a></svg>"), "a tab");
+        Assert::true($this->active('<svg><a href=" VBScript:x">x</a></svg>'));
         Assert::true($this->active('<svg><foreignObject><iframe src="x"/></foreignObject></svg>'));
         Assert::true($this->active('<?xml-stylesheet type="text/xsl" href="x.xsl"?><r/>', "xml"));
         Assert::true($this->active('<r><html:script xmlns:html="http://www.w3.org/1999/xhtml">x</html:script></r>', "xml"));

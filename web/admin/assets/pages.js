@@ -3,6 +3,20 @@
     if (!config) return;
 
     var csrfToken = config.csrfToken;
+
+    // localStorage throws when the browser blocks site data, the settings are
+    // then only kept for this page view
+    var store = {
+        get: function (key) {
+            try { return localStorage.getItem(key); } catch (e) { return null; }
+        },
+        set: function (key, value) {
+            try { localStorage.setItem(key, value); } catch (e) { /* not kept */ }
+        },
+        remove: function (key) {
+            try { localStorage.removeItem(key); } catch (e) { /* not kept */ }
+        }
+    };
     var currentPage = config.currentPage;
     var allFolders = config.allFolders;
 
@@ -95,10 +109,10 @@
 
     var STORAGE_KEY = 'reboot_sidebar_expanded';
     function getExpandedFolders() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { return {}; }
+        try { return JSON.parse(store.get(STORAGE_KEY)) || {}; } catch (e) { return {}; }
     }
     function saveExpandedFolders(map) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+        store.set(STORAGE_KEY, JSON.stringify(map));
     }
 
     // Restore saved state: expand folders that were previously open
@@ -134,13 +148,14 @@
         var form = document.createElement('form');
         form.method = 'POST';
         form.action = 'pages';
-        form.innerHTML = '<input type="hidden" name="csrf_token" value="' + csrfToken + '">'
-            + '<input type="hidden" name="action" value="' + action + '">'
-            + '<input type="hidden" name="name" value="' + name + '">';
-        if (extra) {
-            for (var key in extra) {
-                form.innerHTML += '<input type="hidden" name="' + key + '" value="' + extra[key] + '">';
-            }
+        // as elements, a name from prompt() with a quote must not change the form
+        var fields = Object.assign({csrf_token: csrfToken, action: action, name: name}, extra || {});
+        for (var key in fields) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = fields[key];
+            form.appendChild(input);
         }
         document.body.appendChild(form);
         form.submit();
@@ -212,8 +227,8 @@
                     html += '<li class="list-group-item d-flex align-items-center" style="font-size:0.85rem;">'
                         + '<span class="flex-grow-1">' + escapeHtml(v.timestamp) + '</span>'
                         + '<span class="text-body-secondary me-2">' + kb + ' KB</span>'
-                        + '<a href="#" class="btn btn-sm btn-outline-secondary me-1" onclick="previewVersion(\'' + escapeHtml(v.filename) + '\'); return false;">Preview</a>'
-                        + '<a href="#" class="btn btn-sm btn-outline-primary" onclick="restoreVersion(\'' + escapeHtml(v.filename) + '\'); return false;">Restore</a>'
+                        + '<a href="#" class="btn btn-sm btn-outline-secondary me-1" onclick="previewVersion(' + escapeHtml(JSON.stringify(v.filename)) + '); return false;">Preview</a>'
+                        + '<a href="#" class="btn btn-sm btn-outline-primary" onclick="restoreVersion(' + escapeHtml(JSON.stringify(v.filename)) + '); return false;">Restore</a>'
                         + '</li>';
                 });
                 html += '</ul>';
@@ -229,7 +244,7 @@
         var version = historyCache.find(function (v) { return v.filename === filename; });
         if (!version) return;
         var win = window.open('', '_blank');
-        win.document.write('<html><head><title>Preview: ' + filename + '</title>'
+        win.document.write('<html><head><title>Preview: ' + escapeHtml(filename) + '</title>'
             + '<style>'
             + ':root { color-scheme: light dark; }'
             + 'body { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;'
@@ -248,7 +263,7 @@
     // --- Preview (double-buffered) ---
 
     // open by default on wide screens, until the preview button saves a choice
-    var previewStored = localStorage.getItem('reboot_preview');
+    var previewStored = store.get('reboot_preview');
     var previewActive = previewStored === null ? window.innerWidth >= 1200 : previewStored === 'true';
     var previewDebounceTimer = null;
     var previewInitialized = false;
@@ -320,7 +335,7 @@
 
     window.togglePreview = function () {
         previewActive = !previewActive;
-        localStorage.setItem('reboot_preview', previewActive);
+        store.set('reboot_preview', previewActive);
         var editorCol = document.getElementById('editor-column');
         var previewCol = document.getElementById('preview-column');
         var toggleBtn = document.getElementById('preview-toggle');
@@ -355,7 +370,7 @@
         window.togglePreview();
         if (previewStored === null) {
             // the default is no choice, togglePreview() saved it
-            localStorage.removeItem('reboot_preview');
+            store.remove('reboot_preview');
         }
     }
 
@@ -489,13 +504,13 @@
     }
 
     // on by default, the switch below the preview turns it off for this browser
-    var followCursor = localStorage.getItem('reboot_preview_follow') !== 'false';
+    var followCursor = store.get('reboot_preview_follow') !== 'false';
     var followSwitch = document.getElementById('preview-follow');
     if (followSwitch) {
         followSwitch.checked = followCursor;
         followSwitch.addEventListener('change', function () {
             followCursor = followSwitch.checked;
-            localStorage.setItem('reboot_preview_follow', followCursor);
+            store.set('reboot_preview_follow', followCursor);
             if (followCursor) scrollPreviewToCursor(getFrontIframe(), true);
         });
     }

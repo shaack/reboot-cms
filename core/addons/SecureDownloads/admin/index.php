@@ -226,7 +226,7 @@ $config = $downloads->getConfig();
                         </td>
                         <td>
                             <form method="post" action="<?= htmlspecialchars($adminPath) ?>"
-                                  onsubmit="return confirm('Delete \'<?= htmlspecialchars($entry['fileName'], ENT_QUOTES) ?>\'?')">
+                                  onsubmit="return confirm(<?= AdminHelper::jsArg("Delete '" . $entry['fileName'] . "'?") ?>)">
                                 <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="token" value="<?= htmlspecialchars($entry['token']) ?>">

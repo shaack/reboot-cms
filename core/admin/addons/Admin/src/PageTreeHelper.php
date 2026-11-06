@@ -111,8 +111,8 @@ class PageTreeHelper
             $html .= "<span class='folder-icon'>" . ($expanded ? "&#9660;" : "&#9654;") . "</span> " . htmlspecialchars($folderName);
             $html .= "</a>";
             $html .= "<span class='folder-actions'>";
-            $html .= "<a href='#' class='folder-action' title='Rename folder' onclick='renameFolder(\"" . htmlspecialchars($folderPath, ENT_QUOTES) . "\", \"" . htmlspecialchars($folderName, ENT_QUOTES) . "\"); return false;'>&#9998;</a>";
-            $html .= "<a href='#' class='folder-action' title='Delete empty folder' onclick='deleteFolder(\"" . htmlspecialchars($folderPath, ENT_QUOTES) . "\", \"" . htmlspecialchars($folderName, ENT_QUOTES) . "\"); return false;'>&#10005;</a>";
+            $html .= "<a href='#' class='folder-action' title='Rename folder' onclick='renameFolder(" . AdminHelper::jsArg($folderPath) . ", " . AdminHelper::jsArg($folderName) . "); return false;'>&#9998;</a>";
+            $html .= "<a href='#' class='folder-action' title='Delete empty folder' onclick='deleteFolder(" . AdminHelper::jsArg($folderPath) . ", " . AdminHelper::jsArg($folderName) . "); return false;'>&#10005;</a>";
             $html .= "</span>";
             $html .= "</div>";
             $html .= "<div class='collapse" . ($expanded ? " show" : "") . "' id='" . $folderId . "'>";

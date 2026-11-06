@@ -6,6 +6,7 @@ use Shaack\Reboot\AddOns\ProtectedAreas\AccessControl;
 use Shaack\Reboot\AddOns\ProtectedAreas\LoginThrottle;
 use Shaack\Reboot\AddOns\ProtectedAreas\UserStore;
 use Shaack\Reboot\TokenStore;
+use Shaack\Reboot\TrustedHosts;
 
 class ProtectedAreasTest
 {
@@ -28,6 +29,28 @@ class ProtectedAreasTest
                 $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
             }
             rmdir($this->tmpDir);
+        }
+    }
+
+    // --- TrustedHosts, for the links in mails ---
+
+    public function testTrustedHostsAreLearnedNotTakenFromTheRequest(): void
+    {
+        $saved = $_SERVER['HTTP_HOST'] ?? null;
+        try {
+            $hosts = new TrustedHosts($this->tmpDir);
+            $_SERVER['HTTP_HOST'] = 'Example.COM:8080';
+            Assert::equals('example.com:8080', TrustedHosts::requestHost());
+            Assert::false($hosts->isTrusted(TrustedHosts::requestHost()), "a host is not trusted only because a request names it");
+            $hosts->rememberRequestHost();
+            Assert::true($hosts->isTrusted('example.com:8080'));
+            Assert::false($hosts->isTrusted('evil.tld'));
+            $_SERVER['HTTP_HOST'] = 'evil.tld/x';
+            Assert::null(TrustedHosts::requestHost(), "no valid host name");
+            $_SERVER['HTTP_HOST'] = '[::1]:21007';
+            Assert::equals('[::1]:21007', TrustedHosts::requestHost());
+        } finally {
+            if ($saved === null) unset($_SERVER['HTTP_HOST']); else $_SERVER['HTTP_HOST'] = $saved;
         }
     }
 
@@ -186,6 +209,19 @@ class ProtectedAreasTest
     }
 
     // --- LoginThrottle ---
+
+    public function testTryAttemptChecksAndCountsInOneStep(): void
+    {
+        $throttle = new LoginThrottle($this->tmpDir);
+        $now = 1000000;
+        for ($i = 0; $i < LoginThrottle::MAX_ATTEMPTS; $i++) {
+            Assert::true($throttle->tryAttempt('10.0.0.1', $now), "attempt " . ($i + 1));
+        }
+        Assert::false($throttle->tryAttempt('10.0.0.1', $now), 'the next one is refused');
+        Assert::true($throttle->tryAttempt('10.0.0.2', $now), 'other addresses are not affected');
+        $throttle->clear('10.0.0.1', $now);
+        Assert::true($throttle->tryAttempt('10.0.0.1', $now), 'a successful login clears the count');
+    }
 
     public function testThrottleBlocksAfterMaxAttemptsWithinWindow(): void
     {

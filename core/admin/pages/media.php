@@ -304,7 +304,7 @@ $freeSpace = @disk_free_space($mediaDir);
                                 </form>
                                 <?php } ?>
                                 <form method="post" action="media?path=<?= urlencode($currentPath) ?>"
-                                      onsubmit="return confirm('Delete \'<?= htmlspecialchars($entry['name'], ENT_QUOTES) ?>\'?')">
+                                      onsubmit="return confirm(<?= AdminHelper::jsArg("Delete '" . $entry['name'] . "'?") ?>)">
                                     <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="name" value="<?= htmlspecialchars($entry['name']) ?>">

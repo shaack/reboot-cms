@@ -106,7 +106,7 @@ try {
                                     <a class="btn btn-sm btn-outline-secondary"
                                        href="backup?download=<?= urlencode($backup['name']) ?>">Download</a>
                                     <form method="post" action="backup"
-                                          onsubmit="return confirm('Delete \'<?= htmlspecialchars($backup['name'], ENT_QUOTES) ?>\'?')">
+                                          onsubmit="return confirm(<?= AdminHelper::jsArg("Delete '" . $backup['name'] . "'?") ?>)">
                                         <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="name" value="<?= htmlspecialchars($backup['name']) ?>">

@@ -3,6 +3,7 @@
 use Shaack\Logger;
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
+use Shaack\Reboot\LoginThrottle;
 
 /** @var \Shaack\Reboot\Reboot $reboot */
 /** @var \Shaack\Reboot\Site $site */
@@ -14,36 +15,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = htmlspecialchars($_POST["username"] ?? "", ENT_QUOTES, 'UTF-8');
     $password = $_POST["password"] ?? "";
 
-    // Rate limiting: max 5 attempts per 15 minutes per IP
-    $rateLimitFile = $reboot->getBaseFsPath() . "/local/.login_attempts";
-    $attempts = [];
-    if (file_exists($rateLimitFile)) {
-        $attempts = json_decode(file_get_contents($rateLimitFile), true) ?: [];
-    }
+    // Rate limiting: max 5 attempts per 15 minutes per IP, checked and counted in one step
+    $throttle = new LoginThrottle($reboot->getBaseFsPath() . "/local/.login_attempts");
     $ip = $_SERVER['REMOTE_ADDR'];
-    $now = time();
-    $attempts = array_filter($attempts, function($entry) use ($now) {
-        return $entry['time'] > ($now - 900);
-    });
-    $ipAttempts = array_filter($attempts, function($entry) use ($ip) {
-        return $entry['ip'] === $ip;
-    });
-
-    if (count($ipAttempts) >= 5) {
+    CsrfProtection::validate($request);
+    if (!$throttle->tryAttempt($ip)) {
         $error = "Too many login attempts. Please try again later.";
     } else {
-        CsrfProtection::validate($request);
         $remember = !empty($_POST["remember"]);
         if ($username && $authentication->login($username, $password, $remember)) {
-            $attempts = array_filter($attempts, function($entry) use ($ip) {
-                return $entry['ip'] !== $ip;
-            });
-            file_put_contents($rateLimitFile, json_encode(array_values($attempts)));
+            $throttle->clear($ip);
             Logger::info("Login success " . $username);
             $reboot->redirect($reboot->getBaseWebPath() . $site->getWebPath() . "/pages");
         } else {
-            $attempts[] = ['ip' => $ip, 'time' => $now];
-            file_put_contents($rateLimitFile, json_encode(array_values($attempts)));
             Logger::error("Login failed " . $username);
             $error = "Login failed, please try again.";
         }

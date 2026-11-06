@@ -51,7 +51,7 @@ The keys that can be overridden per language are `title`, `intro`, `emailLabel`,
 
 If the site can send mail (section `mail` in `local/config.yml`, see the main README), the login page asks for the e-mail address only and sends a link that logs the visitor in. No password needed. The link is valid for 15 minutes and works once, afterwards the visitor stays logged in for 30 days through a cookie, also across browser restarts. The password login is folded away below the link form, for accounts that have a password. The site name in the mail is the `brand` of the `navbar` section or `title` of `site/config.yml`.
 
-The answer to the form is the same whether an account exists for the address or not, so the form cannot be used to find out which addresses have access. Link requests are limited to five per IP address and 15 minutes, separately from failed password logins. The link is built from the host of the request, set `baseUrl` if the site is reached through a proxy under another name:
+The answer to the form is the same whether an account exists for the address or not, so the form cannot be used to find out which addresses have access. Link requests are limited to five per IP address and 15 minutes, separately from failed password logins. The link is built from the host of the request, but only from a host the admin has been used under: every request of a logged in admin user records its host in `local/trusted-hosts.json`. A forged Host header therefore cannot put the token into a link to another domain. Until the admin has been opened once under the site's address, links are not sent and the log says why. Set `baseUrl` to fix the address, also if the site is reached through a proxy under another name:
 
 ```yaml
 protectedAreas:

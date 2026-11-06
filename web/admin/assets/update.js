@@ -68,8 +68,9 @@
                 var remoteCommit = data.remoteCommit;
                 var localCommit = data.localCommit;
                 if (remoteCommit) {
-                    var shortRemote = remoteCommit.substring(0, 7);
-                    var shortLocal = localCommit ? localCommit.substring(0, 7) : null;
+                    // commit hashes, anything else from the answer is not shown
+                    var shortRemote = remoteCommit.substring(0, 7).replace(/[^0-9a-f]/gi, '');
+                    var shortLocal = localCommit ? localCommit.substring(0, 7).replace(/[^0-9a-f]/gi, '') : null;
                     var isUpToDate = localCommit && remoteCommit.startsWith(localCommit);
                     cell.innerHTML = '<strong>' + shortRemote + '</strong>';
                     if (isUpToDate) {

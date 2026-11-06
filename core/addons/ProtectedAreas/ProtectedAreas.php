@@ -10,6 +10,8 @@ namespace Shaack\Reboot\AddOns;
 use Shaack\Logger;
 use Shaack\Reboot\AddOn;
 use Shaack\Reboot\AdminSession;
+use Shaack\Reboot\Session;
+use Shaack\Reboot\TrustedHosts;
 use Shaack\Reboot\AddOns\ProtectedAreas\AccessControl;
 use Shaack\Reboot\AddOns\ProtectedAreas\LoginThrottle;
 use Shaack\Reboot\AddOns\ProtectedAreas\UserStore;
@@ -248,13 +250,13 @@ class ProtectedAreas extends AddOn
     {
         $username = UserStore::normalizeEmail($email);
         $throttle = $this->getLoginThrottle();
-        if ($throttle->isBlocked($ip)) {
+        // counted before the password check, a success clears the count again
+        if (!$throttle->tryAttempt($ip)) {
             Logger::info("ProtectedAreas: throttled login from $ip");
             return false;
         }
         $store = $this->getUserStore();
         if (!UserStore::isValidEmail($username) || !$store->verify($username, $password)) {
-            $throttle->registerFailure($ip);
             Logger::info("ProtectedAreas: failed login for '$username' from $ip");
             return false;
         }
@@ -315,18 +317,21 @@ class ProtectedAreas extends AddOn
      */
     public function requestLoginLink(string $email, string $ip, Request $request, ?string $next = null): void
     {
-        $throttle = $this->getLinkThrottle();
-        if ($throttle->isBlocked($ip)) {
+        if (!$this->getLinkThrottle()->tryAttempt($ip)) {
             Logger::info("ProtectedAreas: login link request throttled from $ip");
             return;
         }
-        $throttle->registerFailure($ip);
         $email = UserStore::normalizeEmail($email);
         if (!UserStore::isValidEmail($email) || !$this->getUserStore()->hasUser($email)) {
             Logger::info("ProtectedAreas: login link requested for unknown address '$email' from $ip");
             return;
         }
-        $this->sendLoginLink($email, $request, $next);
+        try {
+            $this->sendLoginLink($email, $request, $next);
+        } catch (\RuntimeException $e) {
+            // the visitor sees the same answer as always, the reason is in the log
+            Logger::error("ProtectedAreas: login link for '$email' not sent: " . $e->getMessage());
+        }
     }
 
     /**
@@ -425,19 +430,26 @@ class ProtectedAreas extends AddOn
 
     private function isHttps(): bool
     {
-        return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-            || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+        return Session::isHttps();
     }
 
     /**
      * An absolute URL for a path below the site, for mails. `protectedAreas.baseUrl`
-     * in the site config wins over the host of the current request.
+     * in the site config wins. Without it the host of the request is used, but
+     * only one the admin was used under (TrustedHosts). The Host header comes
+     * from the client, a forged one would put the token of a login link into a
+     * link to another domain.
+     * @throws \RuntimeException if there is neither a baseUrl nor a trusted host
      */
     public function getAbsoluteUrl(string $pathWithQuery): string
     {
         $base = $this->config['baseUrl'] ?? null;
         if (!is_string($base) || $base === '') {
-            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $host = TrustedHosts::requestHost();
+            if (!(new TrustedHosts($this->reboot->getBaseFsPath()))->isTrusted($host)) {
+                throw new \RuntimeException("No link for the host '" . ($host ?? '') . "': set protectedAreas.baseUrl"
+                    . " in site/config.yml, or open the admin once under this host");
+            }
             $base = ($this->isHttps() ? 'https' : 'http') . '://' . $host . $this->site->getWebPath();
         }
         return rtrim($base, '/') . $pathWithQuery;
@@ -535,13 +547,7 @@ class ProtectedAreas extends AddOn
 
     private function startSession(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_set_cookie_params([
-                'httponly' => true,
-                'samesite' => 'Lax', // a link from a mail to a protected page must keep the login
-            ]);
-            session_start();
-        }
+        Session::start('Lax'); // a link from a mail to a protected page must keep the login
     }
 
     /** @return string[] */
