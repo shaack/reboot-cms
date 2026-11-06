@@ -91,8 +91,13 @@ class PageTreeHelper
             if ($active) {
                 $editable = true;
             }
+            // an index page is the page of its folder, the one of the root is the homepage
+            $isIndex = $fileName === "index";
+            $title = $isIndex ? ($prefix === "" ? "Homepage /" : "Folder page /" . rtrim($prefix, "/")) : ltrim($filePath, "/");
             $html .= "<li>";
-            $html .= "<a class='page-tree-file" . ($active ? " active" : "") . "' href='pages?page=" . urlencode($filePath) . "'>" . htmlspecialchars($fileName) . "</a>";
+            $html .= "<a class='page-tree-file" . ($active ? " active" : "") . ($isIndex ? " page-tree-index" : "") . "' href='pages?page=" . urlencode($filePath) . "'"
+                . " title='" . htmlspecialchars($title, ENT_QUOTES) . "' data-path='" . htmlspecialchars(ltrim($filePath, "/"), ENT_QUOTES) . "'>"
+                . AdminHelper::icon($isIndex ? "house" : "file") . "<span>" . htmlspecialchars($fileName) . "</span></a>";
             $html .= "</li>";
         }
         foreach ($folders as $folderName => $children) {
@@ -108,7 +113,7 @@ class PageTreeHelper
             $html .= "<li class='page-tree-folder-item'>";
             $html .= "<div class='d-flex align-items-center'>";
             $html .= "<a class='page-tree-folder flex-grow-1' data-bs-toggle='collapse' href='#" . $folderId . "' role='button' aria-expanded='" . ($expanded ? "true" : "false") . "'>";
-            $html .= "<span class='folder-icon'>" . ($expanded ? "&#9660;" : "&#9654;") . "</span> " . htmlspecialchars($folderName);
+            $html .= AdminHelper::icon("folder") . "<span>" . htmlspecialchars($folderName) . "</span>" . AdminHelper::icon("chevron", "folder-icon");
             $html .= "</a>";
             $html .= "<span class='folder-actions'>";
             $html .= "<a href='#' class='folder-action' title='Rename folder' onclick='renameFolder(" . AdminHelper::jsArg($folderPath) . ", " . AdminHelper::jsArg($folderName) . "); return false;'>&#9998;</a>";

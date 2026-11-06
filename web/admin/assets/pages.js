@@ -56,7 +56,7 @@
                     return;
                 }
                 savedContent = sentContent;
-                pageUnsaved = editorTextarea ? editorTextarea.value !== savedContent : false;
+                updateUnsaved();
                 if (!data.changed) {
                     statusMessage("No changes", "text-bg-secondary");
                     return;
@@ -88,10 +88,18 @@
     var pageUnsaved = false;
     var editorTextarea = document.querySelector('textarea[name="edited"]');
     var savedContent = editorTextarea ? editorTextarea.value : '';
+    var unsavedBadge = document.getElementById('unsaved-badge');
+    var unsavedDot = document.querySelector('#save-button .unsaved-dot');
+
+    // shown next to the page name and on the save button
+    function updateUnsaved() {
+        pageUnsaved = editorTextarea ? editorTextarea.value !== savedContent : false;
+        if (unsavedBadge) unsavedBadge.classList.toggle('d-none', !pageUnsaved);
+        if (unsavedDot) unsavedDot.classList.toggle('d-none', !pageUnsaved);
+    }
+
     if (editorTextarea) {
-        editorTextarea.addEventListener('input', function () {
-            pageUnsaved = editorTextarea.value !== savedContent;
-        });
+        editorTextarea.addEventListener('input', updateUnsaved);
     }
     window.addEventListener('beforeunload', function (e) {
         if (pageUnsaved) {
@@ -125,22 +133,79 @@
         if (expanded[id] && !target.classList.contains('show')) {
             target.classList.add('show');
             folder.setAttribute('aria-expanded', 'true');
-            folder.querySelector('.folder-icon').innerHTML = '&#9660;';
         }
         // Track show/hide and persist
-        target.addEventListener('show.bs.collapse', function () {
-            folder.querySelector('.folder-icon').innerHTML = '&#9660;';
+        target.addEventListener('show.bs.collapse', function (e) {
+            if (e.target !== target || filtering) return;
             var map = getExpandedFolders();
             map[id] = true;
             saveExpandedFolders(map);
         });
-        target.addEventListener('hide.bs.collapse', function () {
-            folder.querySelector('.folder-icon').innerHTML = '&#9654;';
+        target.addEventListener('hide.bs.collapse', function (e) {
+            if (e.target !== target || filtering) return;
             var map = getExpandedFolders();
             delete map[id];
             saveExpandedFolders(map);
         });
     });
+
+    // --- Find page ---
+    // Shown from 30 pages on. Hides the pages that do not match and opens the
+    // folders with matches, an empty field restores the folders as they were.
+
+    var filtering = false;
+    var pageFilter = document.getElementById('page-filter');
+    if (pageFilter) {
+        var folderStateBeforeFilter = null;
+        pageFilter.addEventListener('input', function () {
+            var query = pageFilter.value.trim().toLowerCase();
+            var collapses = document.querySelectorAll('#pages-sidebar .page-tree .collapse');
+            if (query && !folderStateBeforeFilter) {
+                folderStateBeforeFilter = Array.from(collapses).map(function (c) { return c.classList.contains('show'); });
+            }
+            filtering = true;
+            document.querySelectorAll('#pages-sidebar .page-tree-file').forEach(function (link) {
+                var match = !query || link.getAttribute('data-path').toLowerCase().indexOf(query) !== -1;
+                link.parentElement.classList.toggle('d-none', !match);
+            });
+            // innermost folders first, so a parent sees whether a child folder has matches
+            Array.from(document.querySelectorAll('#pages-sidebar .page-tree-folder-item')).reverse().forEach(function (item) {
+                var hasMatch = !!item.querySelector('.collapse li:not(.d-none) .page-tree-file');
+                item.classList.toggle('d-none', !!query && !hasMatch);
+            });
+            collapses.forEach(function (c, i) {
+                var show = query ? true : (folderStateBeforeFilter ? folderStateBeforeFilter[i] : c.classList.contains('show'));
+                c.classList.toggle('show', show);
+                var toggle = document.querySelector('[href="#' + c.id + '"]');
+                if (toggle) toggle.setAttribute('aria-expanded', show ? 'true' : 'false');
+            });
+            if (!query) folderStateBeforeFilter = null;
+            filtering = false;
+        });
+        pageFilter.addEventListener('keydown', function (e) {
+            // Enter opens the first match
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            var first = document.querySelector('#pages-sidebar li:not(.d-none) > .page-tree-file');
+            if (first && pageFilter.value.trim()) window.location.href = first.href;
+        });
+    }
+
+    // --- Hide the page list ---
+
+    var pagesRowEl = document.getElementById('pages-row');
+    var sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebarToggle && pagesRowEl) {
+        var syncSidebarToggle = function () {
+            sidebarToggle.setAttribute('aria-expanded', pagesRowEl.classList.contains('sidebar-collapsed') ? 'false' : 'true');
+        };
+        syncSidebarToggle();
+        sidebarToggle.addEventListener('click', function () {
+            var collapsed = pagesRowEl.classList.toggle('sidebar-collapsed');
+            store.set('reboot_sidebar_collapsed', collapsed);
+            syncSidebarToggle();
+        });
+    }
 
     // --- Page actions ---
 
@@ -336,17 +401,15 @@
     window.togglePreview = function () {
         previewActive = !previewActive;
         store.set('reboot_preview', previewActive);
+        syncPreviewButton();
         var editorCol = document.getElementById('editor-column');
         var previewCol = document.getElementById('preview-column');
-        var toggleBtn = document.getElementById('preview-toggle');
         if (previewActive) {
             editorCol.classList.remove('col-lg-9', 'col-xl-10');
             editorCol.classList.add('col-lg-5', 'col-xl-6');
             editorCol.parentElement.classList.add('preview-split');
             previewCol.classList.remove('d-lg-none');
             previewCol.classList.add('d-lg-block');
-            toggleBtn.classList.remove('btn-outline-secondary');
-            toggleBtn.classList.add('btn-secondary');
             updatePreview();
             if (editorTextarea) {
                 editorTextarea.addEventListener('input', schedulePreviewUpdate);
@@ -357,14 +420,49 @@
             editorCol.parentElement.classList.remove('preview-split');
             previewCol.classList.remove('d-lg-block');
             previewCol.classList.add('d-lg-none');
-            toggleBtn.classList.remove('btn-secondary');
-            toggleBtn.classList.add('btn-outline-secondary');
             previewInitialized = false;
             if (editorTextarea) {
                 editorTextarea.removeEventListener('input', schedulePreviewUpdate);
             }
         }
     };
+
+    // The preview button sits in the editor toolbar, left of the word wrap
+    // toggle. The editor builds the toolbar in a module script, which runs
+    // before DOMContentLoaded. Icon: "eye" from Bootstrap Icons (MIT).
+    var previewButton = null;
+
+    function syncPreviewButton() {
+        if (!previewButton) return;
+        previewButton.setAttribute('aria-pressed', previewActive ? 'true' : 'false');
+    }
+
+    function addPreviewButton() {
+        var toolbar = editorTextarea && editorTextarea.parentNode.querySelector('[role="toolbar"]');
+        if (!toolbar || !currentPage) return;
+        var buttons = toolbar.querySelectorAll('button');
+        var wrapButton = buttons[buttons.length - 1];
+        previewButton = document.createElement('button');
+        previewButton.type = 'button';
+        previewButton.id = 'preview-toggle';
+        previewButton.className = 'preview-toolbar-button';
+        previewButton.title = 'Preview';
+        previewButton.setAttribute('aria-label', 'Preview');
+        previewButton.tabIndex = -1;
+        previewButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">'
+            + '<path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>'
+            + '<path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/></svg>';
+        previewButton.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        previewButton.addEventListener('click', window.togglePreview);
+        toolbar.insertBefore(previewButton, wrapButton);
+        syncPreviewButton();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', addPreviewButton);
+    } else {
+        addPreviewButton();
+    }
 
     // Restore preview state on load (only on lg+ screens)
     if (previewActive && currentPage && window.innerWidth >= 992) {
@@ -521,7 +619,7 @@
     // The iframes are rendered wider than the column and scaled down, so the
     // page shows its desktop layout. "fit" scales a desktop width to the column.
     var PREVIEW_DESKTOP_WIDTH = 1280;
-    var previewZoom = store.get('reboot_preview_zoom') || 'fit';
+    var previewZoom = store.get('reboot_preview_zoom') || '0.75';
     var previewFrames = document.getElementById('preview-frames');
     var zoomSelect = document.getElementById('preview-zoom');
 
@@ -540,7 +638,7 @@
     }
 
     if (zoomSelect) {
-        if (!zoomSelect.querySelector('option[value="' + previewZoom + '"]')) previewZoom = 'fit';
+        if (!zoomSelect.querySelector('option[value="' + previewZoom + '"]')) previewZoom = '0.75';
         zoomSelect.value = previewZoom;
         zoomSelect.addEventListener('change', function () {
             previewZoom = zoomSelect.value;

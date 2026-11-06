@@ -22,7 +22,6 @@ $historyMaxVersions = $localConfig['history']['maxVersions'] ?? 50;
 $historyDir = $reboot->getBaseFsPath() . "/local/history/pages";
 
 $editPageName = $request->getParam("page");
-$editable = false;
 $pages = FileSystemUtils::getFileList($pagesDir, true);
 usort($pages, function($a, $b) {
     return strcmp($a['name'], $b['name']);
@@ -87,6 +86,27 @@ if($editPageName) {
 
 $allFolders = PageTreeHelper::collectFolders($pagesDir);
 $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
+$editable = false;
+$treeHtml = PageTreeHelper::renderTree($pageTree, $editPageName, $editable);
+if (!$editable && $editPageName) {
+    Logger::error("" . $editPageName . " is not editable.");
+    $editPageName = null;
+}
+$pageCount = substr_count($treeHtml, "class='page-tree-file");
+// the page being edited and its address, shown next to the title
+$titleExtra = '<button type="button" class="btn btn-sm btn-link text-body-secondary p-0 d-none d-md-inline-flex align-self-center"'
+    . ' id="sidebar-toggle" title="Show or hide the page list" aria-label="Show or hide the page list" aria-controls="pages-sidebar">'
+    . AdminHelper::icon('sidebar') . '</button>';
+if ($editPageName) {
+    $viewPath = preg_replace('/\/index$/', '/', preg_replace('/\.md$/', '', $editPageName));
+    $viewUrl = $reboot->getBaseWebPath() . $viewPath;
+    $titleExtra .= '<span class="page-location">'
+        . '<code>' . htmlspecialchars(ltrim($editPageName, '/')) . '</code>'
+        . '<a href="' . htmlspecialchars($viewUrl) . '" target="_blank" title="View the page in a new tab">'
+        . htmlspecialchars($viewPath) . AdminHelper::icon('external') . '</a>'
+        . '<span class="unsaved-dot d-none" id="unsaved-badge" title="Unsaved changes" role="img" aria-label="Unsaved changes"></span>'
+        . '</span>';
+}
 ?>
 <div class="container-fluid">
     <?= AdminHelper::renderStatusMessages($pageActionError, $pageActionSuccess) ?>
@@ -109,45 +129,44 @@ description: Shown by search engines
         </ul>
         <h6>Saving and history</h6>
         <ul>
-            <li>Save with the button or <kbd>⌘ S</kbd> / <kbd>Ctrl S</kbd>. Leaving the page with unsaved changes asks first.</li>
-            <li><em>Preview</em> shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column. Drag the bar between editor and preview to change their widths, a double click resets them.</li>
+            <li>Save with the button or <kbd>⌘ S</kbd> / <kbd>Ctrl S</kbd>. A yellow dot next to the page name and on <em>Save</em> shows that there is something to save. Leaving the page with unsaved changes asks first.</li>
+            <li>The eye in the editor toolbar opens the <em>preview</em>. It shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column. Drag the bar between editor and preview to change their widths, a double click resets them.</li>
             <li>Every save keeps the previous version. <em>… › History</em> shows the last ' . (int)$historyMaxVersions . ' versions and restores one; the current text is kept as a version too.</li>
-            <li><em>…</em> also renames, moves and deletes the page. <em>+ Page</em> and <em>+ Folder</em> below the page list create new ones, a folder starts with an empty <code>index</code> page.</li>
+            <li><em>…</em> also renames, moves and deletes the page. The two buttons above the page list create a new page or folder, a folder starts with an empty <code>index</code> page, marked with a house. From 30 pages on a field there finds a page by its name.</li>
+            <li>The button next to the title hides the page list, so editor and preview get the whole width. The address next to the file name opens the page in a new tab.</li>
         </ul>
-    ') ?>
+    ', $titleExtra) ?>
     <div class="row gx-2" id="pages-row">
-        <div class="col-md-3 col-xl-2 col-sidebar order-md-0 order-1 mt-4 mt-md-0">
-            <nav class="nav nav-compact flex-column">
-                <?php
-                echo PageTreeHelper::renderTree($pageTree, $editPageName, $editable);
-                if (!$editable && $editPageName) {
-                    Logger::error("" . $editPageName . " is not editable.");
-                    $editPageName = null;
-                }
-                ?>
-            </nav>
-            <div class="mt-3 d-flex flex-column gap-1" style="font-size: 0.85rem;">
-                <div class="d-flex gap-2 justify-content-start border-1 border-top">
-                    <button type="button" class="btn btn-sm opacity-75 btn-link text-body-secondary text-decoration-none p-0" data-bs-toggle="collapse" data-bs-target="#add-page-form">+ Page</button>
-                    <button type="button" class="btn btn-sm opacity-75 btn-link text-body-secondary text-decoration-none p-0" data-bs-toggle="collapse" data-bs-target="#add-folder-form">+ Folder</button>
-                </div>
-                <div class="collapse" id="add-page-form">
-                    <form method="post" action="pages" class="d-flex gap-1 mt-1">
-                        <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-                        <input type="hidden" name="action" value="add_page">
-                        <input type="text" name="name" class="form-control form-control-sm" placeholder="path/name" required pattern="[\w\-\/]+">
-                        <button class="btn btn-sm btn-primary text-nowrap">Add</button>
-                    </form>
-                </div>
-                <div class="collapse" id="add-folder-form">
-                    <form method="post" action="pages" class="d-flex gap-1 mt-1">
-                        <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
-                        <input type="hidden" name="action" value="add_folder">
-                        <input type="text" name="name" class="form-control form-control-sm" placeholder="path/folder" required pattern="[\w\-\/]+">
-                        <button class="btn btn-sm btn-primary text-nowrap">Add</button>
-                    </form>
-                </div>
+    <script>try { if (localStorage.getItem('reboot_sidebar_collapsed') === 'true') document.getElementById('pages-row').classList.add('sidebar-collapsed') } catch (e) {}</script>
+        <div class="col-md-3 col-xl-2 col-sidebar order-md-0 order-1 mt-4 mt-md-0" id="pages-sidebar">
+            <div class="page-tree-tools">
+                <?php if ($pageCount >= 30) { ?>
+                    <input type="search" class="form-control form-control-sm" id="page-filter" placeholder="Find page" aria-label="Find page">
+                <?php } else { ?>
+                    <span class="flex-grow-1"></span>
+                <?php } ?>
+                <button type="button" class="btn btn-sm btn-link text-body-secondary p-0" data-bs-toggle="collapse" data-bs-target="#add-page-form" title="New page" aria-label="New page"><?= AdminHelper::icon('file-plus') ?></button>
+                <button type="button" class="btn btn-sm btn-link text-body-secondary p-0" data-bs-toggle="collapse" data-bs-target="#add-folder-form" title="New folder" aria-label="New folder"><?= AdminHelper::icon('folder-plus') ?></button>
             </div>
+            <div class="collapse" id="add-page-form" data-bs-parent="#pages-sidebar">
+                <form method="post" action="pages" class="d-flex gap-1 mb-2">
+                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                    <input type="hidden" name="action" value="add_page">
+                    <input type="text" name="name" class="form-control form-control-sm" placeholder="New page: path/name" aria-label="New page" required pattern="[\w\-\/]+">
+                    <button class="btn btn-sm btn-primary text-nowrap">Add</button>
+                </form>
+            </div>
+            <div class="collapse" id="add-folder-form" data-bs-parent="#pages-sidebar">
+                <form method="post" action="pages" class="d-flex gap-1 mb-2">
+                    <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
+                    <input type="hidden" name="action" value="add_folder">
+                    <input type="text" name="name" class="form-control form-control-sm" placeholder="New folder: path/folder" aria-label="New folder" required pattern="[\w\-\/]+">
+                    <button class="btn btn-sm btn-primary text-nowrap">Add</button>
+                </form>
+            </div>
+            <nav class="nav nav-compact flex-column">
+                <?= $treeHtml ?>
+            </nav>
         </div>
         <div class="col-12 col-lg-9 col-xl-10 order-md-1 order-0 editor-loading" id="editor-column">
             <?php if ($editPageName) {
@@ -214,15 +233,8 @@ description: Shown by search engines
                     <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <textarea name="edited" class="form-control cm-md-editor markdown editor-font"><?= htmlspecialchars(file_get_contents($fullPath)) ?></textarea>
-                    <button type="button" class="btn btn-sm btn-primary px-3" onclick="savePageAsync()">Save</button>
-                    <?php
-                    $viewPath = preg_replace('/\.md$/', '', $editPageName);
-                    $viewPath = preg_replace('/\/index$/', '/', $viewPath);
-                    $viewUrl = $reboot->getBaseWebPath() . $viewPath;
-                    ?>
+                    <button type="button" class="btn btn-sm btn-primary px-3" onclick="savePageAsync()" id="save-button">Save<span class="unsaved-dot d-none" aria-hidden="true"></span></button>
                     <?php /* <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleStructuredEditor()" id="structured-toggle">Structured</button> */ ?>
-                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2 d-none d-lg-inline-block" onclick="togglePreview()" id="preview-toggle">Preview</button>
-                    <a href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">View Page</a>
                     <?php $currentBaseName = basename($editPageName, '.md'); ?>
                     <div class="dropdown d-inline-block ms-2">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">&#8230;</button>

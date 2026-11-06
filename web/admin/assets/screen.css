@@ -29,6 +29,92 @@ textarea.cm-md-editor {
   display: none;
 }
 
+.page-location {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  align-self: center;
+  order: 1;
+  column-gap: 0.4rem;
+  font-size: 0.8rem;
+  line-height: 1.25;
+}
+.page-location code {
+  grid-column: 1;
+}
+.page-location a {
+  grid-column: 1;
+  grid-row: 2;
+  text-decoration: none;
+}
+.page-location a .icon {
+  margin-left: 0.3em;
+  font-size: 0.75em;
+  vertical-align: 0;
+}
+.page-location .unsaved-dot {
+  grid-column: 2;
+  grid-row: 1;
+  margin-left: 0;
+}
+
+#sidebar-toggle {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+#sidebar-toggle:hover, #sidebar-toggle[aria-expanded=false] {
+  color: var(--bs-body-color) !important;
+}
+
+.unsaved-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-left: 0.4rem;
+  border-radius: 50%;
+  background-color: var(--bs-warning);
+  vertical-align: middle;
+}
+
+.preview-toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+.preview-toolbar-button:hover {
+  opacity: 1;
+  background: rgba(128, 128, 128, 0.2);
+}
+.preview-toolbar-button[aria-pressed=true] {
+  opacity: 1;
+  color: var(--bs-primary);
+}
+@media (max-width: 991.98px) {
+  .preview-toolbar-button {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  #pages-row.sidebar-collapsed #pages-sidebar {
+    display: none;
+  }
+  #pages-row.sidebar-collapsed:not(.preview-split) #editor-column {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
+}
 @media (min-width: 992px) {
   #pages-row.preview-split #editor-column {
     flex: calc(1 - var(--preview-share, 0.4)) 1 0;
@@ -124,7 +210,7 @@ nav.navbar {
 
 .page-tree {
   margin: 0;
-  padding-left: 1rem;
+  padding-left: 1.25rem;
 }
 .col-sidebar > nav > .page-tree {
   padding-left: 0;
@@ -162,11 +248,50 @@ nav.navbar {
   color: var(--bs-body-color);
 }
 
-.folder-icon {
-  display: inline-block;
-  width: 0.75em;
-  font-size: 0.7em;
-  text-align: center;
+.icon {
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+}
+
+.page-tree-file, .page-tree-folder {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.page-tree-file .icon, .page-tree-folder .icon {
+  margin-top: 0.25em;
+  margin-right: 0.4em;
+  opacity: 0.55;
+}
+.page-tree-file.active .icon, .page-tree-folder.active .icon {
+  opacity: 0.9;
+}
+
+.page-tree-folder .folder-icon {
+  width: 0.65em;
+  margin-left: 0.35em;
+  margin-right: 0;
+  margin-top: 0.3em;
+  transition: transform 0.15s;
+}
+
+.page-tree-folder[aria-expanded=true] .folder-icon {
+  transform: rotate(90deg);
+}
+
+.page-tree-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.page-tree-tools .btn {
+  line-height: 1;
+  font-size: 1rem;
+}
+.page-tree-tools .btn:hover {
+  color: var(--bs-body-color) !important;
 }
 
 .folder-actions {
