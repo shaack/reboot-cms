@@ -1,5 +1,5 @@
 ---
-title: Your content, your file
+title: Your content, your files
 description: Why a website whose pages are plain files outlives every redesign, every host and every CMS that comes after it.
 ---
 
