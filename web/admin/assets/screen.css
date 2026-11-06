@@ -236,6 +236,11 @@ nav.navbar {
   color: #fff;
 }
 
+[data-bs-theme=dark] .page-tree-file.active {
+  background-color: rgba(var(--bs-primary-rgb), 0.35);
+  color: var(--bs-emphasis-color);
+}
+
 .page-tree-folder {
   display: block;
   padding: 2px 8px;
