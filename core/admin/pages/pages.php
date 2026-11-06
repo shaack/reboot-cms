@@ -110,7 +110,7 @@ description: Shown by search engines
         <h6>Saving and history</h6>
         <ul>
             <li>Save with the button or <kbd>⌘ S</kbd> / <kbd>Ctrl S</kbd>. Leaving the page with unsaved changes asks first.</li>
-            <li><em>Preview</em> shows the page with your changes next to the editor, before saving. It needs a wide window.</li>
+            <li><em>Preview</em> shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column.</li>
             <li>Every save keeps the previous version. <em>… › History</em> shows the last ' . (int)$historyMaxVersions . ' versions and restores one; the current text is kept as a version too.</li>
             <li><em>…</em> also renames, moves and deletes the page. <em>+ Page</em> and <em>+ Folder</em> below the page list create new ones, a folder starts with an empty <code>index</code> page.</li>
         </ul>
@@ -266,13 +266,21 @@ description: Shown by search engines
             <?php } ?>
         </div>
         <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;">
-            <div style="position:relative;width:100%;height:calc(100vh - 213px);">
-                <iframe id="preview-iframe-a" name="preview-iframe-a" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;visibility:hidden;"></iframe>
-                <iframe id="preview-iframe-b" name="preview-iframe-b" style="position:absolute;top:0;left:0;width:100%;height:100%;border:1px solid rgba(128,128,128,0.3);border-radius:4px;visibility:hidden;"></iframe>
+            <div id="preview-frames" style="position:relative;width:100%;height:calc(100vh - 213px);overflow:hidden;border:1px solid rgba(128,128,128,0.3);border-radius:4px;">
+                <iframe id="preview-iframe-a" name="preview-iframe-a" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;transform-origin:0 0;visibility:hidden;"></iframe>
+                <iframe id="preview-iframe-b" name="preview-iframe-b" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;transform-origin:0 0;visibility:hidden;"></iframe>
             </div>
-            <div class="form-check form-switch small mt-3">
-                <input class="form-check-input" type="checkbox" role="switch" id="preview-follow" checked>
-                <label class="form-check-label text-body-secondary" for="preview-follow">Follow the cursor</label>
+            <div class="d-flex align-items-center justify-content-between gap-2 mt-3">
+                <div class="form-check form-switch small mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="preview-follow" checked>
+                    <label class="form-check-label text-body-secondary" for="preview-follow">Follow the cursor</label>
+                </div>
+                <select class="form-select form-select-sm w-auto" id="preview-zoom" aria-label="Preview zoom">
+                    <option value="fit">Fit desktop</option>
+                    <option value="1">100 %</option>
+                    <option value="0.75">75 %</option>
+                    <option value="0.5">50 %</option>
+                </select>
             </div>
         </div>
     </div>

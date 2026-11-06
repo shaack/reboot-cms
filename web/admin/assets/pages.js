@@ -515,6 +515,43 @@
         });
     }
 
+    // --- Preview zoom ---
+    // The iframes are rendered wider than the column and scaled down, so the
+    // page shows its desktop layout. "fit" scales a desktop width to the column.
+    var PREVIEW_DESKTOP_WIDTH = 1280;
+    var previewZoom = store.get('reboot_preview_zoom') || 'fit';
+    var previewFrames = document.getElementById('preview-frames');
+    var zoomSelect = document.getElementById('preview-zoom');
+
+    function applyPreviewZoom() {
+        if (!previewFrames) return;
+        var scale = previewZoom === 'fit'
+            ? Math.min(1, previewFrames.clientWidth / PREVIEW_DESKTOP_WIDTH)
+            : parseFloat(previewZoom);
+        if (!(scale > 0)) scale = 1;
+        ['a', 'b'].forEach(function (id) {
+            var iframe = document.getElementById('preview-iframe-' + id);
+            iframe.style.width = (100 / scale) + '%';
+            iframe.style.height = (100 / scale) + '%';
+            iframe.style.transform = scale === 1 ? '' : 'scale(' + scale + ')';
+        });
+    }
+
+    if (zoomSelect) {
+        if (!zoomSelect.querySelector('option[value="' + previewZoom + '"]')) previewZoom = 'fit';
+        zoomSelect.value = previewZoom;
+        zoomSelect.addEventListener('change', function () {
+            previewZoom = zoomSelect.value;
+            store.set('reboot_preview_zoom', previewZoom);
+            applyPreviewZoom();
+        });
+    }
+    if (previewFrames && window.ResizeObserver) {
+        // the column is hidden until the preview opens and changes with the window
+        new ResizeObserver(applyPreviewZoom).observe(previewFrames);
+    }
+    applyPreviewZoom();
+
     var cursorScrollTimer = null;
     function scheduleScrollToCursor() {
         if (!previewActive || !previewInitialized || !followCursor) return;
