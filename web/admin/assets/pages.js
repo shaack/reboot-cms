@@ -528,6 +528,551 @@
         submitPageAction('restore_page', currentPage, {version: filename});
     };
 
+    // --- Structure of the page ---
+    // The editor knows where the frontmatter, the blocks and their parts are,
+    // the same way Page::parseBlocks() reads them. Lines count from 0.
+
+    var blockNames = config.blockNames || [];
+    var blockExamplesEl = document.getElementById('block-examples');
+    var blockExamples = {};
+    try { blockExamples = blockExamplesEl ? JSON.parse(blockExamplesEl.textContent) : {}; } catch (e) { /* none */ }
+    var structureCache = {text: null, value: null};
+
+    // the block name of a comment, null for a note like "TODO: check prices"
+    function blockNameOf(comment) {
+        var header = comment.trim();
+        if (!header) return null;
+        var colon = header.indexOf(':');
+        if (colon === -1) return header;
+        var rest = header.substring(colon + 1).trim();
+        if (rest === '' || rest.charAt(0) === '{' || /^:?\s*\n\s+\S/.test(header.substring(colon))) {
+            return header.substring(0, colon).trim();
+        }
+        return null;
+    }
+
+    function pageStructure(text) {
+        if (structureCache.text === text) return structureCache.value;
+        var lines = text.split('\n');
+        var starts = [];
+        var pos = 0;
+        lines.forEach(function (l) { starts.push(pos); pos += l.length + 1; });
+        var result = {frontmatterEnd: -1, blocks: [], spans: [], lineStarts: starts, lines: lines};
+        result.protectedLines = {};
+        var protect = function (i) {
+            result.spans.push({start: starts[i], end: starts[i] + lines[i].length, line: i});
+            result.protectedLines[i] = true;
+        };
+        var i = 0;
+        if (lines[0] !== undefined && lines[0].trim() === '---') {
+            for (var j = 1; j < lines.length; j++) {
+                if (lines[j].trim() === '---') {
+                    result.frontmatterEnd = j;
+                    protect(0);
+                    protect(j);
+                    // the names of the values, "title: ", the values stay editable
+                    for (var f = 1; f < j; f++) {
+                        var key = lines[f].match(/^[A-Za-z0-9_-]+[ \t]*:[ \t]?/);
+                        if (key) result.spans.push({start: starts[f], end: starts[f] + key[0].length, line: f, key: true});
+                    }
+                    i = j + 1;
+                    break;
+                }
+            }
+        }
+        var inFence = false;
+        for (; i < lines.length; i++) {
+            var trimmed = lines[i].trim();
+            if (trimmed.indexOf('```') === 0) {
+                inFence = !inFence;
+                continue;
+            }
+            if (inFence) continue;
+            if (trimmed.indexOf('<!--') === 0) {
+                // the comment may run over several lines, a block config in YAML.
+                // A new "<!--" before the end means this one is unfinished, for
+                // example while it is typed, so it must not take the end of the next.
+                var k = i;
+                if (lines[i].indexOf('-->', lines[i].indexOf('<!--') + 4) === -1) {
+                    k = i + 1;
+                    while (k < lines.length && lines[k].indexOf('-->') === -1 && lines[k].indexOf('<!--') === -1) k++;
+                    if (k >= lines.length || lines[k].indexOf('<!--') !== -1 && lines[k].indexOf('<!--') < lines[k].indexOf('-->')) continue;
+                    if (lines[k].indexOf('-->') === -1) continue;
+                }
+                var comment = lines.slice(i, k + 1).join('\n');
+                comment = comment.substring(comment.indexOf('<!--') + 4, comment.lastIndexOf('-->'));
+                var name = blockNameOf(comment);
+                if (name !== null) {
+                    var known = blockNames.indexOf(name) !== -1;
+                    // where the name stands, on the comment line or the first line inside
+                    var nameAt = -1;
+                    for (var n = i; n <= k && nameAt === -1; n++) {
+                        var from = n === i ? lines[i].indexOf('<!--') + 4 : 0;
+                        var found = lines[n].indexOf(name, from);
+                        if (found !== -1) nameAt = starts[n] + found;
+                    }
+                    result.blocks.push({name: name, line: i, endLine: k, separators: [], known: known,
+                        nameStart: nameAt, nameEnd: nameAt === -1 ? -1 : nameAt + name.length,
+                        disabled: /(^|[\s{,])disabled\s*:\s*true\b/.test(comment)});
+                    // Only a block that exists is protected, a typo in the name must
+                    // stay editable. The config lines in between stay editable too.
+                    if (known) {
+                        protect(i);
+                        if (k > i) {
+                            var nameLine = i + 1;
+                            while (nameLine < k && !lines[nameLine].trim()) nameLine++;
+                            if (nameLine < k) protect(nameLine);
+                            protect(k);
+                        }
+                    }
+                }
+                i = k;
+                continue;
+            }
+            if (trimmed === '---' && result.blocks.length && result.blocks[result.blocks.length - 1].known) {
+                result.blocks[result.blocks.length - 1].separators.push(i);
+                protect(i);
+            }
+        }
+        // The block of every line, from its comment up to the next block. The
+        // empty lines at its end belong to no block, so the editor shows a gap
+        // between two blocks.
+        result.lineBlock = lines.map(function () { return -1; });
+        result.blocks.forEach(function (block, index) {
+            var end = index + 1 < result.blocks.length ? result.blocks[index + 1].line : lines.length;
+            while (end - 1 > block.endLine && lines[end - 1].trim() === '') end--;
+            for (var l = block.line; l < end; l++) result.lineBlock[l] = index;
+        });
+        structureCache = {text: text, value: result};
+        return result;
+    }
+
+    function lineOfOffset(structure, offset) {
+        var starts = structure.lineStarts;
+        var lo = 0, hi = starts.length - 1;
+        while (lo < hi) {
+            var mid = (lo + hi + 1) >> 1;
+            if (starts[mid] <= offset) lo = mid; else hi = mid - 1;
+        }
+        return lo;
+    }
+
+    // --- Status line: where the cursor is ---
+
+    var editorStatus = document.getElementById('editor-status');
+    var statusHintUntil = 0;
+
+    // a line of a block example as words: "# Hero heading" is "Hero heading",
+    // "[Call-to-action link](url)" is "Call-to-action link", an image is "Image"
+    function exampleWords(line) {
+        return line.trim()
+            .replace(/^[-*]\s+/, '')
+            .replace(/^#+\s*/, '')
+            .replace(/!\[([^\]]*)\]\([^)]*\)/g, function (m, alt) { return alt && alt !== 'dummy' ? alt : 'Image'; })
+            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+    }
+
+    function exampleParts(name) {
+        var example = blockExamples[name];
+        return example ? example.split(/\n\s*---\s*\n/) : null;
+    }
+
+    // what follows a "---" in a block, "part 2 of 3 · Description", from the example
+    function separatorLabel(block, part) {
+        var parts = block.known ? exampleParts(block.name) : null;
+        if (!parts) return 'part ' + part;
+        if (part > parts.length) return 'part ' + part + ', the block has only ' + parts.length;
+        var hint = parts[part - 1].split('\n').map(exampleWords).filter(Boolean)[0] || '';
+        return 'part ' + part + ' of ' + parts.length + (hint ? ' · ' + hint : '');
+    }
+
+    function cursorStatus() {
+        var text = editorTextarea.value;
+        var st = pageStructure(text);
+        var line = lineOfOffset(st, editorTextarea.selectionStart);
+        if (st.frontmatterEnd !== -1 && line <= st.frontmatterEnd) {
+            return {text: 'Frontmatter · title, description and other page settings'};
+        }
+        var block = null;
+        st.blocks.forEach(function (b) { if (b.line <= line) block = b; });
+        if (!block) {
+            return st.blocks.length ? {text: 'Before the first block · not shown on the page', warn: true} : {text: ''};
+        }
+        if (!block.known) {
+            return {text: block.name + ' · there is no such block', warn: true};
+        }
+        if (block.disabled) {
+            return {text: block.name + ' · switched off, not shown on the page'};
+        }
+        if (line <= block.endLine) {
+            return {text: 'Block ' + block.name};
+        }
+        var part = 1;
+        block.separators.forEach(function (s) { if (s < line) part++; });
+        var parts = exampleParts(block.name);
+        if (!parts) {
+            return {text: block.name};
+        }
+        if (part > parts.length) {
+            return {text: block.name + ' · part ' + part + ', the block has only ' + parts.length, warn: true};
+        }
+        // what belongs here, from the example of "Insert block"
+        var hint = parts[part - 1].split('\n').map(exampleWords).filter(Boolean).join(' · ');
+        return {text: block.name + (parts.length > 1 ? ' · part ' + part + ' of ' + parts.length : '') + (hint ? ' · ' + hint : '')};
+    }
+
+    function updateEditorStatus() {
+        updateBlockActions();
+        if (!editorStatus || !editorTextarea || Date.now() < statusHintUntil) return;
+        var status = cursorStatus();
+        editorStatus.textContent = status.text;
+        editorStatus.title = status.text;
+        editorStatus.classList.toggle('text-warning', !!status.warn);
+    }
+
+    function showEditorHint(text) {
+        if (!editorStatus) return;
+        statusHintUntil = Date.now() + 2500;
+        editorStatus.textContent = text;
+        editorStatus.title = text;
+        editorStatus.classList.add('text-warning');
+        setTimeout(function () {
+            statusHintUntil = 0;
+            updateEditorStatus();
+        }, 2600);
+    }
+
+    if (editorTextarea && editorStatus) {
+        var statusFrame = null;
+        var scheduleStatus = function () {
+            if (statusFrame) return;
+            statusFrame = requestAnimationFrame(function () {
+                statusFrame = null;
+                updateEditorStatus();
+            });
+        };
+        ['input', 'click', 'keyup', 'focus'].forEach(function (type) {
+            editorTextarea.addEventListener(type, scheduleStatus);
+        });
+        document.addEventListener('selectionchange', function () {
+            if (document.activeElement === editorTextarea) scheduleStatus();
+        });
+        scheduleStatus();
+    }
+
+    // --- Block actions: move a block, switch it off and on ---
+    // With the cursor in a block, the buttons below the editor change the text
+    // like typing would: the editor records it for undo, the preview and the
+    // check follow.
+
+    var blockActions = document.getElementById('block-actions');
+    var blockUp = document.getElementById('block-up');
+    var blockDown = document.getElementById('block-down');
+    var blockToggle = document.getElementById('block-toggle');
+
+    function cursorBlockIndex(st) {
+        var line = lineOfOffset(st, editorTextarea.selectionStart);
+        var index = -1;
+        st.blocks.forEach(function (b, i) { if (b.line <= line) index = i; });
+        return index;
+    }
+
+    function updateBlockActions() {
+        if (!blockActions || !editorTextarea) return;
+        var st = pageStructure(editorTextarea.value);
+        var index = cursorBlockIndex(st);
+        blockActions.classList.toggle('d-none', index === -1);
+        if (index === -1) return;
+        blockUp.disabled = index === 0;
+        blockDown.disabled = index === st.blocks.length - 1;
+        var off = st.blocks[index].disabled;
+        var label = off ? 'Switch the block on' : 'Switch the block off';
+        blockToggle.setAttribute('aria-pressed', off ? 'false' : 'true');
+        blockToggle.title = label;
+        blockToggle.setAttribute('aria-label', label);
+    }
+
+    // replaces lines from..to (exclusive) and puts the caret at the given offset
+    function replaceLines(st, from, to, newLines, caret) {
+        var start = st.lineStarts[from];
+        var oldText = st.lines.slice(from, to).join('\n');
+        // The editor groups changes within 400 ms into one undo step. A click is
+        // a step of its own, so the typing before it and the change itself are
+        // committed at once.
+        var editor = editorTextarea.mdEditor;
+        var commit = function () {
+            if (editor && editor.historyDebounce) {
+                clearTimeout(editor.historyDebounce);
+                editor.historyDebounce = null;
+                editor.commitHistory();
+            }
+        };
+        commit();
+        editorTextarea.focus();
+        editorTextarea.setRangeText(newLines.join('\n'), start, start + oldText.length, 'end');
+        editorTextarea.setSelectionRange(caret, caret);
+        editorTextarea.dispatchEvent(new Event('input', {bubbles: true}));
+        commit();
+        var lineHeight = parseFloat(getComputedStyle(editorTextarea).lineHeight) || 20;
+        var line = editorTextarea.value.substring(0, caret).split('\n').length - 1;
+        var top = line * lineHeight;
+        if (top < editorTextarea.scrollTop || top > editorTextarea.scrollTop + editorTextarea.clientHeight - lineHeight) {
+            editorTextarea.scrollTop = Math.max(0, top - editorTextarea.clientHeight / 3);
+        }
+    }
+
+    // the lines of a block, without the empty lines at its end, and those
+    function blockChunk(st, index) {
+        var from = st.blocks[index].line;
+        var to = index + 1 < st.blocks.length ? st.blocks[index + 1].line : st.lines.length;
+        var end = to;
+        while (end - 1 > st.blocks[index].endLine && st.lines[end - 1].trim() === '') end--;
+        return {from: from, to: to, content: st.lines.slice(from, end), trailing: st.lines.slice(end, to)};
+    }
+
+    function moveBlock(direction) {
+        var st = pageStructure(editorTextarea.value);
+        var index = cursorBlockIndex(st);
+        var other = index + direction;
+        if (index === -1 || other < 0 || other >= st.blocks.length) return;
+        var first = blockChunk(st, Math.min(index, other));
+        var second = blockChunk(st, Math.max(index, other));
+        // the second comes first, an empty line keeps the two apart
+        var gap = first.trailing.length ? first.trailing : [''];
+        var newLines = second.content.concat(gap, first.content, second.trailing);
+        var moved = direction < 0 ? second : first;
+        var offsetInBlock = editorTextarea.selectionStart - st.lineStarts[moved.from];
+        var newBlockStart = st.lineStarts[first.from]
+            + (direction < 0 ? 0 : second.content.concat(gap).join('\n').length + 1);
+        replaceLines(st, first.from, second.to, newLines,
+            newBlockStart + Math.min(offsetInBlock, moved.content.join('\n').length));
+    }
+
+    // the comment with "disabled: true" in its config, or without it
+    function toggleBlock() {
+        var st = pageStructure(editorTextarea.value);
+        var index = cursorBlockIndex(st);
+        if (index === -1) return;
+        var block = st.blocks[index];
+        var lines = st.lines.slice(block.line, block.endLine + 1);
+        var nameLine = lineOfOffset(st, block.nameStart) - block.line;
+        var line = lines[nameLine];
+        var nameEnd = block.nameEnd - st.lineStarts[block.line + nameLine];
+        var head = line.substring(0, nameEnd), rest = line.substring(nameEnd);
+        var flow = rest.match(/^\s*:\s*\{([^}]*)\}/);
+        if (block.disabled) {
+            if (flow) {
+                var entries = flow[1].split(',').filter(function (e) { return !/^\s*disabled\s*:\s*true\s*$/.test(e); });
+                var config = entries.map(function (e) { return e.trim(); }).filter(Boolean).join(', ');
+                lines[nameLine] = head + (config ? ': {' + config + '}' : '') + rest.substring(flow[0].length);
+            } else {
+                lines = lines.filter(function (l) { return !/^\s*disabled\s*:\s*true\s*$/.test(l); });
+            }
+        } else if (flow) {
+            lines[nameLine] = head + ': {' + (flow[1].trim() ? flow[1].trim() + ', ' : '') + 'disabled: true}' + rest.substring(flow[0].length);
+        } else if (block.endLine > block.line && /^\s*:\s*$/.test(rest)) {
+            // a config in YAML lines below the name, the new value gets their indent
+            var next = lines[nameLine + 1] || '';
+            var indent = /^\s+\S/.test(next) && next.indexOf('-->') === -1 ? next.match(/^\s+/)[0] : '    ';
+            lines.splice(nameLine + 1, 0, indent + 'disabled: true');
+        } else {
+            lines[nameLine] = head + ': {disabled: true}' + rest.replace(/^\s*:\s*(null|~)?/, '');
+        }
+        var caret = st.lineStarts[block.line] + Math.min(lines[0].length, editorTextarea.selectionStart - st.lineStarts[block.line]);
+        replaceLines(st, block.line, block.endLine + 1, lines, caret);
+    }
+
+    if (blockActions && editorTextarea) {
+        [blockUp, blockDown, blockToggle].forEach(function (button) {
+            // the caret stays in the editor
+            button.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        });
+        blockUp.addEventListener('click', function () { moveBlock(-1); });
+        blockDown.addEventListener('click', function () { moveBlock(1); });
+        blockToggle.addEventListener('click', toggleBlock);
+    }
+
+    // --- Check while typing ---
+    // The server renders every block of the draft and reports what does not
+    // fit the block, a few moments after the last key.
+
+    var problemsToggle = document.getElementById('editor-problems-toggle');
+    var problemsMenu = document.getElementById('editor-problems');
+    var validateTimer = null;
+    var validateRequest = 0;
+
+    function jumpToLine(line) {
+        var st = pageStructure(editorTextarea.value);
+        var offset = st.lineStarts[Math.min(line, st.lineStarts.length - 1)] || 0;
+        editorTextarea.focus();
+        editorTextarea.setSelectionRange(offset, offset);
+        var lineHeight = parseFloat(getComputedStyle(editorTextarea).lineHeight) || 20;
+        editorTextarea.scrollTop = Math.max(0, line * lineHeight - editorTextarea.clientHeight / 3);
+        updateEditorStatus();
+    }
+
+    function showProblems(problems) {
+        if (!problemsToggle || !problemsMenu) return;
+        problemsToggle.classList.toggle('d-none', problems.length === 0);
+        problemsToggle.textContent = problems.length === 1 ? '1 problem' : problems.length + ' problems';
+        problemsMenu.textContent = '';
+        problems.forEach(function (p) {
+            var item = document.createElement('div');
+            item.className = 'editor-problem';
+            var link = document.createElement('button');
+            link.type = 'button';
+            link.className = 'btn btn-link p-0 text-start';
+            var where = document.createElement('strong');
+            where.textContent = (p.block ? p.block + ' · ' : '') + 'line ' + (p.line + 1);
+            link.appendChild(where);
+            link.appendChild(document.createTextNode(' ' + p.message));
+            link.addEventListener('click', function () { jumpToLine(p.line); });
+            item.appendChild(link);
+            if (p.block && blockExamples[p.block]) {
+                var details = document.createElement('details');
+                var summary = document.createElement('summary');
+                summary.textContent = 'Expected Markdown';
+                var pre = document.createElement('pre');
+                pre.textContent = '<!-- ' + p.block + ' -->\n\n' + blockExamples[p.block];
+                details.appendChild(summary);
+                details.appendChild(pre);
+                item.appendChild(details);
+            }
+            problemsMenu.appendChild(item);
+        });
+    }
+
+    function validateDraft() {
+        if (!editorTextarea || !currentPage) return;
+        var request = ++validateRequest;
+        var body = new FormData();
+        body.append('csrf_token', csrfToken);
+        body.append('page', currentPage);
+        body.append('content', editorTextarea.value);
+        fetch('pages?validate=1', {method: 'POST', body: body}).then(function (response) {
+            return response.ok ? response.json() : null;
+        }).then(function (data) {
+            // an answer to an older draft must not replace a newer one
+            if (data && request === validateRequest) showProblems(data.problems || []);
+        }).catch(function () { /* the check is a help, saving reports real errors */ });
+    }
+
+    if (editorTextarea && problemsToggle) {
+        editorTextarea.addEventListener('input', function () {
+            clearTimeout(validateTimer);
+            validateTimer = setTimeout(validateDraft, 800);
+        });
+        validateDraft();
+    }
+
+    // --- Protected structure lines ---
+    // The block comments and the "---" between the parts of a block do not take
+    // typing, a backspace or a deleted selection that would change them, not even
+    // a selection of everything. The lock in the toolbar switches this off.
+
+    if (editorTextarea) {
+        // The editor gives every block a background, the protected lines a
+        // stronger one (template.php)
+        editorTextarea.rebootLineClass = function (index) {
+            var st = pageStructure(editorTextarea.value);
+            var classes = [];
+            var label = null;
+            if (st.lineBlock[index] !== -1) {
+                var block = st.blocks[st.lineBlock[index]];
+                // the block background only while protected, the comment always
+                if (protectStructure) classes.push('md-block');
+                if (index <= block.endLine) classes.push('md-block-head');
+                if (block.disabled) classes.push('md-block-disabled');
+                var separator = block.separators.indexOf(index);
+                if (separator !== -1) {
+                    classes.push('md-separator');
+                    label = separatorLabel(block, separator + 2);
+                }
+            }
+            if (protectStructure && st.protectedLines[index]) classes.push('md-protected');
+            if (!classes.length) return null;
+            return label ? {className: classes.join(' '), label: label} : classes.join(' ');
+        };
+        // the block names, and the names in the frontmatter up to the value
+        editorTextarea.rebootRangeClass = function (text) {
+            var st = pageStructure(text);
+            var ranges = st.blocks.filter(function (b) { return b.nameStart !== -1; }).map(function (b) {
+                return {start: b.nameStart, end: b.nameEnd,
+                    className: 'md-block-name' + (b.known ? '' : ' md-block-unknown') + (b.disabled ? ' md-block-name-off' : '')};
+            });
+            if (protectStructure) {
+                st.spans.forEach(function (span) {
+                    if (span.key) ranges.push({start: span.start, end: span.end, className: 'md-protected md-protected-part'});
+                });
+            }
+            return ranges;
+        };
+        editorTextarea.addEventListener('beforeinput', function (e) {
+            var type = e.inputType || '';
+            if (!protectStructure || type.indexOf('history') === 0 || type.indexOf('format') === 0) return;
+            var text = editorTextarea.value;
+            var st = pageStructure(text);
+            if (!st.spans.length) return;
+            var s = editorTextarea.selectionStart, en = editorTextarea.selectionEnd;
+            var isBreak = type === 'insertParagraph' || type === 'insertLineBreak';
+            var backward = type.indexOf('delete') === 0 && type.indexOf('Backward') !== -1;
+            var forward = type.indexOf('delete') === 0 && !backward;
+            var lineIsEmpty = function (line) {
+                return line < 0 || line >= st.lines.length || st.lines[line].trim() === '';
+            };
+            // In the frontmatter only values change: no new line, no joined lines,
+            // so no name can be added or removed
+            if (st.frontmatterEnd > 0) {
+                var fmFrom = st.lineStarts[1] - 1, fmTo = st.lineStarts[st.frontmatterEnd] - 1;
+                var inFm = function (offset) { return offset >= fmFrom && offset <= fmTo; };
+                var data = e.data || (e.dataTransfer ? e.dataTransfer.getData('text/plain') : '') || '';
+                var fmBlocked = (
+                    ((isBreak || data.indexOf('\n') !== -1) && inFm(s))
+                    || (s === en && backward && text.charAt(s - 1) === '\n' && inFm(s - 1))
+                    || (s === en && forward && text.charAt(s) === '\n' && inFm(s))
+                    || (s !== en && text.substring(s, en).indexOf('\n') !== -1 && (inFm(s) || inFm(en - 1))));
+                if (fmBlocked) {
+                    e.preventDefault();
+                    showEditorHint('In the frontmatter only the values can be changed. For more, switch off the lock in the toolbar.');
+                    return;
+                }
+            }
+            var blocked = st.spans.some(function (span) {
+                if (span.key) {
+                    // the value starts right after the colon, typing there is fine
+                    if (s !== en) return en > span.start && s < span.end;
+                    if (s > span.start && s < span.end) return true;
+                    if (s === span.start) return true;
+                    if (s === span.end) return backward;
+                    return false;
+                }
+                // also a selection of the whole line or of everything, deleting
+                // a structure line needs the lock switched off
+                if (s !== en) return en > span.start && s < span.end;
+                if (s > span.start && s < span.end) return true;
+                if (s === span.start) {
+                    if (isBreak) return false;
+                    // joining with the line above keeps the structure line only if that one is empty
+                    if (backward) return s > 0 && !lineIsEmpty(span.line - 1);
+                    return true;
+                }
+                if (s === span.end) {
+                    if (isBreak) return false;
+                    if (forward) return !lineIsEmpty(span.line + 1);
+                    return true;
+                }
+                // a backspace at the start of the next line would pull it up to the structure line
+                if (backward && s === span.end + 1) return !lineIsEmpty(span.line + 1);
+                if (forward && s === span.start - 1) return !lineIsEmpty(span.line - 1);
+                return false;
+            });
+            if (blocked) {
+                e.preventDefault();
+                showEditorHint('Block lines are protected. To change them, switch off the lock in the toolbar.');
+            }
+        });
+    }
+
     // --- Preview (double-buffered) ---
 
     // open by default on wide screens, until the preview button saves a choice
@@ -632,32 +1177,62 @@
 
     // The preview button sits in the editor toolbar, left of the word wrap
     // toggle. The editor builds the toolbar in a module script, which runs
-    // before DOMContentLoaded. Icon: "eye" from Bootstrap Icons (MIT).
+    // before DOMContentLoaded.
     var previewButton = null;
+    var protectButton = null;
+    // on by default, the lock in the toolbar turns it off for this browser
+    var protectStructure = store.get('reboot_editor_protect') !== 'false';
+
+    function syncProtectButton() {
+        if (protectButton) protectButton.setAttribute('aria-pressed', protectStructure ? 'true' : 'false');
+    }
 
     function syncPreviewButton() {
         if (!previewButton) return;
         previewButton.setAttribute('aria-pressed', previewActive ? 'true' : 'false');
     }
 
+    // Icons: "lock", "lock-fill", "eye" and "eye-fill" from Bootstrap Icons (MIT),
+    // filled while the toggle is on
+    var ICON_LOCK_FILL = '<path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>';
+    var ICON_EYE_FILL = '<path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>'
+        + '<path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>';
+    var ICON_LOCK = '<path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2M5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1"/>';
+    var ICON_EYE = '<path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>'
+        + '<path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>';
+
+    // a toggle in the editor toolbar, left of the word wrap toggle
+    function addToolbarToggle(toolbar, id, title, icon, iconOn, onClick) {
+        var buttons = toolbar.querySelectorAll('button');
+        var wrapButton = buttons[buttons.length - 1];
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.id = id;
+        button.className = 'editor-toolbar-button';
+        button.title = title;
+        button.setAttribute('aria-label', title);
+        button.tabIndex = -1;
+        var svg = function (paths, className) {
+            return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" class="' + className + '">' + paths + '</svg>';
+        };
+        button.innerHTML = svg(icon, 'icon-off') + svg(iconOn, 'icon-on');
+        button.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        button.addEventListener('click', onClick);
+        toolbar.insertBefore(button, wrapButton);
+        return button;
+    }
+
     function addPreviewButton() {
         var toolbar = editorTextarea && editorTextarea.parentNode.querySelector('[role="toolbar"]');
         if (!toolbar || !currentPage) return;
-        var buttons = toolbar.querySelectorAll('button');
-        var wrapButton = buttons[buttons.length - 1];
-        previewButton = document.createElement('button');
-        previewButton.type = 'button';
-        previewButton.id = 'preview-toggle';
-        previewButton.className = 'preview-toolbar-button';
-        previewButton.title = 'Preview';
-        previewButton.setAttribute('aria-label', 'Preview');
-        previewButton.tabIndex = -1;
-        previewButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">'
-            + '<path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>'
-            + '<path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/></svg>';
-        previewButton.addEventListener('mousedown', function (e) { e.preventDefault(); });
-        previewButton.addEventListener('click', window.togglePreview);
-        toolbar.insertBefore(previewButton, wrapButton);
+        protectButton = addToolbarToggle(toolbar, 'protect-toggle', 'Protect the block lines', ICON_LOCK, ICON_LOCK_FILL, function () {
+            protectStructure = !protectStructure;
+            store.set('reboot_editor_protect', protectStructure);
+            syncProtectButton();
+            if (editorTextarea.mdEditor) editorTextarea.mdEditor.updateHighlight();
+        });
+        syncProtectButton();
+        previewButton = addToolbarToggle(toolbar, 'preview-toggle', 'Preview', ICON_EYE, ICON_EYE_FILL, window.togglePreview);
         syncPreviewButton();
     }
 

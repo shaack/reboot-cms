@@ -40,6 +40,10 @@ if ($request->getParam("preview") && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require __DIR__ . "/../api/pages-preview.php";
     return;
 }
+if ($request->getParam("validate") && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require __DIR__ . "/../api/pages-validate.php";
+    return;
+}
 if ($request->getParam("fields")) {
     require __DIR__ . "/../api/pages-fields.php";
     return;
@@ -124,7 +128,9 @@ description: Shown by search engines
         <h6>Blocks</h6>
         <ul>
             <li>A comment like <code>&lt;!-- hero --&gt;</code> starts a block, a section with its own layout from <code>site/blocks/</code>. It runs up to the next block. A line with <code>---</code> separates the parts of a block, for example heading and text.</li>
-            <li>The toolbar button <em>Insert block</em> inserts a block with example content. If a block misses a part it needs, saving shows a warning with the expected structure.</li>
+            <li>The toolbar button <em>Insert block</em> inserts a block with example content. The line below the editor shows in which block and part the cursor is and what belongs there. While you type, the page is checked: a button below the editor lists what does not fit, for example a missing heading or a misspelled block name, jumps to the block and shows the expected Markdown.</li>
+            <li>The lines with a block comment and the <code>---</code> between the parts of a block are protected against typing and deleting by mistake, also when everything is selected. In the frontmatter only the values can be changed, not the names before the colon, and no line can be added or removed. To change or delete these lines, switch the protection off with the lock in the editor toolbar, for this browser.</li>
+            <li>With the cursor in a block, the arrows below the editor move the block up or down, and the switch turns it off and on. A block that is off stays in the page but is not shown, its comment then reads <code>&lt;!-- hero: {disabled: true} --&gt;</code>.</li>
             <li>A comment that is no block name, like <code>&lt;!-- TODO: check prices --&gt;</code>, stays an invisible note.</li>
         </ul>
         <h6>Saving and history</h6>
@@ -227,6 +233,16 @@ description: Shown by search engines
                             <li><a class="dropdown-item text-danger" href="#" onclick="deletePage(); return false;">Delete Page</a></li>
                         </ul>
                     </div>
+                    <div class="dropup d-inline-block ms-2">
+                        <button type="button" class="btn btn-sm btn-outline-warning dropdown-toggle d-none" id="editor-problems-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"></button>
+                        <div class="dropdown-menu editor-problems" id="editor-problems"></div>
+                    </div>
+                    <span class="block-actions d-none" id="block-actions" role="group" aria-label="Block">
+                        <button type="button" class="btn btn-sm btn-link" id="block-up" title="Move the block up" aria-label="Move the block up"><?= AdminHelper::icon('arrow-up') ?></button>
+                        <button type="button" class="btn btn-sm btn-link" id="block-down" title="Move the block down" aria-label="Move the block down"><?= AdminHelper::icon('arrow-down') ?></button>
+                        <button type="button" class="btn btn-sm btn-link" id="block-toggle" title="Switch the block off" aria-label="Switch the block off"><?= AdminHelper::icon('toggle-on', 'icon-on') ?><?= AdminHelper::icon('toggle-off', 'icon-off') ?></button>
+                    </span>
+                    <span class="editor-status" id="editor-status" aria-live="polite"></span>
                 </form>
                 <div class="modal fade" id="page-history-modal" tabindex="-1" aria-labelledby="page-history-label" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
@@ -283,6 +299,7 @@ description: Shown by search engines
 window.pagesConfig = {
     csrfToken: <?= json_encode(CsrfProtection::getToken()) ?>,
     currentPage: <?= json_encode($editPageName ?? '') ?>,
+    blockNames: <?= json_encode(array_values(array_filter(array_map(fn($f) => basename($f, '.php'), glob($defaultSite->getFsPath() . '/blocks/*.php') ?: []), fn($n) => !str_starts_with($n, '_')))) ?>,
     allFolders: <?= json_encode($allFolders) ?>
 };
 </script>

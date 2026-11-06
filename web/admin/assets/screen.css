@@ -76,7 +76,155 @@ textarea.cm-md-editor {
   vertical-align: middle;
 }
 
-.preview-toolbar-button {
+:root {
+  --md-editor-bg: var(--bs-body-bg);
+  --md-block-mix: 3%;
+  --md-head-mix: 7%;
+}
+
+[data-bs-theme=dark] {
+  --md-editor-bg: #1a1a1a;
+  --md-block-mix: 10%;
+  --md-head-mix: 16%;
+}
+
+.md-block, .md-block-head, .md-separator, .md-protected {
+  padding-bottom: 1px;
+  margin-bottom: -1px;
+}
+
+.md-block {
+  background-color: color-mix(in srgb, var(--bs-primary) var(--md-block-mix), var(--md-editor-bg));
+}
+
+.md-block-head, .md-separator {
+  background-color: color-mix(in srgb, var(--bs-primary) var(--md-head-mix), var(--md-editor-bg));
+}
+
+.md-block-name {
+  color: var(--bs-emphasis-color);
+}
+
+.md-block-unknown {
+  color: var(--bs-warning);
+}
+
+.md-separator {
+  position: relative;
+}
+.md-separator::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 0;
+  right: 0.5rem;
+  max-width: 75%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8em;
+  line-height: inherit;
+  color: var(--bs-secondary-color);
+  pointer-events: none;
+}
+
+.md-block-disabled {
+  background-color: color-mix(in srgb, var(--bs-secondary-color) 12%, var(--md-editor-bg));
+  opacity: 0.55;
+}
+
+.md-block-name-off {
+  text-decoration: line-through;
+}
+
+.block-actions {
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+.block-actions .btn {
+  padding: 0 0.3rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--bs-secondary-color);
+}
+.block-actions .btn:hover:not(:disabled) {
+  color: var(--bs-body-color);
+}
+.block-actions .btn:disabled {
+  opacity: 0.3;
+}
+.block-actions #block-toggle {
+  font-size: 1.15rem;
+}
+.block-actions #block-toggle .icon-on {
+  display: none;
+  color: var(--bs-primary);
+}
+.block-actions #block-toggle[aria-pressed=true] .icon-on {
+  display: inline;
+}
+.block-actions #block-toggle[aria-pressed=true] .icon-off {
+  display: none;
+}
+
+.md-protected {
+  background-color: color-mix(in srgb, var(--bs-primary) var(--md-head-mix), var(--md-editor-bg));
+}
+
+.md-protected-part {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.editor-status {
+  display: inline-block;
+  max-width: 45%;
+  margin-left: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-size: 0.8rem;
+  color: var(--bs-secondary-color);
+}
+
+.editor-problems {
+  width: min(32rem, 90vw);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+.editor-problem {
+  padding: 0.4rem 0.75rem;
+}
+.editor-problem + .editor-problem {
+  border-top: 1px solid var(--bs-border-color-translucent);
+}
+.editor-problem .btn-link {
+  font-size: inherit;
+  color: var(--bs-body-color);
+  text-decoration: none;
+}
+.editor-problem .btn-link:hover strong {
+  text-decoration: underline;
+}
+.editor-problem summary {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--bs-secondary-color);
+  cursor: pointer;
+}
+.editor-problem pre {
+  margin: 0.25rem 0 0;
+  padding: 0.4rem;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  background-color: var(--bs-tertiary-bg);
+  border-radius: 3px;
+}
+
+.editor-toolbar-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,20 +239,26 @@ textarea.cm-md-editor {
   cursor: pointer;
   transition: opacity 0.15s, background 0.15s;
 }
-.preview-toolbar-button:hover {
+.editor-toolbar-button:hover {
   opacity: 1;
   background: rgba(128, 128, 128, 0.2);
 }
-.preview-toolbar-button[aria-pressed=true] {
+.editor-toolbar-button[aria-pressed=true] {
   opacity: 1;
   color: var(--bs-primary);
 }
+.editor-toolbar-button .icon-on, .editor-toolbar-button[aria-pressed=true] .icon-off {
+  display: none;
+}
+.editor-toolbar-button[aria-pressed=true] .icon-on {
+  display: block;
+}
+
 @media (max-width: 991.98px) {
-  .preview-toolbar-button {
+  #preview-toggle {
     display: none;
   }
 }
-
 @media (min-width: 768px) {
   #pages-row.sidebar-collapsed #pages-sidebar {
     display: none;

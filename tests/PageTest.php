@@ -196,6 +196,25 @@ class PageTest
         Assert::contains("blue", $html);
     }
 
+    public function testDisabledBlockIsNotRendered(): void
+    {
+        file_put_contents($this->tmpDir . "/blocks/header.php", '<?php echo "<header>" . $block->content() . "</header>"; ?>');
+        $content = "<!-- header: {disabled: true} -->\n# Hidden\n\n<!-- text -->\n\nShown";
+        file_put_contents($this->tmpDir . "/pages/off.md", $content);
+        $html = $this->page->render("/off");
+        Assert::false(str_contains($html, "Hidden"), "the disabled block is not shown");
+        Assert::false(str_contains($html, "<header>"));
+        Assert::contains("Shown", $html);
+    }
+
+    public function testPageWithOnlyDisabledBlocksIsEmpty(): void
+    {
+        $content = "<!-- text:\n    disabled: true\n-->\n\nHidden";
+        file_put_contents($this->tmpDir . "/pages/alloff.md", $content);
+        $html = $this->page->render("/alloff");
+        Assert::false(str_contains($html, "Hidden"), "not rendered as a flat page either");
+    }
+
     public function testEmptyPageReturnsEmpty(): void
     {
         file_put_contents($this->tmpDir . "/pages/empty.md", "");

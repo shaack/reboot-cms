@@ -813,3 +813,6 @@ $myAddOn = $site->getAddOn("MyAddOn");
 ### Examples
 
 See the included [ExampleAddOn](site/addons/ExampleAddOn/README.md) for a basic implementation and [SecureDownloads](core/addons/SecureDownloads/README.md) for a complete one. The admin interface is itself a Reboot CMS site and uses AddOns too: [Authentication](core/admin/addons/Authentication/Authentication.php) for login session handling and [Admin](core/admin/addons/Admin/Admin.php) for the bridge to the managed site, which also mounts the admin pages of its AddOns.
+## Credits
+
+The admin interface uses [Bootstrap](https://getbootstrap.com) and the editor [cm-md-editor](https://github.com/shaack/cm-md-editor). All icons in the admin, also the inline SVGs in its PHP and JavaScript, are from [Bootstrap Icons](https://icons.getbootstrap.com), MIT License. Markdown is rendered with [Parsedown](https://parsedown.org), the configuration is read with [Symfony YAML](https://symfony.com/doc/current/components/yaml.html), and mail is sent with [PHPMailer](https://github.com/PHPMailer/PHPMailer).

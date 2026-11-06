@@ -223,6 +223,14 @@ class Page
     }
 
     /**
+     * True if the config of a block switches it off, `<!-- hero: {disabled: true} -->`.
+     */
+    public static function isDisabled(array $blockConfig): bool
+    {
+        return ($blockConfig['disabled'] ?? false) === true;
+    }
+
+    /**
      * [name, config] if the comment text names a block, otherwise null.
      */
     private static function parseBlockHeader(string $comment): ?array
@@ -266,13 +274,18 @@ class Page
 
         $blocks = array();
         $blockLines = array();
-        foreach (self::parseBlocks($content) as [$blockName, $blockProps, $blockContent, $blockOffset]) {
+        $parsedBlocks = self::parseBlocks($content);
+        foreach ($parsedBlocks as [$blockName, $blockProps, $blockContent, $blockOffset]) {
             Logger::debug("found block: " . $blockName);
+            // switched off in the admin, the block stays in the page but is not shown
+            if (self::isDisabled($blockProps)) {
+                continue;
+            }
             $blocks[] = new Block($this->site, $blockName, $blockContent, $blockProps);
             $blockLines[] = $bodyLine + substr_count($content, "\n", 0, $blockOffset);
         }
 
-        if (!count($blocks)) {
+        if (!count($parsedBlocks)) {
             // interpret whole pages as flat markdown file
             Logger::info("No blocks found, rendering as flat markdown file");
             $block = new Block($this->site, "text", $content);

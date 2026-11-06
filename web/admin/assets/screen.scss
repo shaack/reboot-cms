@@ -90,8 +90,183 @@ textarea.cm-md-editor {
     vertical-align: middle;
 }
 
-// Preview toggle in the editor toolbar, styled like the word wrap toggle
-.preview-toolbar-button {
+// While protected, every block of the page has a light background in the editor,
+// so its parts and the "---" between them read as one. An empty line keeps
+// blocks apart. Unprotected, only the comment and the "---" keep a background.
+// The tones are mixed with the editor background into solid colors, so where
+// two lines overlap by a pixel no darker line appears.
+:root {
+    --md-editor-bg: var(--bs-body-bg);
+    // on the light editor the same share of blue looks much stronger
+    --md-block-mix: 3%;
+    --md-head-mix: 7%;
+}
+
+[data-bs-theme="dark"] {
+    --md-editor-bg: #1a1a1a;
+    --md-block-mix: 10%;
+    --md-head-mix: 16%;
+}
+
+// The line height is no whole number of pixels, so the bands of two lines leave a
+// hair line between them. One pixel more below, taken back by the margin, closes
+// it without moving the text.
+.md-block, .md-block-head, .md-separator, .md-protected {
+    padding-bottom: 1px;
+    margin-bottom: -1px;
+}
+
+.md-block {
+    background-color: color-mix(in srgb, var(--bs-primary) var(--md-block-mix), var(--md-editor-bg));
+}
+
+// the comment that starts a block and the "---" between its parts, a tick
+// lighter than the block, locked or not
+.md-block-head, .md-separator {
+    background-color: color-mix(in srgb, var(--bs-primary) var(--md-head-mix), var(--md-editor-bg));
+}
+
+// The name in the block comment, a misspelled one in the warning color. Only the
+// color changes, a bold font could run wider than the text in the textarea.
+.md-block-name {
+    color: var(--bs-emphasis-color);
+}
+
+.md-block-unknown {
+    color: var(--bs-warning);
+}
+
+// What follows a "---" in a block, at the right end of the line. The label is
+// no text of the editor, it comes from data-label (pages.js).
+.md-separator {
+    position: relative;
+
+    &::after {
+        content: attr(data-label);
+        position: absolute;
+        top: 0;
+        right: 0.5rem;
+        max-width: 75%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.8em;
+        line-height: inherit;
+        color: var(--bs-secondary-color);
+        pointer-events: none;
+    }
+}
+
+// a block switched off: grey, faded, its name struck through
+.md-block-disabled {
+    background-color: color-mix(in srgb, var(--bs-secondary-color) 12%, var(--md-editor-bg));
+    opacity: 0.55;
+}
+
+.md-block-name-off {
+    text-decoration: line-through;
+}
+
+// Move and switch buttons next to the status line (pages.js)
+.block-actions {
+    margin-left: 0.5rem;
+    vertical-align: middle;
+
+    .btn {
+        padding: 0 0.3rem;
+        font-size: 1rem;
+        line-height: 1;
+        color: var(--bs-secondary-color);
+        &:hover:not(:disabled) {
+            color: var(--bs-body-color);
+        }
+        &:disabled {
+            opacity: 0.3;
+        }
+    }
+    #block-toggle {
+        font-size: 1.15rem;
+        .icon-on {
+            display: none;
+            color: var(--bs-primary);
+        }
+        &[aria-pressed="true"] .icon-on {
+            display: inline;
+        }
+        &[aria-pressed="true"] .icon-off {
+            display: none;
+        }
+    }
+}
+
+// The block lines the editor protects (pages.js), comments and "---" alike,
+// in the tone of the block comment
+.md-protected {
+    background-color: color-mix(in srgb, var(--bs-primary) var(--md-head-mix), var(--md-editor-bg));
+}
+
+// A part of a line, the name of a frontmatter value. An inline span colors only
+// the height of the font, as inline block it gets the full line height like the
+// whole lines. The name does not wrap.
+.md-protected-part {
+    display: inline-block;
+    vertical-align: top;
+}
+
+// Below the editor, next to the buttons: where the cursor is (pages.js)
+.editor-status {
+    display: inline-block;
+    max-width: 45%;
+    margin-left: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+}
+
+// the problems of the check while typing, opened from the button below the editor
+.editor-problems {
+    width: min(32rem, 90vw);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 0.25rem 0;
+    font-size: 0.85rem;
+}
+
+.editor-problem {
+    padding: 0.4rem 0.75rem;
+
+    & + & {
+        border-top: 1px solid var(--bs-border-color-translucent);
+    }
+    .btn-link {
+        font-size: inherit;
+        color: var(--bs-body-color);
+        text-decoration: none;
+        &:hover strong {
+            text-decoration: underline;
+        }
+    }
+    summary {
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--bs-secondary-color);
+        cursor: pointer;
+    }
+    pre {
+        margin: 0.25rem 0 0;
+        padding: 0.4rem;
+        font-size: 0.75rem;
+        white-space: pre-wrap;
+        background-color: var(--bs-tertiary-bg);
+        border-radius: 3px;
+    }
+}
+
+// Toggles in the editor toolbar (preview, protection), styled like the word wrap toggle
+.editor-toolbar-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -114,7 +289,18 @@ textarea.cm-md-editor {
         opacity: 1;
         color: var(--bs-primary);
     }
-    @media (max-width: 991.98px) {
+    // outlined while off, filled while on
+    .icon-on, &[aria-pressed="true"] .icon-off {
+        display: none;
+    }
+    &[aria-pressed="true"] .icon-on {
+        display: block;
+    }
+}
+
+// the preview needs a wide window
+@media (max-width: 991.98px) {
+    #preview-toggle {
         display: none;
     }
 }

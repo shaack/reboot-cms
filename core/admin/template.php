@@ -133,7 +133,10 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
             extraTools.push([InsertBlock, {blocks: blockExamples}])
         }
         props.tools = [...tools, ...extraTools]
-        new MdEditor(editor, props)
+        // a page script can mark lines and parts of lines with a background, see pages.js
+        props.lineClass = (index, line) => editor.rebootLineClass ? editor.rebootLineClass(index, line) : null
+        props.rangeClass = (text) => editor.rebootRangeClass ? editor.rebootRangeClass(text) : null
+        editor.mdEditor = new MdEditor(editor, props)
     })
     showEditorColumn()
 </script>
