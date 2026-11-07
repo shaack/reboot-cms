@@ -10,10 +10,11 @@
  */
 
 /** @var \Shaack\Reboot\Block $block */
+require_once __DIR__ . "/_helpers.php";
 $group = 'cards-' . substr(md5($block->content()), 0, 8);
 ?>
 
-<section class="block block-cards">
+<section class="<?= blockClasses($block) ?>">
     <div class="container-fluid">
         <h2><?= $block->nodeHtml($block->field("//h2", "Card group heading", true)) ?></h2>
         <div class="card-group">

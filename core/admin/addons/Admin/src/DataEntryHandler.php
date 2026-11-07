@@ -10,7 +10,7 @@ namespace Shaack\Reboot\AddOns\Admin;
 use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\Page;
 use Shaack\Utils\FileSystemUtils;
-use Symfony\Component\Yaml\Yaml;
+use Shaack\Reboot\YamlWriter;
 
 /**
  * Writes the entries of a collection from the form of the admin page "Data".
@@ -65,12 +65,7 @@ class DataEntryHandler
             throw new \InvalidArgumentException("There is no entry '" . $slug . "'.");
         }
         [$values, $body] = Page::splitFrontmatter(trim((string)file_get_contents($file)));
-        foreach ($this->blueprint->getFields() as $name => $props) {
-            if ($props["type"] === "date" && is_int($values[$name] ?? null)) {
-                $values[$name] = gmdate("Y-m-d", $values[$name]);
-            }
-        }
-        return [$values, trim($body)];
+        return [FieldInput::forForm($this->blueprint, $values), trim($body)];
     }
 
     /**
@@ -114,91 +109,35 @@ class DataEntryHandler
     }
 
     /**
-     * Turn the strings of the form into the types of the fields. A value that does
-     * not fit stays as it is, so the validation names the problem.
+     * The strings of the form in the types of the fields, see FieldInput::fromInput().
      */
     public function fromInput(array $input): array
     {
-        $values = [];
-        foreach ($this->blueprint->getFields() as $name => $props) {
-            $value = $input[$name] ?? null;
-            if ($props["type"] === "boolean") {
-                $values[$name] = (string)$value === "1";
-                continue;
-            }
-            if (!is_string($value)) {
-                $values[$name] = null;
-                continue;
-            }
-            $value = str_replace("\r\n", "\n", $value);
-            $value = in_array($props["type"], ["textarea", "markdown"], true) ? rtrim($value) : trim($value);
-            if ($value === "") {
-                $values[$name] = null;
-            } else if ($props["type"] === "number" && is_numeric($value)) {
-                $values[$name] = str_contains($value, ".") || stripos($value, "e") !== false ? (float)$value : (int)$value;
-            } else {
-                $values[$name] = $value;
-            }
-        }
-        return $values;
+        return FieldInput::fromInput($this->blueprint, $input);
     }
 
     /**
-     * The Markdown file of an entry.
+     * The Markdown file of an entry, the fields as frontmatter, the field `body` below it.
      * @param array $extra values of the file the blueprint does not know, they are kept
      */
     public function serialize(array $values, array $extra, bool $draft, string $body): string
     {
-        $lines = [];
-        $fields = $this->blueprint->getFields();
-        foreach ($fields as $name => $props) {
-            $value = $values[$name] ?? null;
-            if ($name === "body" || $value === null || $value === "") {
-                continue;
-            }
-            if ($props["type"] === "boolean" && $value === (bool)($props["default"] ?? false)) {
-                continue;
-            }
-            $lines[] = $this->line($name, $value, $props["type"]);
-        }
+        unset($values["body"]);
+        $frontmatter = FieldInput::clean($this->blueprint, $values);
+        unset($frontmatter["body"]);
         if ($draft) {
-            $lines[] = "draft: true";
+            $frontmatter["draft"] = true;
         }
         foreach ($extra as $name => $value) {
-            if (!array_key_exists($name, $fields) && $name !== "draft") {
-                $lines[] = $this->line((string)$name, $value, "");
+            if (!array_key_exists($name, $this->blueprint->getFields()) && $name !== "draft") {
+                $frontmatter[$name] = $value;
             }
         }
-        $markdown = "---\n" . implode("\n", $lines) . "\n---\n";
+        $markdown = "---\n" . ($frontmatter ? YamlWriter::dump($frontmatter) : "\n") . "---\n";
         if (trim($body) !== "") {
             $markdown .= "\n" . trim($body) . "\n";
         }
         return $markdown;
-    }
-
-    private function line(string $name, $value, string $type): string
-    {
-        // a date stays unquoted, as people write it
-        if ($type === "date" && is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-            return $name . ": " . $value;
-        }
-        $plainName = preg_match('/^[A-Za-z][\w\-]*$/', $name);
-        // Yaml quotes every text with a space, a text that reads back the same without quotes stays without
-        if ($plainName && is_string($value) && !str_contains($value, "\n")) {
-            try {
-                if (Yaml::parse($name . ": " . $value) === [$name => $value]) {
-                    return $name . ": " . $value;
-                }
-            } catch (\Exception $e) {
-                // needs quotes
-            }
-        }
-        $yaml = rtrim(Yaml::dump([$name => $value], 2, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK));
-        // Yaml quotes keys like "y" or "n", which YAML 1.1 read as booleans, a plain name reads better
-        if ($plainName) {
-            $yaml = preg_replace('/^\'' . preg_quote($name, '/') . '\':/', $name . ':', $yaml);
-        }
-        return $yaml;
     }
 
     private function newSlug(array $values): string

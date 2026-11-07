@@ -398,6 +398,8 @@ is [Xpath](https://devhints.io/xpath) with the addition of the `part(n)` functio
 
 A query returns a single node when it matches exactly one element, and a list otherwise. A query on any element, like `/*[part(2)]`, always returns a list, because it asks for a section of the content. `$block->nodeHtml()` renders a list with all its tags, so a section keeps its paragraphs, lists and links. A single element renders with what is inside it, tags included, which suits a template like `<h2><?= $block->nodeHtml($heading) ?></h2>`. A text node or an attribute gives its text, escaped for HTML, so it can go between tags and into an attribute value.
 
+The blocks of the demo share the helper `site/blocks/_helpers.php`. Its `blockClasses($block)` writes the classes of the section, `block block-<name>`, and adds `block-inverse` for a block written as `<!-- cards: {inverse: true} -->`. The stylesheet turns such a block into a white band over the full width, the hero, which is white already, into a dark one.
+
 Use `$block->content()` to get the full block content as rendered HTML (without XPath querying).
 This is useful for simple blocks like "text":
 
@@ -491,13 +493,29 @@ fields:
 
 | Prop | Description |
 |------|-------------|
-| `type` | `text` (default), `textarea`, `markdown`, `number`, `date`, `boolean`, `select`, `image`, `url` |
+| `type` | `text` (default), `textarea`, `markdown`, `number`, `date`, `boolean`, `select`, `image`, `url`, `list`, `entry`, `blocks` |
 | `label` | Name shown in messages and forms, defaults to the field name |
 | `required` | The field must have a value |
 | `default` | Value used when the entry has none |
 | `options` | The allowed values of a `select` |
-| `min`, `max` | Limits of a `number` |
+| `min`, `max` | Limits of a `number`, or the number of items of a `list` |
 | `help` | A hint shown below the field in the admin |
+| `fields` | The fields of each item of a `list` |
+| `collection` | The collection an `entry` field chooses from |
+| `allow` | The block types a `blocks` field offers, by default all |
+
+Three types hold more than one value. A `list` repeats its own `fields`, for cards or a gallery:
+
+```yaml
+images:
+  type: list
+  min: 1
+  fields:
+    image:   {type: image, required: true}
+    caption: {type: text}
+```
+
+An `entry` names an entry of a collection, the admin shows a select of them: `seminar: {type: entry, collection: seminars}`. A `blocks` field is a list of blocks, see [Structured pages](#structured-pages).
 
 `columns: [date, title, price]` next to `fields` sets the columns of the table in the admin, by default the first four fields that are no `textarea` or `markdown`.
 
@@ -523,7 +541,50 @@ foreach ($next as $seminar) { ?>
 - `$site->collection($name)` reads a collection once per request, sorted as the blueprint says.
 - `where($field, $operator, $value)` with `=`, `!=`, `<`, `<=`, `>`, `>=`, `contains` and `in`, `"today"` stands for the current date. `filter(fn($entry) => ...)` takes any condition.
 - `sortBy($field, "asc"|"desc")`, `limit($count, $offset)`, `first()`, `find($slug)`, `count()`. Every query returns a new collection.
-- `$entry->get($field)` returns a field escaped for HTML, `get($field, $default, false)` as written. `html($field)` renders a Markdown field, `date($field, $format)` formats a date, `getSlug()` returns the file name without `.md`.
+- `$entry->get($field)` returns a field escaped for HTML, `get($field, $default, false)` as written. `html($field)` renders a Markdown field, `date($field, $format)` formats a date, `items($field)` returns the items of a `list`, each with the same methods, `entry($field)` the entry an `entry` field names, `getSlug()` returns the file name without `.md`.
+
+### Structured pages
+
+A structured page is a YAML file in `site/pages/`, `site/pages/about.yml` for `/about`. It holds no Markdown but a list of blocks, and each block holds the fields its block type names. In the admin it is a form, a panel per block, so editors fill in fields and cannot break the layout. The demo page `site/pages/structured.yml` shows one.
+
+```yaml
+title: About us
+description: Who we are
+blocks:
+  - type: intro
+    heading: Welcome
+    image: /media/team.jpg
+    text: |-
+      We build **websites**.
+  - type: features
+    disabled: true
+    items:
+      - title: Fast
+      - title: Small
+```
+
+A block type for structured pages is a template in `site/blocks/` with a blueprint of the same name next to it, `intro.php` and `intro.yml`:
+
+```yaml
+title: Intro
+fields:
+  heading: {type: text, required: true}
+  text:    {type: markdown}
+  image:   {type: image}
+  inverse: {type: boolean}
+```
+
+```php
+<section class="block block-intro">
+    <h1><?= $block->get("heading") ?></h1>
+    <?= $block->html("text") ?>
+    <?php if ($block->get("image")) { ?><img src="<?= $block->get("image") ?>" alt=""><?php } ?>
+</section>
+```
+
+The template reads the fields like an entry: `get()`, `html()`, `date()`, `items()` and `entry()`. The fields are the config of the block as well, so `inverse: true` and `disabled: true` work as in a Markdown page. The values next to `blocks`, here `title` and `description`, are the config of the page, `$page->meta('title')` in the template reads them like frontmatter.
+
+The fields of the page itself are a title, a description and the blocks. `site/blueprints/page.yml` replaces them with your own, it needs one field of the type `blocks`. A block type with a blueprint is offered in structured pages only. With `markdown: true` in its blueprint it is offered in Markdown pages as well, its template then reads the Markdown when `$block->getBlueprint()` is null, like `seminar-teaser.php` of the demo. A Markdown page and a structured page of the same name are one address, the Markdown page wins.
 
 ## Admin interface
 
@@ -558,6 +619,10 @@ restore them from the History dialog. The number of snapshots kept per page is c
 ### Data
 
 The menu entry "Data" lists the collections of `site/data/`, one per blueprint, see [Data](#data). A collection opens as a table of its entries, a click on a row opens the entry as a form made from the blueprint: a date picker for a `date`, a list for a `select`, a switch for a `boolean`, the media browser for an `image` and the Markdown editor for a `markdown` field. Required fields are marked, and the fields that do not fit the blueprint are named after saving. Such an entry is saved anyway, marked in the table and left out of the website until it is fixed. *Draft* keeps an entry off the website. A new entry gets its file name from its first date and text field, `2027-03-12-photo-basics.md`, and keeps it. Every save and delete keeps the previous version in `local/history/data/`. Editors can use the page like Pages and Media.
+
+### Structured pages
+
+A right click in the page list offers *New structured page* next to *New page*. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Preview* shows the page with the changes next to the form, before saving. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, values the blueprints do not know stay in the file.
 
 ### Media
 

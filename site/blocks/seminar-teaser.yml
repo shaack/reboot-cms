@@ -1,0 +1,10 @@
+# The fields of the block in a structured page, see seminar-teaser.php
+title: Upcoming seminars
+# also a block of Markdown pages, there the heading and the link are Markdown
+markdown: true
+fields:
+  heading:    {type: text, default: Upcoming seminars}
+  count:      {type: number, label: Number of seminars, default: 3, min: 1, max: 20}
+  link-label: {type: text, label: Link label, default: All seminars}
+  link:       {type: url, label: Link, help: "The page with all seminars, /seminars for example"}
+  inverse:    {type: boolean, help: "A white band over the full width"}

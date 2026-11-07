@@ -1,8 +1,12 @@
 <?php
 /** JSON API: live preview (render page content without saving) */
 
+use Shaack\Reboot\AddOns\Admin\FieldInput;
+use Shaack\Reboot\AddOns\Admin\StructuredPageHandler;
+use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\CsrfProtection;
 use Shaack\Reboot\Page;
+use Shaack\Reboot\YamlWriter;
 
 CsrfProtection::validate($request);
 while (ob_get_level()) {
@@ -12,14 +16,32 @@ $previewPageName = $request->getParam("page") ?? "";
 $previewPageName = str_replace("..", "", $previewPageName);
 $previewContent = (string)($request->getParam("content") ?? "");
 $previewPath = realpath($pagesDir . $previewPageName);
-// Only Markdown pages, the editor edits nothing else
+// A structured page posts its form, the YAML is made from it as saving would make it
+$previewFields = $request->getParam("fields", "post");
 if ($previewPath && str_starts_with($previewPath, $pagesDir . DIRECTORY_SEPARATOR)
-    && str_ends_with($previewPath, ".md") && is_file($previewPath)) {
+    && str_ends_with($previewPath, ".yml") && is_array($previewFields)) {
+    $previewBlueprint = Blueprint::forPage($defaultSite);
+    $previewValues = FieldInput::fromInput($previewBlueprint, $previewFields);
+    try {
+        $previewExisting = (new StructuredPageHandler($previewBlueprint, $pagesDir, $historyDir, $historyMaxVersions))->read($previewPath);
+    } catch (\RuntimeException $e) {
+        $previewExisting = [];
+    }
+    foreach ($previewExisting as $name => $value) {
+        if (!array_key_exists($name, $previewBlueprint->getFields())) {
+            $previewValues[$name] = $value;
+        }
+    }
+    $previewContent = YamlWriter::dump(FieldInput::clean($previewBlueprint, $previewValues));
+}
+// Only Markdown pages and structured pages, the editor edits nothing else
+if ($previewPath && str_starts_with($previewPath, $pagesDir . DIRECTORY_SEPARATOR)
+    && (str_ends_with($previewPath, ".md") || str_ends_with($previewPath, ".yml")) && is_file($previewPath)) {
     header('Content-Type: text/html; charset=utf-8');
     header('X-Frame-Options: SAMEORIGIN');
     header('Content-Security-Policy: default-src * \'unsafe-inline\' \'unsafe-eval\'; img-src * data:;');
     $previewSite = new \Shaack\Reboot\Site($reboot, "/site", "");
-    $previewRequest = new \Shaack\Reboot\Request($previewSite, $reboot->getBaseWebPath(), preg_replace('/\/index$/', '/', preg_replace('/\.md$/', '', $previewPageName)), []);
+    $previewRequest = new \Shaack\Reboot\Request($previewSite, $reboot->getBaseWebPath(), preg_replace('/\/index$/', '/', preg_replace('/\.(md|yml)$/', '', $previewPageName)), []);
     $previewPageObj = new Page($reboot, $previewSite);
     // The draft is rendered from memory, the published file stays untouched
     $previewPageObj->setPreviewContent($previewPath, $previewContent);

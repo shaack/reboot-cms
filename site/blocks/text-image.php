@@ -6,11 +6,12 @@
  */
 
 /**  @var \Shaack\Reboot\Block $block */
+require_once __DIR__ . "/_helpers.php";
 
 // read the configuration
 $imagePosition = @$block->getConfig()["image-position"];
 ?>
-<section class="block block-text-image">
+<section class="<?= blockClasses($block) ?>">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-6 <?= $imagePosition === "left" ? "order-md-1" : "" ?>">

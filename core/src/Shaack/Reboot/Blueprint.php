@@ -13,8 +13,9 @@ use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Describes the fields of the entries of a collection, from
- * `site/blueprints/<name>.yml`:
+ * Describes fields: those of the entries of a collection in
+ * `site/blueprints/<name>.yml`, those of a block in `site/blocks/<name>.yml`
+ * and those of a structured page.
  *
  * ```yaml
  * title: Seminars
@@ -28,25 +29,40 @@ use Symfony\Component\Yaml\Yaml;
  * columns: [date, title, price]
  * ```
  *
- * A field named `body` is the Markdown below the frontmatter of an entry, all
- * other fields live in the frontmatter.
+ * A block blueprint with `markdown: true` marks a block type that also works in
+ * Markdown pages.
+ *
+ * Three types hold more than one value: `list` repeats its own `fields`,
+ * `blocks` is a list of blocks, each with the fields of its block type, and
+ * `entry` names an entry of the collection in `collection`.
+ *
+ * In a collection, a field named `body` is the Markdown below the frontmatter
+ * of an entry, all other fields live in the frontmatter.
  */
 class Blueprint
 {
-    const TYPES = ["text", "textarea", "markdown", "number", "date", "boolean", "select", "image", "url"];
+    const TYPES = ["text", "textarea", "markdown", "number", "date", "boolean", "select", "image", "url", "list", "entry", "blocks"];
 
     private string $name;
     private string $title;
+    private ?Site $site;
     private array $fields = [];
     private ?string $sortField = null;
     private string $sortOrder = "asc";
     private array $columns = [];
+    private bool $markdown;
 
-    public function __construct(string $name, array $definition)
+    /**
+     * @param ?Site $site needed by `blocks` fields, which load the blueprints of the block types
+     */
+    public function __construct(string $name, array $definition, ?Site $site = null)
     {
         $this->name = $name;
+        $this->site = $site;
         $this->title = (string)($definition["title"] ?? ucfirst($name));
+        $this->markdown = !empty($definition["markdown"]);
         foreach ($definition["fields"] ?? [] as $fieldName => $props) {
+            $fieldName = (string)$fieldName;
             $props = is_array($props) ? $props : [];
             $type = $props["type"] ?? "text";
             if (!in_array($type, self::TYPES, true)) {
@@ -54,14 +70,17 @@ class Blueprint
                 $type = "text";
             }
             $props["type"] = $type;
-            $props["label"] = (string)($props["label"] ?? ucfirst((string)$fieldName));
-            $this->fields[(string)$fieldName] = $props;
+            $props["label"] = (string)($props["label"] ?? ucfirst(str_replace("-", " ", $fieldName)));
+            if ($type === "list") {
+                $props["blueprint"] = new Blueprint($name . "." . $fieldName, ["fields" => $props["fields"] ?? []], $site);
+            }
+            $this->fields[$fieldName] = $props;
         }
         // the columns of the table in the admin, by default the first four short fields
         $columns = array_values(array_filter((array)($definition["columns"] ?? []), fn($column) => isset($this->fields[$column])));
         if (!$columns) {
             $columns = array_slice(array_keys(array_filter($this->fields,
-                fn($props) => !in_array($props["type"], ["textarea", "markdown"], true))), 0, 4);
+                fn($props) => !in_array($props["type"], ["textarea", "markdown", "list", "blocks"], true))), 0, 4);
         }
         $this->columns = $columns;
         // "date" or "date desc"
@@ -77,21 +96,55 @@ class Blueprint
      */
     public static function load(Site $site, string $name): ?Blueprint
     {
-        $file = self::folder($site) . "/" . HttpUtils::sanitizeFileName($name) . ".yml";
-        if (!is_file($file)) {
-            return null;
-        }
-        try {
-            $definition = Yaml::parseFile($file);
-        } catch (ParseException $e) {
-            Logger::error("Blueprint '" . $name . "' is no valid YAML: " . $e->getMessage());
-            return null;
-        }
-        return new Blueprint($name, is_array($definition) ? $definition : []);
+        return self::loadFile($site, $name, self::folder($site) . "/" . HttpUtils::sanitizeFileName($name) . ".yml");
     }
 
     /**
-     * All blueprints of the site, keyed and sorted by name.
+     * The blueprint of a block type, `site/blocks/<name>.yml` next to its template.
+     * A block type with one is a form block, offered in structured pages.
+     */
+    public static function forBlock(Site $site, string $name): ?Blueprint
+    {
+        return self::loadFile($site, $name, $site->getFsPath() . "/blocks/" . HttpUtils::sanitizeFileName($name) . ".yml");
+    }
+
+    /**
+     * The blueprint of the structured pages, `site/blueprints/page.yml`, or by
+     * default a title, a description and the blocks.
+     */
+    public static function forPage(Site $site): Blueprint
+    {
+        return self::load($site, "page") ?? new Blueprint("page", ["title" => "Page", "fields" => [
+            "title" => ["type" => "text", "required" => true, "help" => "The title of the page in the browser tab and in search results"],
+            "description" => ["type" => "textarea", "help" => "A sentence for search engines"],
+            "blocks" => ["type" => "blocks"],
+        ]], $site);
+    }
+
+    /**
+     * The block types with a blueprint and a template, keyed and sorted by name.
+     * @return Blueprint[]
+     */
+    public static function blockTypes(Site $site): array
+    {
+        $types = [];
+        foreach (glob($site->getFsPath() . "/blocks/*.yml") ?: [] as $file) {
+            $name = basename($file, ".yml");
+            if (!is_file($site->getFsPath() . "/blocks/" . $name . ".php")) {
+                continue;
+            }
+            $blueprint = self::forBlock($site, $name);
+            if ($blueprint) {
+                $types[$name] = $blueprint;
+            }
+        }
+        ksort($types);
+        return $types;
+    }
+
+    /**
+     * All blueprints of collections, keyed and sorted by name. `page.yml` describes
+     * the structured pages and is no collection.
      * @return Blueprint[]
      */
     public static function all(Site $site): array
@@ -99,6 +152,9 @@ class Blueprint
         $blueprints = [];
         foreach (glob(self::folder($site) . "/*.yml") ?: [] as $file) {
             $name = basename($file, ".yml");
+            if ($name === "page") {
+                continue;
+            }
             $blueprint = self::load($site, $name);
             if ($blueprint) {
                 $blueprints[$name] = $blueprint;
@@ -113,6 +169,20 @@ class Blueprint
         return $site->getFsPath() . "/blueprints";
     }
 
+    private static function loadFile(Site $site, string $name, string $file): ?Blueprint
+    {
+        if (!is_file($file)) {
+            return null;
+        }
+        try {
+            $definition = Yaml::parseFile($file);
+        } catch (ParseException $e) {
+            Logger::error("Blueprint '" . $name . "' is no valid YAML: " . $e->getMessage());
+            return null;
+        }
+        return new Blueprint($name, is_array($definition) ? $definition : [], $site);
+    }
+
     public function getName(): string
     {
         return $this->name;
@@ -124,7 +194,22 @@ class Blueprint
     }
 
     /**
-     * @return array name => props, every props has `type` and `label`
+     * Whether a block type with this blueprint also works in Markdown pages,
+     * `markdown: true`. A block type with a blueprint is otherwise for
+     * structured pages only, the Markdown editor does not offer it.
+     */
+    public function isForMarkdown(): bool
+    {
+        return $this->markdown;
+    }
+
+    public function getSite(): ?Site
+    {
+        return $this->site;
+    }
+
+    /**
+     * @return array name => props, every props has `type` and `label`, a `list` also its `blueprint`
      */
     public function getFields(): array
     {
@@ -151,9 +236,18 @@ class Blueprint
     }
 
     /**
+     * The blueprint of a block type for a `blocks` field, null if the type has none.
+     */
+    public function blockBlueprint(string $type): ?Blueprint
+    {
+        return $this->site ? self::forBlock($this->site, $type) : null;
+    }
+
+    /**
      * Bring the values read from a file into the form the field types promise.
      * YAML reads an unquoted date as a timestamp, a date field gets it back as `Y-m-d`.
-     * Missing values take the `default` of their field.
+     * Missing values take the `default` of their field. Lists and blocks are
+     * normalized item by item.
      */
     public function normalize(array $values): array
     {
@@ -161,8 +255,16 @@ class Blueprint
             if ((!array_key_exists($name, $values) || $values[$name] === null) && array_key_exists("default", $props)) {
                 $values[$name] = $props["default"];
             }
-            if ($props["type"] === "date" && is_int($values[$name] ?? null)) {
-                $values[$name] = gmdate("Y-m-d", $values[$name]);
+            $value = $values[$name] ?? null;
+            if ($props["type"] === "date" && is_int($value)) {
+                $values[$name] = gmdate("Y-m-d", $value);
+            } else if ($props["type"] === "list" && is_array($value)) {
+                $values[$name] = array_map(fn($item) => is_array($item) ? $props["blueprint"]->normalize($item) : $item, array_values($value));
+            } else if ($props["type"] === "blocks" && is_array($value)) {
+                $values[$name] = array_map(function ($block) {
+                    $blueprint = is_array($block) && is_string($block["type"] ?? null) ? $this->blockBlueprint($block["type"]) : null;
+                    return $blueprint ? $blueprint->normalize($block) : $block;
+                }, array_values($value));
             }
         }
         return $values;
@@ -170,50 +272,102 @@ class Blueprint
 
     /**
      * Check normalized values against the fields.
-     * @return array field name => message, empty if the values are valid
+     * @param string $path the place of these values in an outer value, like `cards.2.`, for the keys
+     * @return array field path => message, empty if the values are valid. A value in a list or a
+     *     block has the path `field.index.subfield`.
      */
-    public function validate(array $values): array
+    public function validate(array $values, string $path = ""): array
     {
         $errors = [];
         foreach ($this->fields as $name => $props) {
             $value = $values[$name] ?? null;
             $label = $props["label"];
+            $key = $path . $name;
             if ($value === null || $value === "" || $value === []) {
                 if (!empty($props["required"])) {
-                    $errors[$name] = $label . " is required";
+                    $errors[$key] = $label . " is required";
                 }
                 continue;
             }
             switch ($props["type"]) {
                 case "number":
                     if (!is_int($value) && !is_float($value)) {
-                        $errors[$name] = $label . " must be a number";
+                        $errors[$key] = $label . " must be a number";
                     } else if (isset($props["min"]) && $value < $props["min"]) {
-                        $errors[$name] = $label . " must be at least " . $props["min"];
+                        $errors[$key] = $label . " must be at least " . $props["min"];
                     } else if (isset($props["max"]) && $value > $props["max"]) {
-                        $errors[$name] = $label . " must be at most " . $props["max"];
+                        $errors[$key] = $label . " must be at most " . $props["max"];
                     }
                     break;
                 case "date":
                     $date = is_string($value) ? \DateTime::createFromFormat("!Y-m-d", $value) : false;
                     if (!$date || $date->format("Y-m-d") !== $value) {
-                        $errors[$name] = $label . " must be a date like 2027-03-12";
+                        $errors[$key] = $label . " must be a date like 2027-03-12";
                     }
                     break;
                 case "boolean":
                     if (!is_bool($value)) {
-                        $errors[$name] = $label . " must be true or false";
+                        $errors[$key] = $label . " must be true or false";
                     }
                     break;
                 case "select":
                     $options = array_map("strval", (array)($props["options"] ?? []));
                     if (!is_scalar($value) || !in_array((string)$value, $options, true)) {
-                        $errors[$name] = $label . " must be one of: " . implode(", ", $options);
+                        $errors[$key] = $label . " must be one of: " . implode(", ", $options);
+                    }
+                    break;
+                case "list":
+                    if (!is_array($value) || !array_is_list($value)) {
+                        $errors[$key] = $label . " must be a list";
+                        break;
+                    }
+                    if (isset($props["min"]) && count($value) < $props["min"]) {
+                        $errors[$key] = $label . " needs at least " . $props["min"] . " items";
+                    } else if (isset($props["max"]) && count($value) > $props["max"]) {
+                        $errors[$key] = $label . " takes at most " . $props["max"] . " items";
+                    }
+                    foreach ($value as $i => $item) {
+                        if (!is_array($item)) {
+                            $errors[$key . "." . $i] = $label . " " . ($i + 1) . " has no fields";
+                            continue;
+                        }
+                        foreach ($props["blueprint"]->validate($item, $key . "." . $i . ".") as $itemKey => $message) {
+                            $errors[$itemKey] = $label . " " . ($i + 1) . ": " . $message;
+                        }
+                    }
+                    break;
+                case "blocks":
+                    if (!is_array($value) || !array_is_list($value)) {
+                        $errors[$key] = $label . " must be a list of blocks";
+                        break;
+                    }
+                    foreach ($value as $i => $block) {
+                        $type = is_array($block) ? ($block["type"] ?? null) : null;
+                        if (!is_string($type) || $type === "") {
+                            $errors[$key . "." . $i] = "Block " . ($i + 1) . " has no type";
+                            continue;
+                        }
+                        if (!empty($block["disabled"])) {
+                            continue;
+                        }
+                        $blueprint = $this->blockBlueprint($type);
+                        if (!$blueprint) {
+                            $errors[$key . "." . $i] = "Block " . ($i + 1) . ": there is no block type '" . $type . "' with a blueprint in site/blocks/";
+                            continue;
+                        }
+                        foreach ($blueprint->validate($block, $key . "." . $i . ".") as $blockKey => $message) {
+                            $errors[$blockKey] = $blueprint->getTitle() . ": " . $message;
+                        }
+                    }
+                    break;
+                case "entry":
+                    if (!is_string($value)) {
+                        $errors[$key] = $label . " must name an entry";
                     }
                     break;
                 default:
                     if (!is_scalar($value)) {
-                        $errors[$name] = $label . " must be text";
+                        $errors[$key] = $label . " must be text";
                     }
             }
         }

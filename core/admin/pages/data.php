@@ -7,6 +7,7 @@ $admin = $site->getAddOn("Admin");
 
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\AddOns\Admin\DataEntryHandler;
+use Shaack\Reboot\AddOns\Admin\FieldForm;
 use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\Collection;
 use Shaack\Reboot\CsrfProtection;
@@ -55,75 +56,6 @@ if ($handler && $action) {
 
 $collection = $blueprint ? Collection::load($defaultSite, $collectionName, true) : null;
 $entry = $collection && $slug !== null ? $collection->find($slug) : null;
-
-/**
- * One field of the entry form, as the blueprint describes it.
- */
-function renderDataField(string $name, array $props, $value, ?string $error): string
-{
-    $id = "field-" . $name;
-    $inputName = "fields[" . htmlspecialchars($name) . "]";
-    $label = htmlspecialchars($props["label"]) . (!empty($props["required"]) ? ' <span class="text-danger" title="Required">*</span>' : '');
-    $required = !empty($props["required"]) ? " required" : "";
-    $invalid = $error ? " is-invalid" : "";
-    $default = $props["default"] ?? null;
-    $placeholder = is_scalar($default) && !is_bool($default) ? ' placeholder="' . htmlspecialchars((string)$default) . '"' : "";
-    $valueText = is_scalar($value) && !is_bool($value) ? (string)$value : "";
-    $attr = ' class="form-control' . $invalid . '" id="' . $id . '" name="' . $inputName . '"' . $required;
-    switch ($props["type"]) {
-        case "textarea":
-            $control = '<textarea' . $attr . ' rows="3"' . $placeholder . '>' . htmlspecialchars($valueText) . '</textarea>';
-            break;
-        case "markdown":
-            $control = '<textarea class="form-control markdown editor-font' . $invalid . '" id="' . $id . '" name="' . $inputName . '" rows="10">'
-                . htmlspecialchars($valueText) . '</textarea>';
-            break;
-        case "number":
-            $control = '<input type="number" step="any"' . $attr . $placeholder
-                . (isset($props["min"]) ? ' min="' . htmlspecialchars((string)$props["min"]) . '"' : '')
-                . (isset($props["max"]) ? ' max="' . htmlspecialchars((string)$props["max"]) . '"' : '')
-                . ' value="' . htmlspecialchars($valueText) . '">';
-            break;
-        case "date":
-            $control = '<input type="date"' . $attr . ' value="' . htmlspecialchars($valueText) . '">';
-            break;
-        case "boolean":
-            $checked = $value === null ? (bool)$default : (bool)$value;
-            return '<div class="mb-3 form-check form-switch">'
-                . '<input type="hidden" name="' . $inputName . '" value="0">'
-                . '<input class="form-check-input' . $invalid . '" type="checkbox" role="switch" id="' . $id . '" name="' . $inputName . '" value="1"' . ($checked ? ' checked' : '') . '>'
-                . '<label class="form-check-label" for="' . $id . '">' . $label . '</label>'
-                . renderDataFieldHelp($props, $error) . '</div>';
-        case "select":
-            $options = '<option value="">' . (is_scalar($default) ? '(' . htmlspecialchars((string)$default) . ')' : '') . '</option>';
-            foreach ((array)($props["options"] ?? []) as $option) {
-                $option = (string)$option;
-                $options .= '<option' . ($option === $valueText ? ' selected' : '') . '>' . htmlspecialchars($option) . '</option>';
-            }
-            $control = '<select class="form-select' . $invalid . '" id="' . $id . '" name="' . $inputName . '"' . $required . '>' . $options . '</select>';
-            break;
-        case "image":
-            $control = '<div class="input-group data-image">'
-                . '<input type="text"' . $attr . $placeholder . ' value="' . htmlspecialchars($valueText) . '">'
-                . '<button type="button" class="btn btn-outline-secondary" data-choose-image="' . $id . '">Choose</button>'
-                . '</div>'
-                . '<img class="data-image-preview" alt="" data-preview-for="' . $id . '">';
-            break;
-        default:
-            $control = '<input type="text"' . $attr . $placeholder . ' value="' . htmlspecialchars($valueText) . '">';
-    }
-    return '<div class="mb-3"><label class="form-label" for="' . $id . '">' . $label . '</label>'
-        . $control . renderDataFieldHelp($props, $error) . '</div>';
-}
-
-function renderDataFieldHelp(array $props, ?string $error): string
-{
-    $html = $error ? '<div class="invalid-feedback d-block">' . htmlspecialchars($error) . '</div>' : '';
-    if (!empty($props["help"])) {
-        $html .= '<div class="form-text">' . htmlspecialchars((string)$props["help"]) . '</div>';
-    }
-    return $html;
-}
 
 function dataCell(Entry $entry, string $field, array $props): string
 {
@@ -215,20 +147,18 @@ fields:
                 <?php if ($errors) { ?>
                     <div class="alert alert-warning max-width-lg">This entry is not shown on the website until the marked fields are fixed.</div>
                 <?php } ?>
-                <form method="post" class="data-form max-width-lg" id="data-form"
+                <form method="post" class="data-form max-width-lg" id="data-form" data-field-form
                       action="data?collection=<?= urlencode($collectionName) ?><?= $entry ? "&entry=" . urlencode($entry->getSlug()) : "&new=1" ?>">
                     <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                     <input type="hidden" name="action" value="save" id="data-action">
-                    <?php foreach ($blueprint->getFields() as $name => $props) {
-                        echo renderDataField($name, $props, $formValues[$name] ?? null, $errors[$name] ?? null);
-                    } ?>
+                    <?= FieldForm::render($blueprint, $formValues, $errors) ?>
                     <div class="mb-4 form-check form-switch">
                         <input type="hidden" name="draft" value="0">
                         <input class="form-check-input" type="checkbox" role="switch" id="field-draft" name="draft" value="1"<?= $entry && $entry->isDraft() ? " checked" : "" ?>>
                         <label class="form-check-label" for="field-draft">Draft, not shown on the website</label>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <button type="submit" class="btn btn-sm btn-primary px-3" id="save-button">Save<span class="unsaved-dot d-none" aria-hidden="true"></span></button>
+                        <button type="submit" class="btn btn-sm btn-primary px-3" id="save-button">Save<span class="unsaved-dot d-none" aria-hidden="true" data-save-dot></span></button>
                         <a class="btn btn-sm btn-outline-secondary" href="data?collection=<?= urlencode($collectionName) ?>">Close</a>
                         <?php if ($entry) { ?>
                             <button type="button" class="btn btn-sm btn-outline-danger ms-auto" id="delete-button">Delete</button>
@@ -280,69 +210,23 @@ fields:
 <?php if ($canonicalUrl) { ?>
 <script>history.replaceState(null, "", <?= json_encode($canonicalUrl) ?>)</script>
 <?php } ?>
-<script type="module">
-    import {InsertMedia} from "./assets/InsertMedia.js"
-
+<script type="module" src="assets/field-form.js?v=<?= @filemtime($reboot->getBaseFsPath() . "/web/admin/assets/field-form.js") ?>"></script>
+<script>
     // a click anywhere in a row of the table opens the entry
-    document.querySelectorAll(".data-table tr[data-href]").forEach(row => {
-        row.addEventListener("click", event => {
+    document.querySelectorAll(".data-table tr[data-href]").forEach(function (row) {
+        row.addEventListener("click", function (event) {
             if (!event.target.closest("a")) location.href = row.dataset.href
         })
     })
-
-    // an image field: preview, and "Choose" opens the media browser of the editor
-    document.querySelectorAll("[data-choose-image]").forEach(button => {
-        const input = document.getElementById(button.dataset.chooseImage)
-        const preview = document.querySelector('[data-preview-for="' + input.id + '"]')
-        const update = () => {
-            const src = input.value || input.placeholder
-            preview.src = src || ""
-            preview.hidden = !src
-        }
-        const picker = new InsertMedia(null, {mediaUrl: "media"})
-        picker.insertImage = (webPath) => {
-            input.value = webPath
-            input.dispatchEvent(new Event("input", {bubbles: true}))
-            update()
-        }
-        button.addEventListener("click", () => picker.openBrowser())
-        input.addEventListener("input", update)
-        update()
-    })
-
-    const form = document.getElementById("data-form")
-    if (form) {
-        const saveDot = document.querySelector("#save-button .unsaved-dot")
-        let dirty = false
-        const markDirty = () => {
-            dirty = true
-            saveDot.classList.remove("d-none")
-        }
-        form.addEventListener("input", markDirty)
-        form.addEventListener("change", markDirty)
-        // the Markdown editor changes its textarea without an input event on the form
-        form.querySelectorAll("textarea.markdown").forEach(textarea => {
-            textarea.addEventListener("input", markDirty)
+    var deleteButton = document.getElementById("delete-button")
+    if (deleteButton) {
+        deleteButton.addEventListener("click", function () {
+            if (!confirm("Delete this entry? The last version is kept in the history.")) return
+            var form = document.getElementById("data-form")
+            document.getElementById("data-action").value = "delete"
+            if (form.clean) form.clean()
+            form.noValidate = true
+            form.submit()
         })
-        form.addEventListener("submit", () => dirty = false)
-        window.addEventListener("beforeunload", event => {
-            if (dirty) event.preventDefault()
-        })
-        document.addEventListener("keydown", event => {
-            if ((event.metaKey || event.ctrlKey) && event.key === "s") {
-                event.preventDefault()
-                form.requestSubmit()
-            }
-        })
-        const deleteButton = document.getElementById("delete-button")
-        if (deleteButton) {
-            deleteButton.addEventListener("click", () => {
-                if (!confirm("Delete this entry? The last version is kept in the history.")) return
-                document.getElementById("data-action").value = "delete"
-                dirty = false
-                form.noValidate = true
-                form.submit()
-            })
-        }
     }
 </script>

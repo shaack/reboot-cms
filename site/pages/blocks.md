@@ -157,8 +157,26 @@ The "text" block renders its Markdown as it is. A page without any block comment
 A paragraph, a list, a table, a code block, everything Markdown offers.
 ```
 
+## Inverse
+
+Every block of this demo can be set inverse with a configuration in its comment. It then stands as a white band over the whole width, and the hero, which is white already, turns dark. The cards below are the same as above, set inverse.
+
+```markdown
+<!-- cards: {inverse: true} -->
+```
+
+<!-- cards: {inverse: true} -->
+
+## Heading
+
+- ![First card](media/dummy.svg)
+- ![Second card](media/dummy.svg)
+- ![Third card](media/dummy.svg)
+
+<!-- text -->
+
 ## Your own blocks
 
-A new block type is a new PHP file in `site/blocks/`. The template receives the parts of the block and picks what it needs, the heading, the image, the list, with a short query. The [documentation](documentation#block) shows how the blocks above are built.
+A new block type is a new PHP file in `site/blocks/`. With a blueprint next to it, a YAML file of its fields, it becomes a block of [structured pages](structured), which editors fill in as a form. The template receives the parts of the block and picks what it needs, the heading, the image, the list, with a short query. The [documentation](documentation#block) shows how the blocks above are built.
 
 The [test pages](testpages) hold a few edge cases used during development, an empty page, an unknown block and a code block with HTML inside.

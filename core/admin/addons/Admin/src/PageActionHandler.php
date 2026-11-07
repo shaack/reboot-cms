@@ -31,6 +31,7 @@ class PageActionHandler
     {
         return match ($action) {
             'add_page' => $this->addPage($targetName),
+            'add_structured_page' => $this->addPage($targetName, true),
             'delete_page' => $this->deletePage($targetName),
             'rename_page' => $this->renamePage($targetName, $request),
             'move_page' => $this->movePage($targetName, $request),
@@ -42,22 +43,29 @@ class PageActionHandler
         };
     }
 
-    private function addPage(string $targetName): array
+    /**
+     * @param bool $structured a structured page, a YAML file with a title and blocks
+     */
+    private function addPage(string $targetName, bool $structured = false): array
     {
         $newName = trim($targetName);
         if (!preg_match('/^[\w\-\/]+$/', $newName)) {
             throw new \InvalidArgumentException("Invalid page name. Use letters, numbers, hyphens, underscores.");
         }
-        $newPath = $this->pagesDir . "/" . $newName . ".md";
+        $extension = $structured ? ".yml" : ".md";
+        $newPath = $this->pagesDir . "/" . $newName . $extension;
         $newDir = dirname($newPath);
         if (!is_dir($newDir)) {
             mkdir($newDir, 0755, true);
         }
-        if (file_exists($newPath)) {
-            throw new \InvalidArgumentException("Page already exists.");
+        // one address, one page: about.md and about.yml would both be /about
+        foreach ([".md", ".yml", ".php"] as $other) {
+            if (file_exists($this->pagesDir . "/" . $newName . $other)) {
+                throw new \InvalidArgumentException("Page already exists.");
+            }
         }
-        file_put_contents($newPath, "");
-        return ['success' => "Page created", 'editPageName' => "/" . $newName . ".md"];
+        file_put_contents($newPath, $structured ? "title: " . basename($newName) . "\nblocks: []\n" : "");
+        return ['success' => "Page created", 'editPageName' => "/" . $newName . $extension];
     }
 
     private function deletePage(string $targetName): array
@@ -74,7 +82,7 @@ class PageActionHandler
             throw new \InvalidArgumentException("Invalid name. Use letters, numbers, hyphens, underscores.");
         }
         $oldPath = $this->resolveAndValidateFile($targetName);
-        $newPath = dirname($oldPath) . "/" . $newName . ".md";
+        $newPath = dirname($oldPath) . "/" . $newName . "." . pathinfo($oldPath, PATHINFO_EXTENSION);
         if (file_exists($newPath)) {
             throw new \InvalidArgumentException("A page with that name already exists.");
         }

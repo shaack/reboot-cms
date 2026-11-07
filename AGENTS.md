@@ -22,6 +22,7 @@ There is no database, no schema, and no build step for content.
   - `blocks/` — PHP templates for content blocks
   - `data/<collection>/` — records with fixed fields, one Markdown file per entry
   - `blueprints/<collection>.yml` — the fields of a collection
+  - `pages/<name>.yml` — a structured page, blocks with fields, see below
   - `addons/<Name>/<Name>.php` — site-specific addons, one folder each with optional `src/` and `admin/`
   - `template.php` — main HTML template
   - `config.yml` — navigation, addon registration, multilingual settings
@@ -76,6 +77,10 @@ no framework or build step in between.
 ## Data
 
 Records with fixed fields (seminars, events, people) are no pages. Each entry is a Markdown file in `site/data/<collection>/`, its fields in the frontmatter, the Markdown below it is the field `body`. `site/blueprints/<collection>.yml` lists the fields with `type`, `required`, `default` and `options`. Templates and blocks query them with `$site->collection("seminars")->where("date", ">=", "today")->sortBy("date")->limit(3)`. Entries that don't match the blueprint and drafts (`draft: true`) are left out. See the README section "Data".
+
+## Structured pages
+
+Besides Markdown pages, `site/pages/<name>.yml` is a structured page: `title`, `description` and `blocks`, a list of blocks with a `type` and the fields of that type. A block type for structured pages is `site/blocks/<type>.php` plus the blueprint `site/blocks/<type>.yml`; its template reads `$block->get("heading")`, `$block->html("text")`, `$block->items("cards")` (field type `list`) and `$block->entry("seminar")` (field type `entry`, an entry of a collection). The admin edits these pages as forms. See the README section "Structured pages".
 
 ## Multilingual
 

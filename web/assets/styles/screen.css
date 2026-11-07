@@ -2,15 +2,31 @@
 
 /* Black and white, straight edges, surfaces and lines, one signal color for
    what can be done: links and buttons. Every line is 1px in the color --line,
-   a mark in the signal color is 2px. */
+   a mark in the signal color is 2px.
+   The colors below are for the dark page. A light surface, the hero or a block
+   with `inverse: true`, sets the light ones, see "Light surfaces". */
 :root {
     --signal: #d4ff3a;
     --paper: #fff;
     --ink: #0a0a0a;
+    --text: #f2f2f2;
+    --strong: #fff;
+    --soft: rgba(255, 255, 255, 0.72);
+    --muted: rgba(255, 255, 255, 0.6);
+    --line: rgba(255, 255, 255, 0.2);
     --surface: rgba(255, 255, 255, 0.04);
     --surface-hover: rgba(255, 255, 255, 0.07);
-    --line: rgba(255, 255, 255, 0.2);
-    --muted: rgba(255, 255, 255, 0.6);
+    --code-bg: rgba(255, 255, 255, 0.1);
+    --accent-text: var(--signal);
+    --link-line: var(--signal);
+    --link-hover: var(--signal);
+    --button: var(--signal);
+    --button-ink: #000;
+    --button-hover: var(--paper);
+    --button-hover-ink: #000;
+    --panel: var(--paper);
+    --panel-ink: #000;
+    --panel-dim: rgba(255, 255, 255, 0.35);
 }
 
 html {
@@ -20,7 +36,7 @@ html {
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background: var(--ink);
-    color: #f2f2f2;
+    color: var(--text);
     margin-top: 5rem;
     margin-bottom: 6rem;
     letter-spacing: -0.01em;
@@ -109,16 +125,16 @@ main ol {
 
 /* Links */
 a {
-    color: #fff;
+    color: var(--strong);
     text-decoration: underline;
-    text-decoration-color: var(--signal);
+    text-decoration-color: var(--link-line);
     text-decoration-thickness: 1px;
     text-underline-offset: 0.2em;
     transition: color 0.15s;
 }
 
 a:hover {
-    color: var(--signal);
+    color: var(--link-hover);
 }
 
 ::selection {
@@ -136,8 +152,8 @@ pre {
 }
 
 code {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--strong);
+    background: var(--code-bg);
     border-radius: 0;
     padding: 0.1em 0.35em;
     font-size: 0.9em;
@@ -225,9 +241,9 @@ nav.navbar {
 }
 
 .btn-primary {
-    background: var(--signal);
+    background: var(--button);
     border: 0;
-    color: #000;
+    color: var(--button-ink);
     font-size: 0.85rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -239,26 +255,70 @@ nav.navbar {
 
 .btn-primary:hover,
 .btn-primary:focus-visible {
-    background: var(--paper);
-    color: #000;
+    background: var(--button-hover);
+    color: var(--button-hover-ink);
 }
 
-/* Hero, a white band over the full width of the window. As the first block of
-   a page it starts right below the navigation. */
-.block-hero {
-    --hero-padding: 4.5rem;
+/* Light surfaces: a white band over the full width of the window, the hero
+   always, any other block with `<!-- name: {inverse: true} -->`. On the hero,
+   `inverse: true` turns it dark. */
+.block-hero,
+.block-inverse {
+    --text: #111;
+    --strong: #000;
+    --soft: rgba(0, 0, 0, 0.68);
+    --muted: rgba(0, 0, 0, 0.55);
+    --line: rgba(0, 0, 0, 0.15);
+    --surface: rgba(0, 0, 0, 0.03);
+    --surface-hover: rgba(0, 0, 0, 0.05);
+    --code-bg: rgba(0, 0, 0, 0.08);
+    /* the signal color is too light on white, black takes its place */
+    --accent-text: #000;
+    --link-line: rgba(0, 0, 0, 0.4);
+    --link-hover: rgba(0, 0, 0, 0.6);
+    --button: #000;
+    --button-ink: #fff;
+    --button-hover: var(--signal);
+    --button-hover-ink: #000;
+    --panel: #000;
+    --panel-ink: #fff;
+    --panel-dim: rgba(0, 0, 0, 0.35);
+    --band-padding: 4.5rem;
     position: relative;
     background: var(--paper);
-    color: #000;
-    padding: var(--hero-padding) 0;
+    color: var(--text);
+    padding: var(--band-padding) 0;
     /* paints the white beyond the column to both edges of the window, without widening the page */
     border-image: conic-gradient(var(--paper) 0 0) fill 0 // 0 100vw;
 }
 
-main > .block-hero:first-child {
+/* the hero set to inverse is dark again, framed by a hairline */
+.block-hero.block-inverse {
+    --text: #f2f2f2;
+    --strong: #fff;
+    --muted: rgba(255, 255, 255, 0.6);
+    --line: rgba(255, 255, 255, 0.2);
+    --code-bg: rgba(255, 255, 255, 0.1);
+    --link-line: var(--signal);
+    --link-hover: var(--signal);
+    --button: var(--signal);
+    --button-ink: #000;
+    --button-hover: var(--paper);
+    background: transparent;
+    border-image: none;
+    padding: 0;
+}
+
+.block-hero.block-inverse .card {
+    border: 1px solid var(--line) !important;
+}
+
+/* a light surface as the first block starts right below the navigation */
+main > .block-hero:not(.block-inverse):first-child,
+main > .block-inverse:not(.block-hero):first-child {
     /* body keeps 5rem free for the fixed navigation, which is 63px high and opaque */
     margin-top: -5rem;
-    padding-top: calc(63px + var(--hero-padding));
+    padding-top: calc(63px + var(--band-padding));
 }
 
 .block-hero .card {
@@ -268,19 +328,15 @@ main > .block-hero:first-child {
     border-radius: 0;
 }
 
-.block-hero .card-body,
-.block-hero .card-body > div {
+.block-hero:not(.block-inverse) .card-body,
+.block-hero:not(.block-inverse) .card-body > div {
     padding-left: 0 !important;
     padding-right: 0 !important;
 }
 
-.block-hero .card-body {
+.block-hero:not(.block-inverse) .card-body {
     padding-top: 0;
     padding-bottom: 0;
-}
-
-.block-hero .card a:not(.btn) {
-    color: #000;
 }
 
 .block-hero .display-4 {
@@ -293,29 +349,12 @@ main > .block-hero:first-child {
 .block-hero .lead {
     font-weight: 400;
     font-size: 1.3rem;
-    color: rgba(0, 0, 0, 0.6);
+    color: var(--muted);
 }
 
 .block-hero hr {
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-top: 1px solid var(--line);
     opacity: 1;
-}
-
-.block-hero code {
-    color: #000;
-    background: rgba(0, 0, 0, 0.08);
-}
-
-/* the signal color is too light on white, the button is black there */
-.block-hero .btn-primary {
-    background: #000;
-    color: #fff;
-}
-
-.block-hero .btn-primary:hover,
-.block-hero .btn-primary:focus-visible {
-    background: var(--signal);
-    color: #000;
 }
 
 /* Text */
@@ -376,15 +415,17 @@ main > .block-hero:first-child {
 }
 
 .block-three-columns p {
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--soft);
 }
 
-/* Cards */
-.block-cards .card-group {
+/* Cards, and the gallery of structured pages */
+.block-cards .card-group,
+.block-gallery .card-group {
     border-top: 1px solid var(--line);
 }
 
-.block-cards .card {
+.block-cards .card,
+.block-gallery .card {
     background: transparent !important;
     border: 0 !important;
     border-bottom: 1px solid var(--line) !important;
@@ -397,26 +438,31 @@ main > .block-hero:first-child {
 }
 
 @media (min-width: 576px) {
-    .block-cards .card + .card {
+    .block-cards .card + .card,
+    .block-gallery .card + .card {
         border-left: 1px solid var(--line) !important;
     }
 }
 
 .block-cards .card:hover,
-.block-cards .card:focus-visible {
+.block-gallery .card:hover,
+.block-cards .card:focus-visible,
+.block-gallery .card:focus-visible {
     background: var(--surface-hover) !important;
     color: inherit;
 }
 
-.block-cards .card-img-top {
+.block-cards .card-img-top,
+.block-gallery .card-img-top {
     padding: 1.25rem 1.25rem 0;
     border-radius: 0;
 }
 
-.block-cards .card-body {
+.block-cards .card-body,
+.block-gallery .card-body {
     display: block;
     font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--soft);
     padding: 1rem 1.25rem 1.25rem;
 }
 
@@ -634,7 +680,7 @@ main > .block-hero:first-child {
 }
 
 .blog-teaser time {
-    color: var(--signal);
+    color: var(--accent-text);
 }
 
 .blog-teaser h2 {
@@ -650,7 +696,7 @@ main > .block-hero:first-child {
 
 .blog-teaser p {
     margin: 0;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--soft);
 }
 
 /* Seminar teaser, the next entries of site/data/seminars */
@@ -677,8 +723,8 @@ main > .block-hero:first-child {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background: var(--paper);
-    color: #000;
+    background: var(--panel);
+    color: var(--panel-ink);
     padding-top: 1.25rem;
     padding-bottom: 1.25rem;
 }
@@ -711,7 +757,7 @@ main > .block-hero:first-child {
 }
 
 .seminar-level {
-    color: var(--signal);
+    color: var(--accent-text);
     font-weight: 600;
 }
 
@@ -724,7 +770,7 @@ main > .block-hero:first-child {
 
 .seminar-teaser {
     margin: 0;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--soft);
 }
 
 .seminar-action {
@@ -746,8 +792,8 @@ main > .block-hero:first-child {
 /* the link is selected by its cell, the AddOn EmailObfuscation writes mailto links without their class */
 .seminar-action a {
     display: block;
-    background: var(--signal);
-    color: #000;
+    background: var(--button);
+    color: var(--button-ink);
     font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -759,8 +805,8 @@ main > .block-hero:first-child {
 
 .seminar-action a:hover,
 .seminar-action a:focus-visible {
-    background: var(--paper);
-    color: #000;
+    background: var(--button-hover);
+    color: var(--button-hover-ink);
 }
 
 .seminar-action small,
@@ -783,7 +829,7 @@ main > .block-hero:first-child {
 }
 
 .seminar-is-booked-out .seminar-date {
-    background: rgba(255, 255, 255, 0.35);
+    background: var(--panel-dim);
 }
 
 .seminar-is-booked-out h3,
@@ -828,4 +874,66 @@ main > .block-hero:first-child {
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
+}
+
+/* Intro, a block of structured pages: text, and an image next to it */
+.intro-layout {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+}
+
+@media (min-width: 768px) {
+    .intro-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .intro-layout-text {
+        grid-template-columns: minmax(0, 44em);
+    }
+}
+
+.intro-lead {
+    font-size: 1.3rem;
+    color: var(--muted);
+}
+
+.intro-image {
+    width: 100%;
+    border: 1px solid var(--line);
+}
+
+/* Features, any number side by side, separated by lines */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    border-top: 1px solid var(--line);
+}
+
+.feature {
+    padding: 1.75rem 1.75rem 1.75rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+@media (min-width: 768px) {
+    .feature {
+        padding-left: 1.75rem;
+        border-bottom: 0;
+        border-left: 1px solid var(--line);
+    }
+
+    .feature:first-child {
+        padding-left: 0;
+        border-left: 0;
+    }
+}
+
+.feature p {
+    color: var(--soft);
+}
+
+.seminar-note {
+    max-width: 44em;
+    margin-top: 1.5rem;
+    color: var(--soft);
 }

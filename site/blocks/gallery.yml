@@ -1,0 +1,12 @@
+# Images with captions, they open enlarged in the lightbox
+title: Gallery
+fields:
+  heading: {type: text}
+  images:
+    type: list
+    label: Images
+    min: 1
+    fields:
+      image:   {type: image, required: true}
+      caption: {type: text}
+  inverse: {type: boolean, help: "A white band over the full width"}

@@ -12,6 +12,8 @@ use Shaack\Utils\HttpUtils;
 
 class Block
 {
+    use FieldAccess;
+
     private string $name;
     private string $content;
     private \DOMXPath $xpath;
@@ -80,6 +82,21 @@ class Block
         if (!$loaded) {
             Logger::error("Block '" . $this->name . "': HTML could not be parsed, the block renders empty");
         }
+    }
+
+    /**
+     * Give a block of a structured page its fields, the template reads them with
+     * `get()`, `html()`, `items()` and `entry()`, see FieldAccess.
+     */
+    public function setFields(array $values, ?Blueprint $blueprint = null): void
+    {
+        $this->fieldValues = $values;
+        $this->fieldBlueprint = $blueprint;
+    }
+
+    protected function fieldSite(): ?Site
+    {
+        return $this->site;
     }
 
     /**

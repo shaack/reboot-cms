@@ -116,7 +116,9 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
     const configuredTools = <?= json_encode($editorTools) ?>;
     const blockExamplesEl = document.getElementById('block-examples')
     const blockExamples = blockExamplesEl ? JSON.parse(blockExamplesEl.textContent) : null
-    document.querySelectorAll("textarea.markdown").forEach(editor => {
+    // also called for the Markdown fields a form adds later, see assets/field-form.js
+    window.rebootMarkdownEditor = editor => {
+        if (editor.mdEditor) return
         const props = {wordWrap: <?= $editorWordWrap ?>}
         const tools = configuredTools.map(name => {
             if (name === '|') return Separator
@@ -137,7 +139,8 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
         props.lineClass = (index, line) => editor.rebootLineClass ? editor.rebootLineClass(index, line) : null
         props.rangeClass = (text) => editor.rebootRangeClass ? editor.rebootRangeClass(text) : null
         editor.mdEditor = new MdEditor(editor, props)
-    })
+    }
+    document.querySelectorAll("textarea.markdown").forEach(window.rebootMarkdownEditor)
     showEditorColumn()
 </script>
 </head>

@@ -15,10 +15,10 @@ class PageTreeHelper
     public static function buildPageTree(array $pages, string $pagesDir): array
     {
         $tree = [];
-        // Add .md files
+        // Add Markdown pages and structured pages (.yml)
         foreach ($pages as $page) {
             $pagePathInfo = pathinfo($page["name"]);
-            if (!array_key_exists("extension", $pagePathInfo) || $pagePathInfo["extension"] !== "md") {
+            if (!in_array($pagePathInfo["extension"] ?? "", ["md", "yml"], true)) {
                 continue;
             }
             // Hidden files such as the AppleDouble ._index.md a macOS tar leaves behind are not pages
@@ -79,14 +79,15 @@ class PageTreeHelper
         }
         // Sort files: index first, then alphabetically
         usort($files, function ($a, $b) {
-            $aIsIndex = basename($a) === 'index.md';
-            $bIsIndex = basename($b) === 'index.md';
+            $aIsIndex = in_array(basename($a), ['index.md', 'index.yml'], true);
+            $bIsIndex = in_array(basename($b), ['index.md', 'index.yml'], true);
             if ($aIsIndex !== $bIsIndex) return $aIsIndex ? -1 : 1;
             return strcasecmp($a, $b);
         });
         // Render files first, then folders
         foreach ($files as $filePath) {
-            $fileName = preg_replace('/\.md$/', '', basename($filePath));
+            $fileName = preg_replace('/\.(md|yml)$/', '', basename($filePath));
+            $structured = str_ends_with($filePath, ".yml");
             $active = $editPageName && $filePath === $editPageName;
             if ($active) {
                 $editable = true;
@@ -95,9 +96,10 @@ class PageTreeHelper
             $isIndex = $fileName === "index";
             $title = $isIndex ? ($prefix === "" ? "Homepage /" : "Folder page /" . rtrim($prefix, "/")) : ltrim($filePath, "/");
             $html .= "<li>";
-            $html .= "<a class='page-tree-file" . ($active ? " active" : "") . ($isIndex ? " page-tree-index" : "") . "' href='pages?page=" . urlencode($filePath) . "'"
+            $title .= $structured ? " (structured page)" : "";
+            $html .= "<a class='page-tree-file" . ($active ? " active" : "") . ($isIndex ? " page-tree-index" : "") . ($structured ? " page-tree-structured" : "") . "' href='pages?page=" . urlencode($filePath) . "'"
                 . " title='" . htmlspecialchars($title, ENT_QUOTES) . "' data-path='" . htmlspecialchars(ltrim($filePath, "/"), ENT_QUOTES) . "'>"
-                . AdminHelper::icon($isIndex ? "house" : "file") . "<span>" . htmlspecialchars($fileName) . "</span></a>";
+                . AdminHelper::icon($isIndex ? "house" : ($structured ? "grid" : "file")) . "<span>" . htmlspecialchars($fileName) . "</span></a>";
             $html .= "</li>";
         }
         foreach ($folders as $folderName => $children) {

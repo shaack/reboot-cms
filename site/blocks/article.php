@@ -30,6 +30,7 @@
  */
 
 /** @var \Shaack\Reboot\Block $block */
+require_once __DIR__ . "/_helpers.php";
 
 $title = $block->getConfig()['title'] ?? 'Further reading';
 $text = $block->field("/*[part(1)]", "Article text", true, "md-editor");
@@ -37,7 +38,7 @@ $aside = $block->field("/*[part(2)]", "Links", false, "md-editor");
 $hasAside = $aside instanceof \DOMNode || ($aside instanceof \DOMNodeList && $aside->length > 0);
 
 ?>
-<section class="block block-article">
+<section class="<?= blockClasses($block) ?>">
     <div class="container-fluid">
         <div class="article-layout<?= $hasAside ? '' : ' article-layout-plain' ?>">
             <div class="article-text"><?= $block->nodeHtml($text) ?></div>

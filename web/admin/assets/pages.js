@@ -25,6 +25,11 @@
     window.savePageAsync = function () {
         var form = document.querySelector('form[action^="pages?page="]');
         if (!form) return;
+        // a structured page is a form of fields, it is sent as it is, see field-form.js
+        if (form.hasAttribute('data-field-form')) {
+            form.requestSubmit();
+            return;
+        }
         var formData = new FormData(form);
         // what is saved, typing during the request stays unsaved
         var sentContent = editorTextarea ? editorTextarea.value : '';
@@ -230,7 +235,7 @@
     // one they act on the open page. Folder paths have no leading slash.
 
     function pageBaseName(page) {
-        return page.replace(/\.md$/, '').split('/').pop();
+        return page.replace(/\.(md|yml)$/, '').split('/').pop();
     }
 
     window.renamePage = function (page) {
@@ -263,6 +268,12 @@
         var name = prompt(folder ? 'New page in ' + folder + '/:' : 'New page:', '');
         if (name === null || !name.trim()) return;
         submitPageAction('add_page', (folder ? folder + '/' : '') + name.trim().replace(/^\/+/, ''));
+    };
+
+    window.newStructuredPage = function (folder) {
+        var name = prompt(folder ? 'New structured page in ' + folder + '/:' : 'New structured page:', '');
+        if (name === null || !name.trim()) return;
+        submitPageAction('add_structured_page', (folder ? folder + '/' : '') + name.trim().replace(/^\/+/, ''));
     };
 
     window.newFolder = function (folder) {
@@ -310,6 +321,7 @@
                 header: target.getAttribute('data-path'),
                 items: [
                     ['New page here', function () { window.newPage(folder); }],
+                    ['New structured page here', function () { window.newStructuredPage(folder); }],
                     ['New folder here', function () { window.newFolder(folder); }],
                     null,
                     ['Rename page', function () { window.renamePage(page); }],
@@ -326,6 +338,7 @@
                 header: path + '/',
                 items: [
                     ['New page in folder', function () { window.newPage(path); }],
+                    ['New structured page in folder', function () { window.newStructuredPage(path); }],
                     ['New folder in folder', function () { window.newFolder(path); }],
                     null,
                     ['Rename folder', function () { window.renameFolder(path, name); }],
@@ -338,6 +351,7 @@
             header: null,
             items: [
                 ['New page', function () { window.newPage(''); }],
+                ['New structured page', function () { window.newStructuredPage(''); }],
                 ['New folder', function () { window.newFolder(''); }]
             ]
         };
@@ -1083,6 +1097,8 @@
     var previewActive = previewStored === null ? window.innerWidth >= 1200 : previewStored === 'true';
     var previewDebounceTimer = null;
     var previewInitialized = false;
+    // a structured page is edited in a form of fields, see field-form.js
+    var structuredForm = document.querySelector('form[data-field-form]');
     var previewFront = 'a';
 
     function getFrontIframe() {
@@ -1141,6 +1157,16 @@
             front.style.pointerEvents = 'none';
             previewFront = (previewFront === 'a') ? 'b' : 'a';
         };
+        if (structuredForm) {
+            // the form itself goes to the preview, the server writes the YAML in memory only
+            var action = structuredForm.getAttribute('action');
+            structuredForm.setAttribute('action', 'pages?preview=1&page=' + encodeURIComponent(currentPage));
+            structuredForm.target = back.name;
+            structuredForm.submit();
+            structuredForm.setAttribute('action', action);
+            structuredForm.removeAttribute('target');
+            return;
+        }
         form.submit();
     }
 
@@ -1165,6 +1191,9 @@
             if (editorTextarea) {
                 editorTextarea.addEventListener('input', schedulePreviewUpdate);
             }
+            if (structuredForm) {
+                structuredForm.addEventListener('fieldchange', schedulePreviewUpdate);
+            }
         } else {
             editorCol.classList.remove('col-lg-5', 'col-xl-6');
             editorCol.classList.add('col-lg-9', 'col-xl-10');
@@ -1172,6 +1201,9 @@
             previewCol.classList.remove('d-lg-block');
             previewCol.classList.add('d-lg-none');
             previewInitialized = false;
+            if (structuredForm) {
+                structuredForm.removeEventListener('fieldchange', schedulePreviewUpdate);
+            }
             if (editorTextarea) {
                 editorTextarea.removeEventListener('input', schedulePreviewUpdate);
             }
@@ -1226,6 +1258,13 @@
     }
 
     function addPreviewButton() {
+        var structuredButton = document.getElementById('structured-preview-toggle');
+        if (structuredButton) {
+            previewButton = structuredButton;
+            previewButton.addEventListener('click', window.togglePreview);
+            syncPreviewButton();
+            return;
+        }
         var toolbar = editorTextarea && editorTextarea.parentNode.querySelector('[role="toolbar"]');
         if (!toolbar || !currentPage) return;
         protectButton = addToolbarToggle(toolbar, 'protect-toggle', 'Protect the block lines', ICON_LOCK, ICON_LOCK_FILL, function () {

@@ -80,6 +80,9 @@ class Page
             if (file_exists($requestedFsPath . ".md")) {
                 Logger::info("Markdown page: " . $path);
                 return $this->renderMarkdown($requestedFsPath . ".md", $request);
+            } else if (file_exists($requestedFsPath . ".yml")) {
+                Logger::info("Structured page: " . $path);
+                return $this->renderStructured($requestedFsPath . ".yml", $request);
             } else if (file_exists($requestedFsPath . ".php")) {
                 Logger::info("PHP page: " . $path);
                 return $this->renderPHP($requestedFsPath . ".php", $request);
@@ -312,6 +315,67 @@ class Page
             $html .= "<!--reboot-preview-line:" . ($bodyLine + substr_count($content, "\n") + 1) . ":end-->";
         }
 
+        return $html;
+    }
+
+    /**
+     * A structured page, a YAML file whose blocks hold fields instead of Markdown:
+     *
+     * ```yaml
+     * title: About us
+     * blocks:
+     *   - type: intro
+     *     heading: Welcome
+     *   - type: features
+     *     disabled: true
+     * ```
+     *
+     * The values next to the blocks are the config of the page, like the frontmatter
+     * of a Markdown page. Each block renders with its template from `site/blocks/`,
+     * which reads the fields with `$block->get()`, its blueprint is `site/blocks/<type>.yml`.
+     */
+    private function renderStructured(string $pagePath, ?Request $request): string
+    {
+        $isPreview = $this->previewContent !== null && (realpath($pagePath) ?: $pagePath) === $this->previewFsPath;
+        $source = $isPreview ? $this->previewContent : file_get_contents($pagePath);
+        $this->config = [];
+        try {
+            $data = Yaml::parse($source);
+        } catch (ParseException $e) {
+            Logger::error("Structured page " . $pagePath . " is no valid YAML: " . $e->getMessage());
+            return "";
+        }
+        if (!is_array($data)) {
+            return "";
+        }
+        $blueprint = Blueprint::forPage($this->site);
+        $data = $blueprint->normalize($data);
+        foreach ($blueprint->validate($data) as $message) {
+            Logger::error("Structured page " . $pagePath . ": " . $message);
+        }
+        $blocksField = "blocks";
+        foreach ($blueprint->getFields() as $name => $props) {
+            if ($props["type"] === "blocks") {
+                $blocksField = $name;
+                break;
+            }
+        }
+        $blocks = is_array($data[$blocksField] ?? null) ? $data[$blocksField] : [];
+        unset($data[$blocksField]);
+        $this->config = $data;
+        $html = "";
+        $names = [];
+        foreach ($blocks as $values) {
+            if (!is_array($values) || !is_string($values["type"] ?? null) || self::isDisabled($values)) {
+                continue;
+            }
+            // the fields are the config of the block as well, so `inverse: true` works as in a Markdown page
+            $block = new Block($this->site, $values["type"], "", $values);
+            $block->setFields($values, Blueprint::forBlock($this->site, $values["type"]));
+            $html .= $block->render($request);
+            $names[] = $values["type"];
+        }
+        Logger::info("Blocks: " . join(", ", $names));
         return $html;
     }
 

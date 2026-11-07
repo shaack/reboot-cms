@@ -11,6 +11,7 @@ use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 use Shaack\Reboot\Page;
 use Shaack\Reboot\Block;
+use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\AddOns\Admin\PageActionHandler;
 use Shaack\Reboot\AddOns\Admin\PageHistoryHelper;
 use Shaack\Reboot\AddOns\Admin\PageTreeHelper;
@@ -44,7 +45,8 @@ if ($request->getParam("validate") && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require __DIR__ . "/../api/pages-validate.php";
     return;
 }
-if ($request->getParam("fields")) {
+// a GET only, the form of a structured page posts its values as `fields`
+if ($request->getParam("fields", "get")) {
     require __DIR__ . "/../api/pages-fields.php";
     return;
 }
@@ -102,7 +104,7 @@ $titleExtra = '<button type="button" class="btn btn-sm btn-link text-body-second
     . ' id="sidebar-toggle" title="Show or hide the page list" aria-label="Show or hide the page list" aria-controls="pages-sidebar">'
     . AdminHelper::icon('sidebar') . '</button>';
 if ($editPageName) {
-    $viewPath = preg_replace('/\/index$/', '/', preg_replace('/\.md$/', '', $editPageName));
+    $viewPath = preg_replace('/\/index$/', '/', preg_replace('/\.(md|yml)$/', '', $editPageName));
     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
     $titleExtra .= '<span class="page-location">'
         . '<code>' . htmlspecialchars(ltrim($editPageName, '/')) . '</code>'
@@ -133,6 +135,12 @@ description: Shown by search engines
             <li>With the cursor in a block, the arrows below the editor move the block up or down, and the switch turns it off and on. A block that is off stays in the page but is not shown, its comment then reads <code>&lt;!-- hero: {disabled: true} --&gt;</code>.</li>
             <li>A comment that is no block name, like <code>&lt;!-- TODO: check prices --&gt;</code>, stays an invisible note.</li>
         </ul>
+        <h6>Structured pages</h6>
+        <ul>
+            <li>A page marked with a grid in the list is a structured page, a YAML file instead of Markdown. It opens as a form: the title, the description and a panel per block, each with the fields of its block type. A right click in the page list creates one with <em>New structured page</em>.</li>
+            <li>A click on the name of a block folds it, the switch turns it off and on, the arrows move it, the cross removes it. <em>Add block</em> below adds one. A list in a block, like the images of a gallery, adds, moves and removes its items the same way.</li>
+            <li><em>Preview</em> shows the page with the changes next to the form. The block types and their fields are made by the developer of the site, a template in <code>site/blocks/</code> with a YAML file of its fields next to it.</li>
+        </ul>
         <h6>Saving and history</h6>
         <ul>
             <li>Save with the button or <kbd>⌘ S</kbd> / <kbd>Ctrl S</kbd>. A yellow dot next to the page name and on <em>Save</em> shows that there is something to save. Leaving the page with unsaved changes asks first.</li>
@@ -162,6 +170,8 @@ description: Shown by search engines
                 if (!FileSystemUtils::isInside($resolvedPath, $pagesDir)) {
                     Logger::error("Path traversal attempt blocked: " . $editPageName);
                     $editPageName = null;
+                } else if (str_ends_with($editPageName, ".yml")) {
+                    require __DIR__ . "/../addons/Admin/templates/structured-page.php";
                 } else {
                     $edited = $request->getParam("edited");
                     $validationErrors = [];
@@ -202,6 +212,11 @@ description: Shown by search engines
                             // templates (functions, partials), not blocks. Rendering them here would
                             // declare their functions a second time.
                             if (str_starts_with($blockName, '_')) {
+                                continue;
+                            }
+                            // a block type with a blueprint is for structured pages, unless it says otherwise
+                            $blockBlueprint = Blueprint::forBlock($defaultSite, $blockName);
+                            if ($blockBlueprint && !$blockBlueprint->isForMarkdown()) {
                                 continue;
                             }
                             $block = new Block($defaultSite, $blockName, '');

@@ -69,7 +69,7 @@ An agent does well with Reboot CMS for the same reason you do. Content is text, 
 
 ![The media manager of the admin](media/screenshots/reboot-cms-admin-media.png "The media manager")
 
-<!-- cards -->
+<!-- cards: {inverse: true} -->
 
 ## The admin at a glance
 

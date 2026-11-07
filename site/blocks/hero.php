@@ -6,8 +6,9 @@
  */
 
 /** @var \Shaack\Reboot\Block $block */
+require_once __DIR__ . "/_helpers.php";
 ?>
-<section class="block block-hero">
+<section class="<?= blockClasses($block) ?>">
     <div class="container-fluid">
         <div class="card border-0 bg-gradient">
             <div class="card-body">

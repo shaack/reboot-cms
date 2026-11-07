@@ -1,0 +1,7 @@
+# One seminar, chosen from the data, with a few words of its own
+title: Seminar in focus
+fields:
+  heading: {type: text, default: In focus}
+  seminar: {type: entry, collection: seminars, required: true, help: "One of the entries in Data › Seminars"}
+  note:    {type: markdown, label: Note, help: "Why this seminar, shown below it"}
+  inverse: {type: boolean, help: "A white band over the full width"}

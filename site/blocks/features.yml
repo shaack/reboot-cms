@@ -1,0 +1,12 @@
+# Any number of features side by side, each with a title and a text
+title: Features
+fields:
+  heading: {type: text}
+  items:
+    type: list
+    label: Features
+    min: 1
+    fields:
+      title: {type: text, required: true}
+      text:  {type: markdown}
+  inverse: {type: boolean, help: "A white band over the full width"}
