@@ -1,0 +1,21 @@
+title: structured
+blocks:
+  - type: intro
+    heading: Das ist die Überschrift
+    lead: Ja, genau so
+    text: |-
+      Lorem ipsum dolor sit amet, **consectetur** adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+
+      - Eine
+      - Liste
+
+      Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+    image: /media/dummy.svg
+  - type: seminar-teaser
+  - type: gallery
+    images:
+      - image: /media/screenshots/reboot-cms-admin-page-history.png
+        caption: Erstes Bild
+      - image: /media/screenshots/reboot-cms-admin-protected-areas.png
+        caption: Zweites Bild
+    inverse: true
