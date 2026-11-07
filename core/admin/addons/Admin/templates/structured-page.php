@@ -92,6 +92,7 @@ try {
             <div class="dropdown d-inline-block ms-2">
                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">&#8230;</button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#" onclick="toggleHistory(); return false;">History</a></li>
                     <li><a class="dropdown-item" href="#" onclick="renamePage(); return false;">Rename Page</a></li>
                     <li><a class="dropdown-item" href="#" onclick="movePage(); return false;">Move Page</a></li>
                     <li><hr class="dropdown-divider"></li>
@@ -100,5 +101,6 @@ try {
             </div>
         </div>
     </form>
+    <?php require __DIR__ . "/history-modal.php"; ?>
 <?php } ?>
 <script type="module" src="assets/field-form.js?v=<?= @filemtime($reboot->getBaseFsPath() . "/web/admin/assets/field-form.js") ?>"></script>

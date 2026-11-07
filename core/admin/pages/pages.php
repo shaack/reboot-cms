@@ -133,7 +133,7 @@ if ($editPageName) {
         <h6>Markdown pages</h6>
         <ul>
             <li>A page marked with the Markdown sign in the list is a Markdown page, written as text in an editor. It suits long texts and those who like Markdown. A right click in the page list creates one with <em>New Markdown page</em>.</li>
-            <li><em>… › Convert to structured page</em> below a Markdown page turns it into a page with a form at the same address. It shows first what becomes of each block. The Markdown page is kept in the history.</li>
+            <li><em>… › Convert to structured page</em> below a Markdown page turns it into a page with a form at the same address. It shows first what becomes of each block. The Markdown page is kept in the history of the page, restoring it there turns the page back into a Markdown page.</li>
             <li>Markdown formats the text: <code># Heading</code>, <code>**bold**</code>, <code>[link](/about)</code>, lists with <code>-</code>. The toolbar inserts it for you, also links to other pages and images from <a href="media">Media</a>.</li>
             <li>An optional block at the very top sets the page title and other values for the template:
                 <pre class="mb-1">---
@@ -150,7 +150,7 @@ description: Shown by search engines
         <ul>
             <li>Save with the button or <kbd>⌘ S</kbd> / <kbd>Ctrl S</kbd>. A yellow dot next to the page name and on <em>Save</em> shows that there is something to save. Leaving the page with unsaved changes asks first.</li>
             <li>The eye in the editor toolbar opens the <em>preview</em>. It shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column. Drag the bar between editor and preview to change their widths, a double click resets them.</li>
-            <li>Every save keeps the previous version. <em>… › History</em> shows the last ' . (int)$historyMaxVersions . ' versions and restores one; the current text is kept as a version too.</li>
+            <li>Every save keeps the previous version. <em>… › History</em> shows the last ' . (int)$historyMaxVersions . ' versions and restores one; the current text is kept as a version too. This works the same for pages with forms and for Markdown pages.</li>
             <li>A right click in the page list, on a touch screen touch and hold, opens a menu. On a page it creates a new page or folder next to it, renames, moves or deletes the page. On a folder it does the same inside the folder, an empty folder can be deleted. On the free space below it creates pages and folders at the top level. A new folder starts with an empty <code>index</code> page, marked with a house. <em>…</em> below the editor has the same actions for the open page. From 30 pages on a field above the list finds a page by its name.</li>
             <li>The button next to the title hides the page list, so editor and preview get the whole width. The address next to the file name opens the page in a new tab.</li>
         </ul>
@@ -262,20 +262,7 @@ description: Shown by search engines
                     </span>
                     <span class="editor-status" id="editor-status" aria-live="polite"></span>
                 </form>
-                <div class="modal fade" id="page-history-modal" tabindex="-1" aria-labelledby="page-history-label" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="page-history-label">History</h5>
-                                <span id="page-history-count" class="text-body-secondary ms-2"></span>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body p-0" id="page-history-body">
-                                <div class="p-4 text-center text-body-secondary">Loading…</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <?php require __DIR__ . "/../addons/Admin/templates/history-modal.php"; ?>
                 <div id="structured-editor" class="d-none mt-2">
                     <div id="structured-editor-blocks"></div>
                     <button type="button" class="btn btn-sm btn-primary px-3 mt-2" onclick="saveStructuredEditor()">Save</button>

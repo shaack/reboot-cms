@@ -506,11 +506,15 @@
                     body.innerHTML = '<div class="p-4 text-body-secondary">No history available.</div>';
                     return;
                 }
+                // a version of the other kind of page, the Markdown version of a converted page for example
+                var pageType = /\.yml$/.test(currentPage) ? 'yml' : 'md';
                 var html = '<ul class="list-group list-group-flush" style="max-height:60vh;overflow-y:auto;">';
                 versions.forEach(function (v) {
                     var kb = (v.size / 1024).toFixed(1);
+                    var other = v.type && v.type !== pageType
+                        ? '<span class="badge text-bg-secondary me-2">' + (v.type === 'md' ? 'Markdown page' : 'Structured page') + '</span>' : '';
                     html += '<li class="list-group-item d-flex align-items-center" style="font-size:0.85rem;">'
-                        + '<span class="flex-grow-1">' + escapeHtml(v.timestamp) + '</span>'
+                        + '<span class="flex-grow-1">' + escapeHtml(v.timestamp) + '</span>' + other
                         + '<span class="text-body-secondary me-2">' + kb + ' KB</span>'
                         + '<a href="#" class="btn btn-sm btn-outline-secondary me-1" onclick="previewVersion(' + escapeHtml(JSON.stringify(v.filename)) + '); return false;">Preview</a>'
                         + '<a href="#" class="btn btn-sm btn-outline-primary" onclick="restoreVersion(' + escapeHtml(JSON.stringify(v.filename)) + '); return false;">Restore</a>'
@@ -541,7 +545,12 @@
     };
 
     window.restoreVersion = function (filename) {
-        if (!confirm('Restore this version? Current content will be saved as a snapshot first.')) return;
+        var version = historyCache && historyCache.find(function (v) { return v.filename === filename; });
+        var pageType = /\.yml$/.test(currentPage) ? 'yml' : 'md';
+        var message = version && version.type && version.type !== pageType
+            ? 'Restore this version? The page becomes a ' + (version.type === 'md' ? 'Markdown page' : 'structured page') + ' again. Its current content is saved in the history first.'
+            : 'Restore this version? Current content will be saved as a snapshot first.';
+        if (!confirm(message)) return;
         submitPageAction('restore_page', currentPage, {version: filename});
     };
 

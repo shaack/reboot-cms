@@ -681,11 +681,11 @@ The menu entry "Data" lists the collections of `site/data/`, one per blueprint, 
 
 ### Structured pages
 
-A right click in the page list offers *New page*, which creates a structured page, and *New Markdown page*. A new folder starts with a structured `index` page. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Add block › Markdown blocks* offers the blocks of Markdown pages as well, they keep a Markdown field instead of fields. *Preview* shows the page with the changes next to the form, before saving, and scrolls to the field being edited. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, values the blueprints do not know stay in the file.
+A right click in the page list offers *New page*, which creates a structured page, and *New Markdown page*. A new folder starts with a structured `index` page. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Add block › Markdown blocks* offers the blocks of Markdown pages as well, they keep a Markdown field instead of fields. *Preview* shows the page with the changes next to the form, before saving, and scrolls to the field being edited. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, *… › History* shows and restores it like for a Markdown page. Values the blueprints do not know stay in the file.
 
 ![Add a block](web/media/screenshots/reboot-cms-admin-add-block.png)
 
-*… › Convert to structured page* below a Markdown page, or in its menu in the page list, converts it. It shows first what becomes of each block and the YAML, *Convert* then replaces the Markdown file by the YAML file at the same address. The Markdown file is kept in the history.
+*… › Convert to structured page* below a Markdown page, or in its menu in the page list, converts it. It shows first what becomes of each block and the YAML, *Convert* then replaces the Markdown file by the YAML file at the same address. The Markdown file is kept in the history of the page, *… › History* shows it as a Markdown version, and restoring it turns the page back into a Markdown page.
 
 ### Media
 

@@ -178,7 +178,7 @@ class StructuredPageTest
         Assert::true($handler->save($file, ["title" => "New", "blocks" => [["_type" => "intro", "heading" => "Hi"]]]));
         Assert::equals("title: New\nblocks:\n  - type: intro\n    heading: Hi\nlayout: wide\n", file_get_contents($file));
         Assert::false($handler->save($file, ["title" => "New", "blocks" => [["_type" => "intro", "heading" => "Hi"]]]), "nothing changed");
-        Assert::equals(1, count(glob($this->tmpDir . "/history/keep.yml/*")));
+        Assert::equals(1, count(glob($this->tmpDir . "/history/keep/*.yml")), "the history of the address, the snapshot keeps its extension");
         Assert::equals([], $handler->validate($file));
     }
 

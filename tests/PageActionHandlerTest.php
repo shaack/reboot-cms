@@ -66,4 +66,42 @@ class PageActionHandlerTest
         });
         Assert::true(is_file($this->tmpDir . "/pages-old/keep.md"));
     }
+
+    public function testHistoryOfAnAddressHoldsBothKindsOfPage(): void
+    {
+        $history = $this->tmpDir . "/history";
+        file_put_contents($this->pagesDir . "/about.md", "# Markdown");
+        \Shaack\Reboot\AddOns\Admin\PageHistoryHelper::savePageSnapshot($this->pagesDir . "/about.md", $this->pagesDir, $history, 10);
+        rename(glob($history . "/about/*.md")[0], $history . "/about/2026-01-01_10-00-00.md");
+        unlink($this->pagesDir . "/about.md");
+        file_put_contents($this->pagesDir . "/about.yml", "title: Form\n");
+        \Shaack\Reboot\AddOns\Admin\PageHistoryHelper::savePageSnapshot($this->pagesDir . "/about.yml", $this->pagesDir, $history, 10);
+        $versions = \Shaack\Reboot\AddOns\Admin\PageHistoryHelper::getPageHistory("/about.yml", $this->pagesDir, $history);
+        Assert::equals(["yml", "md"], array_column($versions, "type"), "newest first, the Markdown version of the converted page included");
+        Assert::equals("2026-01-01 10:00:00", $versions[1]["timestamp"]);
+    }
+
+    public function testRestoringTheOtherKindTurnsThePageBack(): void
+    {
+        $history = $this->tmpDir . "/history";
+        mkdir($history . "/about", 0755, true);
+        file_put_contents($history . "/about/2026-01-01_10-00-00.md", "# Markdown");
+        file_put_contents($this->pagesDir . "/about.yml", "title: Form\n");
+        $result = $this->handler->handle("restore_page", "/about.yml", $this->request(["version" => "2026-01-01_10-00-00.md"]));
+        Assert::equals("/about.md", $result["editPageName"]);
+        Assert::equals("# Markdown", file_get_contents($this->pagesDir . "/about.md"));
+        Assert::false(file_exists($this->pagesDir . "/about.yml"), "the structured page is replaced");
+        Assert::equals(1, count(glob($history . "/about/*.yml")), "and kept in the history");
+    }
+
+    public function testRestoringTheSameKindOverwrites(): void
+    {
+        $history = $this->tmpDir . "/history";
+        mkdir($history . "/about", 0755, true);
+        file_put_contents($history . "/about/2026-01-01_10-00-00.yml", "title: Old\n");
+        file_put_contents($this->pagesDir . "/about.yml", "title: New\n");
+        $result = $this->handler->handle("restore_page", "/about.yml", $this->request(["version" => "2026-01-01_10-00-00.yml"]));
+        Assert::equals("/about.yml", $result["editPageName"]);
+        Assert::equals("title: Old\n", file_get_contents($this->pagesDir . "/about.yml"));
+    }
 }

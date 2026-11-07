@@ -165,19 +165,35 @@ class PageActionHandler
         ]];
     }
 
+    /**
+     * Restores a version from the history. A version of the other kind of page,
+     * the Markdown version of a converted page for example, turns the page back
+     * into that kind: the file of the version takes the place of the current one.
+     */
     private function restorePage(string $targetName, Request $request): array
     {
         $version = basename($request->getParam("version") ?? "");
         $pagePath = $this->resolveAndValidateFile($targetName);
-        $relPath = preg_replace('/\.md$/', '', $targetName);
-        $snapshotFile = $this->historyDir . $relPath . "/" . $version;
+        $snapshotFile = $this->historyDir . PageHistoryHelper::address($targetName) . "/" . $version;
         $resolvedSnapshot = realpath($snapshotFile);
-        if (!$resolvedSnapshot || !FileSystemUtils::isInside($resolvedSnapshot, realpath($this->historyDir)) || !is_file($resolvedSnapshot)) {
+        $extension = pathinfo($version, PATHINFO_EXTENSION);
+        if (!$resolvedSnapshot || !FileSystemUtils::isInside($resolvedSnapshot, realpath($this->historyDir)) || !is_file($resolvedSnapshot)
+            || !in_array($extension, PageHistoryHelper::EXTENSIONS, true)) {
             throw new \InvalidArgumentException("Invalid version.");
         }
+        // the same kind of page is overwritten, the other kind replaces it
+        $otherKind = $extension !== pathinfo($pagePath, PATHINFO_EXTENSION);
+        $restoredName = PageHistoryHelper::address($targetName) . "." . $extension;
+        $restoredPath = $otherKind ? dirname($pagePath) . "/" . basename($restoredName) : $pagePath;
+        if ($otherKind && file_exists($restoredPath)) {
+            throw new \InvalidArgumentException("There is already a page " . ltrim($restoredName, "/") . ".");
+        }
         PageHistoryHelper::savePageSnapshot($pagePath, $this->pagesDir, $this->historyDir, $this->historyMaxVersions);
-        copy($resolvedSnapshot, $pagePath);
-        return ['success' => "Page restored to " . basename($version, '.md'), 'editPageName' => $targetName];
+        copy($resolvedSnapshot, $restoredPath);
+        if ($otherKind) {
+            unlink($pagePath);
+        }
+        return ['success' => "Page restored to " . pathinfo($version, PATHINFO_FILENAME), 'editPageName' => $restoredName];
     }
 
     // --- Path validation helpers ---

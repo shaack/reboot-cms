@@ -12,6 +12,7 @@ $result = array_map(function ($v) {
         'filename' => $v['filename'],
         'timestamp' => $v['timestamp'],
         'size' => $v['size'],
+        'type' => $v['type'],
         'content' => file_get_contents($v['file'])
     ];
 }, $versions);
