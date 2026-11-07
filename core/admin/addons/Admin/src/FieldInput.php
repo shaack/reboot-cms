@@ -22,6 +22,7 @@ class FieldInput
      *
      * A block of a `blocks` field posts its type as `_type`, `_disabled` when it is
      * switched off and `_extra`, the JSON of values its blueprint does not know.
+     * A Markdown block posts its Markdown as `_markdown` instead of fields.
      */
     public static function fromInput(Blueprint $blueprint, array $input): array
     {
@@ -67,12 +68,15 @@ class FieldInput
             $block["disabled"] = true;
         }
         $blockBlueprint = $blueprint->blockBlueprint($type);
-        if ($blockBlueprint) {
+        $markdown = $row["_markdown"] ?? null;
+        if (is_string($markdown)) {
+            $block["markdown"] = rtrim(str_replace("\r\n", "\n", $markdown));
+        } else if ($blockBlueprint) {
             $block += self::fromInput($blockBlueprint, $row);
         }
         $extra = json_decode((string)($row["_extra"] ?? ""), true);
         foreach (is_array($extra) ? $extra : [] as $key => $value) {
-            if (!array_key_exists($key, $block) && !in_array($key, ["type", "disabled"], true)) {
+            if (!array_key_exists($key, $block) && !in_array($key, ["type", "disabled", "markdown"], true)) {
                 $block[$key] = $value;
             }
         }
@@ -109,7 +113,8 @@ class FieldInput
                 $values[$name] = array_map(fn($item) => is_array($item) ? self::forForm($props["blueprint"], $item) : $item, $value);
             } else if ($props["type"] === "blocks" && is_array($value)) {
                 $values[$name] = array_map(function ($block) use ($blueprint) {
-                    $blockBlueprint = is_array($block) && is_string($block["type"] ?? null) ? $blueprint->blockBlueprint($block["type"]) : null;
+                    $blockBlueprint = is_array($block) && is_string($block["type"] ?? null) && !Blueprint::isMarkdownBlock($block)
+                        ? $blueprint->blockBlueprint($block["type"]) : null;
                     return $blockBlueprint ? self::forForm($blockBlueprint, $block) : $block;
                 }, $value);
             }
@@ -174,11 +179,17 @@ class FieldInput
         if (!is_array($block) || !is_string($block["type"] ?? null)) {
             return $block;
         }
-        $blockBlueprint = $blueprint->blockBlueprint($block["type"]);
         $head = ["type" => $block["type"]];
         if (!empty($block["disabled"])) {
             $head["disabled"] = true;
         }
+        if (Blueprint::isMarkdownBlock($block)) {
+            // its config first, the Markdown last, as it reads in the file
+            $markdown = $block["markdown"];
+            unset($block["type"], $block["disabled"], $block["markdown"]);
+            return $head + array_filter($block, fn($value) => $value !== null) + ["markdown" => $markdown];
+        }
+        $blockBlueprint = $blueprint->blockBlueprint($block["type"]);
         unset($block["type"], $block["disabled"]);
         return $head + ($blockBlueprint ? self::clean($blockBlueprint, $block) : $block);
     }

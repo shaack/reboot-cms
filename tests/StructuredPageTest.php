@@ -5,6 +5,7 @@ namespace Shaack\Tests;
 require_once __DIR__ . "/TestHelper.php";
 
 use Shaack\Reboot\AddOns\Admin\FieldInput;
+use Shaack\Reboot\AddOns\Admin\PageConverter;
 use Shaack\Reboot\AddOns\Admin\StructuredPageHandler;
 use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\Page;
@@ -201,5 +202,56 @@ class StructuredPageTest
             "text" => "Line one\n\n- item\n", "list" => [["a" => "1", "b" => [1, 2]], ["c" => "#tag"]], "empty" => []];
         Assert::equals($data, Yaml::parse(YamlWriter::dump($data)));
         Assert::contains("date: 2027-03-12\n", YamlWriter::dump(["date" => YamlWriter::plain("2027-03-12")]));
+    }
+
+    public function testMarkdownBlockInAStructuredPage(): void
+    {
+        file_put_contents($this->tmpDir . "/blocks/text.php", '<div class="<?= $block->getConfig()["tone"] ?? "" ?>"><?= $block->content() ?></div>');
+        $this->writePage("mixed", "title: M\nblocks:\n  - type: text\n    tone: loud\n    markdown: |-\n      ## Plain **Markdown**\n  - type: text\n    markdown: Off\n    disabled: true\n");
+        $html = $this->page->render("/mixed");
+        Assert::contains('<div class="loud"><h2>Plain <strong>Markdown</strong></h2></div>', $html);
+        Assert::false(str_contains($html, "Off"));
+        $blueprint = Blueprint::forPage($this->site);
+        Assert::equals([], $blueprint->validate($blueprint->normalize(["title" => "M", "blocks" => [["type" => "text", "markdown" => "x"]]])));
+        Assert::equals(["blocks.0" => "Block 1: there is no block type 'gone' in site/blocks/"],
+            $blueprint->validate(["title" => "M", "blocks" => [["type" => "gone", "markdown" => "x"]]]));
+    }
+
+    public function testMarkdownBlockFromTheForm(): void
+    {
+        $blueprint = Blueprint::forPage($this->site);
+        $values = FieldInput::fromInput($blueprint, ["title" => "T", "blocks" => [
+            ["_type" => "text", "_extra" => '{"tone":"loud","markdown":"stale"}', "_markdown" => "# New\r\n\r\nText\n"],
+        ]]);
+        Assert::equals("title: T\nblocks:\n  - type: text\n    tone: loud\n    markdown: |-\n      # New\n\n      Text\n",
+            YamlWriter::dump(FieldInput::clean($blueprint, $values)), "the config first, the Markdown last, the posted Markdown wins");
+    }
+
+    public function testConvertMarkdownPage(): void
+    {
+        $this->block("intro2", "fields:\n  heading: {type: text}\n  text: {type: markdown}\n  shots:\n    type: list\n    fields:\n      src: {type: image}\n      alt: {type: text}\n  cols:\n    type: list\n    fields:\n      title: {type: text}\n      body: {type: markdown}\n"
+            . "convert:\n  from: hero\n  fields:\n    heading: \"/h1[part(1)]\"\n    text: {part: 2}\n    shots:\n      each: \"//li/img\"\n      fields:\n        src: \"@src\"\n        alt: \"@alt\"\n"
+            . "    cols:\n      each: part\n      fields:\n        title: \"//h1\"\n        body: {part: 1, strip-heading: true}\n", "");
+        $source = "---\ntitle: Home\nauthor: me\n---\n\nLost\n\n<!-- hero: {inverse: true} -->\n\n# Hello\n\n---\n\nSome **text**\n\n- ![A](/a.png)\n- ![B](/b.png)\n\n<!-- text-image: {image-position: left} -->\n\n## Keep\n";
+        $result = (new PageConverter($this->site))->convert($source);
+        Assert::equals([["from" => "hero", "to" => "intro2"], ["from" => "text-image", "to" => null]], $result["report"]);
+        Assert::equals(1, count($result["notes"]), "the text before the first block");
+        $blocks = $result["values"]["blocks"];
+        Assert::equals("Hello", $blocks[0]["heading"]);
+        Assert::equals("Some **text**\n\n- ![A](/a.png)\n- ![B](/b.png)", $blocks[0]["text"]);
+        Assert::equals([["src" => "/a.png", "alt" => "A"], ["src" => "/b.png", "alt" => "B"]], $blocks[0]["shots"]);
+        Assert::equals("Hello", $blocks[0]["cols"][0]["title"]);
+        Assert::false(isset($blocks[0]["cols"][0]["body"]), "the heading line is left out, nothing remains");
+        Assert::equals("Some **text**\n\n- ![A](/a.png)\n- ![B](/b.png)", $blocks[0]["cols"][1]["body"]);
+        Assert::true($blocks[0]["inverse"], "the config stays with the block");
+        Assert::equals(["type" => "text-image", "image-position" => "left", "markdown" => "## Keep"], $blocks[1]);
+        Assert::equals(["title", "blocks", "author"], array_keys($result["values"]));
+        Assert::equals("me", $result["values"]["author"], "all of the frontmatter is kept");
+    }
+
+    public function testConvertPageWithoutBlocks(): void
+    {
+        $result = (new PageConverter($this->site))->convert("# Just text\n\nMore");
+        Assert::equals([["type" => "text", "markdown" => "# Just text\n\nMore"]], $result["values"]["blocks"]);
     }
 }

@@ -51,6 +51,7 @@ class Blueprint
     private string $sortOrder = "asc";
     private array $columns = [];
     private bool $markdown;
+    private ?array $convert;
 
     /**
      * @param ?Site $site needed by `blocks` fields, which load the blueprints of the block types
@@ -61,6 +62,7 @@ class Blueprint
         $this->site = $site;
         $this->title = (string)($definition["title"] ?? ucfirst($name));
         $this->markdown = !empty($definition["markdown"]);
+        $this->convert = is_array($definition["convert"] ?? null) ? $definition["convert"] : null;
         foreach ($definition["fields"] ?? [] as $fieldName => $props) {
             $fieldName = (string)$fieldName;
             $props = is_array($props) ? $props : [];
@@ -204,6 +206,15 @@ class Blueprint
         return $this->markdown;
     }
 
+    /**
+     * How a block of a Markdown page becomes a block of this type when a page is
+     * converted, `convert: {from: hero, fields: {...}}`, see PageConverter.
+     */
+    public function getConvert(): ?array
+    {
+        return $this->convert;
+    }
+
     public function getSite(): ?Site
     {
         return $this->site;
@@ -237,6 +248,15 @@ class Blueprint
     }
 
     /**
+     * A block of a structured page that holds Markdown instead of fields,
+     * `{type: hero, markdown: "..."}`. It renders with the Markdown template of its type.
+     */
+    public static function isMarkdownBlock(array $block): bool
+    {
+        return is_string($block["markdown"] ?? null);
+    }
+
+    /**
      * The blueprint of a block type for a `blocks` field, null if the type has none.
      */
     public function blockBlueprint(string $type): ?Blueprint
@@ -263,7 +283,7 @@ class Blueprint
                 $values[$name] = array_map(fn($item) => is_array($item) ? $props["blueprint"]->normalize($item) : $item, array_values($value));
             } else if ($props["type"] === "blocks" && is_array($value)) {
                 $values[$name] = array_map(function ($block) {
-                    $blueprint = is_array($block) && is_string($block["type"] ?? null) ? $this->blockBlueprint($block["type"]) : null;
+                    $blueprint = is_array($block) && is_string($block["type"] ?? null) && !self::isMarkdownBlock($block) ? $this->blockBlueprint($block["type"]) : null;
                     return $blueprint ? $blueprint->normalize($block) : $block;
                 }, array_values($value));
             }
@@ -349,6 +369,12 @@ class Blueprint
                             continue;
                         }
                         if (!empty($block["disabled"])) {
+                            continue;
+                        }
+                        if (self::isMarkdownBlock($block)) {
+                            if ($this->site && Block::templateFile($this->site, $type) === null) {
+                                $errors[$key . "." . $i] = "Block " . ($i + 1) . ": there is no block type '" . $type . "' in site/blocks/";
+                            }
                             continue;
                         }
                         $blueprint = $this->blockBlueprint($type);

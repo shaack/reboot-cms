@@ -596,6 +596,37 @@ The template reads the fields like an entry: `get()`, `html()`, `date()`, `items
 
 The fields of the page itself are a title, a description and the blocks. `site/blueprints/page.yml` replaces them with your own, it needs one field of the type `blocks`. A block type with a blueprint is offered in structured pages only. With `markdown: true` in its blueprint it is offered in Markdown pages as well, its template then reads the Markdown when `$block->getBlueprint()` is null, like `seminar-teaser/seminar-teaser.php` of the demo. A Markdown block may live in a folder as well, `site/blocks/<name>/<name>.php`, the folder wins over a file of the same name. A Markdown page and a structured page of the same name are one address, the Markdown page wins.
 
+A structured page can hold the blocks of Markdown pages too. Such a block has `markdown` instead of fields, the other values are its config, and it renders with its Markdown template as in a Markdown page:
+
+```yaml
+  - type: text-image
+    image-position: left
+    markdown: |-
+      ## A heading
+
+      Some text.
+
+      ---
+
+      ![Alt text](media/dummy.svg)
+```
+
+#### Converting a Markdown page
+
+A Markdown page can be converted into a structured page, in the admin or with `Shaack\Reboot\AddOns\Admin\PageConverter`. The frontmatter becomes the page fields, every value is kept. A block becomes a form block if a block type says in its blueprint how to read it, otherwise it becomes a Markdown block of the structured page and looks as before. Nothing is lost.
+
+```yaml
+# site/blocks/intro/intro.yml
+convert:
+  from: hero                          # takes over the Markdown blocks `hero`
+  fields:
+    heading: "/h1[part(1)]"           # XPath as in the Markdown template, its text
+    text: {part: 2}                   # the Markdown of part 2
+    button-link: "//a[part(3)]/@href"
+```
+
+A `list` field takes an item per node or per part: `{each: "//li/img", fields: {image: "@src", caption: "@alt"}}` reads relative to each node, `{each: part, fields: {title: "//h3", text: {part: 1, strip-heading: true}}}` reads each part like a block of its own, `strip-heading` leaves out its heading line. The config of the Markdown block, `inverse: true` for example, stays with the form block. In the demo `intro` takes over `hero`, `gallery` takes over `cards` and `features` takes over `three-columns`.
+
 ## Admin interface
 
 You find the admin interface at `/admin`.
@@ -632,7 +663,9 @@ The menu entry "Data" lists the collections of `site/data/`, one per blueprint, 
 
 ### Structured pages
 
-A right click in the page list offers *New structured page* next to *New page*. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Preview* shows the page with the changes next to the form, before saving. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, values the blueprints do not know stay in the file.
+A right click in the page list offers *New structured page* next to *New page*. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Add block* offers the blocks of Markdown pages as well, they keep a Markdown field instead of fields. *Preview* shows the page with the changes next to the form, before saving. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, values the blueprints do not know stay in the file.
+
+*… › Convert to structured page* below a Markdown page, or in its menu in the page list, converts it. It shows first what becomes of each block and the YAML, *Convert* then replaces the Markdown file by the YAML file at the same address. The Markdown file is kept in the history.
 
 ### Media
 

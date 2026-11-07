@@ -425,6 +425,34 @@ class Block
     /**
      * Run an xpath query without side effects (no validation, no field collection).
      */
+    /**
+     * The nodes an XPath expression finds, without collecting a field like
+     * `field()` does. With `$context` the expression is relative to that node,
+     * otherwise it starts at the content and knows `part(n)`.
+     * @return \DOMNode[]
+     */
+    public function nodes(string $expression, ?\DOMNode $context = null): array
+    {
+        $result = $context ? @$this->xpath->query($expression, $context) : @$this->queryXpath($expression);
+        return $result ? iterator_to_array($result) : [];
+    }
+
+    /**
+     * The Markdown of a part of the block, the parts are separated by `---`, the first is 1.
+     */
+    public function rawPart(int $number): string
+    {
+        return $this->getRawParts()[$number] ?? "";
+    }
+
+    /**
+     * The number of parts of the block.
+     */
+    public function partCount(): int
+    {
+        return count($this->getRawParts());
+    }
+
     private function queryXpath(string $expression): \DOMNodeList|false
     {
         $resolved = preg_replace_callback("/part\((\d)\)/", function ($matches) {

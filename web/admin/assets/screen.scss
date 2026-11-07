@@ -3,7 +3,8 @@ $gray: #f4f4f4;
 $primary: #007bff;
 
 body {
-    margin-top: 5rem;
+    // room for the fixed navbar, 48px high, and a gap below it
+    margin-top: 3.75rem;
     margin-bottom: 2rem;
 }
 
@@ -28,7 +29,7 @@ pre {
 
 textarea.cm-md-editor {
     // the viewport minus navbar, page title and button row
-    height: calc(100vh - 246px);
+    height: calc(100vh - 226px);
     margin-bottom: 1rem;
 }
 
@@ -387,11 +388,16 @@ body.preview-resizing {
 }
 
 nav.navbar {
+    --bs-navbar-padding-y: 0.25rem;
     background: rgba(255, 255, 255, 0.8) !important;
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     font-size: 0.95rem;
+}
+
+.navbar-nav {
+    --bs-nav-link-padding-y: 0.35rem;
 }
 
 [data-bs-theme="dark"] nav.navbar {
@@ -400,10 +406,10 @@ nav.navbar {
 }
 
 .navbar-brand {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: -0.03em;
-    padding: 0.5rem 0;
+    padding: 0;
     opacity: 0.7;
     transition: opacity 0.2s;
 
@@ -874,6 +880,7 @@ textarea.yaml-editor-input {
     border: 1px solid var(--bs-border-color);
     border-radius: 4px;
     background-color: var(--bs-body-bg);
+    overflow: hidden;
 
     &.has-errors {
         border-color: var(--bs-warning);
@@ -892,6 +899,10 @@ textarea.yaml-editor-input {
     &.is-collapsed {
         .field-block-body {
             display: none;
+        }
+
+        .field-block-head {
+            border-radius: 0;
         }
 
         .field-block-chevron {
@@ -937,12 +948,59 @@ textarea.yaml-editor-input {
     padding: 12px 12px 0;
 }
 
+// Adding a list item or a block: a dashed place for the next one
+.field-add-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 8px 12px;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    font-size: .875rem;
+
+    &:hover, &:focus-visible, &[aria-expanded="true"] {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+        background-color: color-mix(in srgb, var(--bs-primary) 5%, transparent);
+    }
+}
+
+.field-list > .field-add-button {
+    margin-bottom: 0;
+}
+
 .field-blocks-add {
-    max-width: 360px;
+    .dropdown-menu {
+        min-width: 280px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
 }
 
 .structured-page {
     max-width: 960px;
+}
+
+// with the preview next to it, the form scrolls in a box as high as the preview
+@media (min-width: 992px) {
+    .structured-page-fields {
+        // positioned, so hidden labels inside stay in the box and do not stretch the page
+        position: relative;
+        height: calc(100vh - 189px);
+        overflow-y: auto;
+        padding-right: 6px;
+    }
 }
 
 .structured-page-actions {
@@ -998,4 +1056,18 @@ textarea.yaml-editor-input {
 .page-settings-body {
     padding: 4px 12px 0;
     border-top: 1px solid var(--bs-border-color);
+}
+
+// Converting a Markdown page into a structured page
+.convert-page {
+    max-width: 960px;
+}
+
+.convert-yaml {
+    max-height: 50vh;
+    overflow: auto;
+    padding: 12px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 4px;
+    background-color: var(--bs-body-bg);
 }

@@ -325,10 +325,13 @@
                     ['New folder here', function () { window.newFolder(folder); }],
                     null,
                     ['Rename page', function () { window.renamePage(page); }],
-                    ['Move page', function () { window.movePage(page); }],
+                    ['Move page', function () { window.movePage(page); }]
+                ].concat(/\.md$/.test(page) ? [['Convert to structured page', function () {
+                    location.href = 'pages?page=' + encodeURIComponent(page) + '&convert=1';
+                }]] : [], [
                     null,
                     ['Delete page', function () { window.deletePage(page); }, true]
-                ]
+                ])
             };
         }
         if (target && target.classList.contains('page-tree-folder')) {
@@ -1284,8 +1287,8 @@
         addPreviewButton();
     }
 
-    // Restore preview state on load (only on lg+ screens)
-    if (previewActive && currentPage && window.innerWidth >= 992) {
+    // Restore preview state on load (only on lg+ screens), on a page with an editor
+    if (previewActive && currentPage && (editorTextarea || structuredForm) && window.innerWidth >= 992) {
         previewActive = false;
         window.togglePreview();
         if (previewStored === null) {
@@ -1378,7 +1381,63 @@
         return null;
     }
 
+    // --- In a structured page the preview follows the field being edited ---
+    // Page marks every block in the preview with the number of its panel,
+    // `<!--reboot-preview-block:3-->`. The preview scrolls to the element that
+    // shows the value of the field, for a Markdown field the cursor line, or else
+    // to the block, and outlines the element for a moment.
+
+    var structuredField = null;
+
+    function structuredTarget(doc) {
+        if (!structuredField) return null;
+        var block = structuredField.closest('.field-blocks > .field-list-items > .field-block');
+        if (!block) return null;
+        var index = Array.prototype.indexOf.call(block.parentNode.children, block);
+        var markers = [];
+        var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_COMMENT);
+        var node;
+        while ((node = walker.nextNode())) {
+            var match = node.nodeValue.match(/^reboot-preview-block:(\d+)$/);
+            if (match) markers.push({node: node, index: parseInt(match[1], 10)});
+        }
+        for (var i = 0; i < markers.length; i++) {
+            if (markers[i].index === index) {
+                var line = '';
+                if (structuredField.matches('[data-image-input]')) {
+                    line = structuredField.value ? '![](' + structuredField.value + ')' : '';
+                } else if (structuredField.tagName === 'TEXTAREA') {
+                    var before = structuredField.value.substring(0, structuredField.selectionStart);
+                    line = structuredField.value.substring(before.lastIndexOf('\n') + 1).split('\n')[0];
+                } else if (structuredField.type === 'text' || structuredField.type === 'url' || structuredField.type === 'number') {
+                    line = structuredField.value;
+                }
+                var element = line ? findLineElement(markers[i], markers[i + 1] || null, line) : null;
+                return {element: element || siblingElement(markers[i].node, true), exact: !!element};
+            }
+        }
+        return null;
+    }
+
+    function outlineInPreview(element) {
+        var previous = element.style.outline;
+        var previousOffset = element.style.outlineOffset;
+        element.style.outline = '2px solid #3d8bfd';
+        element.style.outlineOffset = '4px';
+        clearTimeout(element._rebootOutline);
+        element._rebootOutline = setTimeout(function () {
+            element.style.outline = previous;
+            element.style.outlineOffset = previousOffset;
+        }, 1500);
+    }
+
     function previewYForCursor(doc, win) {
+        if (structuredForm) {
+            var target = structuredTarget(doc);
+            if (!target || !target.element) return null;
+            if (target.exact) outlineInPreview(target.element);
+            return target.element.getBoundingClientRect().top + win.scrollY;
+        }
         var markers = previewMarkers(doc);
         if (!markers.length || !editorTextarea) {
             return null;
@@ -1421,6 +1480,21 @@
         }
         // the cursor position in the upper third of the preview
         win.scrollTo({top: Math.max(0, y - win.innerHeight / 3), behavior: smooth ? 'smooth' : 'auto'});
+    }
+
+    if (structuredForm) {
+        structuredForm.addEventListener('focusin', function (e) {
+            if (!e.target.matches('input, textarea, select')) return;
+            structuredField = e.target;
+            scrollPreviewToCursor(getFrontIframe(), true);
+        });
+        // a new line in a Markdown field, the preview reloads on typing anyway
+        structuredForm.addEventListener('keyup', function (e) {
+            if (e.target.tagName === 'TEXTAREA' && /^(Arrow|Page|Home|End)/.test(e.key)) {
+                structuredField = e.target;
+                scrollPreviewToCursor(getFrontIframe(), true);
+            }
+        });
     }
 
     // on by default, the switch below the preview turns it off for this browser

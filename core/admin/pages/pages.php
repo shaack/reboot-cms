@@ -139,6 +139,8 @@ description: Shown by search engines
         <ul>
             <li>A page marked with a grid in the list is a structured page, a YAML file instead of Markdown. It opens as a form: the title, the description and a panel per block, each with the fields of its block type. A right click in the page list creates one with <em>New structured page</em>.</li>
             <li>A click on the name of a block folds it, the switch turns it off and on, the arrows move it, the cross removes it. <em>Add block</em> below adds one. A list in a block, like the images of a gallery, adds, moves and removes its items the same way.</li>
+            <li><em>Add block</em> offers the blocks of Markdown pages as well. They keep their Markdown in one field.</li>
+            <li><em>… › Convert to structured page</em> below a Markdown page turns it into a structured page at the same address. It shows first what becomes of each block. The Markdown page is kept in the history.</li>
             <li><em>Preview</em> shows the page with the changes next to the form. The block types and their fields are made by the developer of the site, a folder in <code>site/blocks/</code> with a template and a YAML file of its fields.</li>
         </ul>
         <h6>Saving and history</h6>
@@ -172,6 +174,8 @@ description: Shown by search engines
                     $editPageName = null;
                 } else if (str_ends_with($editPageName, ".yml")) {
                     require __DIR__ . "/../addons/Admin/templates/structured-page.php";
+                } else if ($request->getParam("convert", "get")) {
+                    require __DIR__ . "/../addons/Admin/templates/convert-page.php";
                 } else {
                     $edited = $request->getParam("edited");
                     $validationErrors = [];
@@ -239,6 +243,7 @@ description: Shown by search engines
                             <li><a class="dropdown-item" href="#" onclick="toggleHistory(); return false;">History</a></li>
                             <li><a class="dropdown-item" href="#" onclick="renamePage(); return false;">Rename Page</a></li>
                             <li><a class="dropdown-item" href="#" onclick="movePage(); return false;">Move Page</a></li>
+                            <li><a class="dropdown-item" href="pages?page=<?= urlencode($editPageName) ?>&amp;convert=1">Convert to structured page</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="#" onclick="deletePage(); return false;">Delete Page</a></li>
                         </ul>
@@ -284,9 +289,9 @@ description: Shown by search engines
                 <?php } ?>
             <?php } ?>
         </div>
-        <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:56px;">
+        <div class="col-lg-4 order-md-2 d-none d-lg-none" id="preview-column" style="position:sticky;top:48px;">
             <div id="preview-resizer" role="separator" aria-orientation="vertical" aria-label="Resize the preview" tabindex="0" title="Drag to resize, double click to reset"></div>
-            <div id="preview-frames" style="position:relative;width:100%;height:calc(100vh - 213px);overflow:hidden;border:1px solid rgba(128,128,128,0.3);border-radius:4px;">
+            <div id="preview-frames" style="position:relative;width:100%;height:calc(100vh - 189px);overflow:hidden;border:1px solid rgba(128,128,128,0.3);border-radius:4px;">
                 <iframe id="preview-iframe-a" name="preview-iframe-a" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;transform-origin:0 0;visibility:hidden;"></iframe>
                 <iframe id="preview-iframe-b" name="preview-iframe-b" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;transform-origin:0 0;visibility:hidden;"></iframe>
             </div>

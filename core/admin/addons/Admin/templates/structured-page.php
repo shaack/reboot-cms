@@ -23,7 +23,7 @@ use Shaack\Reboot\CsrfProtection;
 
 $pageBlueprint = Blueprint::forPage($defaultSite);
 $structuredHandler = new StructuredPageHandler($pageBlueprint, $pagesDir, $historyDir, $historyMaxVersions);
-$structuredMessage = null;
+$structuredMessage = $request->getParam("converted", "get") ? "The page is a structured page now. Its Markdown version is in the history." : null;
 $structuredError = null;
 if ($request->getParam("structured", "post") !== null) {
     try {
@@ -70,8 +70,10 @@ try {
             || array_filter(array_keys($structuredProblems), fn($key) => in_array(explode(".", $key)[0], $settingFields, true));
         $settingsSummary = trim((string)($structuredValues["title"] ?? ""));
         ?>
+        <div class="structured-page-fields">
         <?php if ($settingFields) { ?>
-            <details class="page-settings"<?= $settingsOpen ? " open" : "" ?>>
+            <?php // open when something is missing there, otherwise field-form.js restores the state the editor left ?>
+            <details class="page-settings" data-fold="settings"<?= $settingsOpen ? " open data-fold-forced" : "" ?>>
                 <summary>
                     <?= AdminHelper::icon("chevron", "page-settings-chevron") ?>
                     <strong>Page settings</strong>
@@ -83,6 +85,7 @@ try {
             </details>
         <?php } ?>
         <?= FieldForm::render($pageBlueprint, $structuredValues, $structuredProblems, "fields", "", array_values($blockFields)) ?>
+        </div>
         <div class="structured-page-actions">
             <button type="submit" class="btn btn-sm btn-primary px-3" id="save-button">Save<span class="unsaved-dot d-none" aria-hidden="true" data-save-dot></span></button>
             <button type="button" class="btn btn-sm btn-outline-secondary ms-2 d-none d-lg-inline-block" id="structured-preview-toggle" aria-pressed="false" title="Show the page next to the form, before saving">Preview</button>

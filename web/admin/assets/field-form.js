@@ -6,7 +6,8 @@
  * The browser side of FieldForm (core/admin/addons/Admin/src/FieldForm.php),
  * for every form with `data-field-form`: adds, moves and removes the items of
  * lists and blocks, switches blocks off and folds them, chooses images from the
- * media and keeps track of unsaved changes.
+ * media and keeps track of unsaved changes. Which blocks are folded, and whether
+ * the page settings are open, is remembered per page in the localStorage.
  */
 import {InsertMedia} from "./InsertMedia.js"
 
@@ -31,6 +32,11 @@ forms.forEach(form => {
     form.markDirty = markDirty
     form.clean = () => dirty = false
 
+    restoreFolds(form)
+    form.addEventListener("toggle", event => {
+        if (event.target.matches("details[data-fold]")) saveFolds(form)
+    }, true)
+
     form.querySelectorAll("textarea.markdown").forEach(watchMarkdown)
     form.querySelectorAll("[data-image-input]").forEach(updatePreview)
 
@@ -38,7 +44,8 @@ forms.forEach(form => {
         const button = event.target.closest("button")
         if (!button || !form.contains(button)) return
         if (button.matches("[data-list-add]")) {
-            addItem(button.closest("[data-field-list]"))
+            addItem(button.closest("[data-field-list]"), button.dataset.blockType)
+            saveFolds(form)
         } else if (button.matches("[data-item-up], [data-item-down], [data-item-remove]")) {
             const item = button.closest("[data-list-item]")
             if (button.matches("[data-item-up]") && item.previousElementSibling) {
@@ -49,10 +56,12 @@ forms.forEach(form => {
                 item.remove()
             }
             button.focus()
+            saveFolds(form)
         } else if (button.matches("[data-block-collapse]")) {
             const block = button.closest(".field-block")
             const collapsed = block.classList.toggle("is-collapsed")
             button.setAttribute("aria-expanded", collapsed ? "false" : "true")
+            saveFolds(form)
             return
         } else if (button.matches("[data-choose-image]")) {
             chooseImage(button.closest(".input-group").querySelector("[data-image-input]"))
@@ -83,18 +92,65 @@ if (forms.length === 1 && !window.pagesConfig) {
     })
 }
 
+// --- What is folded, per page ---
+// The blocks are remembered by position and type, `["intro", true]` for a folded
+// intro first. Moving a block saves the new order, so its state moves with it.
+
+function foldKey(form) {
+    return "reboot_folds_" + form.getAttribute("action")
+}
+
+function topBlocks(form) {
+    return form.querySelectorAll(".field-blocks > .field-list-items > .field-block")
+}
+
+function saveFolds(form) {
+    const settings = form.querySelector("details[data-fold]")
+    const state = {
+        settings: settings ? settings.open : null,
+        blocks: [...topBlocks(form)].map(block => [
+            block.querySelector(':scope > input[name$="[_type]"]').value,
+            block.classList.contains("is-collapsed")
+        ])
+    }
+    try {
+        localStorage.setItem(foldKey(form), JSON.stringify(state))
+    } catch (e) {
+        // no storage, the folds are not remembered
+    }
+}
+
+function restoreFolds(form) {
+    let state = null
+    try {
+        state = JSON.parse(localStorage.getItem(foldKey(form)))
+    } catch (e) {
+        return
+    }
+    if (!state) return
+    const settings = form.querySelector("details[data-fold]")
+    if (settings && !settings.hasAttribute("data-fold-forced") && typeof state.settings === "boolean") {
+        settings.open = state.settings
+    }
+    topBlocks(form).forEach((block, i) => {
+        const saved = (state.blocks || [])[i]
+        const type = block.querySelector(':scope > input[name$="[_type]"]').value
+        // a block with errors stays open, so the marked fields are seen
+        if (saved && saved[0] === type && saved[1] && !block.classList.contains("has-errors")) {
+            block.classList.add("is-collapsed")
+            block.querySelector("[data-block-collapse]").setAttribute("aria-expanded", "false")
+        }
+    })
+}
+
 /**
  * A new item from the `<template>` of the list, for blocks the one of the chosen type.
  * The token in its input names becomes a number no other item of the list has.
  */
-function addItem(list) {
-    let template = null
-    const select = list.querySelector(":scope > .field-blocks-add [data-block-select]")
-    if (select) {
-        template = list.querySelector(':scope > template[data-block-type="' + CSS.escape(select.value) + '"]')
-    } else {
-        template = list.querySelector(":scope > template")
-    }
+function addItem(list, blockType) {
+    const template = blockType
+        ? list.querySelector(':scope > template[data-block-type="' + CSS.escape(blockType) + '"]')
+        : list.querySelector(":scope > template")
     if (!template) return
     const index = "n" + Date.now().toString(36) + (++created)
     const holder = document.createElement("div")

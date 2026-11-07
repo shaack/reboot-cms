@@ -7,6 +7,7 @@
 
 namespace Shaack\Reboot\AddOns\Admin;
 
+use Shaack\Reboot\Block;
 use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\Collection;
 
@@ -144,7 +145,7 @@ class FieldForm
         }
         $html .= '</div>'
             . '<template>' . self::listItem($itemBlueprint, [], [], $name . "[" . $token . "]", $path . "." . $token . ".") . '</template>'
-            . '<button type="button" class="btn btn-sm btn-outline-secondary" data-list-add>Add ' . self::e(strtolower($props["label"])) . '</button>'
+            . '<button type="button" class="field-add-button" data-list-add>' . AdminHelper::icon("plus") . 'Add ' . self::e(strtolower($props["label"])) . '</button>'
             . (!empty($props["help"]) ? '<div class="form-text">' . self::e((string)$props["help"]) . '</div>' : '')
             . '</fieldset>';
         return $html;
@@ -160,8 +161,17 @@ class FieldForm
 
     private static function blocksField(Blueprint $blueprint, array $props, array $blocks, array $errors, string $name, string $path, ?string $error): string
     {
-        $types = $blueprint->getSite() ? Blueprint::blockTypes($blueprint->getSite()) : [];
+        $site = $blueprint->getSite();
+        $types = $site ? Blueprint::blockTypes($site) : [];
         $allowed = isset($props["allow"]) ? array_intersect_key($types, array_flip((array)$props["allow"])) : $types;
+        // the blocks of Markdown pages are offered as well, they hold Markdown instead of fields
+        $markdownTypes = [];
+        foreach ($site ? Block::names($site) : [] as $type) {
+            $typeBlueprint = Blueprint::forBlock($site, $type);
+            if ((!$typeBlueprint || $typeBlueprint->isForMarkdown()) && (!isset($props["allow"]) || in_array($type, (array)$props["allow"], true))) {
+                $markdownTypes[] = $type;
+            }
+        }
         $token = "__block" . (++self::$counter) . "__";
         $html = '<div class="mb-3 field-blocks" data-field-list data-token="' . $token . '">'
             . ($error ? '<div class="invalid-feedback d-block">' . self::e($error) . '</div>' : '')
@@ -176,14 +186,29 @@ class FieldForm
                 . self::block($blueprint, $type, ["type" => $type], [], $name . "[" . $token . "]", $path . "." . $token . ".")
                 . '</template>';
         }
-        if ($allowed) {
-            $options = "";
+        foreach ($markdownTypes as $type) {
+            $html .= '<template data-block-type="markdown:' . self::e($type) . '">'
+                . self::block($blueprint, $type, ["type" => $type, "markdown" => ""], [], $name . "[" . $token . "]", $path . "." . $token . ".")
+                . '</template>';
+        }
+        if ($allowed || $markdownTypes) {
+            $items = "";
             foreach ($allowed as $type => $typeBlueprint) {
-                $options .= '<option value="' . self::e($type) . '">' . self::e($typeBlueprint->getTitle()) . '</option>';
+                $items .= '<button type="button" class="dropdown-item" data-list-add data-block-type="' . self::e($type) . '">'
+                    . self::e($typeBlueprint->getTitle()) . '<span class="field-block-type">' . self::e($type) . '</span></button>';
             }
-            $html .= '<div class="field-blocks-add input-group input-group-sm">'
-                . '<select class="form-select" data-block-select aria-label="Block type">' . $options . '</select>'
-                . '<button type="button" class="btn btn-outline-primary" data-list-add>Add block</button>'
+            if ($markdownTypes) {
+                $items .= ($allowed ? '<div class="dropdown-divider"></div>' : '') . '<h6 class="dropdown-header">Markdown</h6>';
+                foreach ($markdownTypes as $type) {
+                    $items .= '<button type="button" class="dropdown-item" data-list-add data-block-type="markdown:' . self::e($type) . '">'
+                        . self::e($type) . '</button>';
+                }
+            }
+            $html .= '<div class="dropdown field-blocks-add">'
+                // fixed, so the menu is not cut off by a scrolling form
+                . '<button type="button" class="field-add-button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-popper-config=\'{"strategy":"fixed"}\'>'
+                . AdminHelper::icon("plus") . 'Add block</button>'
+                . '<div class="dropdown-menu">' . $items . '</div>'
                 . '</div>';
         } else {
             $html .= '<p class="text-body-secondary small">There are no block types with a blueprint yet. A block type for structured pages is a folder <code>site/blocks/&lt;name&gt;/</code> with the template <code>&lt;name&gt;.php</code> and the blueprint <code>&lt;name&gt;.yml</code> of its fields.</p>';
@@ -193,10 +218,11 @@ class FieldForm
 
     private static function block(Blueprint $pageBlueprint, string $type, array $values, array $errors, string $name, string $path): string
     {
-        $blueprint = $type !== "" ? $pageBlueprint->blockBlueprint($type) : null;
+        $markdown = Blueprint::isMarkdownBlock($values);
+        $blueprint = $type !== "" && !$markdown ? $pageBlueprint->blockBlueprint($type) : null;
         $disabled = !empty($values["disabled"]);
-        // values the blueprint does not know travel along unchanged
-        $known = $blueprint ? array_keys($blueprint->getFields()) : [];
+        // values the blueprint does not know travel along unchanged, for a Markdown block its config
+        $known = $blueprint ? array_keys($blueprint->getFields()) : ($markdown ? ["markdown"] : []);
         $extra = array_diff_key($values, array_flip(array_merge($known, ["type", "disabled"])));
         $blockErrors = array_filter($errors, fn($key) => str_starts_with($key, $path), ARRAY_FILTER_USE_KEY);
         $html = '<div class="field-block' . ($disabled ? ' is-disabled' : '') . ($blockErrors ? ' has-errors' : '') . '" data-list-item>'
@@ -206,7 +232,7 @@ class FieldForm
             . '<button type="button" class="field-block-title" data-block-collapse aria-expanded="true">'
             . AdminHelper::icon("chevron", "field-block-chevron")
             . '<strong>' . self::e($blueprint ? $blueprint->getTitle() : $type) . '</strong>'
-            . '<span class="field-block-type">' . self::e($type) . '</span></button>'
+            . '<span class="field-block-type">' . self::e($markdown ? $type . " · Markdown" : $type) . '</span></button>'
             . '<label class="field-block-switch form-check form-switch mb-0" title="Show the block on the page">'
             . '<input type="hidden" name="' . self::e($name) . '[_disabled]" value="1">'
             . '<input class="form-check-input" type="checkbox" role="switch" name="' . self::e($name) . '[_disabled]" value="0"' . ($disabled ? '' : ' checked') . ' data-block-enabled>'
@@ -214,7 +240,15 @@ class FieldForm
             . self::itemTools()
             . '</div>'
             . '<div class="field-block-body">';
-        if ($blueprint) {
+        if ($markdown) {
+            $id = "field-" . (++self::$counter);
+            $error = $errors[rtrim($path, ".")] ?? null;
+            $html .= '<div class="mb-3"><label class="visually-hidden" for="' . $id . '">Markdown</label>'
+                . '<textarea class="form-control markdown' . ($error ? ' is-invalid' : '') . '" id="' . $id . '" name="' . self::e($name) . '[_markdown]" rows="8">'
+                . self::e((string)$values["markdown"]) . '</textarea>'
+                . ($error ? '<div class="invalid-feedback d-block">' . self::e($error) . '</div>' : '')
+                . '<div class="form-text">The block keeps its Markdown, its template reads it as in a Markdown page.</div></div>';
+        } else if ($blueprint) {
             $html .= self::render($blueprint, $values, $errors, $name, $path);
         } else {
             $html .= '<p class="text-danger small mb-0">There is no block type \'' . self::e($type) . '\' with a blueprint in <code>site/blocks/' . self::e($type) . '/</code>. Its values are kept as they are.</p>';

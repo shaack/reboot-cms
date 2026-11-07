@@ -10,3 +10,13 @@ fields:
       title: {type: text, required: true}
       text:  {type: markdown}
   inverse: {type: boolean, help: "A white band over the full width"}
+# Converting a Markdown page turns its `three-columns` blocks into this block,
+# each column one feature
+convert:
+  from: three-columns
+  fields:
+    items:
+      each: part
+      fields:
+        title: "//h3"
+        text:  {part: 1, strip-heading: true}

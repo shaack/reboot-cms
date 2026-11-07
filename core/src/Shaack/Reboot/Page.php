@@ -331,7 +331,8 @@ class Page
      * ```
      *
      * The values next to the blocks are the config of the page, like the frontmatter
-     * of a Markdown page. Each block renders with its template from `site/blocks/`,
+     * of a Markdown page. A block with `markdown` instead of fields renders with the
+     * Markdown template of its type, `{type: hero, markdown: "# Welcome"}`. Each block renders with its template from `site/blocks/`,
      * which reads the fields with `$block->get()`, its blueprint is `site/blocks/<type>.yml`.
      */
     private function renderStructured(string $pagePath, ?Request $request): string
@@ -365,13 +366,24 @@ class Page
         $this->config = $data;
         $html = "";
         $names = [];
-        foreach ($blocks as $values) {
+        foreach (array_values($blocks) as $index => $values) {
             if (!is_array($values) || !is_string($values["type"] ?? null) || self::isDisabled($values)) {
                 continue;
             }
-            // the fields are the config of the block as well, so `inverse: true` works as in a Markdown page
-            $block = new Block($this->site, $values["type"], "", $values);
-            $block->setFields($values, Blueprint::forBlock($this->site, $values["type"]));
+            if ($isPreview) {
+                // which panel of the form the block is, the admin scrolls the preview to the field being edited
+                $html .= "<!--reboot-preview-block:" . $index . "-->";
+            }
+            if (Blueprint::isMarkdownBlock($values)) {
+                // a Markdown block in a structured page, the other values are its config
+                $config = $values;
+                unset($config["type"], $config["markdown"]);
+                $block = new Block($this->site, $values["type"], $values["markdown"], $config);
+            } else {
+                // the fields are the config of the block as well, so `inverse: true` works as in a Markdown page
+                $block = new Block($this->site, $values["type"], "", $values);
+                $block->setFields($values, Blueprint::forBlock($this->site, $values["type"]));
+            }
             $html .= $block->render($request);
             $names[] = $values["type"];
         }
