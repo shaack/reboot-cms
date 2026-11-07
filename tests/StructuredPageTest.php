@@ -29,12 +29,12 @@ class StructuredPageTest
         foreach (["pages", "blocks", "blueprints", "data/seminars"] as $dir) {
             mkdir($this->tmpDir . "/" . $dir, 0755, true);
         }
-        file_put_contents($this->tmpDir . "/blocks/intro.yml", "title: Intro\nfields:\n  heading: {type: text, required: true}\n  text: {type: markdown}\n  tone: {type: text, default: calm}\n");
-        file_put_contents($this->tmpDir . "/blocks/intro.php", '<h1><?= $block->get("heading") ?></h1><?= $block->html("text") ?><i><?= $block->get("tone") ?></i>');
-        file_put_contents($this->tmpDir . "/blocks/cards.yml", "fields:\n  cards:\n    type: list\n    min: 1\n    fields:\n      caption: {type: text, required: true}\n      day: {type: date}\n");
-        file_put_contents($this->tmpDir . "/blocks/cards.php", '<?php foreach ($block->items("cards") as $card) { ?><b><?= $card->get("caption") ?>|<?= $card->get("day") ?></b><?php } ?>');
-        file_put_contents($this->tmpDir . "/blocks/focus.yml", "fields:\n  seminar: {type: entry, collection: seminars}\n");
-        file_put_contents($this->tmpDir . "/blocks/focus.php", '<?php $s = $block->entry("seminar"); ?><em><?= $s ? $s->get("title") : "none" ?></em>');
+        $this->block("intro", "title: Intro\nfields:\n  heading: {type: text, required: true}\n  text: {type: markdown}\n  tone: {type: text, default: calm}\n",
+            '<h1><?= $block->get("heading") ?></h1><?= $block->html("text") ?><i><?= $block->get("tone") ?></i>');
+        $this->block("cards", "fields:\n  cards:\n    type: list\n    min: 1\n    fields:\n      caption: {type: text, required: true}\n      day: {type: date}\n",
+            '<?php foreach ($block->items("cards") as $card) { ?><b><?= $card->get("caption") ?>|<?= $card->get("day") ?></b><?php } ?>');
+        $this->block("focus", "fields:\n  seminar: {type: entry, collection: seminars}\n",
+            '<?php $s = $block->entry("seminar"); ?><em><?= $s ? $s->get("title") : "none" ?></em>');
         file_put_contents($this->tmpDir . "/blueprints/seminars.yml", "fields:\n  title: {type: text, required: true}\n");
         file_put_contents($this->tmpDir . "/data/seminars/basics.md", "---\ntitle: Basics\n---\n");
 
@@ -57,6 +57,16 @@ class StructuredPageTest
             $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
         }
         rmdir($this->tmpDir);
+    }
+
+    /**
+     * A block type of structured pages, a folder with template and blueprint.
+     */
+    private function block(string $name, string $blueprint, string $template): void
+    {
+        mkdir($this->tmpDir . "/blocks/" . $name);
+        file_put_contents($this->tmpDir . "/blocks/" . $name . "/" . $name . ".yml", $blueprint);
+        file_put_contents($this->tmpDir . "/blocks/" . $name . "/" . $name . ".php", $template);
     }
 
     private function writePage(string $name, string $yaml): string
@@ -108,7 +118,7 @@ class StructuredPageTest
         Assert::equals([
             "blocks.0.cards.0.caption" => "Cards: Cards 1: Caption is required",
             "blocks.0.cards.0.day" => "Cards: Cards 1: Day must be a date like 2027-03-12",
-            "blocks.1" => "Block 2: there is no block type 'nope' with a blueprint in site/blocks/",
+            "blocks.1" => "Block 2: there is no block type 'nope' with a blueprint, site/blocks/nope/nope.yml",
             "blocks.2.heading" => "Intro: Heading is required",
             "blocks.3" => "Block 4 has no type",
         ], $blueprint->validate($values));
@@ -123,6 +133,19 @@ class StructuredPageTest
         file_put_contents($this->tmpDir . "/blueprints/page.yml", "fields:\n  title: {type: text}\n  body: {type: blocks}\n");
         Assert::equals(["title", "body"], array_keys(Blueprint::forPage($this->site)->getFields()));
         Assert::equals(["seminars"], array_keys(Blueprint::all($this->site)), "page.yml is no collection");
+    }
+
+    public function testBlockTypesAreFilesOrFolders(): void
+    {
+        file_put_contents($this->tmpDir . "/blocks/text.php", "flat");
+        file_put_contents($this->tmpDir . "/blocks/intro.php", "flat intro");
+        file_put_contents($this->tmpDir . "/blocks/_helpers.php", "<?php");
+        mkdir($this->tmpDir . "/blocks/empty");
+        Assert::equals(["cards", "focus", "intro", "text"], \Shaack\Reboot\Block::names($this->site), "no helpers, no folder without template");
+        Assert::equals($this->tmpDir . "/blocks/intro/intro.php", \Shaack\Reboot\Block::templateFile($this->site, "intro"), "the folder wins");
+        Assert::equals($this->tmpDir . "/blocks/text.php", \Shaack\Reboot\Block::templateFile($this->site, "text"));
+        Assert::null(\Shaack\Reboot\Block::templateFile($this->site, "../pages/x"));
+        Assert::null(Blueprint::forBlock($this->site, "text"), "a single file is a Markdown block");
     }
 
     public function testFormInputBecomesCleanYaml(): void

@@ -10,7 +10,6 @@ namespace Shaack\Reboot\AddOns\Admin;
 use Shaack\Reboot\Block;
 use Shaack\Reboot\Page;
 use Shaack\Reboot\Site;
-use Shaack\Utils\HttpUtils;
 
 /**
  * Checks the Markdown of a page while it is edited, before it is saved.
@@ -48,8 +47,7 @@ class PageValidator
                 continue;
             }
             $line = $bodyLine + substr_count($body, "\n", 0, $offset);
-            $file = $site->getFsPath() . '/blocks/' . HttpUtils::sanitizeFileName($name) . ".php";
-            if (!is_file($file)) {
+            if (Block::templateFile($site, $name) === null) {
                 $problems[] = ['line' => $line, 'block' => $name,
                     'message' => "There is no block '" . $name . "'. A typo? The page shows an error there."];
                 continue;

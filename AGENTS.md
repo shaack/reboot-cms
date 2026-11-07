@@ -69,7 +69,7 @@ Some content.
 
 ## Blocks
 
-Each block name maps to `site/blocks/{name}.php`. A block template is plain PHP
+Each block name maps to `site/blocks/{name}.php`, or to the folder `site/blocks/{name}/{name}.php`. A block template is plain PHP
 and receives a `$block` object — `$block->content()`, `$block->xpath()`,
 `$block->getConfig()`. Adding a block type means adding one PHP file; there is
 no framework or build step in between.
@@ -80,7 +80,7 @@ Records with fixed fields (seminars, events, people) are no pages. Each entry is
 
 ## Structured pages
 
-Besides Markdown pages, `site/pages/<name>.yml` is a structured page: `title`, `description` and `blocks`, a list of blocks with a `type` and the fields of that type. A block type for structured pages is `site/blocks/<type>.php` plus the blueprint `site/blocks/<type>.yml`; its template reads `$block->get("heading")`, `$block->html("text")`, `$block->items("cards")` (field type `list`) and `$block->entry("seminar")` (field type `entry`, an entry of a collection). The admin edits these pages as forms. See the README section "Structured pages".
+Besides Markdown pages, `site/pages/<name>.yml` is a structured page: `title`, `description` and `blocks`, a list of blocks with a `type` and the fields of that type. A block type for structured pages is a folder `site/blocks/<type>/` with the template `<type>.php` and the blueprint `<type>.yml`; its template reads `$block->get("heading")`, `$block->html("text")`, `$block->items("cards")` (field type `list`) and `$block->entry("seminar")` (field type `entry`, an entry of a collection). The admin edits these pages as forms. See the README section "Structured pages".
 
 ## Multilingual
 

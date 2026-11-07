@@ -8,7 +8,7 @@
  */
 
 /** @var \Shaack\Reboot\Block $block */
-require_once __DIR__ . "/_helpers.php";
+require_once __DIR__ . "/../_helpers.php";
 $image = $block->get("image");
 ?>
 <section class="<?= blockClasses($block) ?>">

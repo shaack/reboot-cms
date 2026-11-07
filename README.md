@@ -563,7 +563,17 @@ blocks:
       - title: Small
 ```
 
-A block type for structured pages is a template in `site/blocks/` with a blueprint of the same name next to it, `intro.php` and `intro.yml`:
+A block type for structured pages is a folder in `site/blocks/` with the template and the blueprint, both named like the folder:
+
+```
+site/blocks/
+  hero.php            # a block of Markdown pages, a single file
+  intro/              # a block of structured pages
+    intro.php         # the template
+    intro.yml         # the blueprint, its fields
+```
+
+The blueprint:
 
 ```yaml
 title: Intro
@@ -584,7 +594,7 @@ fields:
 
 The template reads the fields like an entry: `get()`, `html()`, `date()`, `items()` and `entry()`. The fields are the config of the block as well, so `inverse: true` and `disabled: true` work as in a Markdown page. The values next to `blocks`, here `title` and `description`, are the config of the page, `$page->meta('title')` in the template reads them like frontmatter.
 
-The fields of the page itself are a title, a description and the blocks. `site/blueprints/page.yml` replaces them with your own, it needs one field of the type `blocks`. A block type with a blueprint is offered in structured pages only. With `markdown: true` in its blueprint it is offered in Markdown pages as well, its template then reads the Markdown when `$block->getBlueprint()` is null, like `seminar-teaser.php` of the demo. A Markdown page and a structured page of the same name are one address, the Markdown page wins.
+The fields of the page itself are a title, a description and the blocks. `site/blueprints/page.yml` replaces them with your own, it needs one field of the type `blocks`. A block type with a blueprint is offered in structured pages only. With `markdown: true` in its blueprint it is offered in Markdown pages as well, its template then reads the Markdown when `$block->getBlueprint()` is null, like `seminar-teaser/seminar-teaser.php` of the demo. A Markdown block may live in a folder as well, `site/blocks/<name>/<name>.php`, the folder wins over a file of the same name. A Markdown page and a structured page of the same name are one address, the Markdown page wins.
 
 ## Admin interface
 

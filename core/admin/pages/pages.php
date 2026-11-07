@@ -139,7 +139,7 @@ description: Shown by search engines
         <ul>
             <li>A page marked with a grid in the list is a structured page, a YAML file instead of Markdown. It opens as a form: the title, the description and a panel per block, each with the fields of its block type. A right click in the page list creates one with <em>New structured page</em>.</li>
             <li>A click on the name of a block folds it, the switch turns it off and on, the arrows move it, the cross removes it. <em>Add block</em> below adds one. A list in a block, like the images of a gallery, adds, moves and removes its items the same way.</li>
-            <li><em>Preview</em> shows the page with the changes next to the form. The block types and their fields are made by the developer of the site, a template in <code>site/blocks/</code> with a YAML file of its fields next to it.</li>
+            <li><em>Preview</em> shows the page with the changes next to the form. The block types and their fields are made by the developer of the site, a folder in <code>site/blocks/</code> with a template and a YAML file of its fields.</li>
         </ul>
         <h6>Saving and history</h6>
         <ul>
@@ -206,14 +206,9 @@ description: Shown by search engines
                     $blockExamplesForInsert = [];
                     if (is_dir($blocksDir)) {
                         Block::resetAllValidationErrors();
-                        foreach (glob($blocksDir . '/*.php') as $blockFile) {
-                            $blockName = basename($blockFile, '.php');
-                            // Files starting with an underscore are helpers shared by the block
-                            // templates (functions, partials), not blocks. Rendering them here would
-                            // declare their functions a second time.
-                            if (str_starts_with($blockName, '_')) {
-                                continue;
-                            }
+                        // Block::names() leaves out the helpers with an underscore, like _helpers.php,
+                        // rendering them here would declare their functions a second time
+                        foreach (Block::names($defaultSite) as $blockName) {
                             // a block type with a blueprint is for structured pages, unless it says otherwise
                             $blockBlueprint = Blueprint::forBlock($defaultSite, $blockName);
                             if ($blockBlueprint && !$blockBlueprint->isForMarkdown()) {
@@ -314,7 +309,7 @@ description: Shown by search engines
 window.pagesConfig = {
     csrfToken: <?= json_encode(CsrfProtection::getToken()) ?>,
     currentPage: <?= json_encode($editPageName ?? '') ?>,
-    blockNames: <?= json_encode(array_values(array_filter(array_map(fn($f) => basename($f, '.php'), glob($defaultSite->getFsPath() . '/blocks/*.php') ?: []), fn($n) => !str_starts_with($n, '_')))) ?>,
+    blockNames: <?= json_encode(Block::names($defaultSite)) ?>,
     allFolders: <?= json_encode($allFolders) ?>
 };
 </script>

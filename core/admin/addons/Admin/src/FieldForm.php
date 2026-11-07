@@ -25,11 +25,15 @@ class FieldForm
     /**
      * @param array $values as written in the file, without defaults
      * @param array $errors field path => message, as Blueprint::validate() returns them
+     * @param ?string[] $only the fields to render, null for all
      */
-    public static function render(Blueprint $blueprint, array $values, array $errors = [], string $name = "fields", string $path = ""): string
+    public static function render(Blueprint $blueprint, array $values, array $errors = [], string $name = "fields", string $path = "", ?array $only = null): string
     {
         $html = "";
         foreach ($blueprint->getFields() as $field => $props) {
+            if ($only !== null && !in_array($field, $only, true)) {
+                continue;
+            }
             $html .= self::field($blueprint, $field, $props, $values[$field] ?? null, $errors, $name . "[" . $field . "]", $path . $field);
         }
         return $html;
@@ -62,7 +66,7 @@ class FieldForm
                 $control = '<textarea' . $attr . ' rows="3"' . $placeholder . '>' . self::e($valueText) . '</textarea>';
                 break;
             case "markdown":
-                $control = '<textarea class="form-control markdown editor-font' . $invalid . '" id="' . $id . '" name="' . self::e($name) . '" rows="8">'
+                $control = '<textarea class="form-control markdown' . $invalid . '" id="' . $id . '" name="' . self::e($name) . '" rows="8">'
                     . self::e($valueText) . '</textarea>';
                 break;
             case "number":
@@ -182,7 +186,7 @@ class FieldForm
                 . '<button type="button" class="btn btn-outline-primary" data-list-add>Add block</button>'
                 . '</div>';
         } else {
-            $html .= '<p class="text-body-secondary small">There are no block types with a blueprint yet. A block type for structured pages has a template <code>site/blocks/&lt;name&gt;.php</code> and next to it a blueprint <code>&lt;name&gt;.yml</code> with its fields.</p>';
+            $html .= '<p class="text-body-secondary small">There are no block types with a blueprint yet. A block type for structured pages is a folder <code>site/blocks/&lt;name&gt;/</code> with the template <code>&lt;name&gt;.php</code> and the blueprint <code>&lt;name&gt;.yml</code> of its fields.</p>';
         }
         return $html . '</div>';
     }
@@ -213,7 +217,7 @@ class FieldForm
         if ($blueprint) {
             $html .= self::render($blueprint, $values, $errors, $name, $path);
         } else {
-            $html .= '<p class="text-danger small mb-0">There is no block type \'' . self::e($type) . '\' with a blueprint in <code>site/blocks/</code>. Its values are kept as they are.</p>';
+            $html .= '<p class="text-danger small mb-0">There is no block type \'' . self::e($type) . '\' with a blueprint in <code>site/blocks/' . self::e($type) . '/</code>. Its values are kept as they are.</p>';
         }
         return $html . '</div></div>';
     }

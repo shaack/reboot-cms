@@ -957,3 +957,45 @@ textarea.yaml-editor-input {
     background-color: var(--bs-secondary-bg);
     color: var(--bs-emphasis-color);
 }
+
+// The fields of a structured page above its blocks, folded away
+.page-settings {
+    margin-bottom: 16px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 4px;
+    background-color: var(--bs-body-bg);
+
+    > summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        list-style: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+    }
+
+    &[open] .page-settings-chevron {
+        transform: rotate(90deg);
+    }
+}
+
+.page-settings-chevron {
+    transition: transform .15s;
+}
+
+.page-settings-summary {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-secondary-color);
+}
+
+.page-settings-body {
+    padding: 4px 12px 0;
+    border-top: 1px solid var(--bs-border-color);
+}

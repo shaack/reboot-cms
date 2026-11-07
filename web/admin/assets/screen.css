@@ -843,4 +843,42 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   color: var(--bs-emphasis-color);
 }
 
+.page-settings {
+  margin-bottom: 16px;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 4px;
+  background-color: var(--bs-body-bg);
+}
+.page-settings > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.page-settings > summary::-webkit-details-marker {
+  display: none;
+}
+.page-settings[open] .page-settings-chevron {
+  transform: rotate(90deg);
+}
+
+.page-settings-chevron {
+  transition: transform 0.15s;
+}
+
+.page-settings-summary {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bs-secondary-color);
+}
+
+.page-settings-body {
+  padding: 4px 12px 0;
+  border-top: 1px solid var(--bs-border-color);
+}
+
 /*# sourceMappingURL=screen.css.map */

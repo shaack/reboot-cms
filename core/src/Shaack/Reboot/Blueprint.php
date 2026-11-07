@@ -14,7 +14,7 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * Describes fields: those of the entries of a collection in
- * `site/blueprints/<name>.yml`, those of a block in `site/blocks/<name>.yml`
+ * `site/blueprints/<name>.yml`, those of a block in `site/blocks/<name>/<name>.yml`
  * and those of a structured page.
  *
  * ```yaml
@@ -100,12 +100,13 @@ class Blueprint
     }
 
     /**
-     * The blueprint of a block type, `site/blocks/<name>.yml` next to its template.
-     * A block type with one is a form block, offered in structured pages.
+     * The blueprint of a block type, `site/blocks/<name>/<name>.yml` in the folder of
+     * its template. A block type with one is a form block, offered in structured pages.
      */
     public static function forBlock(Site $site, string $name): ?Blueprint
     {
-        return self::loadFile($site, $name, $site->getFsPath() . "/blocks/" . HttpUtils::sanitizeFileName($name) . ".yml");
+        $name = HttpUtils::sanitizeFileName($name);
+        return self::loadFile($site, $name, $site->getFsPath() . "/blocks/" . $name . "/" . $name . ".yml");
     }
 
     /**
@@ -128,9 +129,9 @@ class Blueprint
     public static function blockTypes(Site $site): array
     {
         $types = [];
-        foreach (glob($site->getFsPath() . "/blocks/*.yml") ?: [] as $file) {
+        foreach (glob($site->getFsPath() . "/blocks/*/*.yml") ?: [] as $file) {
             $name = basename($file, ".yml");
-            if (!is_file($site->getFsPath() . "/blocks/" . $name . ".php")) {
+            if (basename(dirname($file)) !== $name || !is_file(dirname($file) . "/" . $name . ".php")) {
                 continue;
             }
             $blueprint = self::forBlock($site, $name);
@@ -352,7 +353,7 @@ class Blueprint
                         }
                         $blueprint = $this->blockBlueprint($type);
                         if (!$blueprint) {
-                            $errors[$key . "." . $i] = "Block " . ($i + 1) . ": there is no block type '" . $type . "' with a blueprint in site/blocks/";
+                            $errors[$key . "." . $i] = "Block " . ($i + 1) . ": there is no block type '" . $type . "' with a blueprint, site/blocks/" . $type . "/" . $type . ".yml";
                             continue;
                         }
                         foreach ($blueprint->validate($block, $key . "." . $i . ".") as $blockKey => $message) {

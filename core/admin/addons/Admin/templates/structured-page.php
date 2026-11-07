@@ -15,6 +15,7 @@
  */
 
 use Shaack\Logger;
+use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\AddOns\Admin\FieldForm;
 use Shaack\Reboot\AddOns\Admin\StructuredPageHandler;
 use Shaack\Reboot\Blueprint;
@@ -61,7 +62,27 @@ try {
     <form method="post" action="pages?page=<?= urlencode($editPageName) ?>" class="structured-page" data-field-form>
         <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
         <input type="hidden" name="structured" value="1">
-        <?= FieldForm::render($pageBlueprint, $structuredValues, $structuredProblems) ?>
+        <?php
+        // the fields of the page, title and description for search engines, fold away above the blocks
+        $settingFields = array_keys(array_filter($pageBlueprint->getFields(), fn($props) => $props["type"] !== "blocks"));
+        $blockFields = array_diff(array_keys($pageBlueprint->getFields()), $settingFields);
+        $settingsOpen = trim((string)($structuredValues["title"] ?? "")) === ""
+            || array_filter(array_keys($structuredProblems), fn($key) => in_array(explode(".", $key)[0], $settingFields, true));
+        $settingsSummary = trim((string)($structuredValues["title"] ?? ""));
+        ?>
+        <?php if ($settingFields) { ?>
+            <details class="page-settings"<?= $settingsOpen ? " open" : "" ?>>
+                <summary>
+                    <?= AdminHelper::icon("chevron", "page-settings-chevron") ?>
+                    <strong>Page settings</strong>
+                    <span class="page-settings-summary"><?= htmlspecialchars($settingsSummary !== "" ? $settingsSummary : "Title and description for search engines") ?></span>
+                </summary>
+                <div class="page-settings-body">
+                    <?= FieldForm::render($pageBlueprint, $structuredValues, $structuredProblems, "fields", "", $settingFields) ?>
+                </div>
+            </details>
+        <?php } ?>
+        <?= FieldForm::render($pageBlueprint, $structuredValues, $structuredProblems, "fields", "", array_values($blockFields)) ?>
         <div class="structured-page-actions">
             <button type="submit" class="btn btn-sm btn-primary px-3" id="save-button">Save<span class="unsaved-dot d-none" aria-hidden="true" data-save-dot></span></button>
             <button type="button" class="btn btn-sm btn-outline-secondary ms-2 d-none d-lg-inline-block" id="structured-preview-toggle" aria-pressed="false" title="Show the page next to the form, before saving">Preview</button>

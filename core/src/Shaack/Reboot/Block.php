@@ -85,6 +85,49 @@ class Block
     }
 
     /**
+     * The template of a block type. A block type is a file `site/blocks/<name>.php`,
+     * or a folder `site/blocks/<name>/` with `<name>.php` and, for a block of
+     * structured pages, the blueprint `<name>.yml`. The folder wins.
+     * @return ?string null if there is none
+     */
+    public static function templateFile(Site $site, string $name): ?string
+    {
+        $name = HttpUtils::sanitizeFileName($name);
+        if ($name === "") {
+            return null;
+        }
+        $blocksDir = $site->getFsPath() . "/blocks/";
+        foreach ([$blocksDir . $name . "/" . $name . ".php", $blocksDir . $name . ".php"] as $file) {
+            if (is_file($file)) {
+                return $file;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The names of all block types, files and folders, sorted. A name with an
+     * underscore in front, like `_helpers.php`, is a helper of the templates, no block.
+     * @return string[]
+     */
+    public static function names(Site $site): array
+    {
+        $names = [];
+        foreach (glob($site->getFsPath() . "/blocks/*") ?: [] as $path) {
+            $name = basename($path, ".php");
+            if (str_starts_with($name, "_") || str_starts_with($name, ".")) {
+                continue;
+            }
+            if (is_dir($path) ? is_file($path . "/" . $name . ".php") : str_ends_with($path, ".php")) {
+                $names[$name] = true;
+            }
+        }
+        $names = array_keys($names);
+        sort($names);
+        return $names;
+    }
+
+    /**
      * Give a block of a structured page its fields, the template reads them with
      * `get()`, `html()`, `items()` and `entry()`, see FieldAccess.
      */
@@ -686,10 +729,9 @@ class Block
 
 function renderBlock(Site $site, Block $block, ?Request $request): string
 {
-    $blockName = HttpUtils::sanitizeFileName($block->getName());
-    $blockFilePath = $site->getFsPath() . '/blocks/' . $blockName . ".php";
-    if (!file_exists($blockFilePath)) {
-        Logger::error("Block not found at: " . $blockFilePath);
+    $blockFilePath = Block::templateFile($site, $block->getName());
+    if ($blockFilePath === null) {
+        Logger::error("Block not found: " . $block->getName() . ", neither site/blocks/<name>.php nor site/blocks/<name>/<name>.php");
         return "<div class='w-100 p-3 border-1 border-top border-bottom text-danger text-center'>Block not found: \"" . htmlspecialchars($block->getName(), ENT_QUOTES, 'UTF-8') . "\"</div>";
     } else {
         ob_start();

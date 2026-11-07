@@ -10,7 +10,7 @@
  */
 
 /** @var \Shaack\Reboot\Block $block */
-require_once __DIR__ . "/_helpers.php";
+require_once __DIR__ . "/../_helpers.php";
 $group = 'gallery-' . substr(md5(json_encode($block->getValues())), 0, 8);
 ?>
 <section class="<?= blockClasses($block) ?>">
