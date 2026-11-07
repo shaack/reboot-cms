@@ -83,8 +83,13 @@ if ($pageAction) {
     }
 }
 
-if (!$editPageName && file_exists($pagesDir . "/index.md")) {
-    $editPageName = "/index.md";
+if (!$editPageName) {
+    foreach (["/index.md", "/index.yml"] as $homepage) {
+        if (file_exists($pagesDir . $homepage)) {
+            $editPageName = $homepage;
+            break;
+        }
+    }
 }
 if($editPageName) {
     Logger::debug("Editing page " . $editPageName);
@@ -117,31 +122,29 @@ if ($editPageName) {
 <div class="container-fluid">
     <?= AdminHelper::renderStatusMessages($pageActionError, $pageActionSuccess) ?>
     <?= AdminHelper::renderPageTitle('Pages', '', '
-        <p>Every page is a Markdown file in <code>site/pages/</code>, and its path is its address. <code>index</code> is the homepage <code>/</code>, <code>about</code> is <code>/about</code>, <code>blog/index</code> is <code>/blog</code>. Pages written in PHP are not listed here.</p>
-        <h6>Writing</h6>
+        <p>Every page is a file in <code>site/pages/</code>, and its path is its address. <code>index</code> is the homepage <code>/</code>, <code>about</code> is <code>/about</code>, <code>blog/index</code> is <code>/blog</code>. Pages written in PHP are not listed here.</p>
+        <h6>Pages</h6>
         <ul>
+            <li>A page opens as a form: the title, the description and a panel per block, each with the fields of its block type. A right click in the page list creates one with <em>New page</em>.</li>
+            <li>A click on the name of a block folds it, the switch turns it off and on, the arrows move it, the cross removes it. <em>Add block</em> below adds one. A list in a block, like the images of a gallery, adds, moves and removes its items the same way.</li>
+            <li><em>Preview</em> shows the page with the changes next to the form and follows the field you type in. The block types and their fields are made by the developer of the site, a folder in <code>site/blocks/</code> with a template and a YAML file of its fields.</li>
+            <li><em>Add block › Markdown blocks</em> offers the blocks of Markdown pages as well. They keep their Markdown in one field.</li>
+        </ul>
+        <h6>Markdown pages</h6>
+        <ul>
+            <li>A page marked with the Markdown sign in the list is a Markdown page, written as text in an editor. It suits long texts and those who like Markdown. A right click in the page list creates one with <em>New Markdown page</em>.</li>
+            <li><em>… › Convert to structured page</em> below a Markdown page turns it into a page with a form at the same address. It shows first what becomes of each block. The Markdown page is kept in the history.</li>
             <li>Markdown formats the text: <code># Heading</code>, <code>**bold**</code>, <code>[link](/about)</code>, lists with <code>-</code>. The toolbar inserts it for you, also links to other pages and images from <a href="media">Media</a>.</li>
             <li>An optional block at the very top sets the page title and other values for the template:
                 <pre class="mb-1">---
 title: About us
 description: Shown by search engines
 ---</pre></li>
-        </ul>
-        <h6>Blocks</h6>
-        <ul>
             <li>A comment like <code>&lt;!-- hero --&gt;</code> starts a block, a section with its own layout from <code>site/blocks/</code>. It runs up to the next block. A line with <code>---</code> separates the parts of a block, for example heading and text.</li>
             <li>The toolbar button <em>Insert block</em> inserts a block with example content. The line below the editor shows in which block and part the cursor is and what belongs there. While you type, the page is checked: a button below the editor lists what does not fit, for example a missing heading or a misspelled block name, jumps to the block and shows the expected Markdown.</li>
             <li>The lines with a block comment and the <code>---</code> between the parts of a block are protected against typing by mistake. To delete or replace one, select the whole line, or everything. In the frontmatter only the values can be changed, not the names before the colon, and no line can be added or removed. To change or delete these lines, switch the protection off with the lock in the editor toolbar, for this browser.</li>
             <li>With the cursor in a block, the arrows below the editor move the block up or down, and the switch turns it off and on. A block that is off stays in the page but is not shown, its comment then reads <code>&lt;!-- hero: {disabled: true} --&gt;</code>.</li>
             <li>A comment that is no block name, like <code>&lt;!-- TODO: check prices --&gt;</code>, stays an invisible note.</li>
-        </ul>
-        <h6>Structured pages</h6>
-        <ul>
-            <li>A page marked with a grid in the list is a structured page, a YAML file instead of Markdown. It opens as a form: the title, the description and a panel per block, each with the fields of its block type. A right click in the page list creates one with <em>New structured page</em>.</li>
-            <li>A click on the name of a block folds it, the switch turns it off and on, the arrows move it, the cross removes it. <em>Add block</em> below adds one. A list in a block, like the images of a gallery, adds, moves and removes its items the same way.</li>
-            <li><em>Add block</em> offers the blocks of Markdown pages as well. They keep their Markdown in one field.</li>
-            <li><em>… › Convert to structured page</em> below a Markdown page turns it into a structured page at the same address. It shows first what becomes of each block. The Markdown page is kept in the history.</li>
-            <li><em>Preview</em> shows the page with the changes next to the form. The block types and their fields are made by the developer of the site, a folder in <code>site/blocks/</code> with a template and a YAML file of its fields.</li>
         </ul>
         <h6>Saving and history</h6>
         <ul>

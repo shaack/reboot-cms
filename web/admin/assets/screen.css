@@ -865,6 +865,20 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   align-items: baseline;
   gap: 8px;
 }
+.field-blocks-add .field-blocks-markdown-toggle {
+  color: var(--bs-secondary-color);
+}
+.field-blocks-add .field-blocks-markdown-toggle svg {
+  margin-left: auto;
+  align-self: center;
+  transition: transform 0.15s;
+}
+.field-blocks-add .field-blocks-markdown-toggle[aria-expanded=true] svg {
+  transform: rotate(90deg);
+}
+.field-blocks-add .field-blocks-markdown .dropdown-item {
+  padding-left: 1.75rem;
+}
 
 .structured-page {
   max-width: 960px;

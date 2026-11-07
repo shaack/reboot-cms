@@ -30,8 +30,8 @@ class PageActionHandler
     public function handle(string $action, string $targetName, Request $request): array
     {
         return match ($action) {
-            'add_page' => $this->addPage($targetName),
-            'add_structured_page' => $this->addPage($targetName, true),
+            'add_page' => $this->addPage($targetName, true),
+            'add_markdown_page' => $this->addPage($targetName),
             'delete_page' => $this->deletePage($targetName),
             'rename_page' => $this->renamePage($targetName, $request),
             'move_page' => $this->movePage($targetName, $request),
@@ -122,8 +122,8 @@ class PageActionHandler
             throw new \InvalidArgumentException("Folder already exists.");
         }
         mkdir($newDir, 0755, true);
-        file_put_contents($newDir . "/index.md", "");
-        return ['success' => "Folder created with index.md", 'editPageName' => "/" . $folderName . "/index.md"];
+        file_put_contents($newDir . "/index.yml", "title: " . basename($folderName) . "\nblocks: []\n");
+        return ['success' => "Folder created with index.yml", 'editPageName' => "/" . $folderName . "/index.yml"];
     }
 
     private function deleteFolder(string $targetName): array

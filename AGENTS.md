@@ -8,9 +8,10 @@ configuration, addons, blocks and multilingual navigation — read the project's
 
 ## What this is
 
-Reboot CMS is a flat-file, database-free CMS in PHP. Content is plain Markdown,
-pages render through optional **blocks**, and every URL maps directly to a file.
-There is no database, no schema, and no build step for content.
+Reboot CMS is a flat-file, database-free CMS in PHP. Since version 4 a page is
+usually a **structured page**, a YAML file of blocks with fields, and records like
+blog posts are **data**. Markdown pages with blocks still work. Every URL maps
+directly to a file. There is no database and no build step for content.
 
 ## Project layout
 
@@ -18,10 +19,10 @@ There is no database, no schema, and no build step for content.
 - `core/addons/<Name>/` — AddOns shipped with the CMS (`EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`), one folder each
 - `core/admin/` — admin interface (itself a Reboot CMS site)
 - `site/` — the site you edit:
-  - `pages/` — content pages (`.md` or `.php`)
+  - `pages/` — content pages (`.yml`, `.md` or `.php`)
   - `blocks/` — PHP templates for content blocks
   - `data/<collection>/` — records with fixed fields, one Markdown file per entry
-  - `blueprints/<collection>.yml` — the fields of a collection
+  - `blueprints/<collection>.yml` — the fields of a collection, with `url:` its entries are pages rendered by `blueprints/<collection>.php`
   - `pages/<name>.yml` — a structured page, blocks with fields, see below
   - `addons/<Name>/<Name>.php` — site-specific addons, one folder each with optional `src/` and `admin/`
   - `template.php` — main HTML template
@@ -34,18 +35,22 @@ There is no database, no schema, and no build step for content.
 
 A request path maps straight onto `site/pages/`:
 
-- `/` → `pages/index.md`
-- `/about` → `pages/about.md`
-- `/howto/git` → `pages/howto/git.md`
-- a folder is served by its `index.md`
+- `/` → `pages/index.yml` (or `index.md`)
+- `/about` → `pages/about.yml`
+- `/howto/git` → `pages/howto/git.yml`
+- a folder is served by its `index` page
+- `/blog/<slug>` → the entry `data/blog/<slug>.md`, because `blueprints/blog.yml` has `url: blog`
 
 To find a page's source, append the URL path to `site/pages/`. To add a page,
-create the file — no route registration needed. A `.php` page is used when no
-`.md` exists at that path.
+create the file — no route registration needed. At one path `.md` wins over
+`.yml`, which wins over `.php`. If no file matches, the entries of collections
+with `url` are tried.
 
-## Pages
+New pages are structured pages, see below.
 
-A page is Markdown. Optional YAML frontmatter at the top sets metadata:
+## Markdown pages
+
+A Markdown page is Markdown. Optional YAML frontmatter at the top sets metadata:
 
 ```markdown
 ---
@@ -80,7 +85,7 @@ Records with fixed fields (seminars, events, people) are no pages. Each entry is
 
 ## Structured pages
 
-Besides Markdown pages, `site/pages/<name>.yml` is a structured page: `title`, `description` and `blocks`, a list of blocks with a `type` and the fields of that type. A block type for structured pages is a folder `site/blocks/<type>/` with the template `<type>.php` and the blueprint `<type>.yml`; its template reads `$block->get("heading")`, `$block->html("text")`, `$block->items("cards")` (field type `list`) and `$block->entry("seminar")` (field type `entry`, an entry of a collection). A block with `markdown: "..."` instead of fields renders with the Markdown template of its type. A form block's blueprint may say under `convert` which Markdown block it takes over, so the admin converts Markdown pages into structured pages without losing anything. The admin edits these pages as forms. See the README section "Structured pages".
+`site/pages/<name>.yml` is a structured page, the default kind of page: `title`, `description` and `blocks`, a list of blocks with a `type` and the fields of that type. A block type for structured pages is a folder `site/blocks/<type>/` with the template `<type>.php` and the blueprint `<type>.yml`; its template reads `$block->get("heading")`, `$block->html("text")`, `$block->items("cards")` (field type `list`) and `$block->entry("seminar")` (field type `entry`, an entry of a collection). A block with `markdown: "..."` instead of fields renders with the Markdown template of its type. A form block's blueprint may say under `convert` which Markdown block it takes over, so the admin converts Markdown pages into structured pages without losing anything. The admin edits these pages as forms. See the README section "Structured pages".
 
 ## Multilingual
 

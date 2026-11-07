@@ -198,11 +198,16 @@ class FieldForm
                     . self::e($typeBlueprint->getTitle()) . '<span class="field-block-type">' . self::e($type) . '</span></button>';
             }
             if ($markdownTypes) {
-                $items .= ($allowed ? '<div class="dropdown-divider"></div>' : '') . '<h6 class="dropdown-header">Markdown</h6>';
+                // the blocks of Markdown pages are for those who know Markdown, folded away behind the form blocks
+                $items .= ($allowed ? '<div class="dropdown-divider"></div>' : '')
+                    . '<button type="button" class="dropdown-item field-blocks-markdown-toggle" data-markdown-toggle aria-expanded="' . ($allowed ? 'false' : 'true') . '">'
+                    . 'Markdown blocks<span class="field-block-type">advanced</span>' . AdminHelper::icon("chevron") . '</button>'
+                    . '<div class="field-blocks-markdown"' . ($allowed ? ' hidden' : '') . '>';
                 foreach ($markdownTypes as $type) {
                     $items .= '<button type="button" class="dropdown-item" data-list-add data-block-type="markdown:' . self::e($type) . '">'
                         . self::e($type) . '</button>';
                 }
+                $items .= '</div>';
             }
             $html .= '<div class="dropdown field-blocks-add">'
                 // fixed, so the menu is not cut off by a scrolling form

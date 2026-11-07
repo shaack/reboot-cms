@@ -96,10 +96,10 @@ class PageTreeHelper
             $isIndex = $fileName === "index";
             $title = $isIndex ? ($prefix === "" ? "Homepage /" : "Folder page /" . rtrim($prefix, "/")) : ltrim($filePath, "/");
             $html .= "<li>";
-            $title .= $structured ? " (structured page)" : "";
+            $title .= $structured ? "" : " (Markdown page)";
             $html .= "<a class='page-tree-file" . ($active ? " active" : "") . ($isIndex ? " page-tree-index" : "") . ($structured ? " page-tree-structured" : "") . "' href='pages?page=" . urlencode($filePath) . "'"
                 . " title='" . htmlspecialchars($title, ENT_QUOTES) . "' data-path='" . htmlspecialchars(ltrim($filePath, "/"), ENT_QUOTES) . "'>"
-                . AdminHelper::icon($isIndex ? "house" : ($structured ? "grid" : "file")) . "<span>" . htmlspecialchars($fileName) . "</span></a>";
+                . AdminHelper::icon($isIndex ? "house" : ($structured ? "file" : "markdown")) . "<span>" . htmlspecialchars($fileName) . "</span></a>";
             $html .= "</li>";
         }
         foreach ($folders as $folderName => $children) {

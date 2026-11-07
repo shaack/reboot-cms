@@ -1,0 +1,6 @@
+title: Blog
+description: Notes on running websites with Reboot CMS.
+blocks:
+  - type: blog-list
+    heading: Blog
+    lead: Notes on running websites with Reboot CMS. Every post is an entry in `site/data/blog/`, edited under Data in the admin, and this list is built from them.

@@ -7,7 +7,7 @@ fields:
   image:        {type: image}
   button-label: {type: text, label: Button label}
   button-link:  {type: url, label: Button link}
-  inverse:      {type: boolean, help: "A white band over the full width"}
+  inverse:      {type: boolean, help: "A dark band instead of the white one"}
 # Converting a Markdown page turns its `hero` blocks into this block
 convert:
   from: hero

@@ -1,15 +1,13 @@
 ---
 title: Structure for editors, freedom for designers
 description: Blocks give editors a clear frame to write in and leave the design to those who made it. No page builder required.
+date: 2026-10-12
+links: |
+  - [Your content, your files](blog/2026-09-14-your-content-your-files)
+  - [Fast pages without tuning](blog/2026-10-01-fast-pages-without-tuning)
+  - [The blocks of this demo](blocks)
+  - [Block documentation](documentation#block)
 ---
-
-<!-- text -->
-
-# Structure for editors, freedom for designers
-
-<time datetime="2026-10-12">October 12, 2026</time>
-
-<!-- article -->
 
 Every website team knows the tension. Editors want to change their pages without asking anyone. Designers want the site to look the way it was designed, also six months after launch. Page builders try to serve both and usually serve neither, the editor gets a hundred options and the design gets a hundred variations.
 
@@ -30,10 +28,3 @@ Because the content carries no design, a redesign does not touch it. Change the 
 When a page needs something new, a comparison table or a team grid, the designer adds one PHP file. There is no framework to learn and no build step. The template picks the heading, the list and the image from the Markdown with short queries, and renders them in whatever HTML the design needs.
 
 The [Blocks page](blocks) of this demo shows each shipped block next to the Markdown that produces it.
-
----
-
-- [Your content, your files](blog/2026-09-14-your-content-your-files)
-- [Fast pages without tuning](blog/2026-10-01-fast-pages-without-tuning)
-- [The blocks of this demo](blocks)
-- [Block documentation](documentation#block)

@@ -986,6 +986,24 @@ textarea.yaml-editor-input {
         align-items: baseline;
         gap: 8px;
     }
+
+    .field-blocks-markdown-toggle {
+        color: var(--bs-secondary-color);
+
+        svg {
+            margin-left: auto;
+            align-self: center;
+            transition: transform 0.15s;
+        }
+
+        &[aria-expanded="true"] svg {
+            transform: rotate(90deg);
+        }
+    }
+
+    .field-blocks-markdown .dropdown-item {
+        padding-left: 1.75rem;
+    }
 }
 
 .structured-page {

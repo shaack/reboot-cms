@@ -1,15 +1,13 @@
 ---
 title: Fast pages without tuning
 description: Speed is a feature visitors notice before they read a word. Reboot CMS gets there by leaving things out.
+date: 2026-10-01
+links: |
+  - [Your content, your files](blog/2026-09-14-your-content-your-files)
+  - [Structure for editors, freedom for designers](blog/2026-10-12-structure-for-editors-freedom-for-designers)
+  - [All posts](blog)
+  - [PageSpeed Insights](https://pagespeed.web.dev/)
 ---
-
-<!-- text -->
-
-# Fast pages without tuning
-
-<time datetime="2026-10-01">October 1, 2026</time>
-
-<!-- article -->
 
 A visitor decides within a second or two whether a page is worth waiting for. Every moment of a blank screen costs attention, and search engines know it. Loading speed has long been part of how Google ranks a page, and slow pages lose visitors before they have seen the first sentence.
 
@@ -30,10 +28,3 @@ The same simplicity helps where speed is not measured. Fewer moving parts mean f
 ## Speed that stays
 
 Performance tends to decay. A site launches fast, then grows plugins and widgets until it is slow again. With Reboot CMS every addition is a deliberate line in a template or a small PHP file in `site/blocks/`. Nothing arrives by itself, so nothing slows the site down by itself.
-
----
-
-- [Your content, your files](blog/2026-09-14-your-content-your-files)
-- [Structure for editors, freedom for designers](blog/2026-10-12-structure-for-editors-freedom-for-designers)
-- [All posts](blog)
-- [PageSpeed Insights](https://pagespeed.web.dev/)

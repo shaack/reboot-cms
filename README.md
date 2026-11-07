@@ -2,10 +2,10 @@
 
 **The Agent-Friendly CMS.**
 
-A flat file, Markdown CMS in PHP, inspired by [Pico](http://picocms.org), [Redaxo](https://redaxo.org/)
+A flat file CMS in PHP, inspired by [Pico](http://picocms.org), [Redaxo](https://redaxo.org/), [Kirby](https://getkirby.com/)
 and [Craft CMS](https://craftcms.com/).
 
-Reboot CMS is a minimal CMS without a database, but with the support of **blocks** to structure the content.
+Reboot CMS is a minimal CMS without a database. A page is a list of **blocks**, and every block is a small form whose fields a YAML blueprint names. Editors fill in fields, the templates own the layout. Records like seminars or blog posts live apart from the pages as **data**. Pages written in Markdown still work, for long texts and those who like it.
 
 ![Edit a page](web/media/screenshots/reboot-cms-admin-page-edit.png)
 
@@ -176,16 +176,17 @@ Call `$page->render($request)` to render the page content. Afterwards `$page->me
 
 Folder: `/site/pages`
 
-A `Page` can be a **flat Markdown** file, can contain **Blocks** or also can be a **PHP** file.
+A `Page` is a **structured page**, a YAML file of blocks with fields (see [Structured pages](#structured-pages)), a **Markdown** file that can contain **Blocks**, or a **PHP** file.
 PHP pages receive the same variables as the template: `$site`, `$page`, and `$request`.
 
-Pages are auto-routed on web-requests:
+Pages are auto-routed on web-requests, `.md` before `.yml` before `.php`:
 
-- `index.md` or `index.php` will be shown on requesting `/`
-- `NAME.md` or `NAME.php` will be shown on requesting `/NAME`
-- `FOLDER/index.md` (or .php) will be shown on requesting `/FOLDER`
-- `FOLDER/NAME.md` (or .php) will be shown on requesting `/FOLDER/NAME`
-- `404.md` (or .php) will be used as a custom 404 error page
+- `index.yml` (or .md, .php) will be shown on requesting `/`
+- `NAME.yml` (or .md, .php) will be shown on requesting `/NAME`
+- `FOLDER/index.yml` (or .md, .php) will be shown on requesting `/FOLDER`
+- `FOLDER/NAME.yml` (or .md, .php) will be shown on requesting `/FOLDER/NAME`
+- `404.yml` (or .md, .php) will be used as a custom 404 error page
+- the entries of a collection whose blueprint has `url`, see [Entries as pages](#entries-as-pages)
 
 Example for a Markdown `Page` with `Blocks`:
 
@@ -541,11 +542,27 @@ foreach ($next as $seminar) { ?>
 - `$site->collection($name)` reads a collection once per request, sorted as the blueprint says.
 - `where($field, $operator, $value)` with `=`, `!=`, `<`, `<=`, `>`, `>=`, `contains` and `in`, `"today"` stands for the current date. `filter(fn($entry) => ...)` takes any condition.
 - `sortBy($field, "asc"|"desc")`, `limit($count, $offset)`, `first()`, `find($slug)`, `count()`. Every query returns a new collection.
-- `$entry->get($field)` returns a field escaped for HTML, `get($field, $default, false)` as written. `html($field)` renders a Markdown field, `date($field, $format)` formats a date, `items($field)` returns the items of a `list`, each with the same methods, `entry($field)` the entry an `entry` field names, `getSlug()` returns the file name without `.md`.
+- `$entry->get($field)` returns a field escaped for HTML, `get($field, $default, false)` as written. `html($field)` renders a Markdown field, `date($field, $format)` formats a date, `items($field)` returns the items of a `list`, each with the same methods, `entry($field)` the entry an `entry` field names, `getSlug()` returns the file name without `.md`, `getUrl()` its address if the entries are pages.
+
+#### Entries as pages
+
+With `url` in its blueprint, every entry of a collection is a page of its own. The blog of the demo works like that: `site/blueprints/blog.yml` has `url: blog`, so `site/data/blog/2026-09-14-your-content-your-files.md` is the page `/blog/2026-09-14-your-content-your-files`.
+
+```yaml
+title: Blog
+sort: date desc
+url: blog
+fields:
+  title: {type: text, required: true}
+  date:  {type: date, required: true}
+  body:  {type: markdown}
+```
+
+The template `site/blueprints/<name>.php`, next to the blueprint, renders such a page inside `site/template.php`. It gets the entry as `$entry`, besides `$site`, `$page` and `$request`. The scalar fields of the entry are the config of the page, so `$page->meta('title')` reads its title. Drafts and entries that do not fit their blueprint are no pages, a file in `site/pages/` of the same address wins. A list of the entries links to them with `$entry->getUrl()`, like the block `blog-list` of the demo.
 
 ### Structured pages
 
-A structured page is a YAML file in `site/pages/`, `site/pages/about.yml` for `/about`. It holds no Markdown but a list of blocks, and each block holds the fields its block type names. In the admin it is a form, a panel per block, so editors fill in fields and cannot break the layout. The demo page `site/pages/structured.yml` shows one.
+A structured page is a YAML file in `site/pages/`, `site/pages/about.yml` for `/about`. It holds no Markdown but a list of blocks, and each block holds the fields its block type names. In the admin it is a form, a panel per block, so editors fill in fields and cannot break the layout. Structured pages are the default since Reboot CMS 4, the pages of the demo are structured pages, `site/pages/index.yml` for example.
 
 ```yaml
 title: About us
@@ -625,7 +642,7 @@ convert:
     button-link: "//a[part(3)]/@href"
 ```
 
-A `list` field takes an item per node or per part: `{each: "//li/img", fields: {image: "@src", caption: "@alt"}}` reads relative to each node, `{each: part, fields: {title: "//h3", text: {part: 1, strip-heading: true}}}` reads each part like a block of its own, `strip-heading` leaves out its heading line. The config of the Markdown block, `inverse: true` for example, stays with the form block. In the demo `intro` takes over `hero`, `gallery` takes over `cards` and `features` takes over `three-columns`.
+A `list` field takes an item per node or per part: `{each: "//li/img", fields: {image: "@src", caption: "@alt"}}` reads relative to each node, `{each: part, fields: {title: "//h3", text: {part: 1, strip-heading: true}}}` reads each part like a block of its own, `strip-heading` leaves out its heading line. The config of the Markdown block, `inverse: true` for example, stays with the form block. In the demo `intro` takes over `hero`, `gallery` takes over `cards`, `features` takes over `three-columns`, `content` takes over `text` and `image-text` takes over `text-image`, so a converted page holds form blocks only. `{part: 0}` reads the whole block, separators included.
 
 ## Admin interface
 
@@ -634,13 +651,12 @@ You find the admin interface at `/admin`.
 If no users exist yet (e.g. on a fresh installation), the admin interface will automatically show a setup page where
 you can create the first admin account. After that, you can log in with the credentials you created.
 
-In the admin interface you can edit markdown pages with a live preview, manage media files, set the site
+In the admin interface you can edit pages as forms or in Markdown with a live preview, edit data, manage media files, set the site
 configuration, manage users and roles, and update the CMS.
 
 ### Edit a page
 
-The "Pages" section lists all markdown pages in your site. Click on a page name to open it in the editor.
-Pages are organized in a tree structure reflecting the folder hierarchy in `site/pages/`.
+The "Pages" section lists all pages of the site in a tree reflecting the folder hierarchy in `site/pages/`. A structured page opens as a form, see [Structured pages](#structured-pages-1) below. A Markdown page, marked with the Markdown sign in the list, opens in the Markdown editor described here.
 
 A **live preview** panel can be toggled to see the rendered page side-by-side with the editor
 (available on screens lg and wider). The preview updates automatically as you type.
@@ -663,7 +679,7 @@ The menu entry "Data" lists the collections of `site/data/`, one per blueprint, 
 
 ### Structured pages
 
-A right click in the page list offers *New structured page* next to *New page*. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Add block* offers the blocks of Markdown pages as well, they keep a Markdown field instead of fields. *Preview* shows the page with the changes next to the form, before saving. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, values the blueprints do not know stay in the file.
+A right click in the page list offers *New page*, which creates a structured page, and *New Markdown page*. A new folder starts with a structured `index` page. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Add block › Markdown blocks* offers the blocks of Markdown pages as well, they keep a Markdown field instead of fields. *Preview* shows the page with the changes next to the form, before saving, and scrolls to the field being edited. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, values the blueprints do not know stay in the file.
 
 *… › Convert to structured page* below a Markdown page, or in its menu in the page list, converts it. It shows first what becomes of each block and the YAML, *Convert* then replaces the Markdown file by the YAML file at the same address. The Markdown file is kept in the history.
 
@@ -787,10 +803,12 @@ The "System Health" page checks the installation: the PHP version and the requir
 The "Update" page in the admin interface shows the currently installed version and checks for available updates from
 the [GitHub repository](https://github.com/shaack/reboot-cms).
 
-You can switch between two branches:
+You can switch between two branches of the installed major version:
 
-- **distrib** (stable) — versioned releases, compared by version number
-- **main** (unstable) — latest development commits, compared by commit SHA
+- **distrib-4** (stable) — versioned releases, compared by version number
+- **main-4** (unstable) — latest development commits, compared by commit SHA
+
+Every major version has its own pair of branches, Reboot CMS 3 lives in `distrib` and `main`. The updater never installs another major version. When the next one is published, the page says so and links to its upgrade notes, for Reboot CMS 4 [docs/upgrade-to-4.md](docs/upgrade-to-4.md).
 
 When an update is available, you can apply it directly from the admin interface. The updater downloads the latest
 tarball and replaces `core/`, `web/admin/`, and `vendor/`. Your site content (`site/`), local configuration (`local/`),

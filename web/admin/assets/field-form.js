@@ -43,6 +43,14 @@ forms.forEach(form => {
     form.addEventListener("click", event => {
         const button = event.target.closest("button")
         if (!button || !form.contains(button)) return
+        if (button.matches("[data-markdown-toggle]")) {
+            // opens the Markdown blocks inside the menu, which stays open
+            event.stopPropagation()
+            const expanded = button.getAttribute("aria-expanded") !== "true"
+            button.setAttribute("aria-expanded", expanded ? "true" : "false")
+            button.nextElementSibling.hidden = !expanded
+            return
+        }
         if (button.matches("[data-list-add]")) {
             addItem(button.closest("[data-field-list]"), button.dataset.blockType)
             saveFolds(form)

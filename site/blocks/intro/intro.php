@@ -4,7 +4,8 @@
  * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  *
- * Example of a block for structured pages, its fields are in intro.yml.
+ * The introduction of a structured page, the counterpart of the Markdown block
+ * `hero`, a white band, or a dark one with `inverse`. Fields: intro.yml
  */
 
 /** @var \Shaack\Reboot\Block $block */
@@ -19,9 +20,12 @@ $image = $block->get("image");
                 <?php if ($block->get("lead")) { ?>
                     <p class="intro-lead"><?= nl2br($block->get("lead")) ?></p>
                 <?php } ?>
-                <?= $block->html("text") ?>
+                <?php if ($block->get("text")) { ?>
+                    <hr class="my-4">
+                    <div class="mb-4"><?= $block->html("text") ?></div>
+                <?php } ?>
                 <?php if ($block->get("button-link")) { ?>
-                    <p><a class="btn btn-primary" href="<?= $block->get("button-link") ?>"><?= $block->get("button-label", "More") ?></a></p>
+                    <p><a class="btn btn-primary btn-lg" href="<?= $block->get("button-link") ?>"><?= $block->get("button-label", "More") ?></a></p>
                 <?php } ?>
             </div>
             <?php if ($image) { ?>

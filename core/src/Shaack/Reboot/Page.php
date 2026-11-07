@@ -88,6 +88,10 @@ class Page
                 return $this->renderPHP($requestedFsPath . ".php", $request);
             }
         }
+        $entryPage = $this->renderEntry($path, $request);
+        if ($entryPage !== null) {
+            return $entryPage;
+        }
         // Pages an AddOn brings along, see AddOn::getPages(). Matched by exact
         // path, so the request path never touches the file system here.
         $addOnPage = $this->site->getAddOnPage($path);
@@ -392,6 +396,40 @@ class Page
     }
 
     /**
+     * An entry of a collection as a page. A blueprint with `url: blog` makes every
+     * entry of its collection a page at `/blog/<slug>`, drafts and invalid entries
+     * excepted. The template `site/blueprints/<name>.php` renders it with `$entry`,
+     * the scalar fields of the entry are the config of the page, `title` and
+     * `description` for example.
+     */
+    private function renderEntry(string $path, ?Request $request): ?string
+    {
+        if (!preg_match('#^/(.+)/([\w\-]+)$#', $path, $matches)) {
+            return null;
+        }
+        foreach (Blueprint::all($this->site) as $name => $blueprint) {
+            if ($blueprint->getUrl() !== $matches[1]) {
+                continue;
+            }
+            $entry = $this->site->collection($name)->find($matches[2]);
+            if (!$entry) {
+                return null;
+            }
+            $template = Blueprint::folder($this->site) . "/" . $name . ".php";
+            if (!is_file($template)) {
+                Logger::error("The entries of '" . $name . "' are pages, but there is no template site/blueprints/" . $name . ".php");
+                return null;
+            }
+            Logger::info("Entry page: " . $path);
+            $values = $entry->getValues();
+            unset($values["body"]);
+            $this->config = array_filter($values, fn($value) => is_scalar($value));
+            return renderEntryPage($this->reboot, $this->site, $this, $request, $template, $entry);
+        }
+        return null;
+    }
+
+    /**
      * @param $articlePath
      * @param $request
      * @return string
@@ -401,6 +439,14 @@ class Page
         return renderPHPPage($this->reboot, $this->site, $this, $request, $articlePath);
     }
 
+}
+
+/** @noinspection PhpUnusedParameterInspection */
+function renderEntryPage(Reboot $reboot, Site $site, Page $page, ?Request $request, string $path, Entry $entry)
+{
+    ob_start();
+    include $path;
+    return ob_get_clean();
 }
 
 /** @noinspection PhpUnusedParameterInspection */

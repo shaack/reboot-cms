@@ -254,4 +254,26 @@ class StructuredPageTest
         $result = (new PageConverter($this->site))->convert("# Just text\n\nMore");
         Assert::equals([["type" => "text", "markdown" => "# Just text\n\nMore"]], $result["values"]["blocks"]);
     }
+
+    public function testConvertWholeBlockWithPartZero(): void
+    {
+        $this->block("content", "fields:\n  text: {type: markdown}\nconvert:\n  from: text\n  fields:\n    text: {part: 0}\n", "");
+        $result = (new PageConverter($this->site))->convert("<!-- text -->\n\n# A\n\n---\n\nB\n");
+        Assert::equals([["type" => "content", "text" => "# A\n\n---\n\nB"]], $result["values"]["blocks"], "the separators stay in the text");
+    }
+
+    public function testEntriesArePagesWithUrl(): void
+    {
+        mkdir($this->tmpDir . "/data/blog");
+        file_put_contents($this->tmpDir . "/blueprints/blog.yml", "url: blog\nfields:\n  title: {type: text, required: true}\n  body: {type: markdown}\n");
+        file_put_contents($this->tmpDir . "/blueprints/blog.php", '<h1><?= $entry->get("title") ?></h1><?= $entry->html("body") ?>');
+        file_put_contents($this->tmpDir . "/data/blog/first.md", "---\ntitle: First\n---\n\nHello\n");
+        file_put_contents($this->tmpDir . "/data/blog/draft.md", "---\ntitle: Draft\ndraft: true\n---\n");
+        Assert::equals("<h1>First</h1><p>Hello</p>", $this->page->render("/blog/first"));
+        Assert::equals("First", $this->page->meta("title"), "the fields are the config of the page");
+        Assert::equals("blog/first", $this->site->collection("blog")->find("first")->getUrl());
+        Assert::equals("", $this->page->render("/blog/draft"), "a draft is no page");
+        Assert::equals("", $this->page->render("/blog/nope"));
+        Assert::null($this->site->collection("seminars")->first()->getUrl(), "without url the entries are no pages");
+    }
 }

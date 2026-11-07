@@ -8,3 +8,11 @@ fields:
   link-label: {type: text, label: Link label, default: All seminars}
   link:       {type: url, label: Link, help: "The page with all seminars, /seminars for example"}
   inverse:    {type: boolean, help: "A white band over the full width"}
+# Converting a Markdown page reads heading and link from the Markdown,
+# `count` comes along from the config of the block
+convert:
+  from: seminar-teaser
+  fields:
+    heading:    "//h2"
+    link:       "//a/@href"
+    link-label: "//a"

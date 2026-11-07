@@ -69,6 +69,16 @@ class Entry
         return $this->slug;
     }
 
+    /**
+     * The address of the entry as a page, `blog/<slug>`, if its blueprint has
+     * `url: blog`, otherwise null. Relative, like the links of a page.
+     */
+    public function getUrl(): ?string
+    {
+        $url = $this->fieldBlueprint?->getUrl();
+        return $url !== null ? $url . "/" . $this->slug : null;
+    }
+
     public function getFsPath(): string
     {
         return $this->fsPath;

@@ -270,10 +270,10 @@
         submitPageAction('add_page', (folder ? folder + '/' : '') + name.trim().replace(/^\/+/, ''));
     };
 
-    window.newStructuredPage = function (folder) {
-        var name = prompt(folder ? 'New structured page in ' + folder + '/:' : 'New structured page:', '');
+    window.newMarkdownPage = function (folder) {
+        var name = prompt(folder ? 'New Markdown page in ' + folder + '/:' : 'New Markdown page:', '');
         if (name === null || !name.trim()) return;
-        submitPageAction('add_structured_page', (folder ? folder + '/' : '') + name.trim().replace(/^\/+/, ''));
+        submitPageAction('add_markdown_page', (folder ? folder + '/' : '') + name.trim().replace(/^\/+/, ''));
     };
 
     window.newFolder = function (folder) {
@@ -321,7 +321,7 @@
                 header: target.getAttribute('data-path'),
                 items: [
                     ['New page here', function () { window.newPage(folder); }],
-                    ['New structured page here', function () { window.newStructuredPage(folder); }],
+                    ['New Markdown page here', function () { window.newMarkdownPage(folder); }],
                     ['New folder here', function () { window.newFolder(folder); }],
                     null,
                     ['Rename page', function () { window.renamePage(page); }],
@@ -341,7 +341,7 @@
                 header: path + '/',
                 items: [
                     ['New page in folder', function () { window.newPage(path); }],
-                    ['New structured page in folder', function () { window.newStructuredPage(path); }],
+                    ['New Markdown page in folder', function () { window.newMarkdownPage(path); }],
                     ['New folder in folder', function () { window.newFolder(path); }],
                     null,
                     ['Rename folder', function () { window.renameFolder(path, name); }],
@@ -354,7 +354,7 @@
             header: null,
             items: [
                 ['New page', function () { window.newPage(''); }],
-                ['New structured page', function () { window.newStructuredPage(''); }],
+                ['New Markdown page', function () { window.newMarkdownPage(''); }],
                 ['New folder', function () { window.newFolder(''); }]
             ]
         };

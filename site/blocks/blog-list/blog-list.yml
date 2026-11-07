@@ -1,0 +1,7 @@
+# The posts of the blog, newest first, from site/data/blog/
+title: Blog posts
+fields:
+  heading: {type: text}
+  lead:    {type: markdown, help: "A few words above the list"}
+  count:   {type: number, label: Number of posts, min: 1, help: "Empty shows all posts"}
+  inverse: {type: boolean, help: "A white band over the full width"}

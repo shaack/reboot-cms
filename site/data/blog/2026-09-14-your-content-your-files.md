@@ -1,15 +1,13 @@
 ---
 title: Your content, your files
 description: Why a website whose pages are plain files outlives every redesign, every host and every CMS that comes after it.
+date: 2026-09-14
+links: |
+  - [Fast pages without tuning](blog/2026-10-01-fast-pages-without-tuning)
+  - [Structure for editors, freedom for designers](blog/2026-10-12-structure-for-editors-freedom-for-designers)
+  - [All posts](blog)
+  - [The repository on GitHub](https://github.com/shaack/reboot-cms)
 ---
-
-<!-- text -->
-
-# Your content, your files
-
-<time datetime="2026-09-14">September 14, 2026</time>
-
-<!-- article -->
 
 Most content management systems keep your texts in a database. That sounds harmless until the day you want to leave. Then the content sits in tables only that one system understands, wrapped in its markup, its shortcodes and its plugins. Moving it means an export, a migration script and a long weekend.
 
@@ -32,10 +30,3 @@ For those who prefer a browser, the admin keeps its own history of every page as
 The day you outgrow Reboot CMS, your content comes with you. Markdown is understood by static site generators, by other flat file systems, by documentation tools and by every AI model. Nothing has to be exported, because nothing was ever locked in.
 
 That is the quiet promise of a flat file CMS. The software is replaceable, your content is not, and it stays where you put it.
-
----
-
-- [Fast pages without tuning](blog/2026-10-01-fast-pages-without-tuning)
-- [Structure for editors, freedom for designers](blog/2026-10-12-structure-for-editors-freedom-for-designers)
-- [All posts](blog)
-- [The repository on GitHub](https://github.com/shaack/reboot-cms)

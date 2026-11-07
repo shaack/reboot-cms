@@ -439,9 +439,13 @@ class Block
 
     /**
      * The Markdown of a part of the block, the parts are separated by `---`, the first is 1.
+     * Part 0 is the whole block, separators included.
      */
     public function rawPart(int $number): string
     {
+        if ($number === 0) {
+            return trim($this->content);
+        }
         return $this->getRawParts()[$number] ?? "";
     }
 

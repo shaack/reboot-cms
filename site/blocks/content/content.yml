@@ -1,0 +1,10 @@
+# Text with headings, lists, links and code, written in Markdown
+title: Text
+fields:
+  text:    {type: markdown, required: true}
+  inverse: {type: boolean, help: "A white band over the full width"}
+# Converting a Markdown page turns its `text` blocks into this block
+convert:
+  from: text
+  fields:
+    text: {part: 0}

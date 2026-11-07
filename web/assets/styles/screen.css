@@ -260,9 +260,10 @@ nav.navbar {
 }
 
 /* Light surfaces: a white band over the full width of the window, the hero
-   always, any other block with `<!-- name: {inverse: true} -->`. On the hero,
-   `inverse: true` turns it dark. */
+   and the intro always, any other block with `<!-- name: {inverse: true} -->`.
+   On the hero and the intro, `inverse: true` turns it dark. */
 .block-hero,
+.block-intro,
 .block-inverse {
     --text: #111;
     --strong: #000;
@@ -293,7 +294,8 @@ nav.navbar {
 }
 
 /* the hero set to inverse is dark again, framed by a hairline */
-.block-hero.block-inverse {
+.block-hero.block-inverse,
+.block-intro.block-inverse {
     --text: #f2f2f2;
     --strong: #fff;
     --muted: rgba(255, 255, 255, 0.6);
@@ -315,7 +317,8 @@ nav.navbar {
 
 /* a light surface as the first block starts right below the navigation */
 main > .block-hero:not(.block-inverse):first-child,
-main > .block-inverse:not(.block-hero):first-child {
+main > .block-intro:not(.block-inverse):first-child,
+main > .block-inverse:not(.block-hero):not(.block-intro):first-child {
     /* body keeps 5rem free for the fixed navigation, which is 63px high and opaque */
     margin-top: -5rem;
     padding-top: calc(63px + var(--band-padding));
@@ -339,7 +342,17 @@ main > .block-inverse:not(.block-hero):first-child {
     padding-bottom: 0;
 }
 
-.block-hero .display-4 {
+.block-intro.block-inverse {
+    padding: 2rem 0;
+}
+
+.block-intro.block-inverse .intro-layout {
+    border: 1px solid var(--line);
+    padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.block-hero .display-4,
+.block-intro h1 {
     font-size: clamp(3rem, 2rem + 4vw, 5rem);
     font-weight: 700;
     letter-spacing: -0.05em;
@@ -352,38 +365,46 @@ main > .block-inverse:not(.block-hero):first-child {
     color: var(--muted);
 }
 
-.block-hero hr {
+.block-hero hr,
+.block-intro hr {
     border-top: 1px solid var(--line);
     opacity: 1;
 }
 
-/* Text */
-.block-text {
+/* Text, the Markdown block and the form block */
+.block-text,
+.block-content {
     padding: 2rem 0;
 }
 
-.block-text ul {
+.block-text ul,
+.block-content ul {
     padding-left: 1.25rem;
 }
 
-.block-text li {
+.block-text li,
+.block-content li {
     margin-bottom: 0.4rem;
 }
 
-.block-text li::marker {
+.block-text li::marker,
+.block-content li::marker {
     color: var(--signal);
 }
 
-/* Text-Image */
-.block-text-image {
+/* Text with image, the Markdown block and the form block */
+.block-text-image,
+.block-image-text {
     padding: 2rem 0;
 }
 
-.block-text-image .row {
+.block-text-image .row,
+.block-image-text .row {
     align-items: center;
 }
 
-.block-text-image .img-fluid {
+.block-text-image .img-fluid,
+.block-image-text .img-fluid {
     border: 1px solid var(--line);
     border-radius: 0;
 }
@@ -653,13 +674,18 @@ main > .block-inverse:not(.block-hero):first-child {
     text-decoration: none;
 }
 
-/* Blog */
-.block-text time {
+/* Blog, the list of posts and the head of a post, see site/blueprints/blog.php */
+.block-blog-list,
+.block-post-head {
+    padding: 2rem 0;
+}
+
+.block-post-head time {
     font-size: 0.9rem;
     color: var(--muted);
 }
 
-.block-text:has(+ .block-article) {
+.block-post-head:has(+ .block-article) {
     padding-bottom: 0;
     margin-bottom: 2rem;
 }
@@ -667,6 +693,12 @@ main > .block-inverse:not(.block-hero):first-child {
 .blog-lead {
     max-width: 44em;
     margin-bottom: 3rem;
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+.blog-lead p:last-child {
+    margin-bottom: 0;
 }
 
 .blog-list {
@@ -894,6 +926,7 @@ main > .block-inverse:not(.block-hero):first-child {
 }
 
 .intro-lead {
+    font-weight: 400;
     font-size: 1.3rem;
     color: var(--muted);
 }

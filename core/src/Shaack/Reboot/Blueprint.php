@@ -38,6 +38,10 @@ use Symfony\Component\Yaml\Yaml;
  *
  * In a collection, a field named `body` is the Markdown below the frontmatter
  * of an entry, all other fields live in the frontmatter.
+ *
+ * With `url: blog` every entry is a page of its own at `/blog/<slug>`, rendered
+ * by the template `site/blueprints/<name>.php` next to the blueprint, which gets
+ * the entry as `$entry`. See Page::renderEntry().
  */
 class Blueprint
 {
@@ -52,6 +56,7 @@ class Blueprint
     private array $columns = [];
     private bool $markdown;
     private ?array $convert;
+    private ?string $url;
 
     /**
      * @param ?Site $site needed by `blocks` fields, which load the blueprints of the block types
@@ -63,6 +68,8 @@ class Blueprint
         $this->title = (string)($definition["title"] ?? ucfirst($name));
         $this->markdown = !empty($definition["markdown"]);
         $this->convert = is_array($definition["convert"] ?? null) ? $definition["convert"] : null;
+        $url = trim((string)($definition["url"] ?? ""), "/");
+        $this->url = $url !== "" ? $url : null;
         foreach ($definition["fields"] ?? [] as $fieldName => $props) {
             $fieldName = (string)$fieldName;
             $props = is_array($props) ? $props : [];
@@ -213,6 +220,14 @@ class Blueprint
     public function getConvert(): ?array
     {
         return $this->convert;
+    }
+
+    /**
+     * The path below which the entries are pages, `url: blog`, or null if they are none.
+     */
+    public function getUrl(): ?string
+    {
+        return $this->url;
     }
 
     public function getSite(): ?Site

@@ -24,7 +24,7 @@ use Shaack\Reboot\Site;
  *   from: hero                          # the Markdown block it takes over
  *   fields:
  *     heading: "/h1[part(1)]/text()"    # XPath, as in the Markdown template, its text
- *     text: {part: 2}                   # the Markdown of part 2
+ *     text: {part: 2}                   # the Markdown of part 2, part 0 is the whole block
  *     cards:                            # a list, an item per node or per part
  *       each: "//li/img"                # or `each: part`
  *       fields:
