@@ -9,6 +9,16 @@ namespace Shaack\Reboot;
 
 use Shaack\Logger;
 
+/**
+ * Updates core/, web/admin/ and vendor/ from GitHub, within one major version.
+ *
+ * Every major version has its own branches, so an installation never gets the
+ * next major version by accident and the older one can still get security
+ * fixes. Reboot CMS 3 lives in `distrib` (stable) and `main` (unstable), later
+ * versions in `distrib-<major>` and `main-<major>`. When `distrib-<major + 1>`
+ * exists, the next major version is published, getNextMajor() tells the admin,
+ * which links to its upgrade notes `docs/upgrade-to-<major>.md`.
+ */
 class Updater
 {
     private string $baseFsPath;
@@ -23,11 +33,56 @@ class Updater
     }
 
     /**
+     * The major version of a version like `3.21.0`, 0 if there is none.
+     */
+    public static function majorOf(?string $version): int
+    {
+        return (int)explode(".", (string)$version)[0];
+    }
+
+    /**
+     * The branches an installation of `$version` updates from.
+     * @return array ['stable' => branch, 'unstable' => branch]
+     */
+    public static function branches(?string $version): array
+    {
+        $major = self::majorOf($version);
+        if ($major <= 3) {
+            return ["stable" => "distrib", "unstable" => "main"];
+        }
+        return ["stable" => "distrib-" . $major, "unstable" => "main-" . $major];
+    }
+
+    /**
      * Fetches the remote version from the composer.json in the branch via the GitHub API (no CDN caching).
      */
     public function getRemoteVersion(): ?string
     {
-        $url = "https://api.github.com/repos/" . $this->repo . "/contents/composer.json?ref=" . $this->branch;
+        return $this->fetchVersion($this->branch);
+    }
+
+    /**
+     * The next major version if it is published, with the link to its upgrade
+     * notes. It is never installed by this updater.
+     * @return ?array ['version' => "4.0.0", 'notes' => URL]
+     */
+    public function getNextMajor(): ?array
+    {
+        $major = self::majorOf($this->getLocalVersion()) + 1;
+        $branch = self::branches($major . ".0.0")["stable"];
+        $version = $this->fetchVersion($branch);
+        if ($version === null || self::majorOf($version) !== $major) {
+            return null;
+        }
+        return [
+            "version" => $version,
+            "notes" => "https://github.com/" . $this->repo . "/blob/" . $branch . "/docs/upgrade-to-" . $major . ".md",
+        ];
+    }
+
+    private function fetchVersion(string $branch): ?string
+    {
+        $url = "https://api.github.com/repos/" . $this->repo . "/contents/composer.json?ref=" . rawurlencode($branch);
         $context = stream_context_create([
             "http" => [
                 "header" => "User-Agent: reboot-cms-updater\r\nAccept: application/vnd.github.v3.raw\r\n",
@@ -130,6 +185,15 @@ class Updater
                 throw new \RuntimeException("Failed to extract update archive");
             }
             $sourceDir = $extractedDirs[0];
+
+            // never a major update, that needs the upgrade notes and a deliberate step
+            $sourceData = json_decode((string)@file_get_contents($sourceDir . "/composer.json"), true);
+            $sourceVersion = is_array($sourceData) ? ($sourceData["version"] ?? null) : null;
+            $localVersion = $this->getLocalVersion();
+            if ($localVersion !== null && self::majorOf($sourceVersion) !== self::majorOf($localVersion)) {
+                throw new \RuntimeException("The branch " . $this->branch . " holds version " . $sourceVersion
+                    . ", not " . self::majorOf($localVersion) . ".x. A major update is not installed by the updater.");
+            }
 
             // Extract commit SHA from the directory name (e.g. "shaack-reboot-cms-abc1234")
             $dirName = basename($sourceDir);

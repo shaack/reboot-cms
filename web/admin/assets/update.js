@@ -5,6 +5,30 @@
     var localVersion = config.localVersion;
     var csrfToken = config.csrfToken;
     var branch = config.branch;
+    var isUnstable = config.isUnstable;
+
+    function major(version) {
+        return String(version).split(".")[0];
+    }
+
+    // The next major version is published. The updater does not install it, it
+    // links to the notes on what changes and how to upgrade.
+    function showNextMajor(nextMajor) {
+        if (!nextMajor || !nextMajor.version || !/^https:\/\/github\.com\//.test(nextMajor.notes || "")) return;
+        var notice = document.createElement("div");
+        notice.className = "alert alert-info";
+        var text = document.createElement("span");
+        text.textContent = "Reboot CMS " + nextMajor.version + " is available. It is a major update with changes " +
+            "that need your attention, so this updater does not install it. ";
+        var link = document.createElement("a");
+        link.href = nextMajor.notes;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = "Read what changes and how to upgrade";
+        notice.appendChild(text);
+        notice.appendChild(link);
+        document.getElementById("major-notice").appendChild(notice);
+    }
 
     document.getElementById("branch-select").addEventListener("change", function () {
         window.location.href = "update?branch=" + encodeURIComponent(this.value);
@@ -62,9 +86,10 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
             data = data || {};
+            showNextMajor(data.nextMajor);
             var cell = document.getElementById("remote-version-cell");
             var actions = document.getElementById("update-actions");
-            if (branch === "main") {
+            if (isUnstable) {
                 var remoteCommit = data.remoteCommit;
                 var localCommit = data.localCommit;
                 if (remoteCommit) {
@@ -78,7 +103,7 @@
                     } else {
                         var installedInfo = shortLocal ? ' (installed: ' + shortLocal + ')' : '';
                         actions.innerHTML = updateForm('Update to ' + shortRemote);
-                        wireUpdateForm('Update Reboot CMS from branch main (unstable) to commit ' +
+                        wireUpdateForm('Update Reboot CMS from branch ' + branch + ' (unstable) to commit ' +
                             shortRemote + '.' + installedInfo + ' To be safe, you should make a backup ' +
                             'of the project folder first. This will replace core/, web/admin/ and vendor/.');
                     }
@@ -92,7 +117,9 @@
                 version.textContent = data.version;
                 cell.innerHTML = "";
                 cell.appendChild(version);
-                if (data.version.localeCompare(localVersion, undefined, {numeric: true, sensitivity: 'base'}) > 0) {
+                if (major(data.version) !== major(localVersion)) {
+                    actions.innerHTML = '<p class="text-muted mb-0">The branch holds another major version, the updater does not install it.</p>';
+                } else if (data.version.localeCompare(localVersion, undefined, {numeric: true, sensitivity: 'base'}) > 0) {
                     var safeVersion = data.version.replace(/[<>"'&]/g, '');
                     actions.innerHTML = updateForm('Update to ' + safeVersion);
                     wireUpdateForm('Update Reboot CMS to version ' + safeVersion +

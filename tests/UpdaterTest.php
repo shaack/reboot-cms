@@ -57,6 +57,14 @@ class UpdaterTest
         Assert::null($updater->getLocalVersion());
     }
 
+    public function testBranchesPerMajorVersion(): void
+    {
+        Assert::equals(["stable" => "distrib", "unstable" => "main"], Updater::branches("3.21.0"));
+        Assert::equals(["stable" => "distrib", "unstable" => "main"], Updater::branches(null), "unknown is treated as 3");
+        Assert::equals(["stable" => "distrib-4", "unstable" => "main-4"], Updater::branches("4.0.0"));
+        Assert::equals(4, Updater::majorOf("4.2.1"));
+    }
+
     public function testGetRemoteVersionInvalidRepo(): void
     {
         $updater = new Updater($this->tmpDir, "nonexistent/nonexistent-repo-xyz", "nonexistent-branch");

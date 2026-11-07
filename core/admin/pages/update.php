@@ -9,12 +9,13 @@ use Shaack\Reboot\Updater;
 
 if (!AdminHelper::requireAdmin($site, $reboot)) return;
 
-$allowedBranches = ["distrib", "main"];
-$branch = $request->getParam("branch") ?? "distrib";
-if (!in_array($branch, $allowedBranches, true)) {
-    $branch = "distrib";
+// the branches of the installed major version, a major update is never installed here
+$branches = Updater::branches((new Updater($reboot->getBaseFsPath()))->getLocalVersion());
+$branch = $request->getParam("branch") ?? $branches["stable"];
+if (!in_array($branch, $branches, true)) {
+    $branch = $branches["stable"];
 }
-$isMain = ($branch === "main");
+$isMain = ($branch === $branches["unstable"]);
 
 $updater = new Updater($reboot->getBaseFsPath(), "shaack/reboot-cms", $branch);
 $localVersion = $updater->getLocalVersion() ?? "unknown";
@@ -40,6 +41,7 @@ if ($request->getParam("action") === "update") {
 
 <div class="container-fluid max-width-lg">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
+    <div id="major-notice"></div>
 
     <div class="card">
         <div class="card-header"><h5 class="mb-0">Reboot CMS Update</h5></div>
@@ -49,8 +51,8 @@ if ($request->getParam("action") === "update") {
                     <td>Branch</td>
                     <td>
                         <select id="branch-select" class="form-select form-select-sm" style="width: auto; display: inline-block;">
-                            <option value="distrib"<?= $branch === "distrib" ? " selected" : "" ?>>distrib (stable)</option>
-                            <option value="main"<?= $isMain ? " selected" : "" ?>>main (unstable)</option>
+                            <option value="<?= htmlspecialchars($branches["stable"]) ?>"<?= !$isMain ? " selected" : "" ?>><?= htmlspecialchars($branches["stable"]) ?> (stable)</option>
+                            <option value="<?= htmlspecialchars($branches["unstable"]) ?>"<?= $isMain ? " selected" : "" ?>><?= htmlspecialchars($branches["unstable"]) ?> (unstable)</option>
                         </select>
                     </td>
                 </tr>
@@ -88,7 +90,8 @@ if ($request->getParam("action") === "update") {
 window.updateConfig = {
     localVersion: <?= json_encode($localVersion) ?>,
     csrfToken: <?= json_encode(CsrfProtection::getToken()) ?>,
-    branch: <?= json_encode($branch) ?>
+    branch: <?= json_encode($branch) ?>,
+    isUnstable: <?= json_encode($isMain) ?>
 };
 </script>
 <script src="assets/update.js"></script>

@@ -45,8 +45,10 @@
         }
     }
 
+    // only a version of the installed major version, the updater does not install another one
     function isNewer(remoteVersion) {
         return remoteVersion &&
+            remoteVersion.split(".")[0] === config.localVersion.split(".")[0] &&
             remoteVersion.localeCompare(config.localVersion, undefined, {numeric: true, sensitivity: "base"}) > 0
     }
 

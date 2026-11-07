@@ -229,7 +229,7 @@ echo($page->render($request));
         // admin page waits for a request to GitHub.
         window.updateBadgeConfig = {
             localVersion: <?= json_encode($admin->getLocalVersion() ?? "") ?>,
-            branch: "distrib"
+            branch: <?= json_encode(\Shaack\Reboot\Updater::branches($admin->getLocalVersion())["stable"]) ?>
         }
     </script>
     <script src="assets/update-badge.js?v=<?= @filemtime($adminAssetsDir . "/update-badge.js") ?>"></script>
