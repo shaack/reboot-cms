@@ -607,10 +607,12 @@ The "System Health" page checks the installation: the PHP version and the requir
 The "Update" page in the admin interface shows the currently installed version and checks for available updates from
 the [GitHub repository](https://github.com/shaack/reboot-cms).
 
-You can switch between two branches:
+You can switch between two branches of the installed major version:
 
 - **distrib** (stable) — versioned releases, compared by version number
 - **main** (unstable) — latest development commits, compared by commit SHA
+
+Every major version has its own pair of branches, Reboot CMS 3 lives in `distrib` and `main`, Reboot CMS 4 in `distrib-4` and `main-4`. The updater never installs another major version. When the next one is published, the page says so and links to its upgrade notes, for Reboot CMS 4 `docs/upgrade-to-4.md` in the branch `distrib-4`.
 
 When an update is available, you can apply it directly from the admin interface. The updater downloads the latest
 tarball and replaces `core/`, `web/admin/`, and `vendor/`. Your site content (`site/`), local configuration (`local/`),
