@@ -100,11 +100,29 @@ async function main() {
         throw new Error(`Login as "${USER}" failed, set ADMIN_USER and ADMIN_PASSWORD`);
     }
 
-    console.log('Page editor with preview');
-    await open(`${ADMIN}/pages?page=/index.md`, 1000);
-    await page.click('#preview-toggle');
-    await pause(2000);
+    // the preview stays on once switched on, the browser remembers it
+    const previewOn = async (toggle) => {
+        if (await page.$eval('#preview-column', el => el.classList.contains('d-lg-none'))) {
+            await page.click(toggle);
+        }
+        await pause(2500);
+    };
+
+    console.log('Structured page with preview');
+    await open(`${ADMIN}/pages?page=/index.yml`, 1000);
+    await previewOn('#structured-preview-toggle');
     await shot('reboot-cms-admin-page-edit.png');
+
+    console.log('Add block menu');
+    await page.$eval('.structured-page-fields', box => { box.scrollTop = box.scrollHeight; });
+    await page.click('.field-blocks-add .field-add-button');
+    await pause(600);
+    await shot('reboot-cms-admin-add-block.png');
+
+    console.log('Markdown page with preview');
+    await open(`${ADMIN}/pages?page=/blocks.md`, 1000);
+    await previewOn('#preview-toggle');
+    await shot('reboot-cms-admin-markdown-edit.png');
 
     console.log('Insert block menu');
     await page.click('.mde-btn-insert-block');
@@ -113,13 +131,14 @@ async function main() {
     await page.keyboard.press('Escape');
 
     console.log('Page history');
-    await open(`${ADMIN}/pages?page=/index.md`, 1000);
+    await open(`${ADMIN}/pages?page=/blocks.md`, 1000);
     await page.evaluate(() => window.toggleHistory());
     await page.waitForSelector('#page-history-modal.show', { timeout: 5000 });
     await pause(1200);
     await shot('reboot-cms-admin-page-history.png');
 
     const sections = [
+        ['Data', `${ADMIN}/data?collection=seminars`, 'reboot-cms-admin-data.png', true],
         ['Media', `${ADMIN}/media?path=blog`, 'reboot-cms-admin-media.png', true],
         ['Site configuration', `${ADMIN}/config`, 'reboot-cms-admin-site-configuration.png', false],
         ['Users', `${ADMIN}/users`, 'reboot-cms-admin-users.png', true],

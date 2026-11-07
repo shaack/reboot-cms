@@ -661,7 +661,7 @@ The "Pages" section lists all pages of the site in a tree reflecting the folder 
 A **live preview** panel can be toggled to see the rendered page side-by-side with the editor
 (available on screens lg and wider). The preview updates automatically as you type.
 
-![Edit a page](web/media/screenshots/reboot-cms-admin-page-edit.png)
+![Edit a Markdown page](web/media/screenshots/reboot-cms-admin-markdown-edit.png)
 
 Besides the usual formatting, the toolbar inserts a link to another page of the site, an image from the media folder and a block. The block menu lists every block type of the site and inserts its example Markdown at the cursor, so the structure a block expects is already in place.
 
@@ -677,9 +677,13 @@ restore them from the History dialog. The number of snapshots kept per page is c
 
 The menu entry "Data" lists the collections of `site/data/`, one per blueprint, see [Data](#data). A collection opens as a table of its entries, a click on a row opens the entry as a form made from the blueprint: a date picker for a `date`, a list for a `select`, a switch for a `boolean`, the media browser for an `image` and the Markdown editor for a `markdown` field. Required fields are marked, and the fields that do not fit the blueprint are named after saving. Such an entry is saved anyway, marked in the table and left out of the website until it is fixed. *Draft* keeps an entry off the website. A new entry gets its file name from its first date and text field, `2027-03-12-photo-basics.md`, and keeps it. Every save and delete keeps the previous version in `local/history/data/`. Editors can use the page like Pages and Media.
 
+![Data](web/media/screenshots/reboot-cms-admin-data.png)
+
 ### Structured pages
 
 A right click in the page list offers *New page*, which creates a structured page, and *New Markdown page*. A new folder starts with a structured `index` page. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Add block › Markdown blocks* offers the blocks of Markdown pages as well, they keep a Markdown field instead of fields. *Preview* shows the page with the changes next to the form, before saving, and scrolls to the field being edited. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, values the blueprints do not know stay in the file.
+
+![Add a block](web/media/screenshots/reboot-cms-admin-add-block.png)
 
 *… › Convert to structured page* below a Markdown page, or in its menu in the page list, converts it. It shows first what becomes of each block and the YAML, *Convert* then replaces the Markdown file by the YAML file at the same address. The Markdown file is kept in the history.
 

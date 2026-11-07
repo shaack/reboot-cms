@@ -43,9 +43,12 @@ BASE=http://localhost:21007 ADMIN_USER=admin ADMIN_PASSWORD=... \
 | `reboot-cms-blog-article.png` | A blog article with its box of links |
 | `reboot-cms-lightbox.png` | The gallery with an enlarged image |
 | `reboot-cms-admin-login.png` | Admin login |
-| `reboot-cms-admin-page-edit.png` | Page editor with preview |
-| `reboot-cms-admin-insert-block.png` | Page editor with the block menu open |
-| `reboot-cms-admin-page-history.png` | Page history |
+| `reboot-cms-admin-page-edit.png` | The form of the structured start page, with preview |
+| `reboot-cms-admin-add-block.png` | The same with the menu *Add block* open |
+| `reboot-cms-admin-markdown-edit.png` | The Markdown editor of the page `blocks`, with preview |
+| `reboot-cms-admin-insert-block.png` | The Markdown editor with the block menu open |
+| `reboot-cms-admin-page-history.png` | Page history of the page `blocks` |
+| `reboot-cms-admin-data.png` | Data, the table of the seminars |
 | `reboot-cms-admin-media.png` | Media manager, a folder of images |
 | `reboot-cms-admin-site-configuration.png` | Site configuration |
 | `reboot-cms-admin-users.png` | User management |

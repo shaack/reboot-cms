@@ -43,16 +43,16 @@ if (!str_contains($config, "SecureDownloads")) {
 // Mail settings, so the protected areas offer login links. Nothing is sent.
 file_put_contents("$base/local/config.local.yml", "logLevel: 2\nmail:\n  transport: smtp\n  host: localhost\n  port: 25\n  from: noreply@$host\n");
 
-// Page history: three earlier versions of the start page, days apart
-$page = "$base/site/pages/index.md";
+// Page history: three earlier versions of the Markdown page about blocks, days apart
+$page = "$base/site/pages/blocks.md";
 $historyDir = "$base/local/history/pages";
 $original = file_get_contents($page);
 foreach ([12 => 900, 7 => 300, 2 => 0] as $daysAgo => $cut) {
     file_put_contents($page, $cut ? substr($original, 0, -$cut) : $original);
     PageHistoryHelper::savePageSnapshot($page, "$base/site/pages", $historyDir, 50);
-    $snapshots = glob("$historyDir/index/*.md");
+    $snapshots = glob("$historyDir/blocks/*.md");
     $newest = end($snapshots);
-    rename($newest, "$historyDir/index/" . date("Y-m-d_H-i-s", time() - $daysAgo * $day - $cut * 7) . ".md");
+    rename($newest, "$historyDir/blocks/" . date("Y-m-d_H-i-s", time() - $daysAgo * $day - $cut * 7) . ".md");
 }
 file_put_contents($page, $original);
 

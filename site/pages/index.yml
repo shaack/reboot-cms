@@ -57,10 +57,10 @@ blocks:
   - type: gallery
     heading: The admin at a glance
     images:
-      - image: media/screenshots/reboot-cms-admin-insert-block.png
-        caption: 'Pages: a block editor with live preview'
-      - image: media/screenshots/reboot-cms-admin-page-history.png
-        caption: 'History: every save is kept and can be restored'
+      - image: media/screenshots/reboot-cms-admin-page-edit.png
+        caption: 'Pages: a form per block, with live preview'
+      - image: media/screenshots/reboot-cms-admin-data.png
+        caption: 'Data: records with fields, apart from the pages'
       - image: media/screenshots/reboot-cms-admin-protected-areas.png
         caption: 'Protected areas: customer logins by password or mail link'
       - image: media/screenshots/reboot-cms-admin-secure-downloads.png

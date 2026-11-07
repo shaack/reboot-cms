@@ -1,15 +1,15 @@
 ---
-title: Blocks in Reboot CMS
-description: The block types that ship with Reboot CMS, each with the Markdown that produces it.
+title: Markdown blocks in Reboot CMS
+description: The Markdown blocks that ship with Reboot CMS, each with the Markdown that produces it.
 ---
 
 <!-- text -->
 
-# Blocks
+# Markdown blocks
 
-A page in Reboot CMS is one Markdown file. An HTML comment with the name of a block type, like the first line of the examples below, starts a block, and the type decides how the Markdown below it is rendered. A line with `---` separates the parts of a block, for example the text and the image of a "text-image" block.
+Most pages of this demo are structured pages, edited as forms. This page is a Markdown page, written as text. An HTML comment with the name of a block type, like the first line of the examples below, starts a block, and the type decides how the Markdown below it is rendered. A line with `---` separates the parts of a block, for example the text and the image of a "text-image" block.
 
-Every block type is a PHP template in `site/blocks/`. This demo ships with five of them. Each section below shows the Markdown first and the rendered block right after it.
+Every block type is a PHP template in `site/blocks/`. Each section below shows the Markdown first and the rendered block right after it. A structured page can hold these blocks as well, under *Add block › Markdown blocks*.
 
 ## Hero
 
