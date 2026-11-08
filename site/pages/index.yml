@@ -4,68 +4,77 @@ blocks:
   - type: intro
     heading: Reboot CMS
     lead: The flat file CMS that thinks in blocks.
-    text: A page is a list of **blocks**, and every block is a small form. Editors fill in fields, designers own the templates, and a small PHP core delivers it fast. No database, no build step, nothing to migrate.
+    text: A page is a list of **blocks**, and every block is a small form. Editors fill in fields, designers own the templates, and a small PHP core delivers the page in milliseconds. No database, no build step, nothing to migrate.
+    image: media/screenshots/reboot-cms-admin-page-edit.png
     button-label: View on GitHub
     button-link: https://github.com/shaack/reboot-cms
-  - type: seminar-teaser
-    heading: Upcoming seminars
-    count: 3
-    link-label: All seminars
-    link: seminars
   - type: features
-    heading: Features
+    heading: Why Reboot CMS
     items:
       - title: Just files
-        text: A page is a readable YAML file, and its path is its URL. Put the site under Git and every change becomes a reviewable diff. Backups are a copy of a folder.
+        text: A page is a short YAML file, and its path is its URL. Put the site under Git and every change becomes a reviewable diff. A backup is a copy of a folder.
       - title: Forms, not markup
-        text: A block type is a PHP template and a blueprint that names its fields. The admin builds the form from it, so editors cannot break the layout.
+        text: A block type is a PHP template and a blueprint that names its fields. The admin builds the form from it, so editors fill in content and cannot break the layout.
       - title: Fast by default
         text: No database, no framework, no queries. Pages render in milliseconds and ship without the weight of a classic CMS. Sites built with Reboot CMS score 100 on PageSpeed Insights.
   - type: image-text
     text: |-
-      ## Edit in the browser
+      ## Pages are forms
 
-      The admin edits a page as a form, a panel per block, with a live preview that follows the field you type in. It keeps a history of every page and manages data, media, users, protected areas and secure downloads. Updates come straight from GitHub with one click, and a backup is one more.
+      The admin edits a page as a list of panels, one per block. *Add block* offers the block types of the site, and the live preview next to the form follows the field you type in. A click into the preview jumps to the block it shows.
 
-      [See the admin in the documentation](documentation#admin-interface)
-    image: media/screenshots/reboot-cms-admin-page-edit.png
-    alt: The page editor of the admin
-    caption: Editing a page
+      Every save keeps the previous version, so nothing an editor does is final.
+
+      [How structured pages work](documentation#structured-pages)
+    image: media/screenshots/reboot-cms-admin-add-block.png
+    alt: A structured page in the admin with the menu Add block open
+    caption: Add block offers the block types of the site
   - type: image-text
     text: |-
-      ## Made for AI agents
+      ## Data apart from pages
 
-      An agent does well with Reboot CMS for the same reason you do. Content is text, the URL names the file, and the whole core fits into a context window. The repository ships an `AGENTS.md` that orients coding assistants, so "add a page about pricing" is a task an agent completes on its own.
+      Seminars, posts, products, team members. A blueprint in `site/blueprints/` names their fields, the entries are files in `site/data/`, and the admin lists them as a table. Blocks show them wherever they fit.
 
-      [Read how it works](documentation#working-with-ai-agents)
-    image: media/screenshots/reboot-cms-admin-media.png
-    alt: The media manager of the admin
-    caption: The media manager
+      Change the price of a seminar once, and every page that shows it is up to date. With `url: blog` in its blueprint every entry becomes a page of its own, the posts of the [blog](blog) work like that.
+
+      [How data works](documentation#data)
+    image: media/screenshots/reboot-cms-admin-data.png
+    alt: The table of the seminars in the admin
+    caption: The seminars of this demo as data
     image-position: left
+  - type: seminar-teaser
+    heading: Data on a page, the next seminars
+    count: 3
+    link-label: All seminars
+    link: seminars
   - type: features
-    heading: Content apart from layout
+    heading: Everything a small site needs
     items:
-      - title: Data
-        text: Seminars, posts, products. A blueprint in `site/blueprints/` names their fields, the entries live in `site/data/`, and blocks show them where they fit.
-      - title: Pages from data
-        text: 'With `url: blog` in its blueprint, every entry is a page of its own. The posts of the [blog](blog) work like that.'
       - title: Markdown, if you like
-        text: Markdown pages still work and are handy for long texts. The admin converts one into a structured page with a click.
-  - type: seminar-spotlight
-    heading: In focus
-    seminar: 2027-01-23-building-blocks
-    note: The seminar comes from `site/data/seminars/`. Change its price in Data and this page shows the new one.
+        text: Markdown pages still work and are handy for long texts. The admin converts one into a structured page with a click, see the [Markdown blocks](blocks).
+      - title: Protected areas
+        text: Pages for customers or members, behind a password or a login link by mail. Accounts are managed in the admin.
+      - title: Made for AI agents
+        text: Content is text, the URL names the file, and the whole core fits into a context window. The `AGENTS.md` of the repository orients coding assistants.
   - type: gallery
     heading: The admin at a glance
     images:
       - image: media/screenshots/reboot-cms-admin-page-edit.png
         caption: 'Pages: a form per block, with live preview'
+      - image: media/screenshots/reboot-cms-admin-add-block.png
+        caption: 'Add block: the block types of the site'
       - image: media/screenshots/reboot-cms-admin-data.png
         caption: 'Data: records with fields, apart from the pages'
+      - image: media/screenshots/reboot-cms-admin-markdown-edit.png
+        caption: 'Markdown pages: text with blocks, with preview'
+      - image: media/screenshots/reboot-cms-admin-page-history.png
+        caption: 'History: every earlier version of a page'
+      - image: media/screenshots/reboot-cms-admin-media.png
+        caption: 'Media: upload, browse and pick images'
       - image: media/screenshots/reboot-cms-admin-protected-areas.png
-        caption: 'Protected areas: customer logins by password or mail link'
+        caption: 'Protected areas: logins by password or mail link'
       - image: media/screenshots/reboot-cms-admin-secure-downloads.png
-        caption: 'Secure downloads: send a file with a link and a password'
+        caption: 'Secure downloads: a file with a link and a password'
   - type: content
     text: |-
       ## Up and running in a minute
@@ -80,5 +89,5 @@ blocks:
 
       The site is at `http://localhost:21007`, the admin at `http://localhost:21007/admin`. On a server, point the document root at `web/` and open `/admin` to create the first account.
 
-      Reboot CMS is open source under the MIT license. Have a look at the [Markdown blocks](blocks), read the [blog](blog) and the [documentation](documentation), or go straight to the [repository on GitHub](https://github.com/shaack/reboot-cms).
+      Reboot CMS is open source under the MIT license. Read [what is new in Reboot CMS 4](blog/2026-11-08-reboot-cms-4), the [documentation](documentation), or go straight to the [repository on GitHub](https://github.com/shaack/reboot-cms).
 author: shaack.com

@@ -5,7 +5,8 @@ navbar:
   brand: Reboot CMS
   structure:
     Home: /
-    Markdown: /blocks
+    Seminars: /seminars
     Blog: /blog
+    Markdown: /blocks
     Documentation: /documentation
     GitHub: https://github.com/shaack/reboot-cms

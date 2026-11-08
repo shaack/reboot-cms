@@ -15,7 +15,7 @@ The usual answer is tuning. A caching plugin, an image optimizer, a CDN, a secon
 
 ## Fast because there is less
 
-Reboot CMS starts from the other end. There is no database to ask, no framework to boot and no plugin chain to run. A request reads one Markdown file, renders it into the template and sends it out. That takes a few milliseconds on ordinary shared hosting.
+Reboot CMS starts from the other end. There is no database to ask, no framework to boot and no plugin chain to run. A request reads one text file, renders its blocks into the template and sends it out. That takes a few milliseconds on ordinary shared hosting.
 
 What reaches the browser is what you put into the template. No admin scripts, no tracking you did not choose, no stylesheet for features the page does not use. The demo you are looking at loads Bootstrap and one small stylesheet, and that is all.
 

@@ -11,28 +11,21 @@ Reboot CMS is a minimal CMS without a database. A page is a list of **blocks**, 
 
 ## Why another CMS?
 
-I developed Reboot CMS because I couldn't find a CMS that works with flat markdown files but allows easy use of blocks.
+I developed Reboot CMS because I couldn't find a CMS that works with flat files but allows easy use of blocks. Since version 4 a block is a small form, so editors fill in fields and the design stays as the designer made it.
 
-Reboot CMS is very small and the pages are delivered extremely fast. My website [shaack.com](https://shaack.com), built
-with Reboot CMS, has a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report?url=https%3A%2F%2Fshaack.com%2F).
+Reboot CMS is very small and the pages are delivered extremely fast. My website [shaack.com](https://shaack.com), built with Reboot CMS, has a [PageSpeed Insights performance score of 100](https://pagespeed.web.dev/report?url=https%3A%2F%2Fshaack.com%2F).
 
 ## Working with AI agents
 
-Reboot CMS works well with AI coding assistants, because its architecture maps
-onto what an agent can reliably reason about:
+Reboot CMS works well with AI coding assistants, because its architecture maps onto what an agent can reliably reason about:
 
-- **Flat Markdown files, no database** — content is edited directly as text;
-  there is no schema, no migrations, and no admin API to learn.
-- **File equals URL** — the page for `/about` is always `site/pages/about.md`,
-  so an agent locates content without crawling routes.
-- **Small, transparent core** — the CMS classes (`Reboot`, `Site`, `Page`,
-  `Block`, `Request`) are short enough to fit a model's context window.
-- **Blocks are plain PHP files** — a new block type is a single file in
-  `site/blocks/`, with no framework or build step in between.
-- **Everything is text under Git** — every change is a reviewable diff.
+- **Flat files, no database.** Pages are short YAML files or Markdown, data entries are Markdown files with frontmatter. Content is edited directly as text, there are no migrations and no admin API to learn.
+- **File equals URL.** The page for `/about` is always `site/pages/about.yml` (or `about.md`), so an agent locates content without crawling routes.
+- **Small, transparent core.** The CMS classes (`Reboot`, `Site`, `Page`, `Block`, `Collection`, `Request`) are short enough to fit a model's context window.
+- **Blocks are plain PHP and YAML.** A block type is a folder in `site/blocks/` with a PHP template and a blueprint that names its fields, with no framework or build step in between.
+- **Everything is text under Git.** Every change is a reviewable diff.
 
-The repository includes an [`AGENTS.md`](AGENTS.md) that orients AI agents
-working on a Reboot CMS project.
+The repository includes an [`AGENTS.md`](AGENTS.md) that orients AI agents working on a Reboot CMS project.
 
 ## Websites using Reboot CMS
 
@@ -243,9 +236,7 @@ Ut enim ad minim [veniam](/), quis nostrud exercitation ullamco laboris nisi ut 
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 ```
 
-This `Page` contains 3 `Block` types, "hero", "text-image" and "three-columns". It will render to this:
-
-![A rendered page](web/media/screenshots/reboot-cms-index.png)
+This `Page` contains 3 `Block` types, "hero", "text-image" and "three-columns". The page [`site/pages/blocks.md`](site/pages/blocks.md) of the demo shows each of them with the Markdown that produces it.
 
 Blocks can be configured in the block comment. With this configuration, the `text-image`
 block allows to display the image to the left side in desktop view.

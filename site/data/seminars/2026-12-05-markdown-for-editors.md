@@ -5,12 +5,12 @@ location: Bremen
 level: Beginner
 price: 190
 seats: 8
-teaser: Headings, lists, links and images. Everything an editor needs to write pages in Reboot CMS.
+teaser: Blocks, fields and a little Markdown. Everything an editor needs to fill the pages of a Reboot CMS site.
 link: mailto:seminars@example.com?subject=Markdown%20for%20Editors
 ---
 
 A hands-on day for everyone who writes the content of a website. No technical background is needed.
 
-- Headings, emphasis, lists and links
-- Images and where they live
 - How blocks give a page its structure
+- Headings, emphasis, lists and links in Markdown
+- Images, the media library and the history of a page

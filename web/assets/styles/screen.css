@@ -335,6 +335,15 @@ main > .block-inverse:not(.block-hero):not(.block-intro):first-child {
     padding-top: calc(63px + var(--band-padding));
 }
 
+/* two light surfaces in a row are one band, without a dark gap between them */
+:is(.block-hero, .block-intro, .block-inverse):not(:is(.block-hero, .block-intro).block-inverse):has(+ :is(.block-hero, .block-intro, .block-inverse):not(:is(.block-hero, .block-intro).block-inverse)) {
+    margin-bottom: 0;
+}
+
+:is(.block-hero, .block-intro, .block-inverse):not(:is(.block-hero, .block-intro).block-inverse) + :is(.block-hero, .block-intro, .block-inverse):not(:is(.block-hero, .block-intro).block-inverse) {
+    padding-top: 0;
+}
+
 .block-hero .card {
     background: transparent !important;
     color: inherit;
@@ -473,6 +482,32 @@ main > .block-inverse:not(.block-hero):not(.block-intro):first-child {
     .block-cards .card + .card,
     .block-gallery .card + .card {
         border-left: 1px solid var(--line) !important;
+    }
+}
+
+/* a gallery of more than four images wraps into rows, two or four images wide */
+@media (min-width: 576px) {
+    .block-gallery .card-group:has(> .card:nth-child(5)) {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .block-gallery .card-group:has(> .card:nth-child(5)) > .card:nth-child(2n+1) {
+        border-left: 0 !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .block-gallery .card-group:has(> .card:nth-child(5)) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .block-gallery .card-group:has(> .card:nth-child(5)) > .card:nth-child(2n+1) {
+        border-left: 1px solid var(--line) !important;
+    }
+
+    .block-gallery .card-group:has(> .card:nth-child(5)) > .card:nth-child(4n+1) {
+        border-left: 0 !important;
     }
 }
 

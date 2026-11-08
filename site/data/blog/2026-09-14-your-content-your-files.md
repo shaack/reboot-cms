@@ -11,11 +11,11 @@ links: |
 
 Most content management systems keep your texts in a database. That sounds harmless until the day you want to leave. Then the content sits in tables only that one system understands, wrapped in its markup, its shortcodes and its plugins. Moving it means an export, a migration script and a long weekend.
 
-Reboot CMS takes the opposite route. Every page is a Markdown file, and the path of the file is the address of the page. The text you write is the text that is stored. There is nothing in between that you would have to translate later.
+Reboot CMS takes the opposite route. Every page is a text file, a short YAML file with the blocks of the page or a Markdown file, and the path of the file is the address of the page. The text you write is the text that is stored. There is nothing in between that you would have to translate later.
 
 ## Ownership you can see
 
-Open the folder `site/pages/` and you see your website. A page about pricing is `pricing.md`, a post in this blog is a file in `blog/`. Any editor opens it, any search finds it, and it reads as well in ten years as it does today.
+Open the folder `site/pages/` and you see your website. A page about pricing is `pricing.yml`, and next to it, in `site/data/blog/`, every post of this blog is a file of its own. Any editor opens it, any search finds it, and it reads as well in ten years as it does today.
 
 That changes how a website feels to its owner. Content is no longer something the CMS holds for you. It is a folder you have, like the photos on your computer.
 
@@ -27,6 +27,6 @@ For those who prefer a browser, the admin keeps its own history of every page as
 
 ## No lock-in, by design
 
-The day you outgrow Reboot CMS, your content comes with you. Markdown is understood by static site generators, by other flat file systems, by documentation tools and by every AI model. Nothing has to be exported, because nothing was ever locked in.
+The day you outgrow Reboot CMS, your content comes with you. YAML and Markdown are read by static site generators, by other flat file systems, by documentation tools and by every AI model. Nothing has to be exported, because nothing was ever locked in.
 
 That is the quiet promise of a flat file CMS. The software is replaceable, your content is not, and it stays where you put it.

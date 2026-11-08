@@ -71,6 +71,13 @@ async function main() {
     await open(BASE);
     await shot('reboot-cms-index.png');
 
+    console.log('Markdown blocks, a Markdown page');
+    await open(`${BASE}/blocks`);
+    // the Markdown of the hero block and the block it renders to
+    await page.evaluate(() => [...document.querySelectorAll('h2')].find(h => h.textContent === 'Hero').scrollIntoView({ block: 'start' }));
+    await pause(300);
+    await shot('reboot-cms-markdown-blocks.png');
+
     console.log('Blog article with its box of links');
     await open(`${BASE}/blog`);
     const article = await page.$eval('.blog-teaser a', a => a.getAttribute('href'));
