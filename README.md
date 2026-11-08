@@ -658,8 +658,8 @@ configuration, manage users and roles, and update the CMS.
 
 The "Pages" section lists all pages of the site in a tree reflecting the folder hierarchy in `site/pages/`. A structured page opens as a form, see [Structured pages](#structured-pages-1) below. A Markdown page, marked with the Markdown sign in the list, opens in the Markdown editor described here.
 
-A **live preview** panel can be toggled to see the rendered page side-by-side with the editor
-(available on screens lg and wider). The preview updates automatically as you type.
+A **live preview** panel, opened and closed with the second button next to the title, shows the rendered page side-by-side with the editor
+(available on screens lg and wider). The preview updates automatically as you type. A click in the preview puts the cursor on the line it shows. *Open page* opens the saved page in a new tab.
 
 ![Edit a Markdown page](web/media/screenshots/reboot-cms-admin-markdown-edit.png)
 
@@ -681,7 +681,7 @@ The menu entry "Data" lists the collections of `site/data/`, one per blueprint, 
 
 ### Structured pages
 
-A right click in the page list offers *New page*, which creates a structured page, and *New Markdown page*. A new folder starts with a structured `index` page. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Add block › Markdown blocks* offers the blocks of Markdown pages as well, they keep a Markdown field instead of fields. *Preview* shows the page with the changes next to the form, before saving, and scrolls to the field being edited. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, *… › History* shows and restores it like for a Markdown page. Values the blueprints do not know stay in the file.
+A right click in the page list offers *New page*, which creates a structured page, and *New Markdown page*. A new folder starts with a structured `index` page. A structured page opens as a form: the title and the description, then a panel per block. A panel folds with a click on its name, *Collapse all* below the form folds all of them, the switch turns the block off and on, the arrows move it, the cross removes it. *Add block* below the panels adds one of the block types with a blueprint. A `list` field adds, moves and removes its items the same way. *Add block › Markdown blocks* offers the blocks of Markdown pages as well, they keep a Markdown field instead of fields. The preview shows the page with the changes next to the form, before saving, and scrolls to the field being edited. A click on a block in the preview scrolls the form to its panel. *Open page* opens the saved page in a new tab. Fields that do not fit their blueprint are marked after saving. Saving keeps the previous version in the history, *… › History* shows and restores it like for a Markdown page. Values the blueprints do not know stay in the file.
 
 ![Add a block](web/media/screenshots/reboot-cms-admin-add-block.png)
 

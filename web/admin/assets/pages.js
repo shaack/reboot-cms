@@ -932,9 +932,35 @@
         var offset = st.lineStarts[Math.min(line, st.lineStarts.length - 1)] || 0;
         editorTextarea.focus();
         editorTextarea.setSelectionRange(offset, offset);
-        var lineHeight = parseFloat(getComputedStyle(editorTextarea).lineHeight) || 20;
-        editorTextarea.scrollTop = Math.max(0, line * lineHeight - editorTextarea.clientHeight / 3);
+        var top = editorOffsetTop(offset);
+        if (top === null) {
+            var lineHeight = parseFloat(getComputedStyle(editorTextarea).lineHeight) || 20;
+            top = line * lineHeight;
+        }
+        editorTextarea.scrollTop = Math.max(0, top - editorTextarea.clientHeight / 3);
         updateEditorStatus();
+    }
+
+    // The distance of a character from the top of the text, wrapped lines included.
+    // The highlight layer of the editor holds the same text in the same box, the
+    // layer moves with the scroll of the textarea, so the distance stays the same.
+    function editorOffsetTop(offset) {
+        var layer = editorTextarea.mdEditor && editorTextarea.mdEditor.highlightLayer;
+        if (!layer) return null;
+        var walker = document.createTreeWalker(layer, NodeFilter.SHOW_TEXT);
+        var rest = offset;
+        var node;
+        while ((node = walker.nextNode())) {
+            if (rest < node.length) {
+                var range = document.createRange();
+                range.setStart(node, rest);
+                range.setEnd(node, rest + 1);
+                var rect = range.getClientRects()[0];
+                return rect ? rect.top - layer.getBoundingClientRect().top : null;
+            }
+            rest -= node.length;
+        }
+        return null;
     }
 
     function showProblems(problems) {
@@ -1157,6 +1183,7 @@
             if (back.contentDocument) {
                 back.contentDocument.documentElement.scrollTop = savedScrollTop;
                 scrollPreviewToCursor(back, false);
+                back.contentDocument.addEventListener('click', showBlockOfPreviewClick);
             }
             // Swap: show back, hide front. Safari sends the scroll wheel to the
             // iframe on top even when it is hidden, so the visible one has to be
@@ -1222,9 +1249,9 @@
         }
     };
 
-    // The preview button sits in the editor toolbar, left of the word wrap
-    // toggle. The editor builds the toolbar in a module script, which runs
-    // before DOMContentLoaded.
+    // The preview button sits next to the title, the lock of the Markdown editor
+    // in its toolbar, left of the word wrap toggle. The editor builds the toolbar
+    // in a module script, which runs before DOMContentLoaded.
     var previewButton = null;
     var protectButton = null;
     // on by default, the lock in the toolbar turns it off for this browser
@@ -1239,14 +1266,10 @@
         previewButton.setAttribute('aria-pressed', previewActive ? 'true' : 'false');
     }
 
-    // Icons: "lock", "lock-fill", "eye" and "eye-fill" from Bootstrap Icons (MIT),
+    // Icons: "lock" and "lock-fill" from Bootstrap Icons (MIT),
     // filled while the toggle is on
     var ICON_LOCK_FILL = '<path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>';
-    var ICON_EYE_FILL = '<path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>'
-        + '<path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>';
     var ICON_LOCK = '<path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2M5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1"/>';
-    var ICON_EYE = '<path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>'
-        + '<path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>';
 
     // a toggle in the editor toolbar, left of the word wrap toggle
     function addToolbarToggle(toolbar, id, title, icon, iconOn, onClick) {
@@ -1269,13 +1292,12 @@
         return button;
     }
 
-    function addPreviewButton() {
-        var structuredButton = document.getElementById('structured-preview-toggle');
-        if (structuredButton) {
-            previewButton = structuredButton;
+    function addToggleButtons() {
+        // the button for the panel on the right, next to the title
+        previewButton = document.getElementById('preview-panel-toggle');
+        if (previewButton) {
             previewButton.addEventListener('click', window.togglePreview);
             syncPreviewButton();
-            return;
         }
         var toolbar = editorTextarea && editorTextarea.parentNode.querySelector('[role="toolbar"]');
         if (!toolbar || !currentPage) return;
@@ -1286,14 +1308,12 @@
             if (editorTextarea.mdEditor) editorTextarea.mdEditor.updateHighlight();
         });
         syncProtectButton();
-        previewButton = addToolbarToggle(toolbar, 'preview-toggle', 'Preview', ICON_EYE, ICON_EYE_FILL, window.togglePreview);
-        syncPreviewButton();
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', addPreviewButton);
+        document.addEventListener('DOMContentLoaded', addToggleButtons);
     } else {
-        addPreviewButton();
+        addToggleButtons();
     }
 
     // Restore preview state on load (only on lg+ screens), on a page with an editor
@@ -1428,7 +1448,7 @@
         return null;
     }
 
-    function outlineInPreview(element) {
+    function outlineBriefly(element) {
         var previous = element.style.outline;
         var previousOffset = element.style.outlineOffset;
         element.style.outline = '2px solid #3d8bfd';
@@ -1444,7 +1464,7 @@
         if (structuredForm) {
             var target = structuredTarget(doc);
             if (!target || !target.element) return null;
-            if (target.exact) outlineInPreview(target.element);
+            if (target.exact) outlineBriefly(target.element);
             return target.element.getBoundingClientRect().top + win.scrollY;
         }
         var markers = previewMarkers(doc);
@@ -1504,6 +1524,67 @@
                 scrollPreviewToCursor(getFrontIframe(), true);
             }
         });
+    }
+
+    // --- A click in the preview shows its block in the editor ---
+    // The markers of the preview, see above, say which block the clicked element
+    // belongs to. In a structured page the form scrolls to the panel of the block
+    // and opens it, in a Markdown page the cursor goes to the clicked line, or else
+    // to the first line of the block.
+
+    // the marker before the element and the one after it, null outside of the blocks
+    function markerAround(markers, element) {
+        for (var i = markers.length - 1; i >= 0; i--) {
+            if (markers[i].node.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING) {
+                var next = markers[i + 1] || null;
+                return markers[i].end ? null : {start: markers[i], next: next};
+            }
+        }
+        return null;
+    }
+
+    // the line of the block that the element shows, found by its text or its image
+    function lineOfElement(element, from, to) {
+        var lines = editorTextarea.value.split('\n');
+        var image = element.tagName === 'IMG' ? element.getAttribute('src') : null;
+        var text = normalizeText(element.textContent);
+        for (var line = from; line < Math.min(to, lines.length); line++) {
+            if (image) {
+                if (lines[line].indexOf('](' + image) !== -1) return line;
+                continue;
+            }
+            var needle = lineNeedle(lines[line]);
+            if (needle.length >= 3 && text.indexOf(needle) !== -1) return line;
+        }
+        return from;
+    }
+
+    function showBlockOfPreviewClick(e) {
+        var doc = e.currentTarget;
+        var element = e.target.nodeType === Node.ELEMENT_NODE ? e.target : e.target.parentNode;
+        if (!element) return;
+        if (structuredForm) {
+            var markers = [];
+            var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_COMMENT);
+            var node;
+            while ((node = walker.nextNode())) {
+                var match = node.nodeValue.match(/^reboot-preview-block:(\d+|end)$/);
+                if (match) markers.push({node: node, end: match[1] === 'end', index: parseInt(match[1], 10)});
+            }
+            var around = markerAround(markers, element);
+            var panel = around && structuredForm.querySelectorAll('.field-blocks > .field-list-items > .field-block')[around.start.index];
+            if (!panel) return;
+            if (panel.classList.contains('is-collapsed')) {
+                panel.querySelector('[data-block-collapse]').click();
+            }
+            panel.scrollIntoView({behavior: 'smooth', block: 'start'});
+            outlineBriefly(panel);
+        } else if (editorTextarea) {
+            var block = markerAround(previewMarkers(doc), element);
+            if (!block) return;
+            var to = block.next ? block.next.line : editorTextarea.value.split('\n').length;
+            jumpToLine(lineOfElement(element, block.start.line, to));
+        }
     }
 
     // on by default, the switch below the preview turns it off for this browser
@@ -1585,24 +1666,30 @@
         var currentShare = function () {
             return shareAt(previewColumn.getBoundingClientRect().left);
         };
-        resizer.addEventListener('pointerdown', function (e) {
-            if (e.button !== 0) return;
-            e.preventDefault();
-            resizer.setPointerCapture(e.pointerId);
-            resizer.classList.add('dragging');
-            document.body.classList.add('preview-resizing');
-        });
-        resizer.addEventListener('pointermove', function (e) {
-            if (resizer.classList.contains('dragging')) setPreviewShare(shareAt(e.clientX), false);
-        });
+        // No pointer capture: with it, the scroll gestures of the trackpad in Safari
+        // did not reach the preview after a drag, until the next click in the page.
+        // While dragging the iframes take no events (.preview-resizing), so the
+        // document gets them all.
+        var onDrag = function (e) {
+            setPreviewShare(shareAt(e.clientX), false);
+        };
         var endDrag = function () {
-            if (!resizer.classList.contains('dragging')) return;
+            document.removeEventListener('pointermove', onDrag);
+            document.removeEventListener('pointerup', endDrag);
+            document.removeEventListener('pointercancel', endDrag);
             resizer.classList.remove('dragging');
             document.body.classList.remove('preview-resizing');
             setPreviewShare(parseFloat(pagesRow.style.getPropertyValue('--preview-share')), true);
         };
-        resizer.addEventListener('pointerup', endDrag);
-        resizer.addEventListener('pointercancel', endDrag);
+        resizer.addEventListener('pointerdown', function (e) {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            resizer.classList.add('dragging');
+            document.body.classList.add('preview-resizing');
+            document.addEventListener('pointermove', onDrag);
+            document.addEventListener('pointerup', endDrag);
+            document.addEventListener('pointercancel', endDrag);
+        });
         resizer.addEventListener('dblclick', function () {
             setPreviewShare(null, true);
         });

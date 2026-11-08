@@ -13,6 +13,7 @@ blocks:
     link-label: All seminars
     link: seminars
   - type: features
+    heading: Features
     items:
       - title: Just files
         text: A page is a readable YAML file, and its path is its URL. Put the site under Git and every change becomes a reviewable diff. Backups are a copy of a folder.
@@ -51,6 +52,7 @@ blocks:
         text: 'With `url: blog` in its blueprint, every entry is a page of its own. The posts of the [blog](blog) work like that.'
       - title: Markdown, if you like
         text: Markdown pages still work and are handy for long texts. The admin converts one into a structured page with a click.
+    inverse: true
   - type: seminar-spotlight
     heading: In focus
     seminar: 2027-01-23-building-blocks
@@ -66,7 +68,6 @@ blocks:
         caption: 'Protected areas: customer logins by password or mail link'
       - image: media/screenshots/reboot-cms-admin-secure-downloads.png
         caption: 'Secure downloads: send a file with a link and a password'
-    inverse: true
   - type: content
     text: |-
       ## Up and running in a minute
@@ -82,4 +83,5 @@ blocks:
       The site is at `http://localhost:21007`, the admin at `http://localhost:21007/admin`. On a server, point the document root at `web/` and open `/admin` to create the first account.
 
       Reboot CMS is open source under the MIT license. Have a look at the [Markdown blocks](blocks), read the [blog](blog) and the [documentation](documentation), or go straight to the [repository on GitHub](https://github.com/shaack/reboot-cms).
+    inverse: true
 author: shaack.com

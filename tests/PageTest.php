@@ -374,6 +374,17 @@ class PageTest
         Assert::equals(["2", "5"], $m[1]);
     }
 
+    public function testPreviewMarksThePanelOfEveryBlockAndTheEnd(): void
+    {
+        $file = $this->tmpDir . "/pages/form.yml";
+        file_put_contents($file, "title: x\n");
+        // the switched off block keeps its number, the panels of the form count it
+        $draft = "title: x\nblocks:\n  - {type: text, markdown: A}\n  - {type: text, markdown: B, disabled: true}\n  - {type: text, markdown: C}\n";
+        $this->page->setPreviewContent($file, $draft);
+        preg_match_all('/<!--reboot-preview-block:(\d+|end)-->/', $this->page->render("/form"), $m);
+        Assert::equals(["0", "2", "end"], $m[1]);
+    }
+
     public function testNoPreviewMarkersOutsideThePreview(): void
     {
         file_put_contents($this->tmpDir . "/pages/plain.md", "<!-- text -->\n\nA");

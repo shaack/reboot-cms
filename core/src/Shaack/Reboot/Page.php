@@ -391,6 +391,10 @@ class Page
             $html .= $block->render($request);
             $names[] = $values["type"];
         }
+        if ($isPreview) {
+            // a click in the preview below the last block belongs to no block
+            $html .= "<!--reboot-preview-block:end-->";
+        }
         Logger::info("Blocks: " . join(", ", $names));
         return $html;
     }

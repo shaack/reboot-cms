@@ -33,6 +33,7 @@ forms.forEach(form => {
     form.clean = () => dirty = false
 
     restoreFolds(form)
+    syncFoldAll(form)
     form.addEventListener("toggle", event => {
         if (event.target.matches("details[data-fold]")) saveFolds(form)
     }, true)
@@ -51,9 +52,18 @@ forms.forEach(form => {
             button.nextElementSibling.hidden = !expanded
             return
         }
+        if (button.matches("[data-fold-all]")) {
+            const blocks = [...topBlocks(form)]
+            const collapse = blocks.some(block => !block.classList.contains("is-collapsed"))
+            blocks.forEach(block => setCollapsed(block, collapse))
+            saveFolds(form)
+            syncFoldAll(form)
+            return
+        }
         if (button.matches("[data-list-add]")) {
             addItem(button.closest("[data-field-list]"), button.dataset.blockType)
             saveFolds(form)
+            syncFoldAll(form)
         } else if (button.matches("[data-item-up], [data-item-down], [data-item-remove]")) {
             const item = button.closest("[data-list-item]")
             if (button.matches("[data-item-up]") && item.previousElementSibling) {
@@ -65,11 +75,12 @@ forms.forEach(form => {
             }
             button.focus()
             saveFolds(form)
+            syncFoldAll(form)
         } else if (button.matches("[data-block-collapse]")) {
             const block = button.closest(".field-block")
-            const collapsed = block.classList.toggle("is-collapsed")
-            button.setAttribute("aria-expanded", collapsed ? "false" : "true")
+            setCollapsed(block, !block.classList.contains("is-collapsed"))
             saveFolds(form)
+            syncFoldAll(form)
             return
         } else if (button.matches("[data-choose-image]")) {
             chooseImage(button.closest(".input-group").querySelector("[data-image-input]"))
@@ -128,6 +139,25 @@ function saveFolds(form) {
     }
 }
 
+function setCollapsed(block, collapsed) {
+    block.classList.toggle("is-collapsed", collapsed)
+    block.querySelector("[data-block-collapse]").setAttribute("aria-expanded", collapsed ? "false" : "true")
+}
+
+// "Collapse all" while a block is open, else "Expand all"
+function syncFoldAll(form) {
+    const button = form.querySelector("[data-fold-all]")
+    if (!button) return
+    const blocks = [...topBlocks(form)]
+    button.disabled = blocks.length === 0
+    const expand = blocks.length > 0 && blocks.every(block => block.classList.contains("is-collapsed"))
+    button.querySelector("span").textContent = expand ? "Expand all" : "Collapse all"
+    const [collapseIcon, expandIcon] = button.querySelectorAll("svg")
+    // an svg has no hidden property, only the attribute
+    collapseIcon.toggleAttribute("hidden", expand)
+    expandIcon.toggleAttribute("hidden", !expand)
+}
+
 function restoreFolds(form) {
     let state = null
     try {
@@ -145,8 +175,7 @@ function restoreFolds(form) {
         const type = block.querySelector(':scope > input[name$="[_type]"]').value
         // a block with errors stays open, so the marked fields are seen
         if (saved && saved[0] === type && saved[1] && !block.classList.contains("has-errors")) {
-            block.classList.add("is-collapsed")
-            block.querySelector("[data-block-collapse]").setAttribute("aria-expanded", "false")
+            setCollapsed(block, true)
         }
     })
 }

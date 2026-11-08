@@ -109,6 +109,10 @@ $titleExtra = '<button type="button" class="btn btn-sm btn-link text-body-second
     . ' id="sidebar-toggle" title="Show or hide the page list" aria-label="Show or hide the page list" aria-controls="pages-sidebar">'
     . AdminHelper::icon('sidebar') . '</button>';
 if ($editPageName) {
+    // opens and closes the preview on the right, the preview needs a wide window
+    $titleExtra .= '<button type="button" class="btn btn-sm btn-link text-body-secondary p-0 d-none d-lg-inline-flex align-self-center"'
+        . ' id="preview-panel-toggle" aria-pressed="false" title="Show or hide the preview" aria-label="Show or hide the preview" aria-controls="preview-column">'
+        . AdminHelper::icon('sidebar-reverse') . '</button>';
     $viewPath = preg_replace('/\/index$/', '/', preg_replace('/\.(md|yml)$/', '', $editPageName));
     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
     $titleExtra .= '<span class="page-location">'
@@ -126,8 +130,8 @@ if ($editPageName) {
         <h6>Pages</h6>
         <ul>
             <li>A page opens as a form: the title, the description and a panel per block, each with the fields of its block type. A right click in the page list creates one with <em>New page</em>.</li>
-            <li>A click on the name of a block folds it, the switch turns it off and on, the arrows move it, the cross removes it. <em>Add block</em> below adds one. A list in a block, like the images of a gallery, adds, moves and removes its items the same way.</li>
-            <li><em>Preview</em> shows the page with the changes next to the form and follows the field you type in. The block types and their fields are made by the developer of the site, a folder in <code>site/blocks/</code> with a template and a YAML file of its fields.</li>
+            <li>A click on the name of a block folds it, <em>Collapse all</em> below the form folds all of them, <em>Expand all</em> opens them again. The switch turns a block off and on, the arrows move it, the cross removes it. <em>Add block</em> below adds one. A list in a block, like the images of a gallery, adds, moves and removes its items the same way.</li>
+            <li>The <em>preview</em> shows the page with the changes next to the form and follows the field you type in. A click on a block in the preview scrolls the form to its panel. <em>Open page</em> opens the saved page in a new tab. The block types and their fields are made by the developer of the site, a folder in <code>site/blocks/</code> with a template and a YAML file of its fields.</li>
             <li><em>Add block › Markdown blocks</em> offers the blocks of Markdown pages as well. They keep their Markdown in one field.</li>
         </ul>
         <h6>Markdown pages</h6>
@@ -149,10 +153,10 @@ description: Shown by search engines
         <h6>Saving and history</h6>
         <ul>
             <li>Save with the button or <kbd>⌘ S</kbd> / <kbd>Ctrl S</kbd>. A yellow dot next to the page name and on <em>Save</em> shows that there is something to save. Leaving the page with unsaved changes asks first.</li>
-            <li>The eye in the editor toolbar opens the <em>preview</em>. It shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column. Drag the bar between editor and preview to change their widths, a double click resets them.</li>
+            <li>The second button next to the title opens and closes the <em>preview</em> on the right. It shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column. Drag the bar between editor and preview to change their widths, a double click resets them. A click in the preview puts the cursor on the line it shows. <em>Open page</em> opens the saved page in a new tab.</li>
             <li>Every save keeps the previous version. <em>… › History</em> shows the last ' . (int)$historyMaxVersions . ' versions and restores one; the current text is kept as a version too. This works the same for pages with forms and for Markdown pages.</li>
             <li>A right click in the page list, on a touch screen touch and hold, opens a menu. On a page it creates a new page or folder next to it, renames, moves or deletes the page. On a folder it does the same inside the folder, an empty folder can be deleted. On the free space below it creates pages and folders at the top level. A new folder starts with an empty <code>index</code> page, marked with a house. <em>…</em> below the editor has the same actions for the open page. From 30 pages on a field above the list finds a page by its name.</li>
-            <li>The button next to the title hides the page list, so editor and preview get the whole width. The address next to the file name opens the page in a new tab.</li>
+            <li>The first button next to the title hides the page list, so editor and preview get the whole width. The address next to the file name opens the page in a new tab.</li>
         </ul>
     ', $titleExtra) ?>
     <div class="row gx-2" id="pages-row">
@@ -238,6 +242,7 @@ description: Shown by search engines
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <textarea name="edited" class="form-control cm-md-editor markdown editor-font"><?= htmlspecialchars(file_get_contents($fullPath)) ?></textarea>
                     <button type="button" class="btn btn-sm btn-primary px-3" onclick="savePageAsync()" id="save-button">Save<span class="unsaved-dot d-none" aria-hidden="true"></span></button>
+                    <a class="btn btn-sm btn-outline-secondary ms-2" href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" title="Open the saved page in a new tab"><?= AdminHelper::icon("external", "me-1") ?>Open page</a>
                     <?php /* <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleStructuredEditor()" id="structured-toggle">Structured</button> */ ?>
                     <?php $currentBaseName = basename($editPageName, '.md'); ?>
                     <div class="dropdown d-inline-block ms-2">

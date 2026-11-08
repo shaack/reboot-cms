@@ -73,10 +73,11 @@ textarea.cm-md-editor {
     }
 }
 
-#sidebar-toggle {
+// brighter while their panel is closed
+#sidebar-toggle, #preview-panel-toggle {
     font-size: 1.1rem;
     line-height: 1;
-    &:hover, &[aria-expanded="false"] {
+    &:hover, &[aria-expanded="false"], &[aria-pressed="false"] {
         color: var(--bs-body-color) !important;
     }
 }
@@ -296,13 +297,6 @@ textarea.cm-md-editor {
     }
     &[aria-pressed="true"] .icon-on {
         display: block;
-    }
-}
-
-// the preview needs a wide window
-@media (max-width: 991.98px) {
-    #preview-toggle {
-        display: none;
     }
 }
 
@@ -1027,11 +1021,6 @@ textarea.yaml-editor-input {
     padding: 12px 0;
     background-color: var(--bs-tertiary-bg);
     z-index: 2;
-}
-
-#structured-preview-toggle[aria-pressed="true"] {
-    background-color: var(--bs-secondary-bg);
-    color: var(--bs-emphasis-color);
 }
 
 // The fields of a structured page above its blocks, folded away

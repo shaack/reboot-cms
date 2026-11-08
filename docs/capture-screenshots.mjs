@@ -110,7 +110,7 @@ async function main() {
 
     console.log('Structured page with preview');
     await open(`${ADMIN}/pages?page=/index.yml`, 1000);
-    await previewOn('#structured-preview-toggle');
+    await previewOn('#preview-panel-toggle');
     await shot('reboot-cms-admin-page-edit.png');
 
     console.log('Add block menu');
@@ -121,7 +121,7 @@ async function main() {
 
     console.log('Markdown page with preview');
     await open(`${ADMIN}/pages?page=/blocks.md`, 1000);
-    await previewOn('#preview-toggle');
+    await previewOn('#preview-panel-toggle');
     await shot('reboot-cms-admin-markdown-edit.png');
 
     console.log('Insert block menu');

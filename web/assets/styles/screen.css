@@ -142,9 +142,10 @@ a:hover {
     color: #000;
 }
 
-/* Code */
+/* Code, a block of code is black on light surfaces as well */
 pre {
     background: #000;
+    color: #f2f2f2;
     border: 1px solid var(--line);
     border-radius: 0;
     padding: 1.25rem;

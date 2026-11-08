@@ -58,11 +58,11 @@ textarea.cm-md-editor {
   margin-left: 0;
 }
 
-#sidebar-toggle {
+#sidebar-toggle, #preview-panel-toggle {
   font-size: 1.1rem;
   line-height: 1;
 }
-#sidebar-toggle:hover, #sidebar-toggle[aria-expanded=false] {
+#sidebar-toggle:hover, #sidebar-toggle[aria-expanded=false], #sidebar-toggle[aria-pressed=false], #preview-panel-toggle:hover, #preview-panel-toggle[aria-expanded=false], #preview-panel-toggle[aria-pressed=false] {
   color: var(--bs-body-color) !important;
 }
 
@@ -254,11 +254,6 @@ textarea.cm-md-editor {
   display: block;
 }
 
-@media (max-width: 991.98px) {
-  #preview-toggle {
-    display: none;
-  }
-}
 @media (min-width: 768px) {
   #pages-row.sidebar-collapsed #pages-sidebar {
     display: none;
@@ -898,11 +893,6 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   padding: 12px 0;
   background-color: var(--bs-tertiary-bg);
   z-index: 2;
-}
-
-#structured-preview-toggle[aria-pressed=true] {
-  background-color: var(--bs-secondary-bg);
-  color: var(--bs-emphasis-color);
 }
 
 .page-settings {
