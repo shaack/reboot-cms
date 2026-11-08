@@ -395,11 +395,33 @@ export class MdEditor {
             const props = ['font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing',
                 'tab-size', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left']
             props.forEach(p => this.highlightLayer.style[p.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = cs.getPropertyValue(p))
-            this.highlightLayer.style.boxSizing = 'border-box'
-            // Use clientWidth to match the textarea's content area (excludes scrollbar)
-            this.highlightLayer.style.width = this.element.clientWidth + 'px'
-            const borderTop = parseInt(cs.getPropertyValue('border-top-width')) || 0
-            const borderLeft = parseInt(cs.getPropertyValue('border-left-width')) || 0
+            const borderBox = cs.getPropertyValue('box-sizing') === 'border-box'
+            this.highlightLayer.style.boxSizing = borderBox ? 'border-box' : 'content-box'
+            const borderTop = parseFloat(cs.getPropertyValue('border-top-width')) || 0
+            const borderLeft = parseFloat(cs.getPropertyValue('border-left-width')) || 0
+            const borderRight = parseFloat(cs.getPropertyValue('border-right-width')) || 0
+            // The layer gets the width, the side borders (invisible) and the padding of the textarea,
+            // so the browser computes the width of its text exactly like the one of the textarea.
+            // A width computed here, from clientWidth (whole pixels) or from fractions, can differ by
+            // a fraction of a pixel, then a line that just fits wraps in one of the two only and
+            // every line below is off by one.
+            // offsetWidth and clientWidth are rounded each on its own, so their difference is a pixel
+            // off at times. A real scrollbar is several pixels wide, less is rounding.
+            const scrollbarRaw = this.element.offsetWidth - this.element.clientWidth - borderLeft - borderRight
+            const scrollbar = scrollbarRaw >= 2 ? Math.round(scrollbarRaw) : 0
+            this.highlightLayer.style.borderStyle = 'solid'
+            this.highlightLayer.style.borderColor = 'transparent'
+            this.highlightLayer.style.borderWidth = '0 ' + cs.getPropertyValue('border-right-width') + ' 0 ' + cs.getPropertyValue('border-left-width')
+            // The scrollbar of the textarea takes its room from the content, the layer has none
+            // and gives that room to the padding (border-box) or to the width (content-box)
+            if (borderBox) {
+                this.highlightLayer.style.width = cs.getPropertyValue('width')
+                this.highlightLayer.style.paddingRight = 'calc(' + cs.getPropertyValue('padding-right') + ' + ' + scrollbar + 'px)'
+            } else {
+                this.highlightLayer.style.width = 'calc(' + cs.getPropertyValue('width') + ' - ' + scrollbar + 'px)'
+            }
+            // the backdrop sits inside the borders, the layer is moved back by the left border
+            this.highlightLayer.style.marginLeft = -borderLeft + 'px'
             this.backdrop.style.top = (this.element.offsetTop + borderTop) + 'px'
             this.backdrop.style.left = (this.element.offsetLeft + borderLeft) + 'px'
             this.backdrop.style.width = this.element.clientWidth + 'px'
@@ -409,7 +431,6 @@ export class MdEditor {
 
         // Move textarea bg to backdrop, make textarea transparent so backdrop shows through
         this.backdrop.style.background = cs.getPropertyValue('background-color')
-        this.element.style.overscrollBehavior = 'none'
         this.element.style.background = 'transparent'
         this.element.style.position = 'relative'
         this.element.style.zIndex = '2'
@@ -418,11 +439,10 @@ export class MdEditor {
         this.element.style.color = 'transparent'
         this.highlightLayer.style.color = originalColor
 
-        // Sync scroll via transform — no visible jitter since all text is in the highlight layer
-        const syncScroll = () => {
-            this.highlightLayer.style.transform = `translate(${-this.element.scrollLeft}px, ${-this.element.scrollTop}px)`
-        }
-        this.element.addEventListener('scroll', syncScroll)
+        // Sync scroll via transform — no visible jitter since all text is in the highlight layer.
+        // Also after every highlight pass and resize (see syncScroll), the textarea can scroll
+        // without the layer following, for example when its value or size changes.
+        this.element.addEventListener('scroll', () => this.syncScroll())
 
         // Update on input
         this.element.addEventListener('input', () => {
@@ -431,6 +451,17 @@ export class MdEditor {
         })
         new ResizeObserver(() => { syncStyles(); this.updateHighlight() }).observe(this.element)
         this.updateHighlight()
+    }
+
+    /**
+     * Moves the highlight layer to the scroll position of the textarea. Runs on scroll and
+     * after every highlight pass, so a scroll that fires no scroll event, or whose event
+     * comes after the new text is rendered, cannot leave the layer a line off.
+     */
+    syncScroll() {
+        if (this.highlightLayer) {
+            this.highlightLayer.style.transform = `translate(${-this.element.scrollLeft}px, ${-this.element.scrollTop}px)`
+        }
     }
 
     colorSpan(colorProp, content) {
@@ -572,6 +603,20 @@ export class MdEditor {
             const ranges = this.props.rangeClass(text) || []
             ranges.forEach(range => this.markRange(range.start, range.end, range.className))
         }
+        this.syncScroll()
+        this.syncOverscroll()
+    }
+
+    /**
+     * Stops the bounce at the ends of the textarea, which would move the text against the
+     * highlight layer, but only while the textarea has something to scroll. A textarea is a
+     * scroll container also when its text fits, and `overscroll-behavior: none` would then keep
+     * the page from scrolling under the mouse or the fingers.
+     */
+    syncOverscroll() {
+        const scrolls = this.element.scrollHeight > this.element.clientHeight
+            || this.element.scrollWidth > this.element.clientWidth
+        this.element.style.overscrollBehavior = scrolls ? 'none' : ''
     }
 
     /**
