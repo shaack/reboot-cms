@@ -10,9 +10,9 @@ fields:
       image:   {type: image, required: true}
       caption: {type: text}
   inverse: {type: boolean, help: "A white band over the full width"}
-# Converting a Markdown page turns its `cards` blocks into this block
+# Converting a Markdown page turns its `gallery` blocks into this block
 convert:
-  from: cards
+  from: gallery
   fields:
     heading: "//h2"
     images:

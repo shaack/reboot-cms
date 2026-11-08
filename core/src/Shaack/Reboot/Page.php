@@ -191,8 +191,8 @@ class Page
 
     /**
      * Find the blocks of a page. A block starts with an HTML comment that holds
-     * its name, optionally with a config mapping (`<!-- hero -->`,
-     * `<!-- hero: {dark: true} -->`), and runs up to the next comment. Any other
+     * its name, optionally with a config mapping (`<!-- intro -->`,
+     * `<!-- intro: {dark: true} -->`), and runs up to the next comment. Any other
      * comment, like `<!-- TODO: check -->`, is no block and stays part of the
      * content of the block before it. Comments in fenced code are ignored.
      * @return array of [string $name, array $config, string $content, int $offset],
@@ -230,7 +230,7 @@ class Page
     }
 
     /**
-     * True if the config of a block switches it off, `<!-- hero: {disabled: true} -->`.
+     * True if the config of a block switches it off, `<!-- intro: {disabled: true} -->`.
      */
     public static function isDisabled(array $blockConfig): bool
     {
@@ -336,7 +336,7 @@ class Page
      *
      * The values next to the blocks are the config of the page, like the frontmatter
      * of a Markdown page. A block with `markdown` instead of fields renders with the
-     * Markdown template of its type, `{type: hero, markdown: "# Welcome"}`. Each block renders with its template from `site/blocks/`,
+     * Markdown template of its type, `{type: intro, markdown: "# Welcome"}`. Each block renders with its template from `site/blocks/`,
      * which reads the fields with `$block->get()`, its blueprint is `site/blocks/<type>.yml`.
      */
     private function renderStructured(string $pagePath, ?Request $request): string

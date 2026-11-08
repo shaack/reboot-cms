@@ -167,8 +167,7 @@ class FieldForm
         // the blocks of Markdown pages are offered as well, they hold Markdown instead of fields
         $markdownTypes = [];
         foreach ($site ? Block::names($site) : [] as $type) {
-            $typeBlueprint = Blueprint::forBlock($site, $type);
-            if ((!$typeBlueprint || $typeBlueprint->isForMarkdown()) && (!isset($props["allow"]) || in_array($type, (array)$props["allow"], true))) {
+            if (Block::isForMarkdown($site, $type) && (!isset($props["allow"]) || in_array($type, (array)$props["allow"], true))) {
                 $markdownTypes[] = $type;
             }
         }

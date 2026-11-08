@@ -40,7 +40,7 @@ BASE=http://localhost:21007 ADMIN_USER=admin ADMIN_PASSWORD=... \
 | Screenshot | Page |
 |---|---|
 | `reboot-cms-index.png` | Front page of the demo |
-| `reboot-cms-markdown-blocks.png` | The Markdown page `blocks`, the Markdown of the hero block and the block it renders to |
+| `reboot-cms-markdown-blocks.png` | The Markdown page `blocks`, the Markdown of the intro block and the block it renders to |
 | `reboot-cms-blog-article.png` | A blog article with its box of links |
 | `reboot-cms-lightbox.png` | The gallery with an enlarged image |
 | `reboot-cms-admin-login.png` | Admin login |

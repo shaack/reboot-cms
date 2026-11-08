@@ -7,14 +7,14 @@ description: The Markdown blocks that ship with Reboot CMS, each with the Markdo
 
 # Markdown blocks
 
-Most pages of this demo are structured pages, edited as forms. This page is a Markdown page, written as text. An HTML comment with the name of a block type, like the first line of the examples below, starts a block, and the type decides how the Markdown below it is rendered. A line with `---` separates the parts of a block, for example the text and the image of a "text-image" block.
+Most pages of this demo are structured pages, edited as forms. This page is a Markdown page, written as text. An HTML comment with the name of a block type, like the first line of the examples below, starts a block, and the type decides how the Markdown below it is rendered. A line with `---` separates the parts of a block, for example the text and the image of an "image-text" block.
 
 Every block type is a PHP template in `site/blocks/`. Each section below shows the Markdown first and the rendered block right after it. A structured page can hold these blocks as well, under *Add block › Markdown blocks*.
 
-## Hero
+## Intro
 
 ```markdown
-<!-- hero -->
+<!-- intro -->
 
 # Headline
 
@@ -29,7 +29,7 @@ A paragraph with **Markdown** for the details.
 [Call to action](blocks)
 ```
 
-<!-- hero -->
+<!-- intro -->
 
 # Headline
 
@@ -51,7 +51,7 @@ The image sits on the right by default. A configuration in the block comment mov
 
 ```markdown
 <!--
-text-image:
+image-text:
     image-position: left
 -->
 
@@ -65,7 +65,7 @@ Some text with a [link](documentation).
 ```
 
 <!--
-text-image:
+image-text:
     image-position: left
 -->
 
@@ -79,10 +79,10 @@ Some text with a [link](documentation). The block takes the text from the first 
 
 <!-- text -->
 
-## Three columns
+## Features
 
 ```markdown
-<!-- three-columns -->
+<!-- features -->
 
 ### First
 
@@ -101,7 +101,7 @@ Text of the second column.
 Text of the third column.
 ```
 
-<!-- three-columns -->
+<!-- features -->
 
 ### First
 
@@ -121,12 +121,12 @@ Three parts make three columns. The template could as well count the parts and s
 
 <!-- text -->
 
-## Cards
+## Gallery
 
-A list of images becomes a row of cards. The alt text of each image is the caption.
+A list of images becomes a gallery, a click opens an image enlarged. The alt text of each image is the caption.
 
 ```markdown
-<!-- cards -->
+<!-- gallery -->
 
 ## Heading
 
@@ -135,7 +135,7 @@ A list of images becomes a row of cards. The alt text of each image is the capti
 - ![Third card](media/dummy.svg)
 ```
 
-<!-- cards -->
+<!-- gallery -->
 
 ## Heading
 
@@ -159,13 +159,13 @@ A paragraph, a list, a table, a code block, everything Markdown offers.
 
 ## Inverse
 
-Every block of this demo can be set inverse with a configuration in its comment. It then stands as a white band over the whole width, and the hero, which is white already, turns dark. The cards below are the same as above, set inverse.
+Every block of this demo can be set inverse with a configuration in its comment. It then stands as a white band over the whole width, and the intro, which is white already, turns dark. The gallery below is the same as above, set inverse.
 
 ```markdown
-<!-- cards: {inverse: true} -->
+<!-- gallery: {inverse: true} -->
 ```
 
-<!-- cards: {inverse: true} -->
+<!-- gallery: {inverse: true} -->
 
 ## Heading
 
@@ -177,6 +177,6 @@ Every block of this demo can be set inverse with a configuration in its comment.
 
 ## Your own blocks
 
-A new block type is a new PHP file in `site/blocks/`. As a folder with the template and a blueprint, a YAML file of its fields, it becomes a block of [structured pages](structured), which editors fill in as a form. The template receives the parts of the block and picks what it needs, the heading, the image, the list, with a short query. The [documentation](documentation#block) shows how the blocks above are built.
+A new block type is a new PHP file in `site/blocks/`. As a folder with the template and a blueprint, a YAML file of its fields, it becomes a block of [structured pages](documentation#structured-pages), which editors fill in as a form. File and folder may share a name: the form blocks of this demo are called `intro`, `text`, `image-text`, `gallery` and `features` as well, Markdown pages use the file, structured pages the folder. The template receives the parts of the block and picks what it needs, the heading, the image, the list, with a short query. The [documentation](documentation#block) shows how the blocks above are built.
 
 The [test pages](testpages) hold a few edge cases used during development, an empty page, an unknown block and a code block with HTML inside.

@@ -1,6 +1,6 @@
 title: Page not found
 blocks:
-  - type: content
+  - type: text
     text: |-
       # 404
 

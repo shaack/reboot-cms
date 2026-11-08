@@ -11,15 +11,15 @@
 
 /** @var \Shaack\Reboot\Block $block */
 require_once __DIR__ . "/_helpers.php";
-$group = 'cards-' . substr(md5($block->content()), 0, 8);
+$group = 'gallery-' . substr(md5($block->content()), 0, 8);
 ?>
 
 <section class="<?= blockClasses($block) ?>">
     <div class="container-fluid">
-        <h2><?= $block->nodeHtml($block->field("//h2", "Card group heading", true)) ?></h2>
+        <h2><?= $block->nodeHtml($block->field("//h2", "Gallery heading", true)) ?></h2>
         <div class="card-group">
         <?php
-        $images = $block->field("//li/img", "Card images", true, "media-list", ["min" => 1]);
+        $images = $block->field("//li/img", "Gallery images", true, "media-list", ["min" => 1]);
         if ($images instanceof \DOMElement) {
             $images = [$images];
         }

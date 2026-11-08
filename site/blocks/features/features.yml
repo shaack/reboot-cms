@@ -10,10 +10,10 @@ fields:
     fields:
       title: {type: text, required: true}
       text:  {type: markdown}
-# Converting a Markdown page turns its `three-columns` blocks into this block,
+# Converting a Markdown page turns its `features` blocks into this block,
 # each column one feature
 convert:
-  from: three-columns
+  from: features
   fields:
     items:
       each: part

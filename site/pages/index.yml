@@ -75,7 +75,7 @@ blocks:
         caption: 'Protected areas: logins by password or mail link'
       - image: media/screenshots/reboot-cms-admin-secure-downloads.png
         caption: 'Secure downloads: a file with a link and a password'
-  - type: content
+  - type: text
     text: |-
       ## Up and running in a minute
 

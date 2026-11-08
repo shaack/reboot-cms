@@ -3,7 +3,7 @@
 /* Black and white, straight edges, surfaces and lines, one signal color for
    what can be done: links and buttons. Every line is 1px in the color --line,
    a mark in the signal color is 2px.
-   The colors below are for the dark page. A light surface, the hero or a block
+   The colors below are for the dark page. A light surface, the intro or a block
    with `inverse: true`, sets the light ones, see "Light surfaces". */
 :root {
     --signal: #d4ff3a;
@@ -270,10 +270,9 @@ nav.navbar {
     color: var(--button-hover-ink);
 }
 
-/* Light surfaces: a white band over the full width of the window, the hero
-   and the intro always, any other block with `<!-- name: {inverse: true} -->`.
-   On the hero and the intro, `inverse: true` turns it dark. */
-.block-hero,
+/* Light surfaces: a white band over the full width of the window, the intro
+   always, any other block with `<!-- name: {inverse: true} -->`.
+   On the intro, `inverse: true` turns it dark. */
 .block-intro,
 .block-inverse {
     --text: #111;
@@ -304,8 +303,7 @@ nav.navbar {
     border-image: conic-gradient(var(--paper) 0 0) fill 0 // 0 100vw;
 }
 
-/* the hero set to inverse is dark again, framed by a hairline */
-.block-hero.block-inverse,
+/* the intro set to inverse is dark again, framed by a hairline */
 .block-intro.block-inverse {
     --text: #f2f2f2;
     --strong: #fff;
@@ -322,42 +320,41 @@ nav.navbar {
     padding: 0;
 }
 
-.block-hero.block-inverse .card {
+.block-intro.block-inverse .card {
     border: 1px solid var(--line) !important;
 }
 
 /* a light surface as the first block starts right below the navigation */
-main > .block-hero:not(.block-inverse):first-child,
 main > .block-intro:not(.block-inverse):first-child,
-main > .block-inverse:not(.block-hero):not(.block-intro):first-child {
+main > .block-inverse:not(.block-intro):first-child {
     /* body keeps 5rem free for the fixed navigation, which is 63px high and opaque */
     margin-top: -5rem;
     padding-top: calc(63px + var(--band-padding));
 }
 
 /* two light surfaces in a row are one band, without a dark gap between them */
-:is(.block-hero, .block-intro, .block-inverse):not(:is(.block-hero, .block-intro).block-inverse):has(+ :is(.block-hero, .block-intro, .block-inverse):not(:is(.block-hero, .block-intro).block-inverse)) {
+:is(.block-intro, .block-inverse):not(.block-intro.block-inverse):has(+ :is(.block-intro, .block-inverse):not(.block-intro.block-inverse)) {
     margin-bottom: 0;
 }
 
-:is(.block-hero, .block-intro, .block-inverse):not(:is(.block-hero, .block-intro).block-inverse) + :is(.block-hero, .block-intro, .block-inverse):not(:is(.block-hero, .block-intro).block-inverse) {
+:is(.block-intro, .block-inverse):not(.block-intro.block-inverse) + :is(.block-intro, .block-inverse):not(.block-intro.block-inverse) {
     padding-top: 0;
 }
 
-.block-hero .card {
+.block-intro .card {
     background: transparent !important;
     color: inherit;
     border: 0 !important;
     border-radius: 0;
 }
 
-.block-hero:not(.block-inverse) .card-body,
-.block-hero:not(.block-inverse) .card-body > div {
+.block-intro:not(.block-inverse) .card-body,
+.block-intro:not(.block-inverse) .card-body > div {
     padding-left: 0 !important;
     padding-right: 0 !important;
 }
 
-.block-hero:not(.block-inverse) .card-body {
+.block-intro:not(.block-inverse) .card-body {
     padding-top: 0;
     padding-bottom: 0;
 }
@@ -371,7 +368,7 @@ main > .block-inverse:not(.block-hero):not(.block-intro):first-child {
     padding: clamp(1.5rem, 4vw, 3rem);
 }
 
-.block-hero .display-4,
+.block-intro .display-4,
 .block-intro h1 {
     font-size: clamp(3rem, 2rem + 4vw, 5rem);
     font-weight: 700;
@@ -379,93 +376,83 @@ main > .block-inverse:not(.block-hero):not(.block-intro):first-child {
     line-height: 0.95;
 }
 
-.block-hero .lead {
+.block-intro .lead {
     font-weight: 400;
     font-size: 1.3rem;
     color: var(--muted);
 }
 
-.block-hero hr,
 .block-intro hr {
     border-top: 1px solid var(--line);
     opacity: 1;
 }
 
 /* Text, the Markdown block and the form block */
-.block-text,
-.block-content {
+.block-text {
     padding: 2rem 0;
 }
 
-.block-text ul,
-.block-content ul {
+.block-text ul {
     padding-left: 1.25rem;
 }
 
-.block-text li,
-.block-content li {
+.block-text li {
     margin-bottom: 0.4rem;
 }
 
-.block-text li::marker,
-.block-content li::marker {
+.block-text li::marker {
     color: var(--signal);
 }
 
 /* Text with image, the Markdown block and the form block */
-.block-text-image,
 .block-image-text {
     padding: 2rem 0;
 }
 
-.block-text-image .row,
 .block-image-text .row {
     align-items: center;
 }
 
-.block-text-image .img-fluid,
 .block-image-text .img-fluid {
     border: 1px solid var(--line);
     border-radius: 0;
 }
 
-/* Three Columns, separated by lines */
-.block-three-columns .row {
+/* Features of Markdown pages, columns separated by lines */
+.block-features .row {
     --bs-gutter-x: 0;
     border-top: 1px solid var(--line);
 }
 
-.block-three-columns .row > div {
+.block-features .row > div {
     padding: 1.75rem 1.75rem 1.75rem 0;
     border-bottom: 1px solid var(--line);
 }
 
 @media (min-width: 768px) {
-    .block-three-columns .row > div {
+    .block-features .row > div {
         padding: 2rem 2rem 2rem 1.75rem;
         border-bottom: 0;
     }
 
-    .block-three-columns .row > div + div {
+    .block-features .row > div + div {
         border-left: 1px solid var(--line);
     }
 
-    .block-three-columns .row > div:first-child {
+    .block-features .row > div:first-child {
         padding-left: 0;
     }
 }
 
-.block-three-columns p {
+.block-features p {
     color: var(--soft);
 }
 
-/* Cards, and the gallery of structured pages */
-.block-cards .card-group,
+/* Gallery, of Markdown pages and of structured pages */
 .block-gallery .card-group {
     border-top: 1px solid var(--line);
 }
 
-.block-cards .card,
 .block-gallery .card {
     background: transparent !important;
     border: 0 !important;
@@ -479,7 +466,6 @@ main > .block-inverse:not(.block-hero):not(.block-intro):first-child {
 }
 
 @media (min-width: 576px) {
-    .block-cards .card + .card,
     .block-gallery .card + .card {
         border-left: 1px solid var(--line) !important;
     }
@@ -511,21 +497,17 @@ main > .block-inverse:not(.block-hero):not(.block-intro):first-child {
     }
 }
 
-.block-cards .card:hover,
 .block-gallery .card:hover,
-.block-cards .card:focus-visible,
 .block-gallery .card:focus-visible {
     background: var(--surface-hover) !important;
     color: inherit;
 }
 
-.block-cards .card-img-top,
 .block-gallery .card-img-top {
     padding: 1.25rem 1.25rem 0;
     border-radius: 0;
 }
 
-.block-cards .card-body,
 .block-gallery .card-body {
     display: block;
     font-size: 0.9rem;

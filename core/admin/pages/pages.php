@@ -11,7 +11,6 @@ use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 use Shaack\Reboot\Page;
 use Shaack\Reboot\Block;
-use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\AddOns\Admin\PageActionHandler;
 use Shaack\Reboot\AddOns\Admin\PageHistoryHelper;
 use Shaack\Reboot\AddOns\Admin\PageTreeHelper;
@@ -144,7 +143,7 @@ if ($editPageName) {
 title: About us
 description: Shown by search engines
 ---</pre></li>
-            <li>A comment like <code>&lt;!-- hero --&gt;</code> starts a block, a section with its own layout from <code>site/blocks/</code>. It runs up to the next block. A line with <code>---</code> separates the parts of a block, for example heading and text.</li>
+            <li>A comment like <code>&lt;!-- intro --&gt;</code> starts a block, a section with its own layout from <code>site/blocks/</code>. It runs up to the next block. A line with <code>---</code> separates the parts of a block, for example heading and text.</li>
             <li>The toolbar button <em>Insert block</em> inserts a block with example content. The line below the editor shows in which block and part the cursor is and what belongs there. While you type, the page is checked: a button below the editor lists what does not fit, for example a missing heading or a misspelled block name, jumps to the block and shows the expected Markdown.</li>
             <li>The lines with a block comment and the <code>---</code> between the parts of a block are protected against typing by mistake. To delete or replace one, select the whole line, or everything. In the frontmatter only the values can be changed, not the names before the colon, and no line can be added or removed. To change or delete these lines, switch the protection off with the lock in the editor toolbar, for this browser.</li>
             <li>With the cursor in a block, the arrows below the editor move the block up or down, and the switch turns it off and on. A block that is off stays in the page but is not shown, its comment then reads <code>&lt;!-- hero: {disabled: true} --&gt;</code>.</li>
@@ -220,9 +219,8 @@ description: Shown by search engines
                         // Block::names() leaves out the helpers with an underscore, like _helpers.php,
                         // rendering them here would declare their functions a second time
                         foreach (Block::names($defaultSite) as $blockName) {
-                            // a block type with a blueprint is for structured pages, unless it says otherwise
-                            $blockBlueprint = Blueprint::forBlock($defaultSite, $blockName);
-                            if ($blockBlueprint && !$blockBlueprint->isForMarkdown()) {
+                            // a block type with only a blueprint is for structured pages, unless it says otherwise
+                            if (!Block::isForMarkdown($defaultSite, $blockName)) {
                                 continue;
                             }
                             $block = new Block($defaultSite, $blockName, '');

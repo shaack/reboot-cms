@@ -190,7 +190,7 @@ description: Reboot CMS is a flat file CMS, with the support of blocks.
 author: shaack.com
 ---
 
-<!-- hero -->
+<!-- intro -->
 
 # Reboot CMS
 
@@ -204,11 +204,11 @@ The main idea is to have a **minimal CMS** without needing a database, but with 
 
 [Learn more](documentation)
 
-<!-- text-image -->
+<!-- image-text -->
 
-## The "text-image" block
+## The "image-text" block
 
-The block above is a "hero" block. This one is a "text-image" block. You can define multiple blocks as you need.
+The block above is an "intro" block. This one is an "image-text" block. You can define multiple blocks as you need.
 [Reboot CMS documentation](documentation)
 
 Shipped with this CMS are some default block types, but it is easy to create your own, if you know some PHP.
@@ -217,29 +217,28 @@ Shipped with this CMS are some default block types, but it is easy to create you
 
 ![alt text](media/dummy.svg "Title Text")
 
-<!-- three-columns -->
+<!-- features -->
 
-### the
+### Just files
 
-Duis aute **irure** dolor in *reprehenderit* in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est.
-
----
-
-### "three-colums" Block
-
-Ut enim ad minim [veniam](/), quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+A page is a text file, and its path is its URL.
 
 ---
 
-### block
+### Blocks
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Every part of the block is one column.
+
+---
+
+### Fast
+
+No database, no framework, no queries.
 ```
 
-This `Page` contains 3 `Block` types, "hero", "text-image" and "three-columns". The page [`site/pages/blocks.md`](site/pages/blocks.md) of the demo shows each of them with the Markdown that produces it.
+This `Page` contains 3 `Block` types, "intro", "image-text" and "features". The page [`site/pages/blocks.md`](site/pages/blocks.md) of the demo shows each of them with the Markdown that produces it.
 
-Blocks can be configured in the block comment. With this configuration, the `text-image`
-block allows to display the image to the left side in desktop view.
+Blocks can be configured in the block comment. With `<!-- image-text: {image-position: left} -->` the `image-text` block shows the image on the left side in desktop view.
 
 Markdown files without blocks will render to a flat Markdown page like in every other flat file CMS.
 
@@ -360,14 +359,14 @@ A block template is also rendered once with empty content when the admin collect
 
 A `Block` describes how a block is rendered. Blocks are written in PHP.
 
-The code for the "text-image" `Block` which was used in the page above, looks like this:
+The code for the "image-text" `Block` which was used in the page above, looks like this:
 
 ```php
 <?php
 // read the configuration
 $imagePosition = @$block->getConfig()["image-position"];
 ?>
-<section class="block block-text-image">
+<section class="block block-image-text">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-6 <?= $imagePosition === "left" ? "order-md-1" : "" ?>">
@@ -390,7 +389,7 @@ is [Xpath](https://devhints.io/xpath) with the addition of the `part(n)` functio
 
 A query returns a single node when it matches exactly one element, and a list otherwise. A query on any element, like `/*[part(2)]`, always returns a list, because it asks for a section of the content. `$block->nodeHtml()` renders a list with all its tags, so a section keeps its paragraphs, lists and links. A single element renders with what is inside it, tags included, which suits a template like `<h2><?= $block->nodeHtml($heading) ?></h2>`. A text node or an attribute gives its text, escaped for HTML, so it can go between tags and into an attribute value.
 
-The blocks of the demo share the helper `site/blocks/_helpers.php`. Its `blockClasses($block)` writes the classes of the section, `block block-<name>`, and adds `block-inverse` for a block written as `<!-- cards: {inverse: true} -->`. The stylesheet turns such a block into a white band over the full width, the hero, which is white already, into a dark one.
+The blocks of the demo share the helper `site/blocks/_helpers.php`. Its `blockClasses($block)` writes the classes of the section, `block block-<name>`, and adds `block-inverse` for a block written as `<!-- gallery: {inverse: true} -->`. The stylesheet turns such a block into a white band over the full width, the intro, which is white already, into a dark one.
 
 Use `$block->content()` to get the full block content as rendered HTML (without XPath querying).
 This is useful for simple blocks like "text":
@@ -418,16 +417,16 @@ When a required field is missing or a minimum count is not met, the CMS logs an 
 debug mode (`logLevel: 0`) — shows a warning banner on the page and a toast with the expected
 markdown structure in the admin editor.
 
-Example — the "hero" block with validation:
+Example: the "intro" block with validation:
 
 ```php
 <?php /** @var \Shaack\Reboot\Block $block */ ?>
-<section class="block block-hero">
+<section class="block block-intro">
     <div class="container-fluid">
         <div class="card border-0 bg-gradient">
             <div class="card-body">
                 <div class="p-xl-5 p-md-4 p-3">
-                    <h1 class="display-4"><?= $block->nodeHtml($block->xpath("/h1[part(1)]/text()", ["required" => true, "description" => "Hero heading (h1)"])) ?></h1>
+                    <h1 class="display-4"><?= $block->nodeHtml($block->xpath("/h1[part(1)]/text()", ["required" => true, "description" => "Intro heading (h1)"])) ?></h1>
                     <p class="lead"><?= $block->nodeHtml($block->xpath("/p[part(1)]/text()")) ?></p>
                     <hr class="my-4">
                     <div class="mb-4">
@@ -445,10 +444,10 @@ Example — the "hero" block with validation:
 </section>
 ```
 
-For list fields (like the "cards" block), use `min` to require a minimum number of matches:
+For list fields (like the "gallery" block), use `min` to require a minimum number of matches:
 
 ```php
-$images = $block->xpath("//li/img", ["min" => 1, "description" => "Card images"]);
+$images = $block->xpath("//li/img", ["min" => 1, "description" => "Gallery images"]);
 ```
 
 ### Data
@@ -571,12 +570,12 @@ blocks:
       - title: Small
 ```
 
-A block type for structured pages is a folder in `site/blocks/` with the template and the blueprint, both named like the folder:
+A block type for structured pages is a folder in `site/blocks/` with the template and the blueprint, both named like the folder. It may share its name with the block of Markdown pages:
 
 ```
 site/blocks/
-  hero.php            # a block of Markdown pages, a single file
-  intro/              # a block of structured pages
+  intro.php           # the block of Markdown pages, a single file
+  intro/              # the block of structured pages
     intro.php         # the template
     intro.yml         # the blueprint, its fields
 ```
@@ -602,12 +601,12 @@ fields:
 
 The template reads the fields like an entry: `get()`, `html()`, `date()`, `items()` and `entry()`. The fields are the config of the block as well, so `inverse: true` and `disabled: true` work as in a Markdown page. The values next to `blocks`, here `title` and `description`, are the config of the page, `$page->meta('title')` in the template reads them like frontmatter.
 
-The fields of the page itself are a title, a description and the blocks. `site/blueprints/page.yml` replaces them with your own, it needs one field of the type `blocks`. A block type with a blueprint is offered in structured pages only. With `markdown: true` in its blueprint it is offered in Markdown pages as well, its template then reads the Markdown when `$block->getBlueprint()` is null, like `seminar-teaser/seminar-teaser.php` of the demo. A Markdown block may live in a folder as well, `site/blocks/<name>/<name>.php`, the folder wins over a file of the same name. A Markdown page and a structured page of the same name are one address, the Markdown page wins.
+The fields of the page itself are a title, a description and the blocks. `site/blueprints/page.yml` replaces them with your own, it needs one field of the type `blocks`. A block type with a blueprint is offered in structured pages only. With `markdown: true` in its blueprint it is offered in Markdown pages as well, its template then reads the Markdown when `$block->getBlueprint()` is null, like `seminar-teaser/seminar-teaser.php` of the demo. A Markdown block may live in a folder as well, `site/blocks/<name>/<name>.php`. A file and a folder may share a name: Markdown pages and blocks with `markdown` take the file `site/blocks/<name>.php`, blocks with fields the folder. A block type without its own template takes the other one. A Markdown page and a structured page of the same name are one address, the Markdown page wins.
 
 A structured page can hold the blocks of Markdown pages too. Such a block has `markdown` instead of fields, the other values are its config, and it renders with its Markdown template as in a Markdown page:
 
 ```yaml
-  - type: text-image
+  - type: image-text
     image-position: left
     markdown: |-
       ## A heading
@@ -626,14 +625,14 @@ A Markdown page can be converted into a structured page, in the admin or with `S
 ```yaml
 # site/blocks/intro/intro.yml
 convert:
-  from: hero                          # takes over the Markdown blocks `hero`
+  from: intro                         # takes over the Markdown blocks `intro`
   fields:
     heading: "/h1[part(1)]"           # XPath as in the Markdown template, its text
     text: {part: 2}                   # the Markdown of part 2
     button-link: "//a[part(3)]/@href"
 ```
 
-A `list` field takes an item per node or per part: `{each: "//li/img", fields: {image: "@src", caption: "@alt"}}` reads relative to each node, `{each: part, fields: {title: "//h3", text: {part: 1, strip-heading: true}}}` reads each part like a block of its own, `strip-heading` leaves out its heading line. The config of the Markdown block, `inverse: true` for example, stays with the form block. In the demo `intro` takes over `hero`, `gallery` takes over `cards`, `features` takes over `three-columns`, `content` takes over `text` and `image-text` takes over `text-image`, so a converted page holds form blocks only. `{part: 0}` reads the whole block, separators included.
+A `list` field takes an item per node or per part: `{each: "//li/img", fields: {image: "@src", caption: "@alt"}}` reads relative to each node, `{each: part, fields: {title: "//h3", text: {part: 1, strip-heading: true}}}` reads each part like a block of its own, `strip-heading` leaves out its heading line. The config of the Markdown block, `inverse: true` for example, stays with the form block. In the demo the form blocks `intro`, `text`, `image-text`, `gallery` and `features` take over the Markdown blocks of the same names, so a converted page holds form blocks only. A site from Reboot CMS 3 with other names, `hero` for example, sets `from: hero`. `{part: 0}` reads the whole block, separators included.
 
 ## Admin interface
 

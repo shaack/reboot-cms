@@ -26,11 +26,11 @@ class PageValidatorTest
 
     public function testMissingRequiredFieldHasTheLineOfItsBlock(): void
     {
-        $problems = $this->validate("---\ntitle: Test\n---\n\n<!-- text -->\n\nText\n\n<!-- hero -->\n\nNo heading");
+        $problems = $this->validate("---\ntitle: Test\n---\n\n<!-- text -->\n\nText\n\n<!-- intro -->\n\nNo heading");
         Assert::equals(3, count($problems), "heading, link and label are missing");
-        Assert::equals(3, count(array_filter($problems, fn($p) => $p['block'] === 'hero' && $p['line'] === 8)));
-        Assert::true(str_contains($problems[0]['message'], "Hero heading"), $problems[0]['message']);
-        Assert::false(str_contains($problems[0]['message'], "Block 'hero'"), "the block name is not repeated");
+        Assert::equals(3, count(array_filter($problems, fn($p) => $p['block'] === 'intro' && $p['line'] === 8)));
+        Assert::true(str_contains($problems[0]['message'], "Intro heading"), $problems[0]['message']);
+        Assert::false(str_contains($problems[0]['message'], "Block 'intro'"), "the block name is not repeated");
     }
 
     public function testUnknownBlockIsReported(): void
@@ -44,7 +44,7 @@ class PageValidatorTest
 
     public function testDisabledBlockIsNotChecked(): void
     {
-        Assert::equals([], $this->validate("<!-- text -->\n\nText\n\n<!-- hero: {disabled: true} -->\n\nNo heading"));
+        Assert::equals([], $this->validate("<!-- text -->\n\nText\n\n<!-- intro: {disabled: true} -->\n\nNo heading"));
     }
 
     public function testNoteIsNoBlock(): void

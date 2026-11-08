@@ -5,7 +5,7 @@
  * License: MIT, see file 'LICENSE'
  *
  * Example of a block for structured pages, the counterpart of the Markdown
- * block `cards`: a list of images with captions. Each image opens in the
+ * block `gallery`: a list of images with captions. Each image opens in the
  * lightbox of `assets/scripts/lightbox.js`. Fields: gallery.yml
  */
 

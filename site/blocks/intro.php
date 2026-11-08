@@ -13,7 +13,7 @@ require_once __DIR__ . "/_helpers.php";
         <div class="card border-0 bg-gradient">
             <div class="card-body">
                 <div class="p-xl-5 p-md-4 p-3">
-                    <h1 class="display-4"><?= $block->nodeHtml($block->field("/h1[part(1)]/text()", "Hero heading", true)) ?></h1>
+                    <h1 class="display-4"><?= $block->nodeHtml($block->field("/h1[part(1)]/text()", "Intro heading", true)) ?></h1>
                     <p class="lead"><?= $block->nodeHtml($block->field("/p[part(1)]/text()", "Lead text")) ?></p>
                     <hr class="my-4">
                     <div class="mb-4">

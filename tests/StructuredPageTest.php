@@ -106,6 +106,17 @@ class StructuredPageTest
         Assert::contains("Markdown here", $this->page->render("/both"));
     }
 
+    public function testAMarkdownBlockAndABlockWithFieldsShareAName(): void
+    {
+        file_put_contents($this->tmpDir . "/blocks/intro.php", '<?php $h = $block->xpath("//h1"); ?><p class="md"><?= $h instanceof \\DOMNodeList ? $h->item(0)?->textContent : $h->textContent ?></p>');
+        $this->writePage("both-kinds", "title: B\nblocks:\n  - type: intro\n    heading: Form\n  - type: intro\n    markdown: \"# Text\"\n");
+        $html = $this->page->render("/both-kinds");
+        Assert::contains("<h1>Form</h1>", $html, "the block with fields renders with the folder");
+        Assert::contains('<p class="md">Text</p>', $html, "the Markdown block with the file");
+        file_put_contents($this->tmpDir . "/pages/markdown.md", "<!-- intro -->\n# Markdown page\n");
+        Assert::contains('<p class="md">Markdown page</p>', $this->page->render("/markdown"));
+    }
+
     public function testInvalidYamlRendersNothing(): void
     {
         $this->writePage("broken", "title: [unclosed\n");
@@ -143,8 +154,13 @@ class StructuredPageTest
         file_put_contents($this->tmpDir . "/blocks/_helpers.php", "<?php");
         mkdir($this->tmpDir . "/blocks/empty");
         Assert::equals(["cards", "focus", "intro", "text"], \Shaack\Reboot\Block::names($this->site), "no helpers, no folder without template");
-        Assert::equals($this->tmpDir . "/blocks/intro/intro.php", \Shaack\Reboot\Block::templateFile($this->site, "intro"), "the folder wins");
+        Assert::equals($this->tmpDir . "/blocks/intro.php", \Shaack\Reboot\Block::templateFile($this->site, "intro"), "a Markdown block takes the file");
+        Assert::equals($this->tmpDir . "/blocks/intro/intro.php", \Shaack\Reboot\Block::templateFile($this->site, "intro", true), "a block with fields the folder");
         Assert::equals($this->tmpDir . "/blocks/text.php", \Shaack\Reboot\Block::templateFile($this->site, "text"));
+        Assert::equals($this->tmpDir . "/blocks/text.php", \Shaack\Reboot\Block::templateFile($this->site, "text", true), "without a folder the file");
+        Assert::equals($this->tmpDir . "/blocks/cards/cards.php", \Shaack\Reboot\Block::templateFile($this->site, "cards"), "without a file the folder");
+        Assert::true(\Shaack\Reboot\Block::isForMarkdown($this->site, "intro"), "the file makes it a Markdown block");
+        Assert::false(\Shaack\Reboot\Block::isForMarkdown($this->site, "cards"), "a folder with a blueprint is for structured pages");
         Assert::null(\Shaack\Reboot\Block::templateFile($this->site, "../pages/x"));
         Assert::null(Blueprint::forBlock($this->site, "text"), "a single file is a Markdown block");
     }

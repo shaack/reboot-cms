@@ -5,7 +5,7 @@
  * License: MIT, see file 'LICENSE'
  *
  * The introduction of a structured page, the counterpart of the Markdown block
- * `hero`, a white band, or a dark one with `inverse`. Fields: intro.yml
+ * `intro`, a white band, or a dark one with `inverse`. Fields: intro.yml
  */
 
 /** @var \Shaack\Reboot\Block $block */

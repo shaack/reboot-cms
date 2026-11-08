@@ -60,7 +60,7 @@ class PageValidator
                 ob_end_clean();
             }
             foreach ($block->getValidationErrors() as $error) {
-                // "Block 'hero': missing required 'Link'", the editor shows the block apart
+                // "Block 'intro': missing required 'Link'", the editor shows the block apart
                 $problems[] = ['line' => $line, 'block' => $name,
                     'message' => preg_replace("/^Block '[^']*': /", "", $error)];
             }

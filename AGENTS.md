@@ -65,7 +65,7 @@ A page is split into **blocks** with HTML comments. Without any block comment
 the whole file renders as a single `text` block:
 
 ```markdown
-<!-- hero -->
+<!-- intro -->
 # Welcome
 
 <!-- text -->
@@ -74,7 +74,7 @@ Some content.
 
 ## Blocks
 
-Each block name maps to `site/blocks/{name}.php`, or to the folder `site/blocks/{name}/{name}.php`. A block template is plain PHP
+Each block name maps to `site/blocks/{name}.php`, or to the folder `site/blocks/{name}/{name}.php`. Both may exist with the same name: Markdown blocks use the file, blocks of structured pages with fields use the folder. A block template is plain PHP
 and receives a `$block` object — `$block->content()`, `$block->xpath()`,
 `$block->getConfig()`. Adding a block type means adding one PHP file; there is
 no framework or build step in between.

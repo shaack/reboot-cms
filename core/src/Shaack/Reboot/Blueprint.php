@@ -215,7 +215,7 @@ class Blueprint
 
     /**
      * How a block of a Markdown page becomes a block of this type when a page is
-     * converted, `convert: {from: hero, fields: {...}}`, see PageConverter.
+     * converted, `convert: {from: intro, fields: {...}}`, see PageConverter.
      */
     public function getConvert(): ?array
     {
@@ -264,7 +264,7 @@ class Blueprint
 
     /**
      * A block of a structured page that holds Markdown instead of fields,
-     * `{type: hero, markdown: "..."}`. It renders with the Markdown template of its type.
+     * `{type: intro, markdown: "..."}`. It renders with the Markdown template of its type.
      */
     public static function isMarkdownBlock(array $block): bool
     {

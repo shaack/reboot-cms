@@ -5,7 +5,7 @@
  * License: MIT, see file 'LICENSE'
  *
  * A text of a structured page, the counterpart of the Markdown block `text`.
- * Fields: content.yml
+ * Fields: text.yml
  */
 
 /** @var \Shaack\Reboot\Block $block */

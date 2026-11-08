@@ -23,6 +23,7 @@ class Block
     private array $xpathFields = []; // collected xpath calls with props, deduplicated for example generation
     private array $allFields = []; // all field() calls in order, for structured editor
     private int $maxPart = 1; // highest part number seen across all xpath calls
+    private bool $structured = false; // a block of a structured page with fields, see setFields()
 
     private static $parsedown;
     private static array $allValidationErrors = [];
@@ -85,24 +86,43 @@ class Block
     }
 
     /**
-     * The template of a block type. A block type is a file `site/blocks/<name>.php`,
-     * or a folder `site/blocks/<name>/` with `<name>.php` and, for a block of
-     * structured pages, the blueprint `<name>.yml`. The folder wins.
+     * The template of a block type. A block type is a file `site/blocks/<name>.php`
+     * for Markdown, or a folder `site/blocks/<name>/` with `<name>.php` and, for a
+     * block of structured pages, the blueprint `<name>.yml`. Both may share a name:
+     * a Markdown block takes the file, a block with fields the folder. Without its
+     * own template a block takes the other one, like `seminar-teaser`, whose
+     * template in the folder renders both.
      * @return ?string null if there is none
      */
-    public static function templateFile(Site $site, string $name): ?string
+    public static function templateFile(Site $site, string $name, bool $structured = false): ?string
     {
         $name = HttpUtils::sanitizeFileName($name);
         if ($name === "") {
             return null;
         }
         $blocksDir = $site->getFsPath() . "/blocks/";
-        foreach ([$blocksDir . $name . "/" . $name . ".php", $blocksDir . $name . ".php"] as $file) {
+        $files = [$blocksDir . $name . ".php", $blocksDir . $name . "/" . $name . ".php"];
+        foreach ($structured ? array_reverse($files) : $files as $file) {
             if (is_file($file)) {
                 return $file;
             }
         }
         return null;
+    }
+
+    /**
+     * Whether a block type can be a block of Markdown pages: it has the file
+     * `site/blocks/<name>.php`, or only a folder whose blueprint is missing or
+     * says `markdown: true`.
+     */
+    public static function isForMarkdown(Site $site, string $name): bool
+    {
+        $name = HttpUtils::sanitizeFileName($name);
+        if ($name === "" || is_file($site->getFsPath() . "/blocks/" . $name . ".php")) {
+            return $name !== "";
+        }
+        $blueprint = Blueprint::forBlock($site, $name);
+        return !$blueprint || $blueprint->isForMarkdown();
     }
 
     /**
@@ -135,6 +155,16 @@ class Block
     {
         $this->fieldValues = $values;
         $this->fieldBlueprint = $blueprint;
+        $this->structured = true;
+    }
+
+    /**
+     * A block of a structured page with fields, rendered by the template in the
+     * folder of its type. A Markdown block renders with the file of its type.
+     */
+    public function isStructured(): bool
+    {
+        return $this->structured;
     }
 
     protected function fieldSite(): ?Site
@@ -761,7 +791,7 @@ class Block
 
 function renderBlock(Site $site, Block $block, ?Request $request): string
 {
-    $blockFilePath = Block::templateFile($site, $block->getName());
+    $blockFilePath = Block::templateFile($site, $block->getName(), $block->isStructured());
     if ($blockFilePath === null) {
         Logger::error("Block not found: " . $block->getName() . ", neither site/blocks/<name>.php nor site/blocks/<name>/<name>.php");
         return "<div class='w-100 p-3 border-1 border-top border-bottom text-danger text-center'>Block not found: \"" . htmlspecialchars($block->getName(), ENT_QUOTES, 'UTF-8') . "\"</div>";

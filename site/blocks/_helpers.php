@@ -12,7 +12,7 @@
  * The classes of the section a block template writes: `block block-<name>`,
  * plus `block-inverse` for a block written as `<!-- name: {inverse: true} -->`.
  * The stylesheet turns an inverse block into a white band over the full width,
- * the hero, which is white already, into a dark one.
+ * the intro, which is white already, into a dark one.
  */
 function blockClasses(\Shaack\Reboot\Block $block): string
 {

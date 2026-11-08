@@ -19,7 +19,7 @@ use Symfony\Component\Yaml\Yaml;
  * ```yaml
  * title: About us
  * blocks:
- *   - type: hero
+ *   - type: intro
  *     heading: Welcome
  *     text: |-
  *       We build **websites**.

@@ -15,13 +15,13 @@ use Shaack\Reboot\Site;
 /**
  * Turns a Markdown page into a structured page. A block becomes a form block if
  * a block type says in its blueprint how to read it, otherwise it stays a
- * Markdown block of the structured page, `{type: hero, markdown: "..."}`, and
+ * Markdown block of the structured page, `{type: intro, markdown: "..."}`, and
  * looks the same. Nothing of the page is lost.
  *
  * ```yaml
  * # site/blocks/intro/intro.yml
  * convert:
- *   from: hero                          # the Markdown block it takes over
+ *   from: intro                         # the Markdown block it takes over
  *   fields:
  *     heading: "/h1[part(1)]/text()"    # XPath, as in the Markdown template, its text
  *     text: {part: 2}                   # the Markdown of part 2, part 0 is the whole block

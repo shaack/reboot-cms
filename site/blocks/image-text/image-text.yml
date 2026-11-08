@@ -1,5 +1,5 @@
 # A text next to an image, the image on the right or on the left
-title: Text with image
+title: Text and image
 fields:
   text:           {type: markdown, required: true}
   image:          {type: image, required: true}
@@ -7,10 +7,10 @@ fields:
   caption:        {type: text, help: "Shown when the mouse rests on the image"}
   image-position: {type: select, label: Image position, options: [right, left], default: right}
   inverse:        {type: boolean, help: "A white band over the full width"}
-# Converting a Markdown page turns its `text-image` blocks into this block,
+# Converting a Markdown page turns its `image-text` blocks into this block,
 # `image-position` comes along from the config of the block
 convert:
-  from: text-image
+  from: image-text
   fields:
     text:    {part: 1}
     image:   "//img[part(2)]/@src"
