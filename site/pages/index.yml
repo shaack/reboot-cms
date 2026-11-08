@@ -5,7 +5,7 @@ blocks:
     heading: Reboot CMS
     lead: The flat file CMS that thinks in blocks.
     text: A page is a list of **blocks**, and every block is a small form. Editors fill in fields, designers own the templates, and a small PHP core delivers the page in milliseconds. No database, no build step, nothing to migrate.
-    image: media/screenshots/reboot-cms-admin-page-edit.png
+    image: media/screenshots/reboot-cms-admin-page-edit.png?v=4
     button-label: View on GitHub
     button-link: https://github.com/shaack/reboot-cms
   - type: features
@@ -59,7 +59,7 @@ blocks:
   - type: gallery
     heading: The admin at a glance
     images:
-      - image: media/screenshots/reboot-cms-admin-page-edit.png
+      - image: media/screenshots/reboot-cms-admin-page-edit.png?v=4
         caption: 'Pages: a form per block, with live preview'
       - image: media/screenshots/reboot-cms-admin-add-block.png
         caption: 'Add block: the block types of the site'
@@ -67,13 +67,13 @@ blocks:
         caption: 'Data: records with fields, apart from the pages'
       - image: media/screenshots/reboot-cms-admin-markdown-edit.png
         caption: 'Markdown pages: text with blocks, with preview'
-      - image: media/screenshots/reboot-cms-admin-page-history.png
+      - image: media/screenshots/reboot-cms-admin-page-history.png?v=4
         caption: 'History: every earlier version of a page'
-      - image: media/screenshots/reboot-cms-admin-media.png
+      - image: media/screenshots/reboot-cms-admin-media.png?v=4
         caption: 'Media: upload, browse and pick images'
-      - image: media/screenshots/reboot-cms-admin-protected-areas.png
+      - image: media/screenshots/reboot-cms-admin-protected-areas.png?v=4
         caption: 'Protected areas: logins by password or mail link'
-      - image: media/screenshots/reboot-cms-admin-secure-downloads.png
+      - image: media/screenshots/reboot-cms-admin-secure-downloads.png?v=4
         caption: 'Secure downloads: a file with a link and a password'
   - type: text
     text: |-
