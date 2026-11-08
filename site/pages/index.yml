@@ -21,7 +21,6 @@ blocks:
         text: A block type is a PHP template and a blueprint that names its fields. The admin builds the form from it, so editors cannot break the layout.
       - title: Fast by default
         text: No database, no framework, no queries. Pages render in milliseconds and ship without the weight of a classic CMS. Sites built with Reboot CMS score 100 on PageSpeed Insights.
-    inverse: true
   - type: image-text
     text: |-
       ## Edit in the browser
@@ -52,7 +51,6 @@ blocks:
         text: 'With `url: blog` in its blueprint, every entry is a page of its own. The posts of the [blog](blog) work like that.'
       - title: Markdown, if you like
         text: Markdown pages still work and are handy for long texts. The admin converts one into a structured page with a click.
-    inverse: true
   - type: seminar-spotlight
     heading: In focus
     seminar: 2027-01-23-building-blocks
@@ -83,5 +81,4 @@ blocks:
       The site is at `http://localhost:21007`, the admin at `http://localhost:21007/admin`. On a server, point the document root at `web/` and open `/admin` to create the first account.
 
       Reboot CMS is open source under the MIT license. Have a look at the [Markdown blocks](blocks), read the [blog](blog) and the [documentation](documentation), or go straight to the [repository on GitHub](https://github.com/shaack/reboot-cms).
-    inverse: true
 author: shaack.com

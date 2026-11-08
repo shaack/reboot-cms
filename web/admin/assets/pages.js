@@ -22,31 +22,23 @@
 
     // --- Save ---
 
-    window.savePageAsync = function () {
-        var form = document.querySelector('form[action^="pages?page="]');
-        if (!form) return;
-        // a structured page is a form of fields, it is sent as it is, see field-form.js
-        if (form.hasAttribute('data-field-form')) {
-            form.requestSubmit();
-            return;
-        }
-        var formData = new FormData(form);
-        // what is saved, typing during the request stays unsaved
-        var sentContent = editorTextarea ? editorTextarea.value : '';
-        var notSaved = function (reason) {
-            statusMessage("<strong>The page was not saved.</strong> " + reason, "text-bg-danger");
-        };
-        fetch(form.action, {
+    function notSaved(reason) {
+        statusMessage("<strong>The page was not saved.</strong> " + reason, "text-bg-danger");
+    }
+
+    // Posts the form like the browser would and hands the save result of the
+    // answer, `<script id="save-result">`, to onSaved. The page stays as it is.
+    function postForm(form, onSaved) {
+        fetch(form.getAttribute('action'), {
             method: 'POST',
-            body: formData
+            body: new FormData(form)
         }).then(function (response) {
             if (!response.ok) {
                 notSaved("The server answered with error " + response.status + ".");
                 return;
             }
             return response.text().then(function (html) {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(html, 'text/html');
+                var doc = new DOMParser().parseFromString(html, 'text/html');
                 var resultEl = doc.getElementById('save-result');
                 if (!resultEl) {
                     // fetch follows the redirect to the login, which answers with 200
@@ -60,33 +52,75 @@
                     notSaved(escapeHtml(data.error));
                     return;
                 }
-                savedContent = sentContent;
-                updateUnsaved();
-                if (!data.changed) {
-                    statusMessage("No changes", "text-bg-secondary");
-                    return;
-                }
-                if (data.validationErrors && data.validationErrors.length > 0) {
-                    var list = data.validationErrors.map(function (e) { return "<li>" + escapeHtml(e) + "</li>"; }).join("");
-                    var msg = "Page saved with " + data.validationErrors.length + " schema warning(s):<ul class='mb-0 mt-1'>" + list + "</ul>";
-                    var failingBlocks = {};
-                    data.validationErrors.forEach(function (e) {
-                        var m = e.match(/^Block '([^']+)':/);
-                        if (m && data.examples[m[1]]) failingBlocks[m[1]] = true;
-                    });
-                    for (var blockName in failingBlocks) {
-                        msg += "<hr class='my-2'><strong>Expected markdown for &quot;" + escapeHtml(blockName) + "&quot;:</strong>";
-                        msg += "<pre class='mb-1 p-1 bg-light text-dark rounded' style='font-size:0.8rem;white-space:pre-wrap'>" + escapeHtml(data.examples[blockName]) + "</pre>";
-                    }
-                    statusMessage(msg, "text-bg-warning");
-                } else {
-                    statusMessage("Page saved");
-                }
+                onSaved(data);
             });
         }).catch(function () {
             notSaved("The server could not be reached.");
         });
+    }
+
+    window.savePageAsync = function () {
+        var form = document.querySelector('form[action^="pages?page="]');
+        if (!form) return;
+        // a structured page is a form of fields, its submit handler saves it, see
+        // "Saving a structured page" below; requestSubmit checks required fields first
+        if (form.hasAttribute('data-field-form')) {
+            form.requestSubmit();
+            return;
+        }
+        // what is saved, typing during the request stays unsaved
+        var sentContent = editorTextarea ? editorTextarea.value : '';
+        postForm(form, function (data) {
+            savedContent = sentContent;
+            updateUnsaved();
+            if (!data.changed) {
+                statusMessage("No changes", "text-bg-secondary");
+                return;
+            }
+            if (data.validationErrors && data.validationErrors.length > 0) {
+                var list = data.validationErrors.map(function (e) { return "<li>" + escapeHtml(e) + "</li>"; }).join("");
+                var msg = "Page saved with " + data.validationErrors.length + " schema warning(s):<ul class='mb-0 mt-1'>" + list + "</ul>";
+                var failingBlocks = {};
+                data.validationErrors.forEach(function (e) {
+                    var m = e.match(/^Block '([^']+)':/);
+                    if (m && data.examples[m[1]]) failingBlocks[m[1]] = true;
+                });
+                for (var blockName in failingBlocks) {
+                    msg += "<hr class='my-2'><strong>Expected markdown for &quot;" + escapeHtml(blockName) + "&quot;:</strong>";
+                    msg += "<pre class='mb-1 p-1 bg-light text-dark rounded' style='font-size:0.8rem;white-space:pre-wrap'>" + escapeHtml(data.examples[blockName]) + "</pre>";
+                }
+                statusMessage(msg, "text-bg-warning");
+            } else {
+                statusMessage("Page saved");
+            }
+        });
     };
+
+    // --- Saving a structured page ---
+    // In the background as well, so the form and the preview keep their place.
+    // The marks of fields that do not fit their blueprint come from the server,
+    // the page loads anew when there are some, or were some before.
+
+    var asyncForm = document.querySelector('form[data-field-form][action^="pages?page="]');
+    if (asyncForm) {
+        asyncForm.setAttribute('data-async-save', '');
+        asyncForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var count = asyncForm.changeCount ? asyncForm.changeCount() : 0;
+            postForm(asyncForm, function (data) {
+                if (asyncForm.clean) asyncForm.clean(count);
+                if (data.problems > 0 || document.getElementById('structured-problems')) {
+                    window.location.href = asyncForm.getAttribute('action');
+                    return;
+                }
+                if (data.changed) {
+                    statusMessage("Page saved");
+                } else {
+                    statusMessage("No changes", "text-bg-secondary");
+                }
+            });
+        });
+    }
 
     // --- Unsaved changes tracking ---
 

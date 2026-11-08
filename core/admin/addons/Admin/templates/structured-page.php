@@ -25,12 +25,13 @@ $pageBlueprint = Blueprint::forPage($defaultSite);
 $structuredHandler = new StructuredPageHandler($pageBlueprint, $pagesDir, $historyDir, $historyMaxVersions);
 $structuredMessage = $request->getParam("converted", "get") ? "The page is a structured page now. Its Markdown version is in the history." : null;
 $structuredError = null;
+$structuredChanged = null;
 if ($request->getParam("structured", "post") !== null) {
     try {
         CsrfProtection::validate($request);
         $input = $request->getParam("fields", "post");
-        $changed = $structuredHandler->save($fullPath, is_array($input) ? $input : []);
-        $structuredMessage = $changed ? "Page saved" : "No changes to save";
+        $structuredChanged = $structuredHandler->save($fullPath, is_array($input) ? $input : []);
+        $structuredMessage = $structuredChanged ? "Page saved" : "No changes to save";
     } catch (\RuntimeException $e) {
         Logger::error("Saving " . $editPageName . " failed: " . $e->getMessage());
         $structuredError = $e->getMessage();
@@ -46,6 +47,14 @@ try {
 }
 ?>
 <script>document.title = <?= json_encode(basename($editPageName, '.yml') . ' – Reboot CMS Admin') ?>;</script>
+<?php if ($request->getParam("structured", "post") !== null) { ?>
+    <?php // read by pages.js, which saves the form in the background ?>
+    <script id="save-result" type="application/json"><?= json_encode([
+        "changed" => $structuredChanged,
+        "error" => $structuredError,
+        "problems" => count($structuredProblems),
+    ]) ?></script>
+<?php } ?>
 <?php if ($structuredMessage) { ?>
     <script>statusMessage(<?= json_encode($structuredMessage) ?>)</script>
 <?php } ?>
@@ -54,7 +63,7 @@ try {
 <?php } ?>
 <?php if ($structuredValues !== null) { ?>
     <?php if ($structuredProblems) { ?>
-        <div class="alert alert-warning">
+        <div class="alert alert-warning" id="structured-problems">
             Some fields do not fit their blueprint, they are marked below. The page shows them anyway, as far as the templates can.
         </div>
     <?php } ?>

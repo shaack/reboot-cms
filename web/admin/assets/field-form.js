@@ -17,20 +17,32 @@ let created = 0
 forms.forEach(form => {
     const saveDot = form.querySelector("[data-save-dot]")
     let dirty = false
+    // counts the changes, so a save that is answered later knows whether more came
+    let changes = 0
     const markDirty = () => {
         dirty = true
+        changes++
         if (saveDot) saveDot.classList.remove("d-none")
         // the page Pages updates its preview on it
         form.dispatchEvent(new CustomEvent("fieldchange"))
     }
     form.addEventListener("input", markDirty)
     form.addEventListener("change", markDirty)
-    form.addEventListener("submit", () => dirty = false)
+    // the page Pages saves in the background (data-async-save) and cleans the form itself
+    form.addEventListener("submit", () => {
+        if (!form.hasAttribute("data-async-save")) dirty = false
+    })
     window.addEventListener("beforeunload", event => {
         if (dirty) event.preventDefault()
     })
     form.markDirty = markDirty
-    form.clean = () => dirty = false
+    form.changeCount = () => changes
+    // clean, unless something changed after `count`
+    form.clean = (count = changes) => {
+        if (count !== changes) return
+        dirty = false
+        if (saveDot) saveDot.classList.add("d-none")
+    }
 
     restoreFolds(form)
     syncFoldAll(form)

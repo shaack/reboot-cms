@@ -1,4 +1,5 @@
-# Any number of features side by side, each with a title and a text
+# Any number of features side by side, each with a title and a text,
+# always on a white band over the full width
 title: Features
 fields:
   heading: {type: text}
@@ -9,7 +10,6 @@ fields:
     fields:
       title: {type: text, required: true}
       text:  {type: markdown}
-  inverse: {type: boolean, help: "A white band over the full width"}
 # Converting a Markdown page turns its `three-columns` blocks into this block,
 # each column one feature
 convert:
