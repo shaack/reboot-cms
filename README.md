@@ -83,7 +83,7 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 ## Directory Structure
 
 - `core/src/` — Core CMS classes (Reboot, Site, Page, Block, Collection, Request, AddOn)
-- `core/addons/` — AddOns shipped with Reboot CMS (`EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`)
+- `core/addons/` — AddOns shipped with Reboot CMS (`CodeHighlighting`, `EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`)
 - `site/` — Site content: `pages/`, `blocks/`, `data/`, `blueprints/`, `addons/`, `template.php`, `config.yml`
 - `web/` — Document root (`index.php`, `.htaccess`)
 - `local/` — Local environment config (`config.yml`, `.htpasswd`) — not in git
@@ -827,7 +827,7 @@ It is recommended to make a backup of the project folder before updating.
 Some features of Reboot CMS are not part of the core but ship as AddOns in `core/addons/`. They are off by default and switched on per site by listing them under `addons` in `site/config.yml`:
 
 ```yaml
-addons: [ LanguageRedirect, EmailObfuscation, SecureDownloads, ProtectedAreas ]
+addons: [ LanguageRedirect, EmailObfuscation, SecureDownloads, ProtectedAreas, CodeHighlighting ]
 ```
 
 Everything an AddOn needs is in its folder, including its admin pages, so an AddOn that is not listed leaves no trace in the admin. Because `core/` is replaced by the [updater](#update), the built-in AddOns are updated together with the CMS. A project can still override one by placing an AddOn of the same name in `site/addons/`.
@@ -845,6 +845,12 @@ See the [LanguageRedirect README](core/addons/LanguageRedirect/README.md) and [M
 Hides e-mail addresses from harvesters. After a page has been rendered, every `mailto:` link and every address in the visible text is replaced by a small inline script that writes the original markup back into the page. Visitors see the address as before, a crawler without JavaScript sees only base64. Nothing to configure.
 
 See the [EmailObfuscation README](core/addons/EmailObfuscation/README.md).
+
+### CodeHighlighting
+
+Colors the code blocks written in Markdown between three backticks, on the server, so visitors need no JavaScript. It knows no grammar, only what most languages share: comments, strings, numbers, keywords, function calls and variables. The language after the backticks, ```` ```php ```` for example, decides which comments count and whether the rules for HTML or CSS apply. The colors are CSS variables like `--code-keyword`, which the style sheet of the site can set.
+
+See the [CodeHighlighting README](core/addons/CodeHighlighting/README.md).
 
 ### SecureDownloads
 

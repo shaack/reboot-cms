@@ -46,6 +46,10 @@ if ($previewPath && str_starts_with($previewPath, $pagesDir . DIRECTORY_SEPARATO
     // The draft is rendered from memory, the published file stays untouched
     $previewPageObj->setPreviewContent($previewPath, $previewContent);
     $previewHtml = \Shaack\Reboot\renderPage($previewSite, $previewPageObj, $previewRequest);
+    // what the AddOns do with the finished page, like the colors of CodeHighlighting, as on the site
+    foreach ($previewSite->getAddOns() as $addOn) {
+        $previewHtml = $addOn->postRender($previewRequest, $previewHtml);
+    }
     $previewHtml = str_replace('</head>', '<style>*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important;}</style></head>', $previewHtml);
     echo $previewHtml;
 } else {

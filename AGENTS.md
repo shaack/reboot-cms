@@ -16,7 +16,7 @@ directly to a file. There is no database and no build step for content.
 ## Project layout
 
 - `core/src/Shaack/` — CMS core classes (`Reboot`, `Site`, `Page`, `Block`, `Collection`, `Request`, `AddOn`, `AddOnLoader`)
-- `core/addons/<Name>/` — AddOns shipped with the CMS (`EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`), one folder each
+- `core/addons/<Name>/` — AddOns shipped with the CMS (`CodeHighlighting`, `EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`), one folder each
 - `core/admin/` — admin interface (itself a Reboot CMS site)
 - `site/` — the site you edit:
   - `pages/` — content pages (`.yml`, `.md` or `.php`)

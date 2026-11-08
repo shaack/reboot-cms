@@ -150,6 +150,16 @@ pre {
     border-radius: 0;
     padding: 1.25rem;
     font-size: 0.9rem;
+    /* the colors of the AddOn CodeHighlighting, the signal color for keywords and tags */
+    --code-keyword: var(--signal);
+    --code-tag: var(--signal);
+    --code-comment: rgba(255, 255, 255, 0.45);
+    --code-string: #9fd8a0;
+    --code-number: #ffc66d;
+    --code-attr: #ffc66d;
+    --code-function: #c3a6ff;
+    --code-variable: #8fd3ff;
+    --code-property: #8fd3ff;
 }
 
 code {

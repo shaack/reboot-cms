@@ -1,5 +1,5 @@
-# AddOns of this site, one site AddOn and 3 core AddOns. Disable them, if not needed.
-addons: ["ExampleAddOn", "EmailObfuscation", "ProtectedAreas", "SecureDownloads"]
+# AddOns of this site, one site AddOn and 4 core AddOns. Disable them, if not needed.
+addons: ["ExampleAddOn", "EmailObfuscation", "ProtectedAreas", "SecureDownloads", "CodeHighlighting"]
 protectedAreas: { areas: [ /customers ] }
 navbar:
   brand: Reboot CMS
