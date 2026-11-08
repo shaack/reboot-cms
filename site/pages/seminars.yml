@@ -1,9 +1,9 @@
-title: Seminars
+title: Seminars Example
 description: Seminars on Reboot CMS. An example of data that lives apart from the pages.
 blocks:
   - type: text
     text: |-
-      # Seminars
+      # Seminars Example
 
       The seminars on this page are data, not pages. Each one is a Markdown file in `site/data/seminars/`, and the blueprint `site/blueprints/seminars.yml` names their fields. The admin edits them under *Data* as a form and lists them as a table.
 

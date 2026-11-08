@@ -70,6 +70,8 @@ echo $content;
         <span><a href="https://github.com/shaack/reboot-cms">GitHub</a> · <a href="<?= $e($site->getWebPath()) ?>/documentation">Documentation</a> · <a href="https://shaack.com">shaack.com</a></span>
     </div>
 </footer>
+<?php // the whole site is a demo, its seminars and posts are examples ?>
+<div class="demo-ribbon" title="Example content, made up to show the CMS"><span>Reboot CMS Demo</span></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
