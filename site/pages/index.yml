@@ -20,6 +20,7 @@ blocks:
         text: A block type is a PHP template and a blueprint that names its fields. The admin builds the form from it, so editors cannot break the layout.
       - title: Fast by default
         text: No database, no framework, no queries. Pages render in milliseconds and ship without the weight of a classic CMS. Sites built with Reboot CMS score 100 on PageSpeed Insights.
+    inverse: true
   - type: image-text
     text: |-
       ## Edit in the browser
@@ -47,7 +48,7 @@ blocks:
       - title: Data
         text: Seminars, posts, products. A blueprint in `site/blueprints/` names their fields, the entries live in `site/data/`, and blocks show them where they fit.
       - title: Pages from data
-        text: "With `url: blog` in its blueprint, every entry is a page of its own. The posts of the [blog](blog) work like that."
+        text: 'With `url: blog` in its blueprint, every entry is a page of its own. The posts of the [blog](blog) work like that.'
       - title: Markdown, if you like
         text: Markdown pages still work and are handy for long texts. The admin converts one into a structured page with a click.
   - type: seminar-spotlight
