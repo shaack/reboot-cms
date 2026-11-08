@@ -13,7 +13,7 @@ blocks:
     items:
       - title: Just files
         text: A page is a short YAML file, and its path is its URL. Put the site under Git and every change becomes a reviewable diff. A backup is a copy of a folder.
-      - title: Forms, not markup
+      - title: Build pages out of blocks
         text: A block type is a PHP template and a blueprint that names its fields. The admin builds the form from it, so editors fill in content and cannot break the layout.
       - title: Fast by default
         text: No database, no framework, no queries. Pages render in milliseconds and ship without the weight of a classic CMS. Sites built with Reboot CMS score 100 on PageSpeed Insights.
@@ -31,7 +31,7 @@ blocks:
     caption: Add block offers the block types of the site
   - type: image-text
     text: |-
-      ## Data apart from pages
+      ## Data as a first-class citizen
 
       Seminars, posts, products, team members. A blueprint in `site/blueprints/` names their fields, the entries are files in `site/data/`, and the admin lists them as a table. Blocks show them wherever they fit.
 
