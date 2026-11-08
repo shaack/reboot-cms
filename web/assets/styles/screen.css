@@ -278,7 +278,7 @@ nav.navbar {
 }
 
 /* Light surfaces: a white band over the full width of the window, the intro
-   always, any other block with `<!-- name: {inverse: true} -->`.
+   on the start page, any other block with `<!-- name: {inverse: true} -->`.
    On the intro, `inverse: true` turns it dark. */
 .block-intro,
 .block-inverse {
@@ -310,7 +310,7 @@ nav.navbar {
     border-image: conic-gradient(var(--paper) 0 0) fill 0 // 0 100vw;
 }
 
-/* the intro set to inverse is dark again, framed by a hairline */
+/* the intro set to inverse is dark again, without a frame */
 .block-intro.block-inverse {
     --text: #f2f2f2;
     --strong: #fff;
@@ -325,10 +325,6 @@ nav.navbar {
     background: transparent;
     border-image: none;
     padding: 0;
-}
-
-.block-intro.block-inverse .card {
-    border: 1px solid var(--line) !important;
 }
 
 /* a light surface as the first block starts right below the navigation */
@@ -355,24 +351,19 @@ main > .block-inverse:not(.block-intro):first-child {
     border-radius: 0;
 }
 
-.block-intro:not(.block-inverse) .card-body,
-.block-intro:not(.block-inverse) .card-body > div {
+.block-intro .card-body,
+.block-intro .card-body > div {
     padding-left: 0 !important;
     padding-right: 0 !important;
 }
 
-.block-intro:not(.block-inverse) .card-body {
+.block-intro .card-body {
     padding-top: 0;
     padding-bottom: 0;
 }
 
 .block-intro.block-inverse {
     padding: 2rem 0;
-}
-
-.block-intro.block-inverse .intro-layout {
-    border: 1px solid var(--line);
-    padding: clamp(1.5rem, 4vw, 3rem);
 }
 
 .block-intro .display-4,
@@ -397,6 +388,16 @@ main > .block-inverse:not(.block-intro):first-child {
 /* Text, the Markdown block and the form block */
 .block-text {
     padding: 2rem 0;
+}
+
+/* lines of reading length, code and tables keep the full width */
+.block-text :is(p, ul, ol, blockquote) {
+    max-width: 44em;
+}
+
+/* the text that opens a page belongs to the block below it */
+main > .block-text:first-child {
+    margin-bottom: 0;
 }
 
 .block-text ul {

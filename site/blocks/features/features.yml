@@ -1,5 +1,5 @@
 # Any number of features side by side, each with a title and a text,
-# always on a white band over the full width
+# on a white band over the full width on the start page, dark elsewhere
 title: Features
 fields:
   heading: {type: text}

@@ -7,7 +7,7 @@ fields:
   image:        {type: image}
   button-label: {type: text, label: Button label}
   button-link:  {type: url, label: Button link}
-  inverse:      {type: boolean, help: "A dark band instead of the white one"}
+  inverse:      {type: boolean, help: "Dark on the start page as well, on every other page the intro is dark anyway"}
 # Converting a Markdown page turns its `intro` blocks into this block
 convert:
   from: intro

@@ -5,13 +5,15 @@
  * License: MIT, see file 'LICENSE'
  *
  * Example of a block for structured pages with a list field, `items` repeats
- * title and text as often as the editor adds them. Always a white band over
- * the full width, `block-inverse`. Fields: features.yml
+ * title and text as often as the editor adds them. A white band over the full
+ * width, `block-inverse`, on the start page, dark on every other page.
+ * Fields: features.yml
  */
 
 /** @var \Shaack\Reboot\Block $block */
+require_once __DIR__ . "/../_helpers.php";
 ?>
-<section class="block block-features block-inverse">
+<section class="block block-features<?= isStartPage($request) ? " block-inverse" : "" ?>">
     <div class="container-fluid">
         <?php if ($block->get("heading")) { ?>
             <h2><?= $block->get("heading") ?></h2>

@@ -8,7 +8,7 @@
 /** @var \Shaack\Reboot\Block $block */
 require_once __DIR__ . "/_helpers.php";
 ?>
-<section class="<?= blockClasses($block) ?>">
+<section class="<?= blockClasses($block, $request) ?>">
     <div class="container-fluid">
         <div class="card border-0 bg-gradient">
             <div class="card-body">

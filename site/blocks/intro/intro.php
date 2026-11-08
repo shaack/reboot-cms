@@ -12,7 +12,7 @@
 require_once __DIR__ . "/../_helpers.php";
 $image = $block->get("image");
 ?>
-<section class="<?= blockClasses($block) ?>">
+<section class="<?= blockClasses($block, $request) ?>">
     <div class="container-fluid">
         <div class="intro-layout<?= $image ? "" : " intro-layout-text" ?>">
             <div class="intro-text">

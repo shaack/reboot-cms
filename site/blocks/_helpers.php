@@ -13,14 +13,25 @@
  * plus `block-inverse` for a block written as `<!-- name: {inverse: true} -->`.
  * The stylesheet turns an inverse block into a white band over the full width,
  * the intro, which is white already, into a dark one.
+ * The intro is white on the start page only, on every other page it is dark.
  */
-function blockClasses(\Shaack\Reboot\Block $block): string
+function blockClasses(\Shaack\Reboot\Block $block, ?\Shaack\Reboot\Request $request = null): string
 {
     $classes = "block block-" . $block->getName();
-    if (!empty($block->getConfig()["inverse"])) {
+    $darkIntro = $block->getName() === "intro" && $request && !isStartPage($request);
+    if ($darkIntro || !empty($block->getConfig()["inverse"])) {
         $classes .= " block-inverse";
     }
     return htmlspecialchars($classes, ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * True on the start page, in every language. White bands like the intro and
+ * the features stand there only, the other pages stay dark.
+ */
+function isStartPage(?\Shaack\Reboot\Request $request): bool
+{
+    return $request !== null && $request->getPathWithoutLanguage() === "/";
 }
 
 /**

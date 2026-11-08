@@ -9,9 +9,9 @@
  */
 
 /** @var \Shaack\Reboot\Block $block */
-require_once __DIR__ . "/../_helpers.php";
+// a text is always dark, it takes no `inverse`
 ?>
-<section class="<?= blockClasses($block) ?>">
+<section class="block block-text">
     <div class="container-fluid">
         <?= $block->html("text") ?>
     </div>

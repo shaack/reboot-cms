@@ -2,7 +2,6 @@
 title: Text
 fields:
   text:    {type: markdown, required: true}
-  inverse: {type: boolean, help: "A white band over the full width"}
 # Converting a Markdown page turns its `text` blocks into this block
 convert:
   from: text

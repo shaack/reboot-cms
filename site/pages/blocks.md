@@ -159,7 +159,7 @@ A paragraph, a list, a table, a code block, everything Markdown offers.
 
 ## Inverse
 
-Every block of this demo can be set inverse with a configuration in its comment. It then stands as a white band over the whole width, and the intro, which is white already, turns dark. The gallery below is the same as above, set inverse.
+Every block of this demo but the text can be set inverse with a configuration in its comment. It then stands as a white band over the whole width, and the intro, which is white already, turns dark. The gallery below is the same as above, set inverse.
 
 ```markdown
 <!-- gallery: {inverse: true} -->
