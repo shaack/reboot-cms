@@ -2,7 +2,7 @@
 
 Reboot CMS 4 makes pages with forms the default. A page is a list of blocks, and every block is a small form whose fields a YAML blueprint names. Editors fill in fields, the templates own the layout. Records like seminars or blog posts live apart from the pages as data. Markdown pages keep working, nothing of an existing site has to change.
 
-This is a major update. The updater in the admin of Reboot CMS 3 does not install it, it only points to this page. Reboot CMS 3 stays available and gets security fixes for the time being, so there is no hurry.
+This is a major update. A normal update in the admin of Reboot CMS 3 does not install it. From Reboot CMS 3.23 on, the page *Update* offers it with a button of its own, see "How to upgrade". Reboot CMS 3 stays available and gets security fixes for the time being, so there is no hurry.
 
 ## What is new
 
@@ -31,6 +31,15 @@ The README describes all of it in the sections "Data", "Entries as pages" and "S
 - **Update branches.** Every major version has its own branches. Reboot CMS 4 updates from `distrib-4` (stable) and `main-4` (unstable). Reboot CMS 3 stays on `distrib` and `main`.
 
 ## How to upgrade
+
+### In the admin
+
+1. Update Reboot CMS 3 to version 3.23 or later, as usual on the page *Update*.
+2. The page then says that Reboot CMS 4 is available and lists what Reboot CMS 4 reads differently in your site, if anything. A `.yml` file in `site/pages/` for example becomes a page.
+3. *Upgrade to Reboot CMS 4* makes a backup of `site/` and `web/media/` under *Backup*, keeps the current `core/`, `web/admin/` and `vendor/` in `local/previous-version/` and installs Reboot CMS 4 from `distrib-4`.
+4. If the site does not work as before, *Back to Reboot CMS 3* on the page *Update* puts the kept version back. Once everything works, *Delete the previous version* frees the space.
+
+### By hand
 
 1. Make a backup, in the admin under *Backup* or as a copy of the project folder.
 2. Download Reboot CMS 4 from the branch `distrib-4`: [reboot-cms-distrib-4.zip](https://github.com/shaack/reboot-cms/archive/refs/heads/distrib-4.zip).

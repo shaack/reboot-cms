@@ -802,7 +802,7 @@ You can switch between two branches of the installed major version:
 - **distrib-4** (stable) — versioned releases, compared by version number
 - **main-4** (unstable) — latest development commits, compared by commit SHA
 
-Every major version has its own pair of branches, Reboot CMS 3 lives in `distrib` and `main`. The updater never installs another major version. When the next one is published, the page says so and links to its upgrade notes, for Reboot CMS 4 [docs/upgrade-to-4.md](docs/upgrade-to-4.md).
+Every major version has its own pair of branches, Reboot CMS 3 lives in `distrib` and `main`. An update never installs another major version. When the next one is published, the page says so, links to its upgrade notes, for Reboot CMS 4 [docs/upgrade-to-4.md](docs/upgrade-to-4.md), and names what the new version reads differently in your site. *Upgrade to Reboot CMS …* then installs it on request. It makes a backup of the content first and keeps the replaced `core/`, `web/admin/` and `vendor/` in `local/previous-version/`. After the upgrade the page offers the way back to the previous version, until you delete it.
 
 When an update is available, you can apply it directly from the admin interface. The updater downloads the latest
 tarball and replaces `core/`, `web/admin/`, and `vendor/`. Your site content (`site/`), local configuration (`local/`),

@@ -4,6 +4,7 @@
 /** @var \Shaack\Reboot\Request $request */
 
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
+use Shaack\Reboot\AddOns\Admin\BackupHelper;
 use Shaack\Reboot\CsrfProtection;
 use Shaack\Reboot\Updater;
 
@@ -37,11 +38,63 @@ if ($request->getParam("action") === "update") {
     $error = $result['error'];
     $success = $result['success'];
 }
+
+// the next major version, a deliberate step: a backup of the content first,
+// the replaced files are kept for the way back
+if ($request->getParam("action") === "upgrade") {
+    $result = AdminHelper::handleAction($request, function() use ($updater, $reboot, &$localVersion) {
+        @set_time_limit(300);
+        $backup = BackupHelper::create($reboot, (string)($_SERVER['HTTP_HOST'] ?? 'site'));
+        $updater->upgrade();
+        $localVersion = $updater->getLocalVersion() ?? "unknown";
+        return "Reboot CMS " . $localVersion . " is installed. The content was saved first in the backup " . $backup . ".";
+    });
+    $error = $result['error'];
+    $success = $result['success'];
+}
+if ($request->getParam("action") === "restore") {
+    $result = AdminHelper::handleAction($request, function() use ($updater, &$localVersion) {
+        @set_time_limit(300);
+        $updater->restorePrevious();
+        $localVersion = $updater->getLocalVersion() ?? "unknown";
+        return "Reboot CMS " . $localVersion . " is installed again.";
+    });
+    $error = $result['error'];
+    $success = $result['success'];
+}
+if ($request->getParam("action") === "discard") {
+    $result = AdminHelper::handleAction($request, function() use ($updater) {
+        $updater->discardPrevious();
+        return "The previous version is deleted.";
+    });
+    $error = $result['error'];
+    $success = $result['success'];
+}
+$previousVersion = $updater->getPreviousVersion();
 ?>
 
 <div class="container-fluid max-width-lg">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
     <div id="major-notice"></div>
+    <?php if ($previousVersion && !$success) { ?>
+        <div class="alert alert-secondary">
+            <p>Reboot CMS <?= htmlspecialchars($previousVersion) ?>, the version before the upgrade, is kept in
+                <code>local/previous-version/</code>. If the site does not work as before, go back to it. Your
+                content in <code>site/</code> stays as it is.</p>
+            <form method="post" action="update" class="d-inline update-previous-form"
+                  data-confirm="Go back to Reboot CMS <?= htmlspecialchars($previousVersion) ?>? This replaces core/, web/admin/ and vendor/ with the kept version.">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(CsrfProtection::getToken()) ?>">
+                <input type="hidden" name="action" value="restore">
+                <button class="btn btn-sm btn-outline-primary">Back to Reboot CMS <?= htmlspecialchars($previousVersion) ?></button>
+            </form>
+            <form method="post" action="update" class="d-inline update-previous-form"
+                  data-confirm="Delete the kept Reboot CMS <?= htmlspecialchars($previousVersion) ?>? There is no way back afterwards.">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(CsrfProtection::getToken()) ?>">
+                <input type="hidden" name="action" value="discard">
+                <button class="btn btn-sm btn-link">Delete the previous version</button>
+            </form>
+        </div>
+    <?php } ?>
 
     <div class="card">
         <div class="card-header"><h5 class="mb-0">Reboot CMS Update</h5></div>
