@@ -11,24 +11,73 @@
         return String(version).split(".")[0];
     }
 
-    // The next major version is published. The updater does not install it, it
-    // links to the notes on what changes and how to upgrade.
+    // The next major version is published. It has its own notes on what changes,
+    // update() never installs it, the button below upgrades on request: a backup
+    // of the content first, the replaced files are kept for the way back.
     function showNextMajor(nextMajor) {
         if (!nextMajor || !nextMajor.version || !/^https:\/\/github\.com\//.test(nextMajor.notes || "")) return;
+        var version = String(nextMajor.version).replace(/[^0-9.]/g, "");
         var notice = document.createElement("div");
         notice.className = "alert alert-info";
-        var text = document.createElement("span");
-        text.textContent = "Reboot CMS " + nextMajor.version + " is available. It is a major update with changes " +
-            "that need your attention, so this updater does not install it. ";
+        var text = document.createElement("p");
+        text.textContent = "Reboot CMS " + version + " is available. It is a major update, read what changes " +
+            "before you upgrade. Pages, blocks and AddOns of your site keep working. ";
         var link = document.createElement("a");
         link.href = nextMajor.notes;
         link.target = "_blank";
         link.rel = "noopener";
-        link.textContent = "Read what changes and how to upgrade";
+        link.textContent = "What changes in Reboot CMS " + major(version);
+        text.appendChild(link);
         notice.appendChild(text);
-        notice.appendChild(link);
+        var findings = Array.isArray(nextMajor.findings) ? nextMajor.findings : [];
+        if (findings.length) {
+            var intro = document.createElement("p");
+            intro.className = "mb-1";
+            intro.textContent = "In your site, Reboot CMS " + major(version) + " reads these differently:";
+            notice.appendChild(intro);
+            var list = document.createElement("ul");
+            findings.forEach(function (finding) {
+                var item = document.createElement("li");
+                item.textContent = finding;
+                list.appendChild(item);
+            });
+            notice.appendChild(list);
+        }
+        var form = document.createElement("form");
+        form.method = "post";
+        form.action = "update";
+        form.innerHTML = '<input type="hidden" name="csrf_token" value="' + csrfToken + '">' +
+            '<input type="hidden" name="action" value="upgrade">' +
+            '<button class="btn btn-sm btn-primary"></button>';
+        form.querySelector("button").textContent = "Upgrade to Reboot CMS " + version;
+        notice.appendChild(form);
         document.getElementById("major-notice").appendChild(notice);
+        form.addEventListener("submit", function (e) {
+            if (!window.confirm("Upgrade to Reboot CMS " + version + "? A backup of the content is made first. " +
+                "core/, web/admin/ and vendor/ are replaced, the current version is kept in local/previous-version/ " +
+                "and the Update page offers the way back.")) {
+                e.preventDefault();
+                return;
+            }
+            form.style.display = "none";
+            var spinner = document.createElement("div");
+            spinner.className = "d-flex align-items-center";
+            spinner.innerHTML =
+                '<div class="spinner-border spinner-border-sm text-primary" role="status" ' +
+                'style="margin-right:.6rem"><span class="visually-hidden">Upgrading...</span></div>' +
+                '<span>Upgrading Reboot CMS. This can take a moment, please do not close this page.</span>';
+            notice.appendChild(spinner);
+        });
     }
+
+    // Going back to the version before an upgrade, or deleting it, asks first
+    document.querySelectorAll(".update-previous-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            if (!window.confirm(form.getAttribute("data-confirm"))) {
+                e.preventDefault();
+            }
+        });
+    });
 
     document.getElementById("branch-select").addEventListener("change", function () {
         window.location.href = "update?branch=" + encodeURIComponent(this.value);

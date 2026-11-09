@@ -17,10 +17,15 @@ use Shaack\Logger;
  * fixes. Reboot CMS 3 lives in `distrib` (stable) and `main` (unstable), later
  * versions in `distrib-<major>` and `main-<major>`. When `distrib-<major + 1>`
  * exists, the next major version is published, getNextMajor() tells the admin,
- * which links to its upgrade notes `docs/upgrade-to-<major>.md`.
+ * which links to its upgrade notes `docs/upgrade-to-<major>.md`. upgrade()
+ * installs it on request and keeps the replaced files, restorePrevious() goes
+ * back.
  */
 class Updater
 {
+    /** Files next to core/ that an update replaces as well */
+    private const ROOT_FILES = ["README.md", "AGENTS.md", "LICENSE", "run.sh", "test.sh"];
+
     private string $baseFsPath;
     private string $repo;
     private string $branch;
@@ -63,7 +68,7 @@ class Updater
 
     /**
      * The next major version if it is published, with the link to its upgrade
-     * notes. It is never installed by this updater.
+     * notes. update() never installs it, upgrade() does on request.
      * @return ?array ['version' => "4.0.0", 'notes' => URL]
      */
     public function getNextMajor(): ?array
@@ -150,12 +155,149 @@ class Updater
     }
 
     /**
-     * Downloads the tarball from GitHub, extracts core/ and web/admin/,
-     * and replaces the local copies.
+     * Downloads the tarball of the branch from GitHub and replaces core/,
+     * web/admin/ and vendor/, within the installed major version.
      */
     public function update(): void
     {
-        $tarballUrl = "https://api.github.com/repos/" . $this->repo . "/tarball/" . $this->branch;
+        $this->download($this->branch, function (string $sourceDir, ?string $sourceVersion) {
+            // never a major update, that needs the upgrade notes and a deliberate step, see upgrade()
+            $localVersion = $this->getLocalVersion();
+            if ($localVersion !== null && self::majorOf($sourceVersion) !== self::majorOf($localVersion)) {
+                throw new \RuntimeException("The branch " . $this->branch . " holds version " . $sourceVersion
+                    . ", not " . self::majorOf($localVersion) . ".x. A major update is not installed by the updater.");
+            }
+            // Extract commit SHA from the directory name (e.g. "shaack-reboot-cms-abc1234")
+            if (preg_match('/-([0-9a-f]+)$/', basename($sourceDir), $matches)) {
+                $this->saveLocalCommitSha($matches[1]);
+            }
+            $this->install($sourceDir);
+        });
+    }
+
+    /**
+     * Installs the next major version from its stable branch, the deliberate
+     * step after reading its upgrade notes. The files it replaces are kept in
+     * `local/previous-version/`, restorePrevious() puts them back.
+     */
+    public function upgrade(): void
+    {
+        $major = self::majorOf($this->getLocalVersion()) + 1;
+        $branch = self::branches($major . ".0.0")["stable"];
+        $this->download($branch, function (string $sourceDir, ?string $sourceVersion) use ($major, $branch) {
+            if (self::majorOf($sourceVersion) !== $major) {
+                throw new \RuntimeException("The branch " . $branch . " holds version " . $sourceVersion
+                    . ", not " . $major . ".x.");
+            }
+            Logger::info("Updater: upgrading to " . $sourceVersion);
+            $this->keepPrevious();
+            $this->install($sourceDir);
+        });
+    }
+
+    /**
+     * The version kept by upgrade(), null if there is none.
+     */
+    public function getPreviousVersion(): ?string
+    {
+        $data = json_decode((string)@file_get_contents($this->previousDir() . "/composer.json"), true);
+        return is_array($data) ? ($data["version"] ?? null) : null;
+    }
+
+    /**
+     * Puts back the version kept by upgrade(), the way back after an upgrade.
+     */
+    public function restorePrevious(): void
+    {
+        $previousVersion = $this->getPreviousVersion();
+        if ($previousVersion === null) {
+            throw new \RuntimeException("There is no previous version to restore.");
+        }
+        Logger::info("Updater: restoring " . $previousVersion);
+        $this->install($this->previousDir());
+        $this->discardPrevious();
+    }
+
+    /**
+     * Deletes the version kept by upgrade(), once the new one works.
+     */
+    public function discardPrevious(): void
+    {
+        self::deleteDirectory($this->previousDir());
+    }
+
+    /**
+     * Copies the files install() replaces to `local/previous-version/`.
+     */
+    public function keepPrevious(): void
+    {
+        $target = $this->previousDir();
+        self::deleteDirectory($target);
+        mkdir($target, 0755, true);
+        foreach (["core", "web/admin", "vendor"] as $dir) {
+            if (is_dir($this->baseFsPath . "/" . $dir)) {
+                self::copyDirectory($this->baseFsPath . "/" . $dir, $target . "/" . $dir);
+            }
+        }
+        foreach (array_merge(["composer.json"], self::ROOT_FILES) as $file) {
+            if (file_exists($this->baseFsPath . "/" . $file)) {
+                copy($this->baseFsPath . "/" . $file, $target . "/" . $file);
+            }
+        }
+    }
+
+    /**
+     * What a site of Reboot CMS 3 does that Reboot CMS 4 reads differently, to
+     * be named before the upgrade. Empty if nothing changes for the site.
+     * @return string[]
+     */
+    public static function upgradeFindings(string $siteFsPath): array
+    {
+        $findings = [];
+        $pagesDir = $siteFsPath . "/pages";
+        if (is_dir($pagesDir)) {
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($pagesDir, \FilesystemIterator::SKIP_DOTS));
+            foreach ($iterator as $file) {
+                /** @var \SplFileInfo $file */
+                if ($file->getExtension() !== "yml") {
+                    continue;
+                }
+                // a Markdown page of the same name still wins
+                $base = substr($file->getPathname(), 0, -4);
+                if (!file_exists($base . ".md")) {
+                    $findings[] = "site/pages/" . substr($file->getPathname(), strlen($pagesDir) + 1)
+                        . " becomes a page, a structured page.";
+                }
+            }
+        }
+        if (is_dir($siteFsPath . "/blueprints")) {
+            $findings[] = "site/blueprints/ is read as the blueprints of data and of structured pages.";
+        }
+        if (is_dir($siteFsPath . "/data")) {
+            $findings[] = "site/data/ is read as data, one collection per folder.";
+        }
+        foreach (glob($siteFsPath . "/blocks/*", GLOB_ONLYDIR) ?: [] as $dir) {
+            $name = basename($dir);
+            if (is_file($dir . "/" . $name . ".php")) {
+                $findings[] = "site/blocks/" . $name . "/ becomes a block type for structured pages.";
+            }
+        }
+        sort($findings);
+        return $findings;
+    }
+
+    private function previousDir(): string
+    {
+        return $this->baseFsPath . "/local/previous-version";
+    }
+
+    /**
+     * Downloads and extracts the tarball of a branch, hands the extracted
+     * folder and its version to $install and cleans up afterwards.
+     */
+    private function download(string $branch, callable $install): void
+    {
+        $tarballUrl = "https://api.github.com/repos/" . $this->repo . "/tarball/" . $branch;
         $tmpDir = sys_get_temp_dir() . "/reboot-cms-update-" . uniqid();
         $tmpFile = $tmpDir . ".tar.gz";
 
@@ -185,77 +327,8 @@ class Updater
                 throw new \RuntimeException("Failed to extract update archive");
             }
             $sourceDir = $extractedDirs[0];
-
-            // never a major update, that needs the upgrade notes and a deliberate step
             $sourceData = json_decode((string)@file_get_contents($sourceDir . "/composer.json"), true);
-            $sourceVersion = is_array($sourceData) ? ($sourceData["version"] ?? null) : null;
-            $localVersion = $this->getLocalVersion();
-            if ($localVersion !== null && self::majorOf($sourceVersion) !== self::majorOf($localVersion)) {
-                throw new \RuntimeException("The branch " . $this->branch . " holds version " . $sourceVersion
-                    . ", not " . self::majorOf($localVersion) . ".x. A major update is not installed by the updater.");
-            }
-
-            // Extract commit SHA from the directory name (e.g. "shaack-reboot-cms-abc1234")
-            $dirName = basename($sourceDir);
-            if (preg_match('/-([0-9a-f]+)$/', $dirName, $matches)) {
-                $this->saveLocalCommitSha($matches[1]);
-            }
-
-            // Replace core/
-            $sourceCore = $sourceDir . "/core";
-            $targetCore = $this->baseFsPath . "/core";
-            if (is_dir($sourceCore)) {
-                Logger::info("Updater: replacing core/");
-                self::deleteDirectory($targetCore);
-                self::copyDirectory($sourceCore, $targetCore);
-            }
-
-            // Replace web/admin/
-            $sourceAdmin = $sourceDir . "/web/admin";
-            $targetAdmin = $this->baseFsPath . "/web/admin";
-            if (is_dir($sourceAdmin)) {
-                Logger::info("Updater: replacing web/admin/");
-                self::deleteDirectory($targetAdmin);
-                self::copyDirectory($sourceAdmin, $targetAdmin);
-            }
-
-            // Replace vendor/
-            $sourceVendor = $sourceDir . "/vendor";
-            $targetVendor = $this->baseFsPath . "/vendor";
-            if (is_dir($sourceVendor)) {
-                Logger::info("Updater: replacing vendor/");
-                self::deleteDirectory($targetVendor);
-                self::copyDirectory($sourceVendor, $targetVendor);
-            }
-
-            // Replace root files
-            foreach (["README.md", "AGENTS.md", "LICENSE", "run.sh", "test.sh"] as $rootFile) {
-                $sourceFile = $sourceDir . "/" . $rootFile;
-                $targetFile = $this->baseFsPath . "/" . $rootFile;
-                if (file_exists($sourceFile)) {
-                    Logger::info("Updater: replacing " . $rootFile);
-                    copy($sourceFile, $targetFile);
-                    if (str_ends_with($rootFile, ".sh")) {
-                        chmod($targetFile, 0755);
-                    }
-                }
-            }
-
-            // Update composer.json version
-            $sourceComposer = $sourceDir . "/composer.json";
-            if (file_exists($sourceComposer)) {
-                $remoteData = json_decode(file_get_contents($sourceComposer), true);
-                $localPath = $this->baseFsPath . "/composer.json";
-                $localData = json_decode(file_get_contents($localPath), true);
-                if (isset($remoteData["version"])) {
-                    $localData["version"] = $remoteData["version"];
-                }
-                if (isset($remoteData["require"])) {
-                    $localData["require"] = $remoteData["require"];
-                }
-                file_put_contents($localPath, json_encode($localData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
-            }
-
+            $install($sourceDir, is_array($sourceData) ? ($sourceData["version"] ?? null) : null);
             Logger::info("Updater: update complete");
         } finally {
             // Clean up temp files
@@ -265,6 +338,50 @@ class Updater
             if (is_dir($tmpDir)) {
                 self::deleteDirectory($tmpDir);
             }
+        }
+    }
+
+    /**
+     * Replaces core/, web/admin/, vendor/ and the root files with the ones in
+     * $sourceDir and takes over its version and requirements.
+     */
+    private function install(string $sourceDir): void
+    {
+        foreach (["core", "web/admin", "vendor"] as $dir) {
+            $source = $sourceDir . "/" . $dir;
+            $target = $this->baseFsPath . "/" . $dir;
+            if (is_dir($source)) {
+                Logger::info("Updater: replacing " . $dir . "/");
+                self::deleteDirectory($target);
+                self::copyDirectory($source, $target);
+            }
+        }
+
+        foreach (self::ROOT_FILES as $rootFile) {
+            $sourceFile = $sourceDir . "/" . $rootFile;
+            $targetFile = $this->baseFsPath . "/" . $rootFile;
+            if (file_exists($sourceFile)) {
+                Logger::info("Updater: replacing " . $rootFile);
+                copy($sourceFile, $targetFile);
+                if (str_ends_with($rootFile, ".sh")) {
+                    chmod($targetFile, 0755);
+                }
+            }
+        }
+
+        // Update composer.json version
+        $sourceComposer = $sourceDir . "/composer.json";
+        if (file_exists($sourceComposer)) {
+            $remoteData = json_decode(file_get_contents($sourceComposer), true);
+            $localPath = $this->baseFsPath . "/composer.json";
+            $localData = json_decode((string)@file_get_contents($localPath), true) ?: [];
+            if (isset($remoteData["version"])) {
+                $localData["version"] = $remoteData["version"];
+            }
+            if (isset($remoteData["require"])) {
+                $localData["require"] = $remoteData["require"];
+            }
+            file_put_contents($localPath, json_encode($localData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
         }
     }
 
