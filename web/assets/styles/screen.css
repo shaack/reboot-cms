@@ -208,7 +208,6 @@ nav.navbar .container-fluid {
 
 nav.navbar {
     background: var(--ink) !important;
-    border-bottom: 1px solid var(--line);
 }
 
 .navbar-brand,
