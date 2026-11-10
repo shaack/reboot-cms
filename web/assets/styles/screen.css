@@ -929,6 +929,15 @@ main > .block-text:first-child {
     color: var(--muted);
 }
 
+/* heading, lead and button with air between them */
+.intro-text h1 {
+    margin-bottom: 3rem;
+}
+
+.intro-text .intro-lead {
+    margin-bottom: 2.75rem;
+}
+
 .intro-image {
     width: 100%;
 }
