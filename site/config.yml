@@ -1,6 +1,9 @@
 # AddOns of this site, one site AddOn and 4 core AddOns. Disable them, if not needed.
 addons: ["ExampleAddOn", "EmailObfuscation", "ProtectedAreas", "SecureDownloads", "CodeHighlighting"]
 protectedAreas: { areas: [ /customers ] }
+# the languages of the site, the first is the default, see "Multilingual sites" in the README
+languages: [en, de]
+defaultLanguage: en
 navbar:
   brand: Reboot CMS
   structure:
