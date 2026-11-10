@@ -30,7 +30,7 @@ blocks:
     caption: Add block offers the block types of the site
   - type: image-text
     text: |-
-      ## Data as a first-class citizen
+      ## Data in tables
 
       Seminars, posts, products, team members. A blueprint in `site/blueprints/` names their fields, the entries are files in `site/data/`, and the admin lists them as a table. Blocks show them wherever they fit.
 
