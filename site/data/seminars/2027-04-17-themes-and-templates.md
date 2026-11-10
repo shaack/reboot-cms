@@ -1,10 +1,15 @@
 ---
-title: Themes and Templates
+title:
+  en: Themes and Templates
+  de: Themes und Templates
 date: 2027-04-17
 location: Hamburg
 level: Intermediate
 price: 290
 draft: true
+body:
+  de: |-
+    Noch nicht angekündigt. Mit `draft: true` bleibt der Eintrag der Website fern, bis die Zeile entfernt wird.
 ---
 
 Not announced yet. With `draft: true` the entry is left out of the website until the line is removed.

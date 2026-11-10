@@ -1,12 +1,23 @@
 ---
-title: Markdown for Editors
+title:
+  en: Markdown for Editors
+  de: Markdown für Redakteure
 date: 2026-12-05
 location: Bremen
 level: Beginner
 price: 190
 seats: 8
-teaser: Blocks, fields and a little Markdown. Everything an editor needs to fill the pages of a Reboot CMS site.
+teaser:
+  en: Blocks, fields and a little Markdown. Everything an editor needs to fill the pages of a Reboot CMS site.
+  de: Blöcke, Felder und ein wenig Markdown. Alles, was eine Redaktion braucht, um die Seiten einer Reboot-CMS-Site zu füllen.
 link: mailto:seminars@example.com?subject=Markdown%20for%20Editors
+body:
+  de: |-
+    Ein Praxistag für alle, die die Inhalte einer Website schreiben. Technisches Vorwissen ist nicht nötig.
+
+    - Wie Blöcke einer Seite ihre Struktur geben
+    - Überschriften, Hervorhebungen, Listen und Links in Markdown
+    - Bilder, die Mediathek und die Historie einer Seite
 ---
 
 A hands-on day for everyone who writes the content of a website. No technical background is needed.

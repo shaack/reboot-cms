@@ -1,12 +1,19 @@
 ---
-title: AI Agents and Your Content
+title:
+  en: AI Agents and Your Content
+  de: KI-Agenten und deine Inhalte
 date: 2027-03-12
 location: Bremen
 level: Intermediate
 price: 260
 seats: 12
-teaser: Let an AI agent create pages, blocks and entries, and review every change as a Git diff.
+teaser:
+  en: Let an AI agent create pages, blocks and entries, and review every change as a Git diff.
+  de: Lass einen KI-Agenten Seiten, Blöcke und Einträge anlegen, und prüfe jede Änderung als Git-Diff.
 link: mailto:seminars@example.com?subject=AI%20Agents
+body:
+  de: |-
+    Warum Flat Files gut mit Coding-Assistenten funktionieren und wie die Änderungen eines Agenten nachvollziehbar bleiben.
 ---
 
 Why flat files work well with coding assistants, and how to keep an agent's changes reviewable.

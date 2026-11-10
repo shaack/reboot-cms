@@ -1,10 +1,17 @@
 ---
-title: Getting Started with Reboot CMS
+title:
+  en: Getting Started with Reboot CMS
+  de: Einstieg in Reboot CMS
 date: 2026-05-16
 location: Bremen
 level: Beginner
 price: 150
-teaser: Install, configure and publish a first site.
+teaser:
+  en: Install, configure and publish a first site.
+  de: Installieren, einrichten und eine erste Site veröffentlichen.
+body:
+  de: |-
+    Dieses Seminar liegt in der Vergangenheit. Es bleibt im Ordner und fällt bei `where("date", ">=", "today")` heraus.
 ---
 
 This seminar is in the past. It stays in the folder and is left out by `where("date", ">=", "today")`.
