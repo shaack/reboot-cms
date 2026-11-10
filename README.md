@@ -299,9 +299,29 @@ fields:
 
 The other types, `number`, `date`, `boolean`, `select` and `entry`, are the same in all languages anyway. A value without languages, as on a site in one language, holds for all of them, so an existing page needs no migration. A language without a value shows the one of the default language. Templates need no change, `$block->get("text")` returns the value of the language of the page.
 
+#### Data, all languages in one entry
+
+The entries of a collection follow the same rule as structured pages. A text field holds a value per language, the other fields and the fields with `shared: true` have one for all. The Markdown below the frontmatter is the body in the default language, the frontmatter holds it in the other languages:
+
+```markdown
+---
+title: {en: Markdown for Editors, de: Markdown für Redakteure}
+date: 2026-12-05
+location: Bremen
+price: 190
+body:
+  de: |-
+    Ein Praxistag für alle, die die Inhalte einer Website schreiben.
+---
+
+A hands-on day for everyone who writes the content of a website.
+```
+
+`$seminar->get("title")` returns the title in the language of the page being rendered, a language without a value shows the default one. An entry that is a page of its own, `/blog/<slug>`, has the same slug in every language, `/de/blog/<slug>`. Queries read the default language, `where()` and `sortBy()` give the same order in every language. `$site->getLanguage()` names the language of the page being rendered.
+
 #### Editing in the admin
 
-On a multilingual site the editor of a page has a language switcher above it. For a structured page it shows the inputs of one language, the preview and the address next to the title follow it, the blocks stay the same. A field of a language that has no value yet has a dashed border and shows the default language as its placeholder. A shared field has one input and a globe next to its label, a change applies to all languages. The language chosen is kept for the next page.
+On a multilingual site the editor of a page and of an entry of data has a language switcher above it. For a structured page it shows the inputs of one language, the preview and the address next to the title follow it, the blocks stay the same. A field of a language that has no value yet has a dashed border and shows the default language as its placeholder. A shared field has one input and a globe next to its label, a change applies to all languages. The language chosen is kept for the next page.
 
 For a Markdown page the switcher opens the file of the language. A language without a file is shown dashed, a click creates it as a copy of the open page, ready to translate. The page list shows a page once, with its languages next to it, and opens the version in the language chosen last. Renaming or moving a page takes its versions in the other languages along.
 

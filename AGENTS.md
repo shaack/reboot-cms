@@ -113,6 +113,7 @@ The **first path segment** then selects the language, `/de/about` is "about" in 
 
 - Markdown pages have a file per language next to each other: `about.md` is the default language, `about.de.md` German. A language without its own file shows the default one. `/about.de` is no address. The folder per language, `site/pages/de/about.md`, still works but is deprecated.
 - Structured pages keep all languages in one file. Blocks and list items are the same in all languages, the text fields (`text`, `textarea`, `markdown`, `image`, `url`) hold a value per language, `heading: {en: Welcome, de: Willkommen}`. A field with `shared: true` in its blueprint has one value for all. A plain value holds for all languages. `$block->get()` returns the value of the language of the page, templates need no change.
+- Data entries do it the same way: text fields `{en: …, de: …}` in the frontmatter, the Markdown below it is the body in the default language, the other languages go into the frontmatter, `body: {de: "…"}`. `$entry->get()` returns the language of the page being rendered (`$site->getLanguage()`), queries read the default language.
 
 In `template.php` and block templates:
 

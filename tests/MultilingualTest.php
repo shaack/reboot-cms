@@ -4,6 +4,7 @@ namespace Shaack\Tests;
 
 require_once __DIR__ . "/TestHelper.php";
 
+use Shaack\Reboot\AddOns\Admin\DataEntryHandler;
 use Shaack\Reboot\AddOns\Admin\FieldForm;
 use Shaack\Reboot\AddOns\Admin\LanguageSwitch;
 use Shaack\Reboot\AddOns\Admin\PageActionHandler;
@@ -344,5 +345,79 @@ class MultilingualTest
         $html = LanguageSwitch::render(["en", "de"], "en", ["en" => "/about.md", "de" => null], "en");
         Assert::contains('aria-current="page"', $html);
         Assert::contains("addTranslation(&quot;de&quot;)", $html);
+    }
+
+    // --- Data ---
+
+    private function seminars(): void
+    {
+        mkdir($this->tmpDir . "/blueprints");
+        mkdir($this->tmpDir . "/data/seminars", 0755, true);
+        file_put_contents($this->tmpDir . "/blueprints/seminars.yml", "title: Seminars\nsort: date\nurl: seminars\nfields:\n"
+            . "  title: {type: text, required: true}\n  date: {type: date}\n  price: {type: number}\n  photo: {type: image, shared: true}\n  body: {type: markdown}\n");
+        file_put_contents($this->tmpDir . "/blueprints/seminars.php", '<h1><?= $entry->get("title") ?></h1><?= $entry->html("body") ?><?= $entry->get("price") ?>');
+        file_put_contents($this->tmpDir . "/data/seminars/basics.md", "---\ntitle: {en: Basics, de: Grundlagen}\ndate: 2027-03-12\nprice: 190\n"
+            . "body:\n  de: Ein **Tag** für den Anfang.\n---\n\nA **day** to start with.\n");
+        file_put_contents($this->tmpDir . "/data/seminars/advanced.md", "---\ntitle: Advanced\ndate: 2027-01-10\nprice: 290\n---\n\nFor those who know.\n");
+    }
+
+    public function testEntryInEachLanguage(): void
+    {
+        $this->seminars();
+        $entry = $this->site->collection("seminars")->find("basics");
+        Assert::equals("Basics", $entry->get("title"), "the default language before a page is rendered");
+        Assert::contains("A <strong>day</strong>", $entry->html("body"), "the Markdown below the frontmatter is the default language");
+        $this->site->setLanguage("de");
+        Assert::equals("Grundlagen", $entry->get("title"));
+        Assert::contains("Ein <strong>Tag</strong>", $entry->html("body"));
+        Assert::equals(190, $entry->get("price"), "a number is the same in all languages");
+        Assert::equals("Advanced", $this->site->collection("seminars")->find("advanced")->get("title"), "a single value holds for all languages");
+        Assert::true($entry->isValid());
+    }
+
+    public function testQueriesReadTheDefaultLanguage(): void
+    {
+        $this->seminars();
+        $this->site->setLanguage("de");
+        $titles = array_map(fn($entry) => $entry->getSlug(), $this->site->collection("seminars")->sortBy("title")->toArray());
+        Assert::equals(["advanced", "basics"], $titles, "sorted by the English titles, Advanced before Basics, in German as well");
+        Assert::equals(1, count($this->site->collection("seminars")->where("title", "contains", "basics")));
+        Assert::equals(0, count($this->site->collection("seminars")->where("title", "contains", "grundlagen")));
+    }
+
+    public function testEntryPageInEachLanguage(): void
+    {
+        $this->seminars();
+        $de = $this->render("/de/seminars/basics");
+        Assert::contains("<h1>Grundlagen</h1>", $de);
+        Assert::contains("Ein <strong>Tag</strong>", $de);
+        $en = $this->render("/seminars/basics");
+        Assert::contains("<h1>Basics</h1>", $en);
+        Assert::contains("<h1>Advanced</h1>", $this->render("/de/seminars/advanced"), "an entry without German shows the English one");
+    }
+
+    public function testSavingAnEntryKeepsAValuePerLanguage(): void
+    {
+        $this->seminars();
+        $blueprint = Blueprint::load($this->site, "seminars");
+        $handler = new DataEntryHandler($blueprint, $this->tmpDir . "/data", $this->tmpDir . "/history", 5);
+        [$values, $body] = $handler->read("basics");
+        Assert::equals(["en" => "Basics", "de" => "Grundlagen"], $values["title"]);
+        Assert::equals(["en" => "A **day** to start with.", "de" => "Ein **Tag** für den Anfang."], $body);
+        $handler->save("basics", [
+            "title" => ["en" => "Basics", "de" => "Grundkurs"],
+            "date" => "2027-03-12",
+            "price" => "190",
+            "photo" => "media/a.jpg",
+            "body" => ["en" => "A day.", "de" => "Ein Tag."],
+        ], false);
+        $file = (string)file_get_contents($this->tmpDir . "/data/seminars/basics.md");
+        Assert::contains("title:\n  en: Basics\n  de: Grundkurs", $file);
+        Assert::contains("photo: media/a.jpg", $file, "a shared field has one value");
+        Assert::contains("body:\n  de: Ein Tag.\n---\n\nA day.\n", $file, "the default language below the frontmatter, the others in it");
+        $handler->save("advanced", ["title" => ["en" => "Advanced"], "body" => ["en" => "Only English."]], false);
+        $file = (string)file_get_contents($this->tmpDir . "/data/seminars/advanced.md");
+        Assert::false(str_contains($file, "body:"), "a body in the default language only stays below the frontmatter");
+        Assert::contains("title: Advanced\n", $file);
     }
 }

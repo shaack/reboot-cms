@@ -74,6 +74,8 @@ class Page
     {
         $pagesDir = realpath($this->site->getFsPath() . '/pages');
         [$this->language, $pathWithoutLanguage, $prefixed] = $this->site->splitLanguage($path);
+        // the entries of collections a block or template shows follow the language of the page
+        $this->site->setLanguage($this->language);
         if (!array_key_exists("extension", pathinfo($path))) {
             $base = $this->pageBase($pagesDir, $pathWithoutLanguage);
             if ($base !== null && file_exists($base . "." . $this->language . ".md")) {

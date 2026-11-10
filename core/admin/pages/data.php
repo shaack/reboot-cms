@@ -8,6 +8,7 @@ $admin = $site->getAddOn("Admin");
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\AddOns\Admin\DataEntryHandler;
 use Shaack\Reboot\AddOns\Admin\FieldForm;
+use Shaack\Reboot\AddOns\Admin\LanguageSwitch;
 use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\Collection;
 use Shaack\Reboot\CsrfProtection;
@@ -20,6 +21,9 @@ $historyDir = $reboot->getBaseFsPath() . "/local/history/data";
 $historyMaxVersions = $localConfig['history']['maxVersions'] ?? 50;
 
 $blueprints = Blueprint::all($defaultSite);
+// on a multilingual site the text fields get an input per language, the switcher above shows one language
+FieldForm::setLanguages($defaultSite->getLanguages(), $defaultSite->getDefaultLanguage());
+$editLanguages = $defaultSite->isMultilingual() ? $defaultSite->getLanguages() : [];
 $collectionName = (string)($request->getParam("collection") ?? array_key_first($blueprints) ?? "");
 $blueprint = $blueprints[$collectionName] ?? null;
 $slug = $request->getParam("entry");
@@ -103,6 +107,7 @@ if ($blueprint && ($entry || $isNew)) {
             <li><em>Draft</em> keeps an entry off the website.</li>
             <li>Every save and delete keeps the previous version in <code>local/history/data/</code>.</li>
             <li>The file name is made from the first date and text field when the entry is created, and stays the same afterwards.</li>
+            <li>On a multilingual site the switcher above the form shows the text fields of one language, the other fields are the same in all of them. A field of a language without a value has a dashed border, the website shows the default language there. The table shows the default language.</li>
         </ul>
     ', $titleExtra) ?>
     <?php if (!$blueprints) { ?>
@@ -147,7 +152,11 @@ fields:
                 <?php if ($errors) { ?>
                     <div class="alert alert-warning max-width-lg">This entry is not shown on the website until the marked fields are fixed.</div>
                 <?php } ?>
-                <form method="post" class="data-form max-width-lg" id="data-form" data-field-form
+                <?php if ($editLanguages) { ?>
+                    <style><?php foreach ($editLanguages as $language) { ?>.data-form[data-edit-lang="<?= $language ?>"] .field-language:not([data-lang="<?= $language ?>"]){display:none}<?php } ?></style>
+                    <?= LanguageSwitch::render($editLanguages, $defaultSite->getDefaultLanguage(), null) ?>
+                <?php } ?>
+                <form method="post" class="data-form max-width-lg" id="data-form" data-field-form<?= $editLanguages ? ' data-edit-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '" data-default-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '"' : '' ?>
                       action="data?collection=<?= urlencode($collectionName) ?><?= $entry ? "&entry=" . urlencode($entry->getSlug()) : "&new=1" ?>">
                     <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
                     <input type="hidden" name="action" value="save" id="data-action">

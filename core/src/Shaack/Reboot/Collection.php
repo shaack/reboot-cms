@@ -201,6 +201,7 @@ class Collection implements \IteratorAggregate, \Countable
 
     private static function value(Entry $entry, string $field)
     {
-        return $field === "slug" ? $entry->getSlug() : $entry->getValues()[$field] ?? null;
+        // the default language, so the entries sort and filter the same in every language
+        return $field === "slug" ? $entry->getSlug() : $entry->getDefaultValues()[$field] ?? null;
     }
 }

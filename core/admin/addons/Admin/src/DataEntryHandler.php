@@ -8,6 +8,7 @@
 namespace Shaack\Reboot\AddOns\Admin;
 
 use Shaack\Reboot\Blueprint;
+use Shaack\Reboot\Entry;
 use Shaack\Reboot\Page;
 use Shaack\Utils\FileSystemUtils;
 use Shaack\Reboot\YamlWriter;
@@ -17,6 +18,10 @@ use Shaack\Reboot\YamlWriter;
  * An entry stays a Markdown file a person can edit by hand: the fields of the
  * blueprint come first and in its order, values the blueprint does not know
  * are kept, empty fields are left out, so their default applies.
+ *
+ * On a multilingual site the translated fields hold a value per language. The
+ * body in the default language stays below the frontmatter, the frontmatter
+ * holds it in the other languages, `body: {de: "..."}`, see Entry.
  */
 class DataEntryHandler
 {
@@ -56,7 +61,7 @@ class DataEntryHandler
 
     /**
      * The fields of an entry as written in its file, without defaults, for the form.
-     * @return array [array $values, string $body]
+     * @return array [array $values, string|array $body] the body with a value per language if it has more than one
      */
     public function read(string $slug): array
     {
@@ -65,7 +70,10 @@ class DataEntryHandler
             throw new \InvalidArgumentException("There is no entry '" . $slug . "'.");
         }
         [$values, $body] = Page::splitFrontmatter(trim((string)file_get_contents($file)));
-        return [FieldInput::forForm($this->blueprint, $values), trim($body)];
+        $values = Entry::withBody($values, trim($body), $this->defaultLanguage());
+        $body = $values["body"];
+        unset($values["body"]);
+        return [FieldInput::forForm($this->blueprint, $values), $body];
     }
 
     /**
@@ -88,7 +96,7 @@ class DataEntryHandler
             $file = $this->getFolder() . "/" . $slug . ".md";
         }
         if (array_key_exists("body", $this->blueprint->getFields())) {
-            $body = (string)($values["body"] ?? "");
+            $body = $values["body"] ?? "";
         }
         if (!is_dir($this->getFolder())) {
             mkdir($this->getFolder(), 0755, true);
@@ -109,20 +117,32 @@ class DataEntryHandler
     }
 
     /**
-     * The strings of the form in the types of the fields, see FieldInput::fromInput().
+     * The strings of the form in the types of the fields, see FieldInput::fromInput(),
+     * on a multilingual site with a value per language in the translated fields.
      */
     public function fromInput(array $input): array
     {
-        return FieldInput::fromInput($this->blueprint, $input);
+        $site = $this->blueprint->getSite();
+        return $site && $site->isMultilingual()
+            ? FieldInput::fromInput($this->blueprint, $input, $site->getLanguages(), $site->getDefaultLanguage())
+            : FieldInput::fromInput($this->blueprint, $input);
     }
 
     /**
      * The Markdown file of an entry, the fields as frontmatter, the field `body` below it.
      * @param array $extra values of the file the blueprint does not know, they are kept
+     * @param string|array $body the body, or a value per language: the default one goes
+     *     below the frontmatter, the others into it
      */
-    public function serialize(array $values, array $extra, bool $draft, string $body): string
+    public function serialize(array $values, array $extra, bool $draft, $body): string
     {
         unset($values["body"]);
+        $translations = [];
+        if (is_array($body)) {
+            $translations = array_filter($body, fn($text) => is_string($text) && trim($text) !== "");
+            $body = (string)($translations[$this->defaultLanguage()] ?? "");
+            unset($translations[$this->defaultLanguage()]);
+        }
         $frontmatter = FieldInput::clean($this->blueprint, $values);
         unset($frontmatter["body"]);
         if ($draft) {
@@ -133,6 +153,9 @@ class DataEntryHandler
                 $frontmatter[$name] = $value;
             }
         }
+        if ($translations) {
+            $frontmatter["body"] = $translations;
+        }
         $markdown = "---\n" . ($frontmatter ? YamlWriter::dump($frontmatter) : "\n") . "---\n";
         if (trim($body) !== "") {
             $markdown .= "\n" . trim($body) . "\n";
@@ -140,8 +163,18 @@ class DataEntryHandler
         return $markdown;
     }
 
+    private function defaultLanguage(): ?string
+    {
+        return $this->blueprint->getSite()?->getDefaultLanguage();
+    }
+
     private function newSlug(array $values): string
     {
+        // named in the default language
+        $site = $this->blueprint->getSite();
+        if ($site) {
+            $values = $site->localize($values, $site->getDefaultLanguage());
+        }
         $date = "";
         $text = "";
         foreach ($this->blueprint->getFields() as $name => $props) {

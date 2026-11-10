@@ -9,7 +9,9 @@ namespace Shaack\Reboot;
 
 /**
  * Reads the fields of an entry, a form block or an item of a list in a template.
- * The class sets `$fieldValues` and `$fieldBlueprint` and names its site.
+ * The class sets `$fieldValues` and `$fieldBlueprint` and names its site. An
+ * entry holds the values of every language and shows those of one, see
+ * fieldValues().
  *
  * ```php
  * <h2><?= $block->get("heading") ?></h2>
@@ -34,6 +36,14 @@ trait FieldAccess
     abstract protected function fieldSite(): ?Site;
 
     /**
+     * The values the accessors read, in one language.
+     */
+    protected function fieldValues(): array
+    {
+        return $this->fieldValues;
+    }
+
+    /**
      * A field, ready to be printed into HTML. Strings are escaped, other values
      * like numbers, booleans or lists come back unchanged.
      * @param bool $escaped false returns a string as written, for URLs, JSON or HTML on purpose
@@ -41,7 +51,7 @@ trait FieldAccess
      */
     public function get(string $field, $default = null, bool $escaped = true)
     {
-        $value = $this->fieldValues[$field] ?? $default;
+        $value = $this->fieldValues()[$field] ?? $default;
         if ($escaped && is_string($value)) {
             return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
         }
@@ -53,7 +63,7 @@ trait FieldAccess
      */
     public function html(string $field): string
     {
-        $markdown = $this->fieldValues[$field] ?? "";
+        $markdown = $this->fieldValues()[$field] ?? "";
         if (!is_string($markdown) || $markdown === "") {
             return "";
         }
@@ -68,7 +78,7 @@ trait FieldAccess
      */
     public function date(string $field, string $format): string
     {
-        $value = $this->fieldValues[$field] ?? null;
+        $value = $this->fieldValues()[$field] ?? null;
         $date = is_string($value) ? \DateTime::createFromFormat("!Y-m-d", $value) : false;
         return $date ? htmlspecialchars($date->format($format), ENT_QUOTES, 'UTF-8') : "";
     }
@@ -79,7 +89,7 @@ trait FieldAccess
      */
     public function items(string $field): array
     {
-        $value = $this->fieldValues[$field] ?? [];
+        $value = $this->fieldValues()[$field] ?? [];
         $blueprint = $this->fieldBlueprint?->getFields()[$field]["blueprint"] ?? null;
         $items = [];
         foreach (is_array($value) ? $value : [] as $item) {
@@ -96,7 +106,7 @@ trait FieldAccess
      */
     public function entry(string $field): ?Entry
     {
-        $slug = $this->fieldValues[$field] ?? null;
+        $slug = $this->fieldValues()[$field] ?? null;
         $collection = $this->fieldBlueprint?->getFields()[$field]["collection"] ?? null;
         $site = $this->fieldSite();
         if (!is_string($slug) || !is_string($collection) || !$site) {
@@ -106,11 +116,11 @@ trait FieldAccess
     }
 
     /**
-     * All fields as read, not escaped.
+     * All fields as read, not escaped, in the language the accessors show.
      */
     public function getValues(): array
     {
-        return $this->fieldValues;
+        return $this->fieldValues();
     }
 
     public function getBlueprint(): ?Blueprint

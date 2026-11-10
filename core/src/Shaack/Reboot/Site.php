@@ -17,6 +17,7 @@ class Site
     protected array $addOns = []; // Site addons
     protected array $missingAddOns = []; // names from `addons` that could not be loaded
     protected array $collections = []; // collections read in this request, by name
+    protected ?string $language = null; // the language of the page being rendered, see getLanguage()
 
     /**
      * @param $reboot Reboot
@@ -142,6 +143,20 @@ class Site
     public function getDefaultLanguage(): string
     {
         return (string)($this->config["defaultLanguage"] ?? ($this->getLanguages()[0] ?? "en"));
+    }
+
+    /**
+     * The language of the page being rendered, set by Page::render(), else the
+     * default language. The entries of collections show their fields in it.
+     */
+    public function getLanguage(): string
+    {
+        return $this->language ?? $this->getDefaultLanguage();
+    }
+
+    public function setLanguage(?string $language): void
+    {
+        $this->language = $language;
     }
 
     /**
