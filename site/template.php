@@ -18,6 +18,7 @@ $e = fn($value) => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
     <meta name="author" content="<?= $page->meta('author', 'shaack.com') ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="preload" href="./assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link href="./assets/styles/screen.css?v=<?= @filemtime(dirname($site->getFsPath()) . "/web/assets/styles/screen.css") ?>" rel="stylesheet">
 </head>
 <body data-bs-theme="dark">

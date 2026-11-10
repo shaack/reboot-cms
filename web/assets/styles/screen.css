@@ -1,4 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Inter from this site (OFL, see assets/fonts/Inter-OFL.txt), preloaded by the
+   template. Until it is there, Arial stands in, scaled to the metrics of Inter,
+   so the text does not jump when the font arrives. */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('../fonts/inter-latin.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter Fallback';
+    src: local('Arial');
+    ascent-override: 90.2%;
+    descent-override: 22.48%;
+    line-gap-override: 0%;
+    size-adjust: 107.4%;
+}
 
 /* Black and white, straight edges and surfaces, no hairlines, one signal color
    for what can be done: links and buttons. A mark in the signal color is 2px.
@@ -32,7 +50,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'Inter Fallback', system-ui, -apple-system, sans-serif;
     background: var(--ink);
     color: var(--text);
     margin-top: 5rem;
