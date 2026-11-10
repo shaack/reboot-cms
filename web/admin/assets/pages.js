@@ -246,6 +246,60 @@
         });
     }
 
+    // --- Width of the page list ---
+    // The bar on the left edge of the editor sets the width of the page list in
+    // pixels, saved for this browser. The inline script of pages.php applies it
+    // before the first paint.
+    var SIDEBAR_WIDTH_MIN = 140;
+    var sidebarResizer = document.getElementById('sidebar-resizer');
+    var pagesSidebar = document.getElementById('pages-sidebar');
+
+    function setSidebarWidth(width, save) {
+        if (width === null || !(width > 0)) {
+            pagesRowEl.style.removeProperty('--sidebar-width');
+            pagesRowEl.classList.remove('sidebar-sized');
+            if (save) store.remove('reboot_sidebar_width');
+            return;
+        }
+        var max = pagesRowEl.getBoundingClientRect().width / 2;
+        width = Math.round(Math.min(max, Math.max(SIDEBAR_WIDTH_MIN, width)));
+        pagesRowEl.style.setProperty('--sidebar-width', width + 'px');
+        pagesRowEl.classList.add('sidebar-sized');
+        if (save) store.set('reboot_sidebar_width', width);
+    }
+
+    if (pagesRowEl && sidebarResizer && pagesSidebar) {
+        // as for the preview, no pointer capture, the iframes take no events while dragging
+        var onSidebarDrag = function (e) {
+            setSidebarWidth(e.clientX - pagesSidebar.getBoundingClientRect().left, false);
+        };
+        var endSidebarDrag = function () {
+            document.removeEventListener('pointermove', onSidebarDrag);
+            document.removeEventListener('pointerup', endSidebarDrag);
+            document.removeEventListener('pointercancel', endSidebarDrag);
+            sidebarResizer.classList.remove('dragging');
+            document.body.classList.remove('preview-resizing');
+            setSidebarWidth(pagesSidebar.getBoundingClientRect().width, true);
+        };
+        sidebarResizer.addEventListener('pointerdown', function (e) {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            sidebarResizer.classList.add('dragging');
+            document.body.classList.add('preview-resizing');
+            document.addEventListener('pointermove', onSidebarDrag);
+            document.addEventListener('pointerup', endSidebarDrag);
+            document.addEventListener('pointercancel', endSidebarDrag);
+        });
+        sidebarResizer.addEventListener('dblclick', function () {
+            setSidebarWidth(null, true);
+        });
+        sidebarResizer.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            setSidebarWidth(pagesSidebar.getBoundingClientRect().width + (e.key === 'ArrowLeft' ? -16 : 16), true);
+        });
+    }
+
     // --- Page actions ---
 
     function submitPageAction(action, name, extra) {

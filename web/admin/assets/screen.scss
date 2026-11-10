@@ -328,6 +328,35 @@ textarea.cm-md-editor {
     }
 }
 
+// The width of the page list, set by dragging #sidebar-resizer (pages.js)
+@media (min-width: 992px) {
+    #editor-column {
+        position: relative;
+    }
+    #pages-row.sidebar-sized:not(.sidebar-collapsed) {
+        #pages-sidebar {
+            flex: 0 0 var(--sidebar-width);
+            width: var(--sidebar-width);
+            max-width: none;
+        }
+        &:not(.preview-split) #editor-column {
+            flex: 1 1 0;
+            width: auto;
+            min-width: 0;
+        }
+    }
+}
+
+#sidebar-resizer {
+    display: none;
+    @media (min-width: 992px) {
+        display: block;
+        #pages-row.sidebar-collapsed & {
+            display: none;
+        }
+    }
+}
+
 // With the preview open, editor and preview share the space next to the
 // sidebar in the ratio of --preview-share, set by dragging #preview-resizer
 // (pages.js). Below lg the preview is hidden and the Bootstrap columns apply.
@@ -346,7 +375,7 @@ textarea.cm-md-editor {
     }
 }
 
-#preview-resizer {
+#preview-resizer, #sidebar-resizer {
     position: absolute;
     top: 0;
     bottom: 0;
