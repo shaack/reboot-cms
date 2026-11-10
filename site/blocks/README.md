@@ -11,7 +11,7 @@ A folder `<name>/` is a block of structured pages, the YAML pages in `site/pages
 
 ```
 intro/
-  intro.yml     # the fields: heading, lead, text, image, button
+  intro.yml     # the fields: heading, lead, image, button
   intro.php     # the HTML
 ```
 

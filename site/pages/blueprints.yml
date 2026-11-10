@@ -4,10 +4,11 @@ blocks:
   - type: intro
     heading: Blueprints
     lead: A short YAML file that names fields. Reboot CMS builds the form from it, checks the content against it, and the template reads the fields.
-    text: The same kind of file describes a **block type** for pages and a **collection** of data, seminars or blog posts for example. This page shows both.
     image: media/screenshots/reboot-cms-admin-add-block.png
   - type: text
     text: |-
+      The same kind of file describes a **block type** for pages and a **collection** of data, seminars or blog posts for example. This page shows both.
+
       ## What a blueprint says
 
       A blueprint has a title and a list of fields. Each field has a name, a type and a few options.
