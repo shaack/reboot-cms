@@ -3,6 +3,8 @@ blocks:
   - type: intro
     heading: Das ist die Überschrift
     lead: Ja, genau so
+    image: /media/dummy.svg
+  - type: text
     text: |-
       Lorem ipsum dolor sit amet, **consectetur** adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
 
@@ -10,7 +12,6 @@ blocks:
       - Liste
 
       Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-    image: /media/dummy.svg
   - type: seminar-teaser
   - type: gallery
     images:

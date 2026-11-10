@@ -20,10 +20,6 @@ $image = $block->get("image");
                 <?php if ($block->get("lead")) { ?>
                     <p class="intro-lead"><?= nl2br($block->get("lead")) ?></p>
                 <?php } ?>
-                <?php if ($block->get("text")) { ?>
-                    <hr class="my-4">
-                    <div class="mb-4"><?= $block->html("text") ?></div>
-                <?php } ?>
                 <?php if ($block->get("button-link")) { ?>
                     <p><a class="btn btn-primary btn-lg" href="<?= $block->get("button-link") ?>"><?= $block->get("button-label", "More") ?></a></p>
                 <?php } ?>

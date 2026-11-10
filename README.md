@@ -668,7 +668,7 @@ convert:
     button-link: "//a[part(3)]/@href"
 ```
 
-A `list` field takes an item per node or per part: `{each: "//li/img", fields: {image: "@src", caption: "@alt"}}` reads relative to each node, `{each: part, fields: {title: "//h3", text: {part: 1, strip-heading: true}}}` reads each part like a block of its own, `strip-heading` leaves out its heading line. The config of the Markdown block, `inverse: true` for example, stays with the form block. In the demo the form blocks `intro`, `text`, `image-text`, `gallery` and `features` take over the Markdown blocks of the same names, so a converted page holds form blocks only. A site from Reboot CMS 3 with other names, `hero` for example, sets `from: hero`. `{part: 0}` reads the whole block, separators included.
+A `list` field takes an item per node or per part: `{each: "//li/img", fields: {image: "@src", caption: "@alt"}}` reads relative to each node, `{each: part, fields: {title: "//h3", text: {part: 1, strip-heading: true}}}` reads each part like a block of its own, `strip-heading` leaves out its heading line. The config of the Markdown block, `inverse: true` for example, stays with the form block. In the demo the form blocks `text`, `image-text`, `gallery` and `features` take over the Markdown blocks of the same names. The Markdown `intro` stays a Markdown block, its text between lead and button has no field in the form block `intro`. A site from Reboot CMS 3 with other names, `hero` for example, sets `from: hero`. `{part: 0}` reads the whole block, separators included.
 
 ## Admin interface
 

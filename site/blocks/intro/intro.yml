@@ -1,19 +1,11 @@
-# An introduction with heading, text, image and a button
+# An introduction with heading, lead, image and a button
 title: Intro
 fields:
   heading:      {type: text, required: true}
   lead:         {type: textarea, help: "One or two sentences below the heading"}
-  text:         {type: markdown}
   image:        {type: image}
   button-label: {type: text, label: Button label}
   button-link:  {type: url, label: Button link}
   inverse:      {type: boolean, help: "Dark on the start page as well, on every other page the intro is dark anyway"}
-# Converting a Markdown page turns its `intro` blocks into this block
-convert:
-  from: intro
-  fields:
-    heading:      "/h1[part(1)]"
-    lead:         "/p[part(1)]"
-    text:         {part: 2}
-    button-link:  "//a[part(3)]/@href"
-    button-label: "//a[part(3)]"
+# No `convert`: the Markdown intro has a text between lead and button that this
+# block has no field for, so a converted page keeps it as a Markdown block
