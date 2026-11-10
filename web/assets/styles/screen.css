@@ -1016,25 +1016,25 @@ main > .block-text:first-child {
     right: 0;
     bottom: 0;
     z-index: 1040;
-    width: 9rem;
-    height: 9rem;
+    width: 10.5rem;
+    height: 10.5rem;
     overflow: hidden;
     pointer-events: none;
 }
 
 .demo-ribbon span {
     position: absolute;
-    right: -3.6rem;
-    bottom: 2.1rem;
-    width: 14rem;
-    padding: 0.5rem 0;
+    right: -4.15rem;
+    bottom: 2.4rem;
+    width: 16rem;
+    padding: 0.6rem 0;
     transform: rotate(-45deg);
     text-align: center;
     color: #f7e4ee;
     font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
     font-style: italic;
-    font-size: 0.85rem;
-    letter-spacing: 0.02em;
+    font-size: 1.2rem;
+    letter-spacing: 0.04em;
     white-space: nowrap;
     text-shadow: 0 1px 2px rgba(20, 0, 18, 0.6);
     background:
