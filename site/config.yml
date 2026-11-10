@@ -6,9 +6,10 @@ languages: [en, de]
 defaultLanguage: en
 navbar:
   brand: Reboot CMS
+  # the path of each entry and its label, a label per language or one for all
   structure:
-    Home: /
-    Seminars: /seminars
-    Blog: /blog
-    Blueprints: /blueprints
-    Documentation: /documentation
+    /: {en: Home, de: Start}
+    /seminars: {en: Seminars, de: Seminare}
+    /blog: Blog
+    /blueprints: Blueprints
+    /documentation: {en: Documentation, de: Dokumentation}

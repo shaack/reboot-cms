@@ -331,14 +331,29 @@ The `Site` object knows the languages and builds the addresses:
 
 #### Multilingual navigation
 
-The simplest navigation has one structure for all languages, as in the demo. The template puts each path into the language of the page, so a visitor on `/de/` stays in German:
+The navigation of the demo has one structure for all languages in `site/config.yml`. Each entry is a path with its label, a label per language as in the fields of structured pages, or one label for all of them:
+
+```yaml
+navbar:
+  brand: Reboot CMS
+  structure:
+    /: {en: Home, de: Start}
+    /seminars: {en: Seminars, de: Seminare}
+    /blog: Blog
+    https://github.com/shaack/reboot-cms: GitHub
+```
+
+The template takes the label of the language with `$site->localize()` and puts the path into the language of the page with `$site->languagePath()`, so a visitor on `/de/` stays in German:
 
 ```php
 $language = $request->getLanguage();
-foreach ($site->getConfig()['navbar']['structure'] as $label => $path) {
-    echo '<a href="' . $site->getWebPath() . $site->languagePath($path, $language) . '">' . $label . '</a>';
+foreach ($site->getConfig()['navbar']['structure'] as $path => $label) {
+    $href = str_starts_with($path, "http") ? $path : $site->getWebPath() . $site->languagePath($path, $language);
+    echo '<a href="' . $href . '">' . $site->localize($label, $language) . '</a>';
 }
 ```
+
+The older form with the label first, `Home: /`, still works in the template of the demo, it recognizes an entry by whether it starts with a path or a URL.
 
 The language switcher of the demo links the current page in every language and marks the one shown:
 
@@ -347,30 +362,6 @@ The language switcher of the demo links the current page in every language and m
     <a href="<?= $url ?>" hreflang="<?= $code ?>"
        <?= $code === $request->getLanguage() ? 'class="active" aria-current="true"' : '' ?>><?= strtoupper($code) ?></a>
 <?php } ?>
-```
-
-To translate the labels as well, define one navigation structure per language in `site/config.yml`:
-
-```yaml
-navbar:
-  brand: Reboot CMS
-  structure:
-    en:
-      Home: /
-      Contact: /contact
-    de:
-      Start: /de
-      Kontakt: /de/contact
-```
-
-In `site/template.php`, pick the structure for the current language:
-
-```php
-$lang = $request->getLanguage();
-$structure = $site->getConfig()['navbar']['structure'][$lang];
-foreach ($structure as $label => $path) {
-    echo '<a href="' . $site->getWebPath() . $path . '">' . $label . '</a>';
-}
 ```
 
 With the `LanguageRedirect` addon (see below), append a `?setlang=xx` marker to the links of the switcher, so the addon registers the choice:

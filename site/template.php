@@ -42,7 +42,13 @@ $languageUrls = $site->isMultilingual() ? $site->languageUrls($request) : [];
                 <?php
                 $structure = $navbarConfig['structure'] ?? [];
                 if ($structure) {
-                    foreach ($structure as $label => $path) {
+                    foreach ($structure as $key => $value) {
+                        // `/about: {en: About, de: Über uns}`, the path first and a label per
+                        // language or one for all, or the older `About: /about`
+                        $key = (string)$key;
+                        $pathFirst = str_starts_with($key, "/") || str_starts_with($key, "http://") || str_starts_with($key, "https://");
+                        $path = $pathFirst ? $key : $value;
+                        $label = $pathFirst ? $site->localize($value, $language) : $key;
                         // an entry with a full URL leaves the site, in a new tab
                         $external = str_starts_with($path, "http://") || str_starts_with($path, "https://");
                         $active = false;
