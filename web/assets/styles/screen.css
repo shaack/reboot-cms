@@ -140,9 +140,9 @@ a:hover {
     color: #000;
 }
 
-/* Code, a block of code is black on light surfaces as well */
+/* Code, a block of code is dark gray on light surfaces as well, the gray of the demo corner */
 pre {
-    background: #000;
+    background: #141414;
     color: #f2f2f2;
     border-radius: 0;
     padding: 1.25rem;
