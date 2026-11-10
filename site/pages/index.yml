@@ -4,7 +4,6 @@ blocks:
   - type: intro
     heading: Reboot CMS
     lead: The flat file CMS that thinks in blocks.
-    text: A page is a list of **blocks**, and every block is a small form. Editors fill in fields, designers own the templates, and a small PHP core delivers the page in milliseconds. No database, no build step, nothing to migrate.
     image: media/screenshots/reboot-cms-admin-page-edit.png?v=4
     button-label: View on GitHub
     button-link: https://github.com/shaack/reboot-cms
