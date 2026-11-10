@@ -298,10 +298,10 @@ nav.navbar {
     --accent-text: #000;
     --link-line: rgba(0, 0, 0, 0.4);
     --link-hover: rgba(0, 0, 0, 0.6);
-    --button: #000;
-    --button-ink: #fff;
-    --button-hover: var(--signal);
-    --button-hover-ink: #000;
+    --button: var(--signal);
+    --button-ink: #000;
+    --button-hover: #000;
+    --button-hover-ink: #fff;
     --panel: #000;
     --panel-ink: #fff;
     --panel-dim: rgba(0, 0, 0, 0.35);
