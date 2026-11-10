@@ -1162,11 +1162,28 @@ textarea.yaml-editor-input {
     }
 }
 
-// below an input of another language, fills it with the translation of the default language
+// right of the label of a field in another language, fills it with the translation of the default language
+.field-translated {
+    position: relative;
+}
+
 .field-translate {
-    padding: 0.15rem 0;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0;
     font-size: 0.8rem;
+    line-height: 1.5rem;
     text-decoration: none;
+
+    .icon {
+        vertical-align: -0.125em;
+    }
+}
+
+// the first field of a list item, left of the tools of the item
+.field-list-item > .field-item-tools + .field-translated > .field-language > .field-translate {
+    right: 88px;
 }
 
 // a text field with one value for all languages, next to its label

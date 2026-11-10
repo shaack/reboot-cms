@@ -176,10 +176,11 @@ class FieldForm
                 . ' lang="' . self::e($language) . '"';
             $translate = "";
             if (!$isDefault && self::$translatable && in_array($props["type"], ["text", "textarea", "markdown"], true)) {
-                // pages.js fills the input with the translation of the one in the default language
+                // pages.js fills the input with the translation of the one in the default language,
+                // the button sits right of the label, see .field-translate
                 $translate = '<button type="button" class="btn btn-link btn-sm field-translate" data-translate-from="' . $id . '-' . self::e(self::$defaultLanguage) . '"'
                     . ' data-translate-format="' . ($props["type"] === "markdown" ? "markdown" : "text") . '">'
-                    . 'Translate from ' . self::e(strtoupper(self::$defaultLanguage)) . '</button>';
+                    . AdminHelper::icon("translate", "me-1") . 'Translate from ' . self::e(strtoupper(self::$defaultLanguage)) . '</button>';
             }
             $html .= '<div class="field-language' . ($text === "" && !$isDefault ? ' is-untranslated' : '') . '" data-lang="' . self::e($language) . '">'
                 . self::textControl($props["type"], $attr, $languagePlaceholder, $text)
