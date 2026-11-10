@@ -1011,56 +1011,28 @@ main > .block-text:first-child {
     color: var(--soft);
 }
 
-/* a neon tube across the lower right corner, in the signal color, flickers on once */
+/* a triangle in the signal color over the lower right corner */
 .demo-ribbon {
     position: fixed;
     right: 0;
     bottom: 0;
     z-index: 1040;
-    width: 8rem;
-    height: 8rem;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.demo-ribbon span {
-    position: absolute;
-    right: -3.4rem;
-    bottom: 1.7rem;
-    width: 13rem;
-    padding: 0.35rem 0;
-    transform: rotate(-45deg);
-    text-align: center;
-    color: var(--signal);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    background: rgba(10, 10, 10, 0.85);
-    border-top: 2px solid var(--signal);
-    border-bottom: 2px solid var(--signal);
-    text-shadow:
-        0 0 2px var(--signal),
-        0 0 8px var(--signal),
-        0 0 18px rgba(212, 255, 58, 0.6);
-    box-shadow:
-        0 0 6px rgba(212, 255, 58, 0.8),
-        0 0 18px rgba(212, 255, 58, 0.45),
-        inset 0 0 6px rgba(212, 255, 58, 0.5);
-    animation: demo-neon-on 1.2s steps(1, end) 0.4s both;
-    pointer-events: auto;
+    width: 6rem;
+    height: 6rem;
+    background: var(--signal);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
     cursor: default;
     user-select: none;
 }
 
-@keyframes demo-neon-on {
-    0%, 12%, 22%, 40% { opacity: 0.15; }
-    6%, 18%, 30%, 100% { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .demo-ribbon span {
-        animation: none;
-    }
+.demo-ribbon span {
+    position: absolute;
+    right: 0.35rem;
+    bottom: 1.6rem;
+    transform: rotate(-45deg);
+    color: #000;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
 }
