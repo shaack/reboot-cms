@@ -1,0 +1,10 @@
+# Websites built with Reboot CMS, the entries of site/data/sites/, shown by
+# the block `site-list`. A name and an address are the same in every
+# language, so the whole collection is `shared: true`.
+title: Websites
+sort: name
+shared: true
+fields:
+  name:  {type: text, required: true}
+  url:   {type: url, label: Address, required: true}
+  image: {type: image, label: Screenshot}

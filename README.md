@@ -240,9 +240,33 @@ This `Page` contains 3 `Block` types, "intro", "image-text" and "features". The 
 
 Blocks can be configured in the block comment. With `<!-- image-text: {image-position: left} -->` the `image-text` block shows the image on the left side in desktop view.
 
-Markdown files without blocks will render to a flat Markdown page like in every other flat file CMS.
+Markdown files without blocks will render to a flat Markdown page like in every other flat file CMS, as one `text` block. With `block: post` in the frontmatter another block renders it, and that block gets the frontmatter as its config. The posts of the blog of the demo are such pages, `site/pages/blog/2026-11-08-reboot-cms-4.md`, the block `site/blocks/post.php` shows their title, date and links:
 
-You can define metadata for the page on top of the file in `YAML Front Matter` syntax.
+```markdown
+---
+title: Fast pages without tuning
+date: 2026-10-01
+description: Speed is a feature visitors notice before they read a word.
+block: post
+---
+
+A visitor decides within a second or two whether a page is worth waiting for.
+```
+
+You can define metadata for the page on top of the file in `YAML Front Matter` syntax. A date like `2026-10-01` stays text, `$page->meta('date')` returns it as written.
+
+#### Lists of pages
+
+`$site->pages("blog")` lists the pages of a folder in `site/pages/`, with the fields of their frontmatter and the queries of a collection, see [Data](#data). The block `blog-list` of the demo shows the newest posts with it:
+
+```php
+<?php foreach ($site->pages("blog")->sortBy("date", "desc")->limit(5) as $post) { ?>
+    <h2><a href="<?= $post->getUrl() ?>"><?= $post->get("title") ?></a></h2>
+    <time><?= $post->date("date", "F j, Y") ?></time>
+<?php } ?>
+```
+
+The list holds the Markdown and structured pages of the folder, not those of its subfolders, not its `index` and no page with `draft: true`. Text with an address belongs here, a blog or news. Records that show up on several pages are data, see [Data](#data).
 
 ### Multilingual sites
 
@@ -270,7 +294,7 @@ site/pages/
   contact.md                       <- /contact, and /de/contact as long as there is no contact.de.md
 ```
 
-`/de/about` renders `about.de.md`. A page without a file of its own for a language shows the one of the default language, so a site can be translated page by page. The default language may be named as well, `about.en.md`. A version has no address of its own, `/about.de` is no page. A `404.de.md` is the "not found" page in German.
+`/de/about` renders `about.de.md`. A page without a file of its own for a language shows the one of the default language, so a site can be translated page by page. The frontmatter of `about.de.md` holds what it translates, the rest comes from `about.md`, a date for example is written once. The default language may be named as well, `about.en.md`. A version has no address of its own, `/about.de` is no page. A `404.de.md` is the "not found" page in German.
 
 The older layout with a folder per language, `site/pages/de/about.md`, still works but is deprecated, the log names the file to rename. A file next to the page wins over the folder.
 
@@ -299,6 +323,10 @@ fields:
 
 The other types, `number`, `date`, `boolean`, `select` and `entry`, are the same in all languages anyway. A value without languages, as on a site in one language, holds for all of them, so an existing page needs no migration. A language without a value shows the one of the default language. Templates need no change, `$block->get("text")` returns the value of the language of the page.
 
+#### Links in a translation
+
+The links of a page are relative to `<base href>`, the root of the site. On a page in another language than the default one, Reboot CMS puts the language in front of every relative link to a page, `[Blog](blog)` on `/de/about` leads to `/de/blog`. A translation keeps the links of the original. Links to files in `web/`, `media/photo.jpg` for example, links with a scheme and links that start with a language stay as they are.
+
 #### Data, all languages in one entry
 
 The entries of a collection are YAML files and follow the same rule as structured pages. A text field holds a value per language, the other fields and the fields with `shared: true` have one for all:
@@ -315,7 +343,7 @@ body:
     Ein Praxistag für alle, die die Inhalte einer Website schreiben.
 ```
 
-`$seminar->get("title")` returns the title in the language of the page being rendered, a language without a value shows the default one. An entry that is a page of its own, `/blog/<slug>`, has the same slug in every language, `/de/blog/<slug>`. Queries read the default language, `where()` and `sortBy()` give the same order in every language. `$site->getLanguage()` names the language of the page being rendered.
+`$seminar->get("title")` returns the title in the language of the page being rendered, a language without a value shows the default one. An entry that is a page of its own, `/seminars/<slug>`, has the same slug in every language, `/de/seminars/<slug>`. Data that is the same in every language, names and addresses for example, says `shared: true` next to its fields, then none of them holds a value per language, like `site/blueprints/sites.yml` of the demo. Queries read the default language, `where()` and `sortBy()` give the same order in every language. `$site->getLanguage()` names the language of the page being rendered.
 
 #### Editing in the admin
 
@@ -574,7 +602,7 @@ images:
 
 An `entry` names an entry of a collection, the admin shows a select of them: `seminar: {type: entry, collection: seminars}`. A `blocks` field is a list of blocks, see [Structured pages](#structured-pages).
 
-`columns: [date, title, price]` next to `fields` sets the columns of the table in the admin, by default the first four fields that are no `textarea` or `markdown`.
+`columns: [date, title, price]` next to `fields` sets the columns of the table in the admin, by default the first four fields that are no `textarea` or `markdown`. On a multilingual site `shared: true` next to `fields` gives every field one value for all languages.
 
 A date is written as `2027-03-12` and read as that text, so dates compare and sort as text. An entry that does not match its blueprint is left out of the website and its errors are logged. An entry with `draft: true` is left out as well.
 
@@ -602,19 +630,19 @@ foreach ($next as $seminar) { ?>
 
 #### Entries as pages
 
-With `url` in its blueprint, every entry of a collection is a page of its own. The blog of the demo works like that: `site/blueprints/blog.yml` has `url: blog`, so `site/data/blog/2026-09-14-your-content-your-files.yml` is the page `/blog/2026-09-14-your-content-your-files`.
+With `url` in its blueprint, every entry of a collection is a page of its own. The seminars of the demo work like that: `site/blueprints/seminars.yml` has `url: seminars`, so `site/data/seminars/2027-01-23-building-blocks.yml` is the page `/seminars/2027-01-23-building-blocks`.
 
 ```yaml
-title: Blog
-sort: date desc
-url: blog
+title: Seminars
+sort: date
+url: seminars
 fields:
   title: {type: text, required: true}
   date:  {type: date, required: true}
   body:  {type: markdown}
 ```
 
-The template `site/blueprints/<name>.php`, next to the blueprint, renders such a page inside `site/template.php`. It gets the entry as `$entry`, besides `$site`, `$page` and `$request`. The scalar fields of the entry are the config of the page, so `$page->meta('title')` reads its title. Drafts and entries that do not fit their blueprint are no pages, a file in `site/pages/` of the same address wins. A list of the entries links to them with `$entry->getUrl()`, like the block `blog-list` of the demo.
+The template `site/blueprints/<name>.php`, next to the blueprint, renders such a page inside `site/template.php`. It gets the entry as `$entry`, besides `$site`, `$page` and `$request`. The scalar fields of the entry are the config of the page, so `$page->meta('title')` reads its title. Drafts and entries that do not fit their blueprint are no pages, a file in `site/pages/` of the same address wins. A list of the entries links to them with `$entry->getUrl()`, like the blocks `seminar-teaser` and `seminar-spotlight` of the demo, `getUrl()` is in the language of the page being rendered.
 
 ### Structured pages
 

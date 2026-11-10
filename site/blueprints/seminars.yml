@@ -1,7 +1,10 @@
 # The fields of the entries in site/data/seminars/, see the README section "Data".
 # Query them in a block or a PHP page with $site->collection("seminars").
+# `url: seminars` makes every seminar a page at /seminars/<slug>, rendered by
+# seminars.php next to this file.
 title: Seminars
 sort: date
+url: seminars
 columns: [date, title, location, price, seats]   # the table in the admin
 # on a multilingual site the text fields hold a value per language, `shared: true` keeps one for all
 fields:

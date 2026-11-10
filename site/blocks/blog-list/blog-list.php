@@ -4,15 +4,15 @@
  * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  *
- * The posts of the blog, the entries of `site/data/blog/`. Each one links to
- * its page, which the blueprint `site/blueprints/blog.yml` makes with `url: blog`.
+ * The posts of the blog, the Markdown pages of `site/pages/blog/`, newest
+ * first. Each one links to its page, see the block `post`.
  * Fields: blog-list.yml
  */
 
 /** @var \Shaack\Reboot\Block $block */
 /** @var \Shaack\Reboot\Site $site */
 require_once __DIR__ . "/../_helpers.php";
-$posts = $site->collection("blog");
+$posts = $site->pages("blog")->sortBy("date", "desc");
 if ($block->get("count")) {
     $posts = $posts->limit((int)$block->get("count"));
 }

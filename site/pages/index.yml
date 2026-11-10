@@ -68,17 +68,17 @@ blocks:
       en: |-
         ## Data in tables
 
-        Seminars, posts, products, team members. A blueprint in `site/blueprints/` names their fields, the entries are files in `site/data/`, and the admin lists them as a table. Blocks show them wherever they fit.
+        Seminars, products, team members, references. A blueprint in `site/blueprints/` names their fields, the entries are files in `site/data/`, and the admin lists them as a table. Blocks show them wherever they fit.
 
-        Change the price of a seminar once, and every page that shows it is up to date. With `url: blog` in its blueprint every entry becomes a page of its own, the posts of the [blog](blog) work like that.
+        Change the price of a seminar once, and every page that shows it is up to date. With `url: seminars` in its blueprint every entry becomes a page of its own, a click on a [seminar](seminars) opens it.
 
         [How data works](documentation#data)
       de: |-
         ## Daten in Tabellen
 
-        Seminare, Beiträge, Produkte, Teammitglieder. Ein Blueprint in `site/blueprints/` benennt ihre Felder, die Einträge sind Dateien in `site/data/`, und der Admin listet sie als Tabelle. Blöcke zeigen sie dort, wo sie passen.
+        Seminare, Produkte, Teammitglieder, Referenzen. Ein Blueprint in `site/blueprints/` benennt ihre Felder, die Einträge sind Dateien in `site/data/`, und der Admin listet sie als Tabelle. Blöcke zeigen sie dort, wo sie passen.
 
-        Ändere den Preis eines Seminars einmal, und jede Seite, die es zeigt, ist auf dem neuesten Stand. Mit `url: blog` in seinem Blueprint wird jeder Eintrag zu einer eigenen Seite, so funktionieren die Beiträge des [Blogs](blog).
+        Ändere den Preis eines Seminars einmal, und jede Seite, die es zeigt, ist auf dem neuesten Stand. Mit `url: seminars` in seinem Blueprint wird jeder Eintrag zu einer eigenen Seite, ein Klick auf ein [Seminar](seminars) öffnet sie.
 
         [Wie Daten funktionieren](documentation#data)
     image: media/screenshots/reboot-cms-admin-data.png
@@ -158,6 +158,10 @@ blocks:
         caption:
           en: 'Secure downloads: a file with a link and a password'
           de: 'Secure downloads: eine Datei mit Link und Passwort'
+  - type: site-list
+    heading:
+      en: Websites using Reboot CMS
+      de: Websites mit Reboot CMS
   - type: text
     text:
       en: |-

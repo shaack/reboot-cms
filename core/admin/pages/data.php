@@ -23,12 +23,13 @@ $historyMaxVersions = $localConfig['history']['maxVersions'] ?? 50;
 $blueprints = Blueprint::all($defaultSite);
 // on a multilingual site the text fields get an input per language, the switcher above shows one language
 FieldForm::setLanguages($defaultSite->getLanguages(), $defaultSite->getDefaultLanguage());
-$editLanguages = $defaultSite->isMultilingual() ? $defaultSite->getLanguages() : [];
 $collectionName = (string)($request->getParam("collection") ?? array_key_first($blueprints) ?? "");
 $blueprint = $blueprints[$collectionName] ?? null;
 $slug = $request->getParam("entry");
 $slug = is_string($slug) && $slug !== "" ? $slug : null;
 $isNew = $slug === null && $request->getParam("new");
+// a collection with one value for all languages in every field needs no switcher
+$editLanguages = $defaultSite->isMultilingual() && $blueprint && $blueprint->hasTranslatableFields() ? $defaultSite->getLanguages() : [];
 $handler = $blueprint ? new DataEntryHandler($blueprint, $dataDir, $historyDir, $historyMaxVersions) : null;
 if ($handler && $slug !== null && !$handler->file($slug)) {
     $slug = null;

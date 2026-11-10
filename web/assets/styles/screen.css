@@ -723,7 +723,7 @@ main > .block-text:first-child {
     text-decoration: none;
 }
 
-/* Blog, the list of posts and the head of a post, see site/blueprints/blog.php */
+/* Blog, the list of posts and the head of a post, see site/blocks/post.php */
 .block-blog-list,
 .block-post-head {
     padding: 2rem 0;
@@ -734,9 +734,41 @@ main > .block-text:first-child {
     color: var(--muted);
 }
 
-.block-post-head:has(+ .block-article) {
+.block-post-head:has(+ .block-article),
+.block-post-head:has(+ .block-seminar-page) {
     padding-bottom: 0;
     margin-bottom: 2rem;
+}
+
+/* the websites of site/data/sites/, see site/blocks/site-list/ */
+.site-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.site-list a {
+    display: block;
+    padding: 0.9rem 1.4rem;
+    background: var(--surface);
+    color: var(--strong);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.site-list a:hover {
+    background: var(--surface-hover);
+    color: var(--link-hover);
+}
+
+/* the page of a seminar, see site/blueprints/seminars.php */
+.seminar-description {
+    max-width: 44em;
+    margin-top: 2.5rem;
 }
 
 .blog-lead {

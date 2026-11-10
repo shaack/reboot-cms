@@ -109,12 +109,17 @@ class Entry
 
     /**
      * The address of the entry as a page, `blog/<slug>`, if its blueprint has
-     * `url: blog`, otherwise null. Relative, like the links of a page.
+     * `url: blog`, otherwise null. Relative, like the links of a page, and in
+     * the language of the page being rendered, `de/blog/<slug>`.
      */
     public function getUrl(): ?string
     {
         $url = $this->fieldBlueprint?->getUrl();
-        return $url !== null ? $url . "/" . $this->slug : null;
+        if ($url === null) {
+            return null;
+        }
+        $path = "/" . $url . "/" . $this->slug;
+        return ltrim($this->site ? $this->site->languagePath($path, $this->site->getLanguage()) : $path, "/");
     }
 
     public function getFsPath(): string

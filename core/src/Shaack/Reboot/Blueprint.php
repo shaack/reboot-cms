@@ -40,6 +40,8 @@ use Symfony\Component\Yaml\Yaml;
  * `textarea`, `markdown`, `image` and `url`, hold a value per language,
  * `heading: {en: Welcome, de: Willkommen}`. A field with `shared: true` has one
  * value for all languages, an image that is the same everywhere for example.
+ * `shared: true` next to the fields makes all of them shared, for data that is
+ * the same in every language.
  * The other types are the same in all languages anyway, and so are the blocks
  * and the items of lists, only their fields are translated.
  *
@@ -78,9 +80,14 @@ class Blueprint
         $this->convert = is_array($definition["convert"] ?? null) ? $definition["convert"] : null;
         $url = trim((string)($definition["url"] ?? ""), "/");
         $this->url = $url !== "" ? $url : null;
+        // `shared: true` next to the fields: one value for all languages in every field
+        $shared = !empty($definition["shared"]);
         foreach ($definition["fields"] ?? [] as $fieldName => $props) {
             $fieldName = (string)$fieldName;
             $props = is_array($props) ? $props : [];
+            if ($shared) {
+                $props["shared"] = true;
+            }
             $type = $props["type"] ?? "text";
             if (!in_array($type, self::TYPES, true)) {
                 Logger::error("Blueprint '" . $name . "': field '" . $fieldName . "' has the unknown type '" . $type . "', it is treated as text");
@@ -89,7 +96,7 @@ class Blueprint
             $props["type"] = $type;
             $props["label"] = (string)($props["label"] ?? ucfirst(str_replace("-", " ", $fieldName)));
             if ($type === "list") {
-                $props["blueprint"] = new Blueprint($name . "." . $fieldName, ["fields" => $props["fields"] ?? []], $site);
+                $props["blueprint"] = new Blueprint($name . "." . $fieldName, ["fields" => $props["fields"] ?? [], "shared" => !empty($props["shared"])], $site);
             }
             $this->fields[$fieldName] = $props;
         }
@@ -277,6 +284,19 @@ class Blueprint
     public static function isTranslatable(array $props): bool
     {
         return in_array($props["type"] ?? "text", self::TRANSLATABLE_TYPES, true) && empty($props["shared"]);
+    }
+
+    /**
+     * Whether a field, or a field of the items of a list, holds a value per language.
+     */
+    public function hasTranslatableFields(): bool
+    {
+        foreach ($this->fields as $props) {
+            if (self::isTranslatable($props) || ($props["type"] === "list" && $props["blueprint"]->hasTranslatableFields())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

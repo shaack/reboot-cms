@@ -1,0 +1,5 @@
+# The websites of site/data/sites/, linked by their names
+title: Websites
+fields:
+  heading: {type: text, default: Websites using Reboot CMS}
+  inverse: {type: boolean, help: "A white band over the full width"}

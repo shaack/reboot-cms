@@ -17,6 +17,7 @@ class Site
     protected array $addOns = []; // Site addons
     protected array $missingAddOns = []; // names from `addons` that could not be loaded
     protected array $collections = []; // collections read in this request, by name
+    protected array $pageLists = []; // the pages of folders read in this request, see pages()
     protected ?string $language = null; // the language of the page being rendered, see getLanguage()
 
     /**
@@ -126,6 +127,15 @@ class Site
     }
 
     /**
+     * The pages of a folder in `site/pages/`, `blog` for the posts of a blog,
+     * with the queries of a collection, see PageList.
+     */
+    public function pages(string $folder): PageList
+    {
+        return $this->pageLists[$folder] ??= PageList::load($this, $folder);
+    }
+
+    /**
      * The languages of the site, `languages: [en, de]` in `site/config.yml`,
      * empty for a site in one language.
      * @return string[]
@@ -157,6 +167,35 @@ class Site
     public function setLanguage(?string $language): void
     {
         $this->language = $language;
+    }
+
+    /**
+     * The relative links of a page in another language than the default one
+     * lead to the pages of that language, `blog` on a German page to `de/blog`,
+     * so a translation keeps the links of the original. Relative links resolve
+     * against `<base href>`, the root of the site. Links to files in `web/`,
+     * `media/photo.jpg` for example, and links that start with a language stay
+     * as they are.
+     */
+    public function localizeLinks(string $html, string $language): string
+    {
+        if ($language === $this->getDefaultLanguage() || !in_array($language, $this->getLanguages(), true)) {
+            return $html;
+        }
+        $webDir = dirname($this->fsPath) . "/web";
+        return preg_replace_callback('/(<a\b[^>]*?\bhref=)(["\'])([^"\']*)\2/i', function ($matches) use ($language, $webDir) {
+            $href = $matches[3];
+            // a URL with a scheme, an absolute path, an anchor or a query on the page itself
+            if ($href === "" || preg_match('#^([a-z][a-z0-9+.\-]*:|/|\#|\?)#i', $href)) {
+                return $matches[0];
+            }
+            $href = preg_replace('#^\./#', '', $href);
+            $path = preg_replace('/[?#].*$/', '', $href);
+            if (in_array(explode("/", $path)[0], $this->getLanguages(), true) || ($path !== "" && file_exists($webDir . "/" . $path))) {
+                return $matches[0];
+            }
+            return $matches[1] . $matches[2] . $language . "/" . $href . $matches[2];
+        }, $html);
     }
 
     /**

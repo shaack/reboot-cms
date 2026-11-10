@@ -155,7 +155,7 @@ blocks:
       en: |-
         ## Data from a blueprint
 
-        Seminars, posts, products, team members. Content with the same fields again and again is no page, it is data. A blueprint in `site/blueprints/` describes it, `seminars.yml` in this demo:
+        Seminars, products, team members, references. Content with the same fields again and again is no page, it is data. A blueprint in `site/blueprints/` describes it, `seminars.yml` in this demo:
 
         ```yaml
         title: Seminars
@@ -173,7 +173,7 @@ blocks:
       de: |-
         ## Daten aus einem Blueprint
 
-        Seminare, Beiträge, Produkte, Teammitglieder. Inhalte mit immer wieder denselben Feldern sind keine Seiten, sondern Daten. Ein Blueprint in `site/blueprints/` beschreibt sie, in dieser Demo `seminars.yml`:
+        Seminare, Produkte, Teammitglieder, Referenzen. Inhalte mit immer wieder denselben Feldern sind keine Seiten, sondern Daten. Ein Blueprint in `site/blueprints/` beschreibt sie, in dieser Demo `seminars.yml`:
 
         ```yaml
         title: Seminars
@@ -248,32 +248,36 @@ blocks:
         One line more in the blueprint, and every entry becomes a page of its own:
 
         ```yaml
-        title: Blog
-        sort: date desc
-        url: blog
+        title: Seminars
+        sort: date
+        url: seminars
         fields:
           title: {type: text, required: true}
           date:  {type: date, required: true}
           body:  {type: markdown}
         ```
 
-        With `url: blog` the file `site/data/blog/2026-11-08-reboot-cms-4.yml` is the page `/blog/2026-11-08-reboot-cms-4`. A template `site/blueprints/blog.php` next to the blueprint renders it. The [blog](blog) of this demo works like that, the block `blog-list` lists its posts.
+        With `url: seminars` the file `site/data/seminars/2027-01-23-building-blocks.yml` is the page `/seminars/2027-01-23-building-blocks`. A template `site/blueprints/seminars.php` next to the blueprint renders it. The [seminars](seminars) of this demo work like that, a click on a title opens its page.
+
+        The posts of the [blog](blog) on the other hand are no data. A post is text with an address, so it is a Markdown page in `site/pages/blog/`, and the block `blog-list` lists them with `$site->pages("blog")`.
       de: |-
         ## Einträge, die Seiten sind
 
         Eine Zeile mehr im Blueprint, und jeder Eintrag wird zu einer eigenen Seite:
 
         ```yaml
-        title: Blog
-        sort: date desc
-        url: blog
+        title: Seminars
+        sort: date
+        url: seminars
         fields:
           title: {type: text, required: true}
           date:  {type: date, required: true}
           body:  {type: markdown}
         ```
 
-        Mit `url: blog` ist die Datei `site/data/blog/2026-11-08-reboot-cms-4.yml` die Seite `/blog/2026-11-08-reboot-cms-4`. Ein Template `site/blueprints/blog.php` neben dem Blueprint rendert sie. Der [Blog](blog) dieser Demo funktioniert so, der Block `blog-list` listet seine Beiträge.
+        Mit `url: seminars` ist die Datei `site/data/seminars/2027-01-23-building-blocks.yml` die Seite `/seminars/2027-01-23-building-blocks`. Ein Template `site/blueprints/seminars.php` neben dem Blueprint rendert sie. Die [Seminare](seminars) dieser Demo funktionieren so, ein Klick auf einen Titel öffnet die Seite.
+
+        Die Beiträge des [Blogs](blog) sind dagegen keine Daten. Ein Beitrag ist Text mit einer Adresse, also eine Markdown-Seite in `site/pages/blog/`, und der Block `blog-list` listet sie mit `$site->pages("blog")`.
   - type: text
     text:
       en: |-

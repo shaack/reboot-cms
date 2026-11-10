@@ -48,7 +48,8 @@ A request path maps straight onto `site/pages/`:
 - `/about` → `pages/about.yml`
 - `/howto/git` → `pages/howto/git.yml`
 - a folder is served by its `index` page
-- `/blog/<slug>` → the entry `data/blog/<slug>.yml`, because `blueprints/blog.yml` has `url: blog`
+- `/blog/<slug>` → the Markdown page `pages/blog/<slug>.md`, a post of the blog
+- `/seminars/<slug>` → the entry `data/seminars/<slug>.yml`, because `blueprints/seminars.yml` has `url: seminars`
 - `404.yml` (or `.md`, `.php`) is the custom 404 page
 
 To find a page's source, append the URL path to `site/pages/`. To add a page, create the file, no route registration needed. At one path `.md` wins over `.yml`, which wins over `.php`. If no file matches, the entries of collections with `url` are tried (`Page::renderEntry`), then the pages of AddOns (`Site::getAddOnPage()`), then the 404 page.
@@ -68,7 +69,7 @@ hide-nav: true
 
 Templates read it with `$page->meta('title', 'Default')`, escaped for HTML; `$page->meta('key', null, false)` returns a string unescaped.
 
-A page is split into **blocks** with HTML comments. Without any block comment the whole file renders as a single `text` block:
+A page is split into **blocks** with HTML comments. Without any block comment the whole file renders as a single `text` block, or as the block the frontmatter names, `block: post`, which gets the frontmatter as its config. The posts of the demo blog are such pages in `site/pages/blog/`; `$site->pages("blog")` lists the pages of a folder with their frontmatter and the queries of a collection (`where`, `sortBy`, `limit`), see `PageList` and `PageEntry`:
 
 ```markdown
 <!-- intro -->
@@ -88,7 +89,9 @@ Each block name maps to `site/blocks/{name}.php`, or to the folder `site/blocks/
 
 Records with fixed fields (seminars, events, people) are no pages. Each entry is a YAML file in `site/data/<collection>/` with the fields of its blueprint, like a structured page, a longer text is a `markdown` field such as `body`. `site/blueprints/<collection>.yml` lists the fields with `type`, `required`, `default` and `options`. Templates and blocks query them with `$site->collection("seminars")->where("date", ">=", "today")->sortBy("date")->limit(3)`. Entries that don't match the blueprint and drafts (`draft: true`) are left out. See the README section "Data".
 
-A collection blueprint with `url: blog` makes each entry a page at `/blog/<slug>`, rendered by `site/blueprints/blog.php` with `$entry`; scalar entry fields become page config. `Entry::getUrl()` returns its address. In the demo the blog lives in `site/data/blog/` and the block `blog-list` lists it.
+Text with an address, like a blog post, is a Markdown page, not data. `shared: true` next to the `fields` of a blueprint gives every field one value for all languages, like `site/blueprints/sites.yml`.
+
+A collection blueprint with `url: seminars` makes each entry a page at `/seminars/<slug>`, rendered by `site/blueprints/seminars.php` with `$entry`; scalar entry fields become page config. `Entry::getUrl()` returns its address. In the demo the blog lives in `site/data/blog/` and the block `blog-list` lists it.
 
 ## Structured pages
 
@@ -120,6 +123,7 @@ In `template.php` and block templates:
 - `$request->getLanguage()`: the active language code, for `<html lang>`
 - `$request->getPathWithoutLanguage()`: the path without the prefix
 - `$site->languagePath($path, $language)`: a path in a language, for the links of the navigation
+- Relative links on a page in another language get its prefix (`Site::localizeLinks`), `[Blog](blog)` on `/de/about` leads to `/de/blog`, so a translation keeps the links of the original. A Markdown page `about.de.md` takes the frontmatter it does not set from `about.md`.
 - `$site->localize($value, $language)`: the value of a language from `{en: …, de: …}`, for the labels of the navigation, which `site/config.yml` writes path first, `/about: {en: About, de: Über uns}`
 - `$site->languageUrls($request)`: the current page in every language, for a switcher and `hreflang` links
 - `$page->getLanguage()`: the language the page was rendered in
@@ -145,7 +149,9 @@ The `Admin` addon of the admin site mounts the `admin/` pages and menu entries o
 | `Page` | Renders Markdown, structured and PHP pages and the entries of collections |
 | `Block` | A block, its template and the XPath queries of Markdown blocks |
 | `Blueprint` | Field definitions from `site/blueprints/<name>.yml` or a block folder, normalizes and validates values |
+| `EntryList` | The queries shared by `Collection` and `PageList`: `where`, `filter`, `sortBy`, `limit`, `first`, `find` |
 | `Collection` | The entries of `site/data/<name>/`, queried via `$site->collection()` (`where`, `sortBy`, `limit`) |
+| `PageList`, `PageEntry` | The pages of a folder of `site/pages/` with their frontmatter, via `$site->pages()` |
 | `Entry` | One data entry, a YAML file with the fields of its blueprint |
 | `FieldAccess` | Trait with `get`, `html`, `date`, `items`, `entry` for `Entry`, `Block` and `Item` (list items) |
 | `YamlWriter` | Writes readable YAML (quotes only where needed, `\|` blocks), used for data entries and structured pages |

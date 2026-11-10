@@ -36,9 +36,10 @@ function isStartPage(?\Shaack\Reboot\Request $request): bool
 
 /**
  * One seminar as a row with date, facts and booking, used by the blocks
- * `seminar-teaser` and `seminar-spotlight`.
+ * `seminar-teaser` and `seminar-spotlight` and by the page of a seminar,
+ * which has its title above the row.
  */
-function seminarRow(\Shaack\Reboot\Entry $seminar): string
+function seminarRow(\Shaack\Reboot\Entry $seminar, bool $onItsPage = false): string
 {
     $bookedOut = (bool)$seminar->get("booked-out");
     ob_start(); ?>
@@ -53,7 +54,10 @@ function seminarRow(\Shaack\Reboot\Entry $seminar): string
                 <span><?= $seminar->get("location") ?></span>
                 <span><?= $seminar->get("time") ?></span>
             </p>
-            <h3><?= $seminar->get("title") ?></h3>
+            <?php // with `url: seminars` in its blueprint every seminar has a page of its own ?>
+            <?php if (!$onItsPage) { ?>
+            <h3><?php if ($seminar->getUrl()) { ?><a href="<?= $seminar->getUrl() ?>"><?= $seminar->get("title") ?></a><?php } else { ?><?= $seminar->get("title") ?><?php } ?></h3>
+            <?php } ?>
             <?php if ($seminar->get("teaser")) { ?>
                 <p class="seminar-teaser"><?= $seminar->get("teaser") ?></p>
             <?php } ?>

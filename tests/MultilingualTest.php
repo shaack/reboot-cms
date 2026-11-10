@@ -419,4 +419,70 @@ class MultilingualTest
         $file = (string)file_get_contents($this->tmpDir . "/data/seminars/advanced.yml");
         Assert::contains("title: Advanced\nbody: Only English.\n", $file, "only the default language is a single value");
     }
+
+    // --- Pages of a folder ---
+
+    private function posts(): void
+    {
+        $this->write("blog/index.md", "Blog");
+        $this->write("blog/first.md", "---\ntitle: First post\ndate: 2026-01-02\nblock: post\nlinks: \"- [All](blog)\"\n---\n\nHello");
+        $this->write("blog/first.de.md", "---\ntitle: Erster Beitrag\n---\n\nHallo");
+        $this->write("blog/second.md", "---\ntitle: Second post\ndate: 2026-03-04\n---\n\nMore");
+        $this->write("blog/draft.md", "---\ntitle: Draft\ndraft: true\n---\n");
+        file_put_contents($this->tmpDir . "/blocks/post.php",
+            '<?php $c = $block->getConfig(); ?><h1><?= $c["title"] ?></h1><time><?= $c["date"] ?? "" ?></time><?= $block->content() ?>');
+    }
+
+    public function testPagesOfAFolder(): void
+    {
+        $this->posts();
+        $posts = $this->site->pages("blog");
+        Assert::equals(["first", "second"], array_map(fn($post) => $post->getSlug(), $posts->toArray()), "no index, no draft, a translation is no page of its own");
+        Assert::equals(["second", "first"], array_map(fn($post) => $post->getSlug(), $posts->sortBy("date", "desc")->toArray()));
+        $first = $posts->find("first");
+        Assert::equals("First post", $first->get("title"));
+        Assert::equals("2026-01-02", $first->get("date"), "a date stays text");
+        Assert::equals("blog/first", $first->getUrl());
+        $this->site->setLanguage("de");
+        Assert::equals("Erster Beitrag", $first->get("title"));
+        Assert::equals("02.01.2026", $first->date("date", "d.m.Y"), "the date of the default language");
+        Assert::equals("de/blog/first", $first->getUrl());
+        Assert::equals("Second post", $posts->find("second")->get("title"), "a page without German shows the default one");
+        Assert::equals(1, count($posts->where("title", "contains", "first")), "queries read the default language");
+    }
+
+    public function testFrontmatterNamesTheBlockOfAPageWithoutBlocks(): void
+    {
+        $this->posts();
+        $en = $this->render("/blog/first");
+        Assert::contains("<h1>First post</h1><time>2026-01-02</time>", $en);
+        Assert::contains("<p>Hello</p>", $en);
+        $de = $this->render("/de/blog/first");
+        Assert::contains("<h1>Erster Beitrag</h1><time>2026-01-02</time>", $de, "a translation takes what it does not say from the page of the default language");
+        Assert::contains("<p>Hallo</p>", $de);
+        Assert::false(str_contains($this->render("/blog/second"), "<h1>"), "without block it is a text block");
+    }
+
+    public function testRelativeLinksLeadToThePagesOfTheLanguage(): void
+    {
+        $html = '<a href="blog/first">a</a><a href="./">b</a><a href="https://x.org">c</a><a href="#top">d</a>'
+            . '<a href="de/about">e</a><a href="/about">f</a><a class="x" href=\'seminars?x=1#y\'>g</a><img src="media/x.png">';
+        Assert::equals('<a href="de/blog/first">a</a><a href="de/">b</a><a href="https://x.org">c</a><a href="#top">d</a>'
+            . '<a href="de/about">e</a><a href="/about">f</a><a class="x" href=\'de/seminars?x=1#y\'>g</a><img src="media/x.png">',
+            $this->site->localizeLinks($html, "de"));
+        Assert::equals($html, $this->site->localizeLinks($html, "en"), "the default language has no prefix");
+        $this->write("about.de.md", "[Blog](blog)");
+        Assert::contains('href="de/blog"', $this->render("/de/about"));
+    }
+
+    public function testCollectionOfOneLanguage(): void
+    {
+        $blueprint = new Blueprint("sites", ["shared" => true, "fields" => ["name" => ["type" => "text"], "url" => ["type" => "url"]]]);
+        Assert::false(Blueprint::isTranslatable($blueprint->getFields()["name"]));
+        Assert::false(Blueprint::isTranslatable($blueprint->getFields()["url"]));
+        $other = new Blueprint("seminars", ["fields" => ["title" => ["type" => "text"]]]);
+        Assert::true(Blueprint::isTranslatable($other->getFields()["title"]));
+        Assert::false($blueprint->hasTranslatableFields(), "the admin shows no language switch for it");
+        Assert::true($other->hasTranslatableFields());
+    }
 }

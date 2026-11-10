@@ -1,4 +1,4 @@
-# The posts of the blog, newest first, from site/data/blog/
+# The posts of the blog, newest first, the Markdown pages of site/pages/blog/
 title: Blog posts
 fields:
   heading: {type: text}

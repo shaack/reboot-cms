@@ -10,5 +10,5 @@ blocks:
       en: Blog Example
       de: Blog-Beispiel
     lead:
-      en: Notes on running websites with Reboot CMS. Every post is an entry in `site/data/blog/`, edited under Data in the admin, and this list is built from them.
-      de: Notizen zum Betrieb von Websites mit Reboot CMS. Jeder Beitrag ist ein Eintrag in `site/data/blog/`, bearbeitet unter Data im Admin, und diese Liste wird daraus gebaut.
+      en: Notes on running websites with Reboot CMS. Every post is a Markdown page in `site/pages/blog/`, and this list is built from their frontmatter.
+      de: Notizen zum Betrieb von Websites mit Reboot CMS. Jeder Beitrag ist eine Markdown-Seite in `site/pages/blog/`, und diese Liste wird aus ihrem Frontmatter gebaut.

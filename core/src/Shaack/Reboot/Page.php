@@ -57,7 +57,8 @@ class Page
                 return $this->render404($path, $request);
             }
         }
-        return $this->renderPath($path, $request) ?? $this->render404($path, $request);
+        $html = $this->renderPath($path, $request) ?? $this->render404($path, $request);
+        return $this->site->localizeLinks($html, $this->getLanguage());
     }
 
     /**
@@ -80,7 +81,9 @@ class Page
             $base = $this->pageBase($pagesDir, $pathWithoutLanguage);
             if ($base !== null && file_exists($base . "." . $this->language . ".md")) {
                 Logger::info("Markdown page: " . $path . " (" . $this->language . ")");
-                return $this->renderMarkdown($base . "." . $this->language . ".md", $request);
+                // the frontmatter of the page of the default language holds what is not translated, a date for example
+                $defaults = is_file($base . ".md") ? self::splitFrontmatter(trim((string)file_get_contents($base . ".md")))[0] : [];
+                return $this->renderMarkdown($base . "." . $this->language . ".md", $request, $defaults);
             }
             if ($prefixed) {
                 $legacyBase = $this->pageBase($pagesDir, $path);
@@ -220,6 +223,7 @@ class Page
      * mapping between a `---` on the first line and the next `---` line. If
      * that is no valid mapping, the page has no frontmatter and the `---`
      * are horizontal rules, so a page that starts with a rule loses nothing.
+     * A date like `2026-11-08` stays text, YAML would read it as a timestamp.
      * @return array [array $config, string $content]
      */
     public static function splitFrontmatter(string $content): array
@@ -228,7 +232,7 @@ class Page
             return [[], $content];
         }
         try {
-            $config = Yaml::parse($matches[1]);
+            $config = self::datesAsText(Yaml::parse($matches[1], Yaml::PARSE_DATETIME));
         } catch (ParseException $e) {
             Logger::error("Error: could not parse frontmatter: " . $e->getMessage());
             return [[], $content];
@@ -237,6 +241,17 @@ class Page
             return [[], $content];
         }
         return [$config ?? [], substr($content, strlen($matches[0]))];
+    }
+
+    /**
+     * The dates of parsed YAML as text, `2026-11-08`, with the time if it has one.
+     */
+    public static function datesAsText($value)
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format("H:i:s") === "00:00:00" ? $value->format("Y-m-d") : $value->format("Y-m-d H:i:s");
+        }
+        return is_array($value) ? array_map([self::class, "datesAsText"], $value) : $value;
     }
 
     /**
@@ -311,10 +326,9 @@ class Page
     }
 
     /**
-     * @param string $pagePath
-     * @return string
+     * @param array $defaults the frontmatter of the page of the default language, under the one of a translation
      */
-    private function renderMarkdown(string $pagePath, ?Request $request): string
+    private function renderMarkdown(string $pagePath, ?Request $request, array $defaults = []): string
     {
         $isPreview = $this->previewContent !== null && (realpath($pagePath) ?: $pagePath) === $this->previewFsPath;
         $source = $isPreview ? $this->previewContent : file_get_contents($pagePath);
@@ -324,6 +338,7 @@ class Page
             return "";
         }
         [$this->config, $body] = self::splitFrontmatter($content);
+        $this->config = array_merge($defaults, $this->config);
         // the line in the source where $body starts, for the preview markers
         $bodyLine = substr_count($source, "\n", 0, strlen($source) - strlen(ltrim($source)))
             + substr_count($content, "\n", 0, strlen($content) - strlen($body));
@@ -343,9 +358,11 @@ class Page
         }
 
         if (!count($parsedBlocks)) {
-            // interpret whole pages as flat markdown file
-            Logger::info("No blocks found, rendering as flat markdown file");
-            $block = new Block($this->site, "text", $content);
+            // the whole page is one block, `text` unless the frontmatter names another,
+            // `block: post`, which gets the frontmatter as its config
+            $name = is_string($this->config["block"] ?? null) && preg_match('/^[\w\-]+$/', $this->config["block"]) ? $this->config["block"] : null;
+            Logger::info("No blocks found, rendering the page as one block " . ($name ?? "text"));
+            $block = $name !== null ? new Block($this->site, $name, $content, $this->config) : new Block($this->site, "text", $content);
             $blocks[] = $block;
             $blockLines[] = $bodyLine;
         } else {
