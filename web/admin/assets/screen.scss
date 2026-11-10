@@ -6,6 +6,11 @@ body {
     // room for the fixed navbar, 48px high, and a gap below it
     margin-top: 3.75rem;
     margin-bottom: 2rem;
+
+    // the page Pages fits the viewport, its editor and form scroll inside
+    &:has(#pages-row) {
+        margin-bottom: 0;
+    }
 }
 
 .block {
@@ -29,7 +34,7 @@ pre {
 
 textarea.cm-md-editor {
     // the viewport minus navbar, page title and button row
-    height: calc(100vh - 226px);
+    height: calc(100vh - 240px);
     margin-bottom: 1rem;
 }
 
@@ -1052,7 +1057,7 @@ textarea.yaml-editor-input {
     .structured-page-fields {
         // positioned, so hidden labels inside stay in the box and do not stretch the page
         position: relative;
-        height: calc(100vh - 189px);
+        height: calc(100vh - 205px);
         overflow-y: auto;
         padding-right: 6px;
     }
