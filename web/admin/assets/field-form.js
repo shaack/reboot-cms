@@ -18,13 +18,19 @@ import {InsertMedia} from "./InsertMedia.js"
 // before the forms are set up below, a const is not there before its line
 const EDIT_LANG_KEY = "reboot_edit_lang"
 
-// A textarea grows with its text, see @shaack/auto-resize-textarea. One of a
-// language not shown or in a folded block has no height yet, it is set up
-// when it is shown.
+// A textarea grows with its text up to 15 lines, then it scrolls, see
+// @shaack/auto-resize-textarea. One of a language not shown or in a folded
+// block has no height yet, it is set up when it is shown.
+const MAX_LINES = 15
 const resizeObserver = new ResizeObserver(entries => entries.forEach(entry => {
     if (entry.contentRect.height === 0) return
-    resizeObserver.unobserve(entry.target)
-    autoResizeTextarea([entry.target])
+    const textarea = entry.target
+    resizeObserver.unobserve(textarea)
+    const style = getComputedStyle(textarea)
+    const maxHeight = MAX_LINES * parseFloat(style.lineHeight)
+        + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom)
+        + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth)
+    autoResizeTextarea([textarea], {maxHeight})
 }))
 
 const forms = document.querySelectorAll("form[data-field-form]")

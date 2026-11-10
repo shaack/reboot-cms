@@ -132,7 +132,7 @@ class FieldForm
             case "markdown":
                 // not required, the browser would stop the form at a textarea the Markdown editor hides
                 $attr = str_replace(' required', '', $attr);
-                return '<textarea' . str_replace(' class="form-control', ' class="form-control markdown', $attr) . ' rows="4"' . $placeholder . '>'
+                return '<textarea' . str_replace(' class="form-control', ' class="form-control markdown', $attr) . ' rows="2"' . $placeholder . '>'
                     . self::e($valueText) . '</textarea>';
             case "image":
                 return '<div class="input-group">'
@@ -351,7 +351,7 @@ class FieldForm
                     self::translatedField($props, $values["markdown"], $id, $name . "[_markdown]", "Markdown", $error ? " is-invalid" : "", "", $error));
             } else {
                 $html .= '<div class="mb-3"><label class="visually-hidden" for="' . $id . '">Markdown</label>'
-                    . '<textarea class="form-control markdown' . ($error ? ' is-invalid' : '') . '" id="' . $id . '" name="' . self::e($name) . '[_markdown]" rows="4">'
+                    . '<textarea class="form-control markdown' . ($error ? ' is-invalid' : '') . '" id="' . $id . '" name="' . self::e($name) . '[_markdown]" rows="2">'
                     . self::e((string)self::singleValue($values["markdown"])) . '</textarea>'
                     . self::help($props, $error) . '</div>';
             }
