@@ -11,6 +11,7 @@ use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\CsrfProtection;
 use Shaack\Reboot\Page;
 use Shaack\Reboot\Block;
+use Shaack\Reboot\AddOns\Admin\LanguageSwitch;
 use Shaack\Reboot\AddOns\Admin\PageActionHandler;
 use Shaack\Reboot\AddOns\Admin\PageHistoryHelper;
 use Shaack\Reboot\AddOns\Admin\PageTreeHelper;
@@ -55,10 +56,10 @@ $pageAction = $request->getParam("action");
 $pageActionError = null;
 $pageActionSuccess = null;
 if ($pageAction) {
-    $actionResult = AdminHelper::handleAction($request, function() use ($pageAction, $request, $pagesDir, $historyDir, $historyMaxVersions) {
+    $actionResult = AdminHelper::handleAction($request, function() use ($pageAction, $request, $pagesDir, $historyDir, $historyMaxVersions, $defaultSite) {
         $targetName = $request->getParam("name") ?? "";
         $targetName = str_replace("..", "", $targetName);
-        $handler = new PageActionHandler($pagesDir, $historyDir, $historyMaxVersions);
+        $handler = new PageActionHandler($pagesDir, $historyDir, $historyMaxVersions, $defaultSite);
         return $handler->handle($pageAction, $targetName, $request);
     });
     $pageActionError = $actionResult['error'];
@@ -97,7 +98,7 @@ if($editPageName) {
 $allFolders = PageTreeHelper::collectFolders($pagesDir);
 $pageTree = PageTreeHelper::buildPageTree($pages, $pagesDir);
 $editable = false;
-$treeHtml = PageTreeHelper::renderTree($pageTree, $editPageName, $editable);
+$treeHtml = PageTreeHelper::renderTree($pageTree, $editPageName, $editable, "", $defaultSite->isMultilingual() ? $defaultSite : null);
 if (!$editable && $editPageName) {
     Logger::error("" . $editPageName . " is not editable.");
     $editPageName = null;
@@ -112,12 +113,14 @@ if ($editPageName) {
     $titleExtra .= '<button type="button" class="btn btn-sm btn-link text-body-secondary p-0 d-none d-lg-inline-flex align-self-center"'
         . ' id="preview-panel-toggle" aria-pressed="false" title="Show or hide the preview" aria-label="Show or hide the preview" aria-controls="preview-column">'
         . AdminHelper::icon('sidebar-reverse') . '</button>';
-    $viewPath = preg_replace('/\/index$/', '/', preg_replace('/\.(md|yml)$/', '', $editPageName));
+    // `about.de.md` is at /de/about, a structured page in the default language until the switcher changes it
+    [$viewAddress, $viewLanguage] = $defaultSite->pageFileAddress($editPageName);
+    $viewPath = $defaultSite->languagePath($viewAddress, $viewLanguage);
     $viewUrl = $reboot->getBaseWebPath() . $viewPath;
     $titleExtra .= '<span class="page-location">'
         . '<code>' . htmlspecialchars(ltrim($editPageName, '/')) . '</code>'
-        . '<a href="' . htmlspecialchars($viewUrl) . '" target="_blank" title="View the page in a new tab">'
-        . htmlspecialchars($viewPath) . AdminHelper::icon('external') . '</a>'
+        . '<a href="' . htmlspecialchars($viewUrl) . '" target="_blank" title="View the page in a new tab" id="page-view-link">'
+        . '<span>' . htmlspecialchars($viewPath) . '</span>' . AdminHelper::icon('external') . '</a>'
         . '<span class="unsaved-dot d-none" id="unsaved-badge" title="Unsaved changes" role="img" aria-label="Unsaved changes"></span>'
         . '</span>';
 }
@@ -148,6 +151,12 @@ description: Shown by search engines
             <li>The lines with a block comment and the <code>---</code> between the parts of a block are protected against typing by mistake. To delete or replace one, select the whole line, or everything. In the frontmatter only the values can be changed, not the names before the colon, and no line can be added or removed. To change or delete these lines, switch the protection off with the lock in the editor toolbar, for this browser.</li>
             <li>With the cursor in a block, the arrows below the editor move the block up or down, and the switch turns it off and on. A block that is off stays in the page but is not shown, its comment then reads <code>&lt;!-- hero: {disabled: true} --&gt;</code>.</li>
             <li>A comment that is no block name, like <code>&lt;!-- TODO: check prices --&gt;</code>, stays an invisible note.</li>
+        </ul>
+        <h6>Languages</h6>
+        <ul>
+            <li>With <code>languages: [en, de]</code> in <code>site/config.yml</code> the site has several languages, <code>/de/about</code> is the page in German. A switcher above the editor chooses the language.</li>
+            <li>A page with a form keeps all languages in one file. The blocks are the same in every language, the switcher shows the texts of one language. A field of a language without a text shows the default language as a dashed placeholder, the page shows that one too. A field with a globe is the same in all languages.</li>
+            <li>A Markdown page has a file per language next to it, <code>about.md</code> and <code>about.de.md</code>. A dashed language in the switcher has no file yet, a click creates it as a copy to translate. The page list shows the languages next to the name.</li>
         </ul>
         <h6>Saving and history</h6>
         <ul>
@@ -203,10 +212,8 @@ description: Shown by search engines
                         }
                         Block::resetAllValidationErrors();
                         $validationPage = new Page($reboot, $defaultSite);
-                        $pagePath = preg_replace('/\.md$/', '', $editPageName);
-                        $pagePath = preg_replace('/\/index$/', '/', $pagePath);
                         ob_start();
-                        $validationPage->render($pagePath);
+                        $validationPage->render($viewPath);
                         ob_end_clean();
                         $validationErrors = Block::getAllValidationErrors();
                         $blockExamples = Block::getAllExamples();
@@ -234,6 +241,13 @@ description: Shown by search engines
                     }
                 ?>
                 <script>document.title = <?= json_encode(basename($editPageName, '.md') . ' – Reboot CMS Admin') ?>;</script>
+                <?php
+                // the versions of the page in the other languages, about.md, about.de.md
+                $markdownFiles = $defaultSite->isMultilingual() ? LanguageSwitch::markdownFiles($defaultSite, $pagesDir, $editPageName) : null;
+                if ($markdownFiles !== null) {
+                    echo LanguageSwitch::render($defaultSite->getLanguages(), $defaultSite->getDefaultLanguage(), $markdownFiles, $viewLanguage);
+                }
+                ?>
                 <!--suppress HtmlUnknownTarget -->
                 <form method="post" action="pages?page=<?= urlencode($editPageName) ?>">
                     <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
@@ -308,7 +322,12 @@ window.pagesConfig = {
     csrfToken: <?= json_encode(CsrfProtection::getToken()) ?>,
     currentPage: <?= json_encode($editPageName ?? '') ?>,
     blockNames: <?= json_encode(Block::names($defaultSite)) ?>,
-    allFolders: <?= json_encode($allFolders) ?>
+    allFolders: <?= json_encode($allFolders) ?>,
+    languages: <?= json_encode($defaultSite->isMultilingual() ? $defaultSite->getLanguages() : []) ?>,
+    defaultLanguage: <?= json_encode($defaultSite->getDefaultLanguage()) ?>,
+    // the address of the open page without language prefix, for the link next to the title
+    viewAddress: <?= json_encode($viewAddress ?? null) ?>,
+    baseWebPath: <?= json_encode($reboot->getBaseWebPath()) ?>
 };
 </script>
 <script src="assets/pages.js?v=<?= @filemtime($reboot->getBaseFsPath() . "/web/admin/assets/pages.js") ?>"></script>

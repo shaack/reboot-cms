@@ -125,6 +125,135 @@ class Site
     }
 
     /**
+     * The languages of the site, `languages: [en, de]` in `site/config.yml`,
+     * empty for a site in one language.
+     * @return string[]
+     */
+    public function getLanguages(): array
+    {
+        return array_values(array_filter(array_map("strval", (array)($this->config["languages"] ?? [])),
+            fn($language) => preg_match('/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$/', $language) === 1));
+    }
+
+    /**
+     * The language of the paths without a language prefix, `defaultLanguage` in
+     * `site/config.yml`, else the first of `languages`, else "en".
+     */
+    public function getDefaultLanguage(): string
+    {
+        return (string)($this->config["defaultLanguage"] ?? ($this->getLanguages()[0] ?? "en"));
+    }
+
+    /**
+     * Whether the site has more than one language.
+     */
+    public function isMultilingual(): bool
+    {
+        return count($this->getLanguages()) > 1;
+    }
+
+    /**
+     * The language of a path and the path without its language prefix,
+     * `/de/contact` gives `["de", "/contact", true]`, `/contact` gives
+     * `["en", "/contact", false]` on a site with the default language "en".
+     * @return array [string $language, string $path, bool $prefixed]
+     */
+    public function splitLanguage(string $path): array
+    {
+        $segments = explode("/", ltrim($path, "/"), 2);
+        if ($segments[0] !== "" && in_array($segments[0], $this->getLanguages(), true)) {
+            return [$segments[0], "/" . ($segments[1] ?? ""), true];
+        }
+        return [$this->getDefaultLanguage(), $path, false];
+    }
+
+    /**
+     * The path of a page in a language, `/contact` in "de" is `/de/contact`.
+     * The default language has no prefix.
+     */
+    public function languagePath(string $path, string $language): string
+    {
+        if ($language === $this->getDefaultLanguage() || !in_array($language, $this->getLanguages(), true)) {
+            return $path;
+        }
+        return "/" . $language . ($path === "/" ? "/" : $path);
+    }
+
+    /**
+     * The address of the page of a request in every language of the site, for
+     * a language switcher and `hreflang` links:
+     *
+     * ```php
+     * <?php foreach ($site->languageUrls($request) as $language => $url) { ?>
+     *     <link rel="alternate" hreflang="<?= $language ?>" href="<?= $url ?>">
+     * <?php } ?>
+     * ```
+     * @return array language => web path
+     */
+    public function languageUrls(Request $request): array
+    {
+        $urls = [];
+        foreach ($this->getLanguages() as $language) {
+            $urls[$language] = $this->webPath . $this->languagePath($request->getPathWithoutLanguage(), $language);
+        }
+        return $urls;
+    }
+
+    /**
+     * The address and language of a page file in `site/pages/`, `/about.de.md`
+     * is `["/about", "de"]`, `/blog/index.yml` is `["/blog/", <default>]`. The
+     * address is without the language prefix, see languagePath().
+     * @return array [string $path, string $language]
+     */
+    public function pageFileAddress(string $file): array
+    {
+        $name = preg_replace('/\.(md|yml|php)$/', '', $file);
+        $language = $this->getDefaultLanguage();
+        if (preg_match('/^(.*)\.([^.\/]+)$/', $name, $matches) && in_array($matches[2], $this->getLanguages(), true)) {
+            $name = $matches[1];
+            $language = $matches[2];
+        }
+        return [preg_replace('/\/index$/', '/', $name), $language];
+    }
+
+    /**
+     * The values of a structured page in one language. A value with a key per
+     * language, `{en: Welcome, de: Willkommen}`, becomes the one of the language,
+     * else the one of the default language, else the first. Everything else
+     * holds for all languages. Lists and maps are resolved value by value.
+     */
+    public function localize($value, string $language)
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+        if ($this->isLanguageMap($value)) {
+            return $value[$language] ?? $value[$this->getDefaultLanguage()] ?? reset($value);
+        }
+        foreach ($value as $key => $item) {
+            $value[$key] = $this->localize($item, $language);
+        }
+        return $value;
+    }
+
+    /**
+     * Whether a value is one value per language, `{en: Welcome, de: Willkommen}`:
+     * a map whose keys are all languages of the site and whose values are no maps.
+     */
+    public function isLanguageMap($value): bool
+    {
+        if (!is_array($value) || $value === [] || array_is_list($value) || !$this->isMultilingual()) {
+            return false;
+        }
+        foreach ($value as $key => $item) {
+            if (!in_array((string)$key, $this->getLanguages(), true) || is_array($item)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * The PHP file an AddOn registered for `$path` via `AddOn::getPages()`, or
      * null. The first AddOn in the order of `config.yml` wins.
      */

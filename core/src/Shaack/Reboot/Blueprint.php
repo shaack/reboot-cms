@@ -36,6 +36,13 @@ use Symfony\Component\Yaml\Yaml;
  * `blocks` is a list of blocks, each with the fields of its block type, and
  * `entry` names an entry of the collection in `collection`.
  *
+ * On a multilingual site the text fields of a structured page, `text`,
+ * `textarea`, `markdown`, `image` and `url`, hold a value per language,
+ * `heading: {en: Welcome, de: Willkommen}`. A field with `shared: true` has one
+ * value for all languages, an image that is the same everywhere for example.
+ * The other types are the same in all languages anyway, and so are the blocks
+ * and the items of lists, only their fields are translated.
+ *
  * In a collection, a field named `body` is the Markdown below the frontmatter
  * of an entry, all other fields live in the frontmatter.
  *
@@ -46,6 +53,8 @@ use Symfony\Component\Yaml\Yaml;
 class Blueprint
 {
     const TYPES = ["text", "textarea", "markdown", "number", "date", "boolean", "select", "image", "url", "list", "entry", "blocks"];
+    // on a multilingual site these hold a value per language, unless the field says `shared: true`
+    const TRANSLATABLE_TYPES = ["text", "textarea", "markdown", "image", "url"];
 
     private string $name;
     private string $title;
@@ -263,12 +272,24 @@ class Blueprint
     }
 
     /**
+     * Whether a field holds a value per language on a multilingual site: a text
+     * field without `shared: true`, see TRANSLATABLE_TYPES.
+     */
+    public static function isTranslatable(array $props): bool
+    {
+        return in_array($props["type"] ?? "text", self::TRANSLATABLE_TYPES, true) && empty($props["shared"]);
+    }
+
+    /**
      * A block of a structured page that holds Markdown instead of fields,
-     * `{type: intro, markdown: "..."}`. It renders with the Markdown template of its type.
+     * `{type: intro, markdown: "..."}`, on a multilingual site also with
+     * Markdown per language. It renders with the Markdown template of its type.
      */
     public static function isMarkdownBlock(array $block): bool
     {
-        return is_string($block["markdown"] ?? null);
+        $markdown = $block["markdown"] ?? null;
+        return is_string($markdown) || (is_array($markdown) && $markdown !== [] && !array_is_list($markdown)
+            && count(array_filter($markdown, "is_string")) === count($markdown));
     }
 
     /**

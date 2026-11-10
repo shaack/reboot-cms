@@ -246,22 +246,7 @@ You can define metadata for the page on top of the file in `YAML Front Matter` s
 
 ### Multilingual sites
 
-Reboot CMS routes URLs directly to files, so a multilingual site needs no special
-routing — you put each language in its own folder under `site/pages/` and prefix
-its URLs with the language code.
-
-#### Folder layout
-
-Keep the default language at the root and add a folder per additional language:
-
-```
-site/pages/
-  index.md          contact.md       <- default language (no prefix)
-  de/
-    index.md        contact.md       <- German, served under /de/...
-```
-
-`/contact` renders `pages/contact.md`, `/de/contact` renders `pages/de/contact.md`.
+A site is in one language until `site/config.yml` names several. The first segment of a URL then selects the language, `/de/about` is the page "about" in German, a path without a language prefix is in the default language.
 
 #### Configuration
 
@@ -272,19 +257,71 @@ languages: [en, de]
 defaultLanguage: en
 ```
 
-`languages` lists every language code that may appear as a URL prefix.
-`defaultLanguage` is the language used for paths without a prefix — it is
-optional and defaults to the first entry of `languages`.
+`languages` lists every language code that may appear as a URL prefix. `defaultLanguage` is the language of paths without a prefix, it is optional and defaults to the first entry of `languages`.
+
+#### Markdown pages, a file per language
+
+The versions of a Markdown page lie next to each other. The file without a language is the default language, every other language adds its code before the extension:
+
+```
+site/pages/
+  index.md        index.de.md      <- /  and /de/
+  about.md        about.de.md      <- /about  and /de/about
+  contact.md                       <- /contact, and /de/contact as long as there is no contact.de.md
+```
+
+`/de/about` renders `about.de.md`. A page without a file of its own for a language shows the one of the default language, so a site can be translated page by page. The default language may be named as well, `about.en.md`. A version has no address of its own, `/about.de` is no page. A `404.de.md` is the "not found" page in German.
+
+The older layout with a folder per language, `site/pages/de/about.md`, still works but is deprecated, the log names the file to rename. A file next to the page wins over the folder.
+
+#### Structured pages, all languages in one file
+
+A structured page keeps every language in its one YAML file. Its blocks and the items of its lists are the same in all languages, only the values of the text fields differ:
+
+```yaml
+title: {en: About us, de: Über uns}
+blocks:
+  - type: image-text
+    text:
+      en: "## Pages are forms"
+      de: "## Seiten sind Formulare"
+    image: media/team.jpg
+    image-position: left
+```
+
+The fields of the types `text`, `textarea`, `markdown`, `image` and `url` hold a value per language. A field whose value is the same in all languages says so in the blueprint of its block type with `shared: true`:
+
+```yaml
+fields:
+  text:  {type: markdown, required: true}
+  image: {type: image, shared: true}
+```
+
+The other types, `number`, `date`, `boolean`, `select` and `entry`, are the same in all languages anyway. A value without languages, as on a site in one language, holds for all of them, so an existing page needs no migration. A language without a value shows the one of the default language. Templates need no change, `$block->get("text")` returns the value of the language of the page.
+
+#### Editing in the admin
+
+On a multilingual site the editor of a page has a language switcher above it. For a structured page it shows the inputs of one language, the preview and the address next to the title follow it, the blocks stay the same. A field of a language that has no value yet has a dashed border and shows the default language as its placeholder. A shared field has one input and a globe next to its label, a change applies to all languages. The language chosen is kept for the next page.
+
+For a Markdown page the switcher opens the file of the language. A language without a file is shown dashed, a click creates it as a copy of the open page, ready to translate. The page list shows a page once, with its languages next to it. Renaming or moving a page takes its versions in the other languages along.
 
 #### Detecting the language
 
 The `Request` object detects the language from the first path segment:
 
-- `$request->getLanguage()` — the current language code (e.g. `"de"`), or the
-  default language for unprefixed paths
-- `$request->getPathWithoutLanguage()` — the path with the language prefix
-  stripped (e.g. `/de/contact` becomes `/contact`), handy for language switchers
-  and `hreflang` tags
+- `$request->getLanguage()`: the current language code (e.g. `"de"`), or the default language for unprefixed paths
+- `$request->getPathWithoutLanguage()`: the path with the language prefix stripped (e.g. `/de/contact` becomes `/contact`), handy for language switchers and `hreflang` tags
+
+The `Site` object knows the languages and builds the addresses:
+
+- `$site->getLanguages()`, `$site->getDefaultLanguage()` and `$site->isMultilingual()`
+- `$site->languageUrls($request)`: the address of the current page in every language, `["en" => "/about", "de" => "/de/about"]`
+
+```php
+<?php foreach ($site->languageUrls($request) as $language => $url) { ?>
+    <link rel="alternate" hreflang="<?= $language ?>" href="<?= $url ?>">
+<?php } ?>
+```
 
 #### Multilingual navigation
 
@@ -313,13 +350,12 @@ foreach ($structure as $label => $path) {
 }
 ```
 
-Build a language switcher by linking to the current page in the other language
-with `$request->getPathWithoutLanguage()`. Append a `?setlang=xx` marker so the
-`LanguageRedirect` addon (see below) registers the choice:
+Build a language switcher with `$site->languageUrls($request)`. Append a `?setlang=xx` marker so the `LanguageRedirect` addon (see below) registers the choice:
 
 ```php
-// link to the German version of the current page
-$href = $site->getWebPath() . '/de' . $request->getPathWithoutLanguage() . '?setlang=de';
+<?php foreach ($site->languageUrls($request) as $language => $url) { ?>
+    <a href="<?= $url ?>?setlang=<?= $language ?>"><?= strtoupper($language) ?></a>
+<?php } ?>
 ```
 
 Set the `<html>` language attribute from the detected language as well:

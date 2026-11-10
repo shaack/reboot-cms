@@ -19,6 +19,7 @@ class Page
     private $config = []; // If the page contains frontmatter, it will be stored here after rendering
     private ?string $previewFsPath = null; // see setPreviewContent()
     private ?string $previewContent = null;
+    private ?string $language = null; // the language of the rendered path, see getLanguage()
 
     /**
      * @param Reboot $reboot
@@ -61,34 +62,39 @@ class Page
 
     /**
      * The rendered page for `$path`, or null if there is none.
+     *
+     * On a multilingual site the language comes from the prefix of the path,
+     * `/de/about` is "about" in German. The page file is looked up in this order:
+     * `about.de.md`, the deprecated folder per language `de/about.md`, then the
+     * page of all languages, `about.md`, `about.yml` or `about.php`. A structured
+     * page holds the values of every language, a Markdown page without its own
+     * file for the language shows the one of the default language.
      */
     private function renderPath(string $path, ?Request $request): ?string
     {
         $pagesDir = realpath($this->site->getFsPath() . '/pages');
-        $requestedFsPath = $pagesDir . $path;
-
-        if (is_dir($requestedFsPath)) {
-            $requestedFsPath .= "/index";
-        }
-
-        // Resolve symlinks and '..' to prevent path traversal. The separator keeps
-        // a sibling folder like `pages-old` out.
-        $resolvedDir = realpath(dirname($requestedFsPath));
-        $insidePagesDir = FileSystemUtils::isInside($resolvedDir, $pagesDir);
-        $pathInfo = pathinfo($path);
-        if ($insidePagesDir && !array_key_exists("extension", $pathInfo)) {
-            if (file_exists($requestedFsPath . ".md")) {
-                Logger::info("Markdown page: " . $path);
-                return $this->renderMarkdown($requestedFsPath . ".md", $request);
-            } else if (file_exists($requestedFsPath . ".yml")) {
-                Logger::info("Structured page: " . $path);
-                return $this->renderStructured($requestedFsPath . ".yml", $request);
-            } else if (file_exists($requestedFsPath . ".php")) {
-                Logger::info("PHP page: " . $path);
-                return $this->renderPHP($requestedFsPath . ".php", $request);
+        [$this->language, $pathWithoutLanguage, $prefixed] = $this->site->splitLanguage($path);
+        if (!array_key_exists("extension", pathinfo($path))) {
+            $base = $this->pageBase($pagesDir, $pathWithoutLanguage);
+            if ($base !== null && file_exists($base . "." . $this->language . ".md")) {
+                Logger::info("Markdown page: " . $path . " (" . $this->language . ")");
+                return $this->renderMarkdown($base . "." . $this->language . ".md", $request);
+            }
+            if ($prefixed) {
+                $legacyBase = $this->pageBase($pagesDir, $path);
+                $legacy = $legacyBase !== null ? $this->renderFile($legacyBase, $path, $request) : null;
+                if ($legacy !== null) {
+                    Logger::info("Deprecated: the page " . $path . " is in a folder per language, name it "
+                        . ltrim($pathWithoutLanguage === "/" ? "/index" : $pathWithoutLanguage, "/") . "." . $this->language . ".md instead");
+                    return $legacy;
+                }
+            }
+            $page = $base !== null ? $this->renderFile($base, $path, $request) : null;
+            if ($page !== null) {
+                return $page;
             }
         }
-        $entryPage = $this->renderEntry($path, $request);
+        $entryPage = $this->renderEntry($pathWithoutLanguage, $request);
         if ($entryPage !== null) {
             return $entryPage;
         }
@@ -102,12 +108,54 @@ class Page
         return null;
     }
 
+    /**
+     * The file system path of a page without extension, `.../pages/about` or
+     * `.../pages/blog/index` for a folder, null if it would leave the pages folder.
+     */
+    private function pageBase(string $pagesDir, string $path): ?string
+    {
+        $base = $pagesDir . $path;
+        if (is_dir($base)) {
+            $base = rtrim($base, "/") . "/index";
+        }
+        // Resolve symlinks and '..' to prevent path traversal. The separator keeps
+        // a sibling folder like `pages-old` out.
+        return FileSystemUtils::isInside(realpath(dirname($base)), $pagesDir) ? $base : null;
+    }
+
+    /**
+     * The page `$base.md`, `$base.yml` or `$base.php`, the first that exists, rendered.
+     */
+    private function renderFile(string $base, string $path, ?Request $request): ?string
+    {
+        if (file_exists($base . ".md")) {
+            Logger::info("Markdown page: " . $path);
+            return $this->renderMarkdown($base . ".md", $request);
+        } else if (file_exists($base . ".yml")) {
+            Logger::info("Structured page: " . $path);
+            return $this->renderStructured($base . ".yml", $request);
+        } else if (file_exists($base . ".php")) {
+            Logger::info("PHP page: " . $path);
+            return $this->renderPHP($base . ".php", $request);
+        }
+        return null;
+    }
+
     public function render404($path, ?Request $request = null)
     {
         Logger::info("[404] response for path: " . $path);
         http_response_code(404);
-        // put a 404.md or 404.php in /pages to create your own
-        return $this->renderPath("/404", $request) ?? "";
+        // put a 404.md or 404.php in /pages to create your own, 404.de.md in German
+        [$language] = $this->site->splitLanguage((string)$path);
+        return $this->renderPath($this->site->languagePath("/404", $language), $request) ?? "";
+    }
+
+    /**
+     * The language the page was rendered in, the one of its path. Available after `render()`.
+     */
+    public function getLanguage(): string
+    {
+        return $this->language ?? $this->site->getDefaultLanguage();
     }
 
     public function getConfig(): array
@@ -353,6 +401,8 @@ class Page
         if (!is_array($data)) {
             return "";
         }
+        // a value per language, `{en: Welcome, de: Willkommen}`, becomes the one of the language
+        $data = $this->site->localize($data, $this->getLanguage());
         $blueprint = Blueprint::forPage($this->site);
         $data = $blueprint->normalize($data);
         foreach ($blueprint->validate($data) as $message) {
@@ -382,7 +432,9 @@ class Page
                 // a Markdown block in a structured page, the other values are its config
                 $config = $values;
                 unset($config["type"], $config["markdown"]);
-                $block = new Block($this->site, $values["type"], $values["markdown"], $config);
+                // Markdown per language on a site that has no languages (any more) shows the default one
+                $markdown = is_array($values["markdown"]) ? (string)($values["markdown"][$this->site->getDefaultLanguage()] ?? reset($values["markdown"])) : $values["markdown"];
+                $block = new Block($this->site, $values["type"], $markdown, $config);
             } else {
                 // the fields are the config of the block as well, so `inverse: true` works as in a Markdown page
                 $block = new Block($this->site, $values["type"], "", $values);

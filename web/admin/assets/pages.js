@@ -268,8 +268,11 @@
     // The page actions take the path of a page like "/blog/post.md", without
     // one they act on the open page. Folder paths have no leading slash.
 
+    // the name without the language of a version like about.de.md
     function pageBaseName(page) {
-        return page.replace(/\.(md|yml)$/, '').split('/').pop();
+        var name = page.replace(/\.(md|yml)$/, '').split('/').pop();
+        var match = name.match(/^(.*)\.([^.]+)$/);
+        return match && (config.languages || []).indexOf(match[2]) !== -1 ? match[1] : name;
     }
 
     window.renamePage = function (page) {
@@ -289,6 +292,13 @@
         if (dest === null || dest === currentFolder) return;
         dest = dest.replace(/^\//, '').replace(/\/$/, '');
         submitPageAction('move_page', page, {destination: dest});
+    };
+
+    // the version of the open Markdown page in another language, as a copy of it
+    window.addTranslation = function (language) {
+        if (!currentPage) return;
+        if (pageUnsaved && !confirm('The page has unsaved changes. Create the ' + language + ' version from the saved page?')) return;
+        submitPageAction('add_translation', currentPage, {language: language});
     };
 
     window.deletePage = function (page) {
@@ -1171,6 +1181,28 @@
     var previewInitialized = false;
     // a structured page is edited in a form of fields, see field-form.js
     var structuredForm = document.querySelector('form[data-field-form]');
+
+    // A multilingual structured page shows one language at a time: the address
+    // next to the title and the preview follow it
+    if (structuredForm && structuredForm.hasAttribute('data-edit-lang')) {
+        var syncLanguage = function () {
+            var language = structuredForm.dataset.editLang;
+            var link = document.getElementById('page-view-link');
+            if (link && config.viewAddress !== null) {
+                var address = config.viewAddress;
+                var path = language === config.defaultLanguage ? address : '/' + language + (address === '/' ? '/' : address);
+                link.href = config.baseWebPath + path;
+                link.querySelector('span').textContent = path;
+            }
+            var open = document.querySelector('.structured-page-actions a[target="_blank"]');
+            if (open && link) open.href = link.href;
+        };
+        syncLanguage();
+        structuredForm.addEventListener('languagechange', function () {
+            syncLanguage();
+            updatePreview();
+        });
+    }
     var previewFront = 'a';
 
     function getFrontIframe() {
@@ -1233,7 +1265,10 @@
         if (structuredForm) {
             // the form itself goes to the preview, the server writes the YAML in memory only
             var action = structuredForm.getAttribute('action');
-            structuredForm.setAttribute('action', 'pages?preview=1&page=' + encodeURIComponent(currentPage));
+            // in the language the form shows, on a multilingual site
+            var language = structuredForm.dataset.editLang;
+            structuredForm.setAttribute('action', 'pages?preview=1&page=' + encodeURIComponent(currentPage)
+                + (language ? '&lang=' + encodeURIComponent(language) : ''));
             structuredForm.target = back.name;
             structuredForm.submit();
             structuredForm.setAttribute('action', action);

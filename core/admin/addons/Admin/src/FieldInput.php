@@ -23,12 +23,22 @@ class FieldInput
      * A block of a `blocks` field posts its type as `_type`, `_disabled` when it is
      * switched off and `_extra`, the JSON of values its blueprint does not know.
      * A Markdown block posts its Markdown as `_markdown` instead of fields.
+     *
+     * A translated text field posts a value per language, `title[de]`, see
+     * FieldForm. It becomes `{en: ..., de: ...}` without the empty languages, and
+     * a single value if only the default language has one.
+     *
+     * @param string[] $languages the languages of the site, the first key a translated field may post
      */
-    public static function fromInput(Blueprint $blueprint, array $input): array
+    public static function fromInput(Blueprint $blueprint, array $input, array $languages = [], string $defaultLanguage = ""): array
     {
         $values = [];
         foreach ($blueprint->getFields() as $name => $props) {
             $value = $input[$name] ?? null;
+            if (is_array($value) && in_array($props["type"], Blueprint::TRANSLATABLE_TYPES, true)) {
+                $values[$name] = self::languageValue($props["type"], $value, $languages, $defaultLanguage);
+                continue;
+            }
             switch ($props["type"]) {
                 case "boolean":
                     $values[$name] = (string)$value === "1";
@@ -37,14 +47,14 @@ class FieldInput
                     $values[$name] = [];
                     foreach (is_array($value) ? $value : [] as $row) {
                         if (is_array($row)) {
-                            $values[$name][] = self::fromInput($props["blueprint"], $row);
+                            $values[$name][] = self::fromInput($props["blueprint"], $row, $languages, $defaultLanguage);
                         }
                     }
                     break;
                 case "blocks":
                     $values[$name] = [];
                     foreach (is_array($value) ? $value : [] as $row) {
-                        $block = is_array($row) ? self::blockFromInput($blueprint, $row) : null;
+                        $block = is_array($row) ? self::blockFromInput($blueprint, $row, $languages, $defaultLanguage) : null;
                         if ($block !== null) {
                             $values[$name][] = $block;
                         }
@@ -57,7 +67,26 @@ class FieldInput
         return $values;
     }
 
-    private static function blockFromInput(Blueprint $blueprint, array $row): ?array
+    /**
+     * The value of a translated field from its inputs per language, null if all are empty.
+     */
+    private static function languageValue(string $type, array $input, array $languages, string $defaultLanguage)
+    {
+        $value = [];
+        foreach ($languages as $language) {
+            $text = self::scalar($type, $input[$language] ?? null);
+            if ($text !== null) {
+                $value[$language] = $text;
+            }
+        }
+        if (!$value) {
+            return null;
+        }
+        // only the default language, written as a single value like on a site in one language
+        return array_keys($value) === [$defaultLanguage] ? $value[$defaultLanguage] : $value;
+    }
+
+    private static function blockFromInput(Blueprint $blueprint, array $row, array $languages, string $defaultLanguage): ?array
     {
         $type = $row["_type"] ?? null;
         if (!is_string($type) || !preg_match('/^[\w\-]+$/', $type)) {
@@ -71,8 +100,11 @@ class FieldInput
         $markdown = $row["_markdown"] ?? null;
         if (is_string($markdown)) {
             $block["markdown"] = rtrim(str_replace("\r\n", "\n", $markdown));
+        } else if (is_array($markdown)) {
+            // a value per language, a block left empty in every language keeps an empty Markdown
+            $block["markdown"] = self::languageValue("markdown", $markdown, $languages, $defaultLanguage) ?? "";
         } else if ($blockBlueprint) {
-            $block += self::fromInput($blockBlueprint, $row);
+            $block += self::fromInput($blockBlueprint, $row, $languages, $defaultLanguage);
         }
         $extra = json_decode((string)($row["_extra"] ?? ""), true);
         foreach (is_array($extra) ? $extra : [] as $key => $value) {

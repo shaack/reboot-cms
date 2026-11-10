@@ -109,19 +109,17 @@ languages: [en, de]
 defaultLanguage: en
 ```
 
-The **first path segment** then selects the language, and pages live in a folder per language, the URL maps onto the file as usual:
+The **first path segment** then selects the language, `/de/about` is "about" in German. A path without a language prefix is in `defaultLanguage`.
 
-- `/de/about` → `site/pages/de/about.md`
-- `/en/` → `site/pages/en/index.md`
+- Markdown pages have a file per language next to each other: `about.md` is the default language, `about.de.md` German. A language without its own file shows the default one. `/about.de` is no address. The folder per language, `site/pages/de/about.md`, still works but is deprecated.
+- Structured pages keep all languages in one file. Blocks and list items are the same in all languages, the text fields (`text`, `textarea`, `markdown`, `image`, `url`) hold a value per language, `heading: {en: Welcome, de: Willkommen}`. A field with `shared: true` in its blueprint has one value for all. A plain value holds for all languages. `$block->get()` returns the value of the language of the page, templates need no change.
 
-A path whose first segment is not a configured language carries no prefix and falls back to `defaultLanguage` (e.g. `/about` → `site/pages/about.md`).
+In `template.php` and block templates:
 
-In `template.php` and block templates the request object exposes:
-
-- `$request->getLanguage()`: the active language code (`"en"`, `"de"`), for the `<html lang>` attribute and `hreflang` tags
-- `$request->getPathWithoutLanguage()`: the path with the language prefix stripped, for building language-switcher links
-
-Without `languages` in `config.yml` every request uses `defaultLanguage` (or `"en"`) and no prefix is expected.
+- `$request->getLanguage()`: the active language code, for `<html lang>`
+- `$request->getPathWithoutLanguage()`: the path without the prefix
+- `$site->languageUrls($request)`: the current page in every language, for a switcher and `hreflang` links
+- `$page->getLanguage()`: the language the page was rendered in
 
 The built-in `LanguageRedirect` addon (enable it via `addons` in `config.yml`) redirects visitors to the language version matching their browser or saved preference. See the README for details.
 

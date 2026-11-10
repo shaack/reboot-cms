@@ -59,14 +59,7 @@ class Request
         }
         // $this->paramsPost = array_merge($this->paramsGet, @$post);
         // detect the request language from the first path segment (for multilingual sites)
-        $siteConfig = $site->getConfig();
-        $languages = $siteConfig['languages'] ?? [];
-        $this->language = $siteConfig['defaultLanguage'] ?? ($languages[0] ?? 'en');
-        $firstSegment = explode('/', ltrim($this->path, '/'))[0];
-        if ($firstSegment !== '' && in_array($firstSegment, $languages, true)) {
-            $this->language = $firstSegment;
-            $this->pathHasLanguagePrefix = true;
-        }
+        [$this->language, , $this->pathHasLanguagePrefix] = $site->splitLanguage($this->path);
         Logger::debug("request->path: " . $this->path);
         Logger::debug("request->language: " . $this->language);
     }

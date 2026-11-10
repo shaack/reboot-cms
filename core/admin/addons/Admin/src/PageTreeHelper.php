@@ -7,6 +7,8 @@
 
 namespace Shaack\Reboot\AddOns\Admin;
 
+use Shaack\Reboot\Site;
+
 class PageTreeHelper
 {
     /**
@@ -63,8 +65,10 @@ class PageTreeHelper
 
     /**
      * Render the page tree as nested HTML lists.
+     * @param ?Site $site a multilingual site: the versions of a Markdown page in its languages,
+     *     `about.md` and `about.de.md`, are one entry with a link per language
      */
-    public static function renderTree(array $tree, ?string $editPageName = null, bool &$editable = false, string $prefix = ""): string
+    public static function renderTree(array $tree, ?string $editPageName = null, bool &$editable = false, string $prefix = "", ?Site $site = null): string
     {
         $html = "<ul class='page-tree list-unstyled'>";
         // Separate folders and files
@@ -84,12 +88,18 @@ class PageTreeHelper
             if ($aIsIndex !== $bIsIndex) return $aIsIndex ? -1 : 1;
             return strcasecmp($a, $b);
         });
-        // Render files first, then folders
+        // the versions of a page in its languages, by the name without language
+        $groups = [];
         foreach ($files as $filePath) {
-            $fileName = preg_replace('/\.(md|yml)$/', '', basename($filePath));
+            $groups[$site ? LanguageSwitch::baseName($site, $filePath) : $filePath][] = $filePath;
+        }
+        // Render files first, then folders
+        foreach ($groups as $versions) {
+            $filePath = self::mainVersion($versions, $site);
+            $fileName = basename($site ? LanguageSwitch::baseName($site, $filePath) : preg_replace('/\.(md|yml)$/', '', $filePath));
             $structured = str_ends_with($filePath, ".yml");
             $active = $editPageName && $filePath === $editPageName;
-            if ($active) {
+            if ($editPageName && in_array($editPageName, $versions, true)) {
                 $editable = true;
             }
             // an index page is the page of its folder, the one of the root is the homepage
@@ -100,6 +110,7 @@ class PageTreeHelper
             $html .= "<a class='page-tree-file" . ($active ? " active" : "") . ($isIndex ? " page-tree-index" : "") . ($structured ? " page-tree-structured" : "") . "' href='pages?page=" . urlencode($filePath) . "'"
                 . " title='" . htmlspecialchars($title, ENT_QUOTES) . "' data-path='" . htmlspecialchars(ltrim($filePath, "/"), ENT_QUOTES) . "'>"
                 . AdminHelper::icon($isIndex ? "house" : ($structured ? "file" : "markdown")) . "<span>" . htmlspecialchars($fileName) . "</span></a>";
+            $html .= self::languageLinks($versions, $editPageName, $site);
             $html .= "</li>";
         }
         foreach ($folders as $folderName => $children) {
@@ -120,12 +131,58 @@ class PageTreeHelper
             $html .= "</a>";
             $html .= "</div>";
             $html .= "<div class='collapse" . ($expanded ? " show" : "") . "' id='" . $folderId . "'>";
-            $html .= self::renderTree($children, $editPageName, $editable, $prefix . $folderName . "/");
+            $html .= self::renderTree($children, $editPageName, $editable, $prefix . $folderName . "/", $site);
             $html .= "</div>";
             $html .= "</li>";
         }
         $html .= "</ul>";
         return $html;
+    }
+
+    /**
+     * The file the entry of a page opens: the page of all languages or the one
+     * of the default language, else the first version.
+     */
+    private static function mainVersion(array $versions, ?Site $site): string
+    {
+        if ($site) {
+            foreach ($versions as $file) {
+                if ($site->pageFileAddress($file)[1] === $site->getDefaultLanguage()) {
+                    return $file;
+                }
+            }
+        }
+        return $versions[0];
+    }
+
+    /**
+     * A link per language of a Markdown page, `EN DE`, if it has a file of its own
+     * for one: a structured page alone holds all languages in one file.
+     */
+    private static function languageLinks(array $versions, ?string $editPageName, ?Site $site): string
+    {
+        if (!$site) {
+            return "";
+        }
+        $byLanguage = [];
+        foreach ($versions as $file) {
+            if (str_ends_with($file, ".md")) {
+                $byLanguage[$site->pageFileAddress($file)[1]] = $file;
+            }
+        }
+        if (!$byLanguage || (count($versions) === 1 && isset($byLanguage[$site->getDefaultLanguage()]))) {
+            return "";
+        }
+        $html = "<span class='page-tree-languages'>";
+        foreach ($site->getLanguages() as $language) {
+            if (!isset($byLanguage[$language])) {
+                continue;
+            }
+            $file = $byLanguage[$language];
+            $html .= "<a class='page-tree-language" . ($file === $editPageName ? " active" : "") . "' href='pages?page=" . urlencode($file) . "'"
+                . " title='" . htmlspecialchars(ltrim($file, "/"), ENT_QUOTES) . "'>" . htmlspecialchars(strtoupper($language)) . "</a>";
+        }
+        return $html . "</span>";
     }
 
     /**

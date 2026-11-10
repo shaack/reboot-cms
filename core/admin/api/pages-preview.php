@@ -21,9 +21,10 @@ $previewFields = $request->getParam("fields", "post");
 if ($previewPath && str_starts_with($previewPath, $pagesDir . DIRECTORY_SEPARATOR)
     && str_ends_with($previewPath, ".yml") && is_array($previewFields)) {
     $previewBlueprint = Blueprint::forPage($defaultSite);
-    $previewValues = FieldInput::fromInput($previewBlueprint, $previewFields);
+    $previewHandler = new StructuredPageHandler($previewBlueprint, $pagesDir, $historyDir, $historyMaxVersions);
+    $previewValues = $previewHandler->fromInput($previewFields);
     try {
-        $previewExisting = (new StructuredPageHandler($previewBlueprint, $pagesDir, $historyDir, $historyMaxVersions))->read($previewPath);
+        $previewExisting = $previewHandler->read($previewPath);
     } catch (\RuntimeException $e) {
         $previewExisting = [];
     }
@@ -41,7 +42,13 @@ if ($previewPath && str_starts_with($previewPath, $pagesDir . DIRECTORY_SEPARATO
     header('X-Frame-Options: SAMEORIGIN');
     header('Content-Security-Policy: default-src * \'unsafe-inline\' \'unsafe-eval\'; img-src * data:;');
     $previewSite = new \Shaack\Reboot\Site($reboot, "/site", "");
-    $previewRequest = new \Shaack\Reboot\Request($previewSite, $reboot->getBaseWebPath(), preg_replace('/\/index$/', '/', preg_replace('/\.(md|yml)$/', '', $previewPageName)), []);
+    // `about.de.md` is /de/about, a structured page in the language the form shows
+    [$previewAddress, $previewLanguage] = $previewSite->pageFileAddress($previewPageName);
+    $requestedLanguage = (string)($request->getParam("lang", "get") ?? "");
+    if (str_ends_with($previewPageName, ".yml") && in_array($requestedLanguage, $previewSite->getLanguages(), true)) {
+        $previewLanguage = $requestedLanguage;
+    }
+    $previewRequest = new \Shaack\Reboot\Request($previewSite, $reboot->getBaseWebPath(), $previewSite->languagePath($previewAddress, $previewLanguage), []);
     $previewPageObj = new Page($reboot, $previewSite);
     // The draft is rendered from memory, the published file stays untouched
     $previewPageObj->setPreviewContent($previewPath, $previewContent);

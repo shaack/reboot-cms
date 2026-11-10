@@ -59,11 +59,30 @@ class StructuredPageHandler
     }
 
     /**
-     * The problems of the page, field path => message.
+     * The problems of the page, field path => message. On a multilingual site
+     * the page is checked in its default language, the other languages show
+     * that one where they have no value of their own.
      */
     public function validate(string $file): array
     {
-        return $this->blueprint->validate($this->blueprint->normalize($this->read($file)));
+        $values = $this->read($file);
+        $site = $this->blueprint->getSite();
+        if ($site) {
+            $values = $site->localize($values, $site->getDefaultLanguage());
+        }
+        return $this->blueprint->validate($this->blueprint->normalize($values));
+    }
+
+    /**
+     * The values of the posted form, on a multilingual site with a value per
+     * language in the translated fields.
+     */
+    public function fromInput(array $input): array
+    {
+        $site = $this->blueprint->getSite();
+        return $site && $site->isMultilingual()
+            ? FieldInput::fromInput($this->blueprint, $input, $site->getLanguages(), $site->getDefaultLanguage())
+            : FieldInput::fromInput($this->blueprint, $input);
     }
 
     /**
@@ -73,7 +92,7 @@ class StructuredPageHandler
     public function save(string $file, array $input): bool
     {
         $existing = $this->read($file);
-        $values = FieldInput::fromInput($this->blueprint, $input);
+        $values = $this->fromInput($input);
         foreach ($existing as $name => $value) {
             if (!array_key_exists($name, $this->blueprint->getFields())) {
                 $values[$name] = $value;

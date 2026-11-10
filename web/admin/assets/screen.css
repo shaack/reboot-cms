@@ -946,4 +946,68 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   background-color: var(--bs-body-bg);
 }
 
+.language-switch {
+  margin-bottom: 0.75rem;
+}
+.language-switch .btn {
+  min-width: 2.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.language-switch .language-missing {
+  border-style: dashed;
+  opacity: 0.7;
+}
+.language-switch .language-missing .icon {
+  margin-left: 0.2em;
+  font-size: 0.8em;
+}
+.language-switch .language-missing:hover {
+  opacity: 1;
+}
+
+.field-shared {
+  margin-left: 0.3em;
+  color: var(--bs-info-text-emphasis);
+  cursor: help;
+}
+
+.field-language.is-untranslated .form-control {
+  border-style: dashed;
+}
+
+.page-tree li:has(> .page-tree-languages) {
+  display: flex;
+  align-items: flex-start;
+}
+.page-tree li:has(> .page-tree-languages) > .page-tree-file {
+  flex: 1 1 auto;
+}
+
+.page-tree-languages {
+  display: flex;
+  gap: 2px;
+  padding-top: 3px;
+}
+
+.page-tree-language {
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none;
+  color: var(--bs-secondary-color);
+  border: 1px solid var(--bs-border-color);
+}
+.page-tree-language:hover {
+  color: var(--bs-body-color);
+  background-color: var(--bs-secondary-bg);
+}
+.page-tree-language.active {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}
+
 /*# sourceMappingURL=screen.css.map */

@@ -18,10 +18,28 @@ use Shaack\Reboot\Collection;
  *
  * The inputs are named like the values, `fields[title]`, `fields[cards][2][caption]`,
  * FieldInput turns them back into values.
+ *
+ * With languages, see setLanguages(), a text field that is translated gets an
+ * input per language, `fields[title][de]`, each in an element with `data-lang`.
+ * The page shows those of one language. A text field with `shared: true` has
+ * one input and a globe next to its label.
  */
 class FieldForm
 {
     private static int $counter = 0;
+    private static array $languages = []; // see setLanguages()
+    private static string $defaultLanguage = "";
+
+    /**
+     * The languages of a multilingual site, for the forms of structured pages.
+     * Empty languages, the default, render a field in one language.
+     * @param string[] $languages
+     */
+    public static function setLanguages(array $languages, string $defaultLanguage): void
+    {
+        self::$languages = count($languages) > 1 ? array_values($languages) : [];
+        self::$defaultLanguage = $defaultLanguage;
+    }
 
     /**
      * @param array $values as written in the file, without defaults
@@ -45,10 +63,17 @@ class FieldForm
         $id = "field-" . (++self::$counter);
         $error = $errors[$path] ?? null;
         $label = self::e($props["label"]) . (!empty($props["required"]) ? ' <span class="text-danger" title="Required">*</span>' : '');
+        if (self::$languages && in_array($props["type"], Blueprint::TRANSLATABLE_TYPES, true) && !Blueprint::isTranslatable($props)) {
+            $label .= ' <span class="field-shared" title="The same in all languages">' . AdminHelper::icon("globe") . '</span>';
+        }
         $required = !empty($props["required"]) ? " required" : "";
         $invalid = $error ? " is-invalid" : "";
         $default = $props["default"] ?? null;
         $placeholder = is_scalar($default) && !is_bool($default) ? ' placeholder="' . self::e((string)$default) . '"' : "";
+        if (self::$languages && Blueprint::isTranslatable($props)) {
+            return self::translatedField($props, $value, $id, $name, $label, $invalid, $placeholder, $error);
+        }
+        $value = self::singleValue($value);
         $valueText = is_scalar($value) && !is_bool($value) ? (string)$value : "";
         $attr = ' class="form-control' . $invalid . '" id="' . $id . '" name="' . self::e($name) . '"' . $required;
         switch ($props["type"]) {
@@ -64,11 +89,9 @@ class FieldForm
                     . '<label class="form-check-label" for="' . $id . '">' . $label . '</label>'
                     . self::help($props, $error) . '</div>';
             case "textarea":
-                $control = '<textarea' . $attr . ' rows="3"' . $placeholder . '>' . self::e($valueText) . '</textarea>';
-                break;
             case "markdown":
-                $control = '<textarea class="form-control markdown' . $invalid . '" id="' . $id . '" name="' . self::e($name) . '" rows="8">'
-                    . self::e($valueText) . '</textarea>';
+            case "image":
+                $control = self::textControl($props["type"], $attr, $placeholder, $valueText);
                 break;
             case "number":
                 $control = '<input type="number" step="any"' . $attr . $placeholder
@@ -90,18 +113,93 @@ class FieldForm
             case "entry":
                 $control = self::entrySelect($blueprint, $props, $valueText, $id, $name, $invalid . '"' . $required);
                 break;
+            default:
+                $control = self::textControl($props["type"], $attr, $placeholder, $valueText);
+        }
+        return '<div class="mb-3"><label class="form-label" for="' . $id . '">' . $label . '</label>'
+            . $control . self::help($props, $error) . '</div>';
+    }
+
+    /**
+     * The input of a text field: `text`, `url`, `textarea`, `markdown` or `image`.
+     * @param string $attr class, id, name and required of the input
+     */
+    private static function textControl(string $type, string $attr, string $placeholder, string $valueText): string
+    {
+        switch ($type) {
+            case "textarea":
+                return '<textarea' . $attr . ' rows="3"' . $placeholder . '>' . self::e($valueText) . '</textarea>';
+            case "markdown":
+                // not required, the browser would stop the form at a textarea the Markdown editor hides
+                $attr = str_replace(' required', '', $attr);
+                return '<textarea' . str_replace(' class="form-control', ' class="form-control markdown', $attr) . ' rows="8"' . $placeholder . '>'
+                    . self::e($valueText) . '</textarea>';
             case "image":
-                $control = '<div class="input-group">'
+                return '<div class="input-group">'
                     . '<input type="text"' . $attr . $placeholder . ' value="' . self::e($valueText) . '" data-image-input>'
                     . '<button type="button" class="btn btn-outline-secondary" data-choose-image>Choose</button>'
                     . '</div>'
                     . '<img class="field-image-preview" alt="" data-image-preview>';
-                break;
             default:
-                $control = '<input type="text"' . $attr . $placeholder . ' value="' . self::e($valueText) . '">';
+                return '<input type="text"' . $attr . $placeholder . ' value="' . self::e($valueText) . '">';
         }
-        return '<div class="mb-3"><label class="form-label" for="' . $id . '">' . $label . '</label>'
-            . $control . self::help($props, $error) . '</div>';
+    }
+
+    /**
+     * A translated text field, an input per language, `fields[title][de]`. A field
+     * of another language that is still empty shows the value of the default
+     * language as its placeholder, the page shows that one there as well.
+     */
+    private static function translatedField(array $props, $value, string $id, string $name, string $label,
+                                            string $invalid, string $placeholder, ?string $error): string
+    {
+        $values = self::languageValues($value);
+        $defaultText = $values[self::$defaultLanguage] ?? "";
+        $html = '<div class="mb-3 field-translated">'
+            . '<label class="form-label" for="' . $id . '-' . self::e(self::$defaultLanguage) . '" data-lang-label="' . $id . '">' . $label . '</label>';
+        foreach (self::$languages as $language) {
+            $isDefault = $language === self::$defaultLanguage;
+            $text = $values[$language] ?? "";
+            $languagePlaceholder = $placeholder;
+            if (!$isDefault && $defaultText !== "") {
+                $firstLine = strtok($defaultText, "\n");
+                $languagePlaceholder = ' placeholder="' . self::e(mb_strimwidth((string)$firstLine, 0, 120, "…")) . '"';
+            }
+            // not required in the browser, which would stop the form at the input of a language
+            // that is not shown, the validation on saving names a missing value
+            $attr = ' class="form-control' . $invalid . '" id="' . $id . '-' . self::e($language) . '" name="' . self::e($name . "[" . $language . "]") . '"'
+                . ' lang="' . self::e($language) . '"';
+            $html .= '<div class="field-language' . ($text === "" && !$isDefault ? ' is-untranslated' : '') . '" data-lang="' . self::e($language) . '">'
+                . self::textControl($props["type"], $attr, $languagePlaceholder, $text)
+                . '</div>';
+        }
+        return $html . self::help($props, $error) . '</div>';
+    }
+
+    /**
+     * The value per language of a translated field. A single value, written
+     * before the site had languages or while the field was shared, is the one
+     * of the default language.
+     * @return array language => text
+     */
+    private static function languageValues($value): array
+    {
+        if (is_array($value)) {
+            return array_map(fn($text) => is_scalar($text) ? (string)$text : "", array_filter($value, "is_scalar"));
+        }
+        return is_scalar($value) && !is_bool($value) && (string)$value !== "" ? [self::$defaultLanguage => (string)$value] : [];
+    }
+
+    /**
+     * One value for a field that is not translated. A value per language, left
+     * from the time the field was translated, gives the one of the default language.
+     */
+    private static function singleValue($value)
+    {
+        if (is_array($value) && $value !== [] && !array_is_list($value) && count(array_filter($value, "is_scalar")) === count($value)) {
+            return $value[self::$defaultLanguage] ?? reset($value);
+        }
+        return $value;
     }
 
     /**
@@ -247,11 +345,16 @@ class FieldForm
         if ($markdown) {
             $id = "field-" . (++self::$counter);
             $error = $errors[rtrim($path, ".")] ?? null;
-            $html .= '<div class="mb-3"><label class="visually-hidden" for="' . $id . '">Markdown</label>'
-                . '<textarea class="form-control markdown' . ($error ? ' is-invalid' : '') . '" id="' . $id . '" name="' . self::e($name) . '[_markdown]" rows="8">'
-                . self::e((string)$values["markdown"]) . '</textarea>'
-                . ($error ? '<div class="invalid-feedback d-block">' . self::e($error) . '</div>' : '')
-                . '<div class="form-text">The block keeps its Markdown, its template reads it as in a Markdown page.</div></div>';
+            $props = ["type" => "markdown", "label" => "Markdown", "help" => "The block keeps its Markdown, its template reads it as in a Markdown page."];
+            if (self::$languages) {
+                $html .= str_replace('<label class="form-label"', '<label class="visually-hidden"',
+                    self::translatedField($props, $values["markdown"], $id, $name . "[_markdown]", "Markdown", $error ? " is-invalid" : "", "", $error));
+            } else {
+                $html .= '<div class="mb-3"><label class="visually-hidden" for="' . $id . '">Markdown</label>'
+                    . '<textarea class="form-control markdown' . ($error ? ' is-invalid' : '') . '" id="' . $id . '" name="' . self::e($name) . '[_markdown]" rows="8">'
+                    . self::e((string)self::singleValue($values["markdown"])) . '</textarea>'
+                    . self::help($props, $error) . '</div>';
+            }
         } else if ($blueprint) {
             $html .= self::render($blueprint, $values, $errors, $name, $path);
         } else {

@@ -8,6 +8,7 @@
 namespace Shaack\Reboot\AddOns\Admin;
 
 use Shaack\Reboot\Request;
+use Shaack\Reboot\Site;
 use Shaack\Utils\FileSystemUtils;
 
 class PageActionHandler
@@ -15,12 +16,18 @@ class PageActionHandler
     private string $pagesDir;
     private string $historyDir;
     private int $historyMaxVersions;
+    private ?Site $site;
 
-    public function __construct(string $pagesDir, string $historyDir, int $historyMaxVersions)
+    /**
+     * @param ?Site $site its languages: renaming or moving a page takes its versions
+     *     in the other languages along, `about.md` and `about.de.md`
+     */
+    public function __construct(string $pagesDir, string $historyDir, int $historyMaxVersions, ?Site $site = null)
     {
         $this->pagesDir = $pagesDir;
         $this->historyDir = $historyDir;
         $this->historyMaxVersions = $historyMaxVersions;
+        $this->site = $site;
     }
 
     /**
@@ -39,6 +46,7 @@ class PageActionHandler
             'delete_folder' => $this->deleteFolder($targetName),
             'rename_folder' => $this->renameFolder($targetName, $request),
             'restore_page' => $this->restorePage($targetName, $request),
+            'add_translation' => $this->addTranslation($targetName, $request),
             default => throw new \InvalidArgumentException("Unknown action: " . $action),
         };
     }
@@ -82,14 +90,7 @@ class PageActionHandler
             throw new \InvalidArgumentException("Invalid name. Use letters, numbers, hyphens, underscores.");
         }
         $oldPath = $this->resolveAndValidateFile($targetName);
-        $newPath = dirname($oldPath) . "/" . $newName . "." . pathinfo($oldPath, PATHINFO_EXTENSION);
-        if (file_exists($newPath)) {
-            throw new \InvalidArgumentException("A page with that name already exists.");
-        }
-        rename($oldPath, $newPath);
-        $relNew = str_replace($this->pagesDir, "", $newPath);
-        PageHistoryHelper::movePageHistory($targetName, $relNew, $this->historyDir);
-        return ['success' => "Page renamed", 'editPageName' => $relNew];
+        return $this->moveVersions($oldPath, dirname($oldPath), $newName, "Page renamed", "A page with that name already exists.");
     }
 
     private function movePage(string $targetName, Request $request): array
@@ -101,14 +102,95 @@ class PageActionHandler
         if (!is_dir($destDir)) {
             throw new \InvalidArgumentException("Destination folder does not exist.");
         }
-        $newPath = $destDir . "/" . basename($oldPath);
-        if (file_exists($newPath)) {
-            throw new \InvalidArgumentException("A page with that name already exists in the destination.");
+        return $this->moveVersions($oldPath, $destDir, $this->baseName(basename($oldPath)), "Page moved",
+            "A page with that name already exists in the destination.");
+    }
+
+    /**
+     * Moves a page and its versions in the other languages to `$destDir/$newName`,
+     * `about.md` and `about.de.md` become `contact.md` and `contact.de.md`. Nothing
+     * moves if one of the new names is taken.
+     * @return array the result for the open page, the moved `$oldPath`
+     */
+    private function moveVersions(string $oldPath, string $destDir, string $newName, string $success, string $taken): array
+    {
+        $oldBase = $this->baseName(basename($oldPath));
+        $moves = [];
+        foreach ($this->versions($oldPath) as $file) {
+            $newFile = $destDir . "/" . $newName . substr(basename($file), strlen($oldBase));
+            if ($newFile !== $file && file_exists($newFile)) {
+                throw new \InvalidArgumentException($taken);
+            }
+            $moves[$file] = $newFile;
         }
-        rename($oldPath, $newPath);
-        $newRelPath = str_replace($this->pagesDir, "", $newPath);
-        PageHistoryHelper::movePageHistory($targetName, $newRelPath, $this->historyDir);
-        return ['success' => "Page moved", 'editPageName' => $newRelPath];
+        foreach ($moves as $file => $newFile) {
+            if ($newFile === $file) {
+                continue;
+            }
+            rename($file, $newFile);
+            PageHistoryHelper::movePageHistory(str_replace($this->pagesDir, "", $file), str_replace($this->pagesDir, "", $newFile), $this->historyDir);
+        }
+        return ['success' => $success, 'editPageName' => str_replace($this->pagesDir, "", $moves[$oldPath])];
+    }
+
+    /**
+     * Creates the version of a Markdown page in another language, `about.de.md`
+     * next to `about.md`, as a copy of the page to translate.
+     */
+    private function addTranslation(string $targetName, Request $request): array
+    {
+        $language = (string)($request->getParam("language") ?? "");
+        if (!$this->site || !$this->site->isMultilingual() || !in_array($language, $this->site->getLanguages(), true)) {
+            throw new \InvalidArgumentException("Unknown language.");
+        }
+        $sourcePath = $this->resolveAndValidateFile($targetName);
+        if (!str_ends_with($sourcePath, ".md")) {
+            throw new \InvalidArgumentException("Only a Markdown page has a file per language, a structured page holds all of them.");
+        }
+        $base = dirname($sourcePath) . "/" . $this->baseName(basename($sourcePath));
+        $newPath = $language === $this->site->getDefaultLanguage() ? $base . ".md" : $base . "." . $language . ".md";
+        if (file_exists($newPath) || file_exists($base . "." . $language . ".md")) {
+            throw new \InvalidArgumentException("The page has a " . $language . " version already.");
+        }
+        copy($sourcePath, $newPath);
+        return ['success' => "The " . $language . " version is a copy of the page, ready to translate", 'editPageName' => str_replace($this->pagesDir, "", $newPath)];
+    }
+
+    /**
+     * A file name without language and extension, `about.de.md` is `about`.
+     */
+    private function baseName(string $fileName): string
+    {
+        $name = preg_replace('/\.(md|yml)$/', '', $fileName);
+        $languages = $this->site ? $this->site->getLanguages() : [];
+        if (preg_match('/^(.*)\.([^.]+)$/', $name, $matches) && in_array($matches[2], $languages, true)) {
+            return $matches[1];
+        }
+        return $name;
+    }
+
+    /**
+     * The page file and its versions in the other languages next to it:
+     * `about.md` or `about.yml` and `about.de.md`, `about.en.md` ...
+     * @return string[] existing files, `$path` among them
+     */
+    private function versions(string $path): array
+    {
+        $files = [$path];
+        if (!$this->site || !$this->site->isMultilingual()) {
+            return $files;
+        }
+        $base = dirname($path) . "/" . $this->baseName(basename($path));
+        $candidates = [$base . ".md", $base . ".yml"];
+        foreach ($this->site->getLanguages() as $language) {
+            $candidates[] = $base . "." . $language . ".md";
+        }
+        foreach ($candidates as $file) {
+            if ($file !== $path && is_file($file)) {
+                $files[] = $file;
+            }
+        }
+        return $files;
     }
 
     private function addFolder(string $targetName): array

@@ -8,6 +8,10 @@
  * lists and blocks, switches blocks off and folds them, chooses images from the
  * media and keeps track of unsaved changes. Which blocks are folded, and whether
  * the page settings are open, is remembered per page in the localStorage.
+ *
+ * A form with `data-edit-lang` has an input per language in its translated
+ * fields, the buttons with `data-edit-lang-button` above it choose the language
+ * shown. The choice is remembered for all pages.
  */
 import {InsertMedia} from "./InsertMedia.js"
 
@@ -46,6 +50,7 @@ forms.forEach(form => {
 
     restoreFolds(form)
     syncFoldAll(form)
+    if (form.hasAttribute("data-edit-lang")) setupLanguages(form)
     form.addEventListener("toggle", event => {
         if (event.target.matches("details[data-fold]")) saveFolds(form)
     }, true)
@@ -223,8 +228,48 @@ function watchMarkdown(textarea) {
     })
 }
 
+// --- The language shown in a multilingual form ---
+
+const EDIT_LANG_KEY = "reboot_edit_lang"
+
+function setupLanguages(form) {
+    const buttons = [...document.querySelectorAll("[data-edit-lang-button]")]
+    const languages = buttons.map(button => button.dataset.editLangButton)
+    let saved = null
+    try {
+        saved = localStorage.getItem(EDIT_LANG_KEY)
+    } catch (e) {
+        // no storage, the form starts in the default language
+    }
+    if (saved && languages.includes(saved)) showLanguage(form, saved)
+    buttons.forEach(button => button.addEventListener("click", () => {
+        showLanguage(form, button.dataset.editLangButton)
+        try {
+            localStorage.setItem(EDIT_LANG_KEY, button.dataset.editLangButton)
+        } catch (e) {
+            // not remembered
+        }
+    }))
+}
+
+function showLanguage(form, language) {
+    if (form.dataset.editLang === language) return
+    form.dataset.editLang = language
+    document.querySelectorAll("[data-edit-lang-button]").forEach(button => {
+        const active = button.dataset.editLangButton === language
+        button.classList.toggle("active", active)
+        button.setAttribute("aria-pressed", active ? "true" : "false")
+    })
+    // a label points at the input of the language shown
+    form.querySelectorAll("[data-lang-label]").forEach(label => {
+        label.htmlFor = label.dataset.langLabel + "-" + language
+    })
+    // the page Pages shows the preview and the address in this language
+    form.dispatchEvent(new CustomEvent("languagechange", {detail: {language}}))
+}
+
 function updatePreview(input) {
-    const preview = input.closest(".mb-3")?.querySelector("[data-image-preview]")
+    const preview = input.closest(".field-language, .mb-3")?.querySelector("[data-image-preview]")
     if (!preview) return
     const src = input.value || input.placeholder
     preview.src = src || ""

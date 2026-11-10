@@ -17,11 +17,15 @@
 use Shaack\Logger;
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\AddOns\Admin\FieldForm;
+use Shaack\Reboot\AddOns\Admin\LanguageSwitch;
 use Shaack\Reboot\AddOns\Admin\StructuredPageHandler;
 use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\CsrfProtection;
 
 $pageBlueprint = Blueprint::forPage($defaultSite);
+// on a multilingual site the text fields get an input per language, the switcher above shows one language
+FieldForm::setLanguages($defaultSite->getLanguages(), $defaultSite->getDefaultLanguage());
+$editLanguages = $defaultSite->isMultilingual() ? $defaultSite->getLanguages() : [];
 $structuredHandler = new StructuredPageHandler($pageBlueprint, $pagesDir, $historyDir, $historyMaxVersions);
 $structuredMessage = $request->getParam("converted", "get") ? "The page is a structured page now. Its Markdown version is in the history." : null;
 $structuredError = null;
@@ -67,17 +71,24 @@ try {
             Some fields do not fit their blueprint, they are marked below. The page shows them anyway, as far as the templates can.
         </div>
     <?php } ?>
+    <?php if ($editLanguages) { ?>
+        <style><?php foreach ($editLanguages as $language) { ?>.structured-page[data-edit-lang="<?= $language ?>"] .field-language:not([data-lang="<?= $language ?>"]){display:none}<?php } ?></style>
+        <?= LanguageSwitch::render($editLanguages, $defaultSite->getDefaultLanguage(), null) ?>
+    <?php } ?>
     <!--suppress HtmlUnknownTarget -->
-    <form method="post" action="pages?page=<?= urlencode($editPageName) ?>" class="structured-page" data-field-form>
+    <form method="post" action="pages?page=<?= urlencode($editPageName) ?>" class="structured-page" data-field-form<?= $editLanguages ? ' data-edit-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '" data-default-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '"' : '' ?>>
         <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
         <input type="hidden" name="structured" value="1">
         <?php
         // the fields of the page, title and description for search engines, fold away above the blocks
         $settingFields = array_keys(array_filter($pageBlueprint->getFields(), fn($props) => $props["type"] !== "blocks"));
         $blockFields = array_diff(array_keys($pageBlueprint->getFields()), $settingFields);
-        $settingsOpen = trim((string)($structuredValues["title"] ?? "")) === ""
+        // the title in the default language, a value per language is a map
+        $pageTitle = $defaultSite->localize($structuredValues["title"] ?? "", $defaultSite->getDefaultLanguage());
+        $pageTitle = is_scalar($pageTitle) ? trim((string)$pageTitle) : "";
+        $settingsOpen = $pageTitle === ""
             || array_filter(array_keys($structuredProblems), fn($key) => in_array(explode(".", $key)[0], $settingFields, true));
-        $settingsSummary = trim((string)($structuredValues["title"] ?? ""));
+        $settingsSummary = $pageTitle;
         ?>
         <div class="structured-page-fields">
         <?php if ($settingFields) { ?>
