@@ -1,4 +1,3 @@
----
 title:
   en: Markdown for Editors
   de: Markdown für Redakteure
@@ -12,16 +11,15 @@ teaser:
   de: Blöcke, Felder und ein wenig Markdown. Alles, was eine Redaktion braucht, um die Seiten einer Reboot-CMS-Site zu füllen.
 link: mailto:seminars@example.com?subject=Markdown%20for%20Editors
 body:
+  en: |-
+    A hands-on day for everyone who writes the content of a website. No technical background is needed.
+
+    - How blocks give a page its structure
+    - Headings, emphasis, lists and links in Markdown
+    - Images, the media library and the history of a page
   de: |-
     Ein Praxistag für alle, die die Inhalte einer Website schreiben. Technisches Vorwissen ist nicht nötig.
 
     - Wie Blöcke einer Seite ihre Struktur geben
     - Überschriften, Hervorhebungen, Listen und Links in Markdown
     - Bilder, die Mediathek und die Historie einer Seite
----
-
-A hands-on day for everyone who writes the content of a website. No technical background is needed.
-
-- How blocks give a page its structure
-- Headings, emphasis, lists and links in Markdown
-- Images, the media library and the history of a page

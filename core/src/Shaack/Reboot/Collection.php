@@ -55,7 +55,7 @@ class Collection implements \IteratorAggregate, \Countable
             return new Collection($name, null);
         }
         $entries = [];
-        foreach (glob(self::folder($site, $name) . "/*.md") ?: [] as $file) {
+        foreach (glob(self::folder($site, $name) . "/*.yml") ?: [] as $file) {
             $entry = Entry::fromFile($file, $blueprint);
             if (!$all) {
                 if ($entry->isDraft()) {
@@ -169,7 +169,7 @@ class Collection implements \IteratorAggregate, \Countable
     }
 
     /**
-     * The entry with this file name, without `.md`.
+     * The entry with this file name, without `.yml`.
      */
     public function find(string $slug): ?Entry
     {

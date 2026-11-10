@@ -8,20 +8,17 @@
 namespace Shaack\Reboot\AddOns\Admin;
 
 use Shaack\Reboot\Blueprint;
-use Shaack\Reboot\Entry;
-use Shaack\Reboot\Page;
 use Shaack\Utils\FileSystemUtils;
 use Shaack\Reboot\YamlWriter;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Writes the entries of a collection from the form of the admin page "Data".
- * An entry stays a Markdown file a person can edit by hand: the fields of the
+ * An entry stays a YAML file a person can edit by hand: the fields of the
  * blueprint come first and in its order, values the blueprint does not know
- * are kept, empty fields are left out, so their default applies.
- *
- * On a multilingual site the translated fields hold a value per language. The
- * body in the default language stays below the frontmatter, the frontmatter
- * holds it in the other languages, `body: {de: "..."}`, see Entry.
+ * are kept, empty fields are left out, so their default applies. On a
+ * multilingual site the translated fields hold a value per language.
  */
 class DataEntryHandler
 {
@@ -55,13 +52,12 @@ class DataEntryHandler
         if (!preg_match('/^[\w\-]+$/', $slug)) {
             return null;
         }
-        $file = $this->getFolder() . "/" . $slug . ".md";
+        $file = $this->getFolder() . "/" . $slug . ".yml";
         return is_file($file) ? $file : null;
     }
 
     /**
      * The fields of an entry as written in its file, without defaults, for the form.
-     * @return array [array $values, string|array $body] the body with a value per language if it has more than one
      */
     public function read(string $slug): array
     {
@@ -69,11 +65,12 @@ class DataEntryHandler
         if (!$file) {
             throw new \InvalidArgumentException("There is no entry '" . $slug . "'.");
         }
-        [$values, $body] = Page::splitFrontmatter(trim((string)file_get_contents($file)));
-        $values = Entry::withBody($values, trim($body), $this->defaultLanguage());
-        $body = $values["body"];
-        unset($values["body"]);
-        return [FieldInput::forForm($this->blueprint, $values), $body];
+        try {
+            $values = Yaml::parse((string)file_get_contents($file));
+        } catch (ParseException $e) {
+            throw new \RuntimeException("The entry is no valid YAML: " . $e->getMessage());
+        }
+        return FieldInput::forForm($this->blueprint, is_array($values) ? $values : []);
     }
 
     /**
@@ -87,22 +84,18 @@ class DataEntryHandler
     {
         $values = $this->fromInput($input);
         $extra = [];
-        $body = "";
         if ($slug !== null) {
-            [$extra, $body] = $this->read($slug);
+            $extra = $this->read($slug);
             $file = $this->file($slug);
         } else {
             $slug = $this->newSlug($values);
-            $file = $this->getFolder() . "/" . $slug . ".md";
-        }
-        if (array_key_exists("body", $this->blueprint->getFields())) {
-            $body = $values["body"] ?? "";
+            $file = $this->getFolder() . "/" . $slug . ".yml";
         }
         if (!is_dir($this->getFolder())) {
             mkdir($this->getFolder(), 0755, true);
         }
         PageHistoryHelper::savePageSnapshot($file, $this->dataDir, $this->historyDir, $this->historyMaxVersions);
-        FileSystemUtils::writeAtomic($file, $this->serialize($values, $extra, $draft, $body));
+        FileSystemUtils::writeAtomic($file, $this->serialize($values, $extra, $draft));
         return $slug;
     }
 
@@ -129,43 +122,21 @@ class DataEntryHandler
     }
 
     /**
-     * The Markdown file of an entry, the fields as frontmatter, the field `body` below it.
+     * The YAML file of an entry.
      * @param array $extra values of the file the blueprint does not know, they are kept
-     * @param string|array $body the body, or a value per language: the default one goes
-     *     below the frontmatter, the others into it
      */
-    public function serialize(array $values, array $extra, bool $draft, $body): string
+    public function serialize(array $values, array $extra, bool $draft): string
     {
-        unset($values["body"]);
-        $translations = [];
-        if (is_array($body)) {
-            $translations = array_filter($body, fn($text) => is_string($text) && trim($text) !== "");
-            $body = (string)($translations[$this->defaultLanguage()] ?? "");
-            unset($translations[$this->defaultLanguage()]);
-        }
-        $frontmatter = FieldInput::clean($this->blueprint, $values);
-        unset($frontmatter["body"]);
+        $values = FieldInput::clean($this->blueprint, $values);
         if ($draft) {
-            $frontmatter["draft"] = true;
+            $values["draft"] = true;
         }
         foreach ($extra as $name => $value) {
             if (!array_key_exists($name, $this->blueprint->getFields()) && $name !== "draft") {
-                $frontmatter[$name] = $value;
+                $values[$name] = $value;
             }
         }
-        if ($translations) {
-            $frontmatter["body"] = $translations;
-        }
-        $markdown = "---\n" . ($frontmatter ? YamlWriter::dump($frontmatter) : "\n") . "---\n";
-        if (trim($body) !== "") {
-            $markdown .= "\n" . trim($body) . "\n";
-        }
-        return $markdown;
-    }
-
-    private function defaultLanguage(): ?string
-    {
-        return $this->blueprint->getSite()?->getDefaultLanguage();
+        return YamlWriter::dump($values);
     }
 
     private function newSlug(array $values): string
@@ -192,7 +163,7 @@ class DataEntryHandler
         $text = trim(preg_replace('/[^a-z0-9]+/', '-', $text), "-");
         $slug = trim($date . "-" . substr($text, 0, 60), "-") ?: "entry";
         $unique = $slug;
-        for ($i = 2; file_exists($this->getFolder() . "/" . $unique . ".md"); $i++) {
+        for ($i = 2; file_exists($this->getFolder() . "/" . $unique . ".yml"); $i++) {
             $unique = $slug . "-" . $i;
         }
         return $unique;

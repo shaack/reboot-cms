@@ -40,7 +40,7 @@ class DataEntryHandlerTest
 
     private function content(string $slug): string
     {
-        return file_get_contents($this->tmpDir . "/data/seminars/" . $slug . ".md");
+        return file_get_contents($this->tmpDir . "/data/seminars/" . $slug . ".yml");
     }
 
     public function testNewEntryGetsItsNameFromDateAndTitle(): void
@@ -57,13 +57,13 @@ class DataEntryHandlerTest
             "price" => "290", "title" => "Basics", "date" => "2027-03-12", "time" => "",
             "booked-out" => "0", "teaser" => "Line one\r\nLine two", "body" => "Some **text**.\r\n",
         ], false);
-        Assert::equals("---\ntitle: Basics\ndate: 2027-03-12\nprice: 290\nteaser: |-\n  Line one\n  Line two\n---\n\nSome **text**.\n", $this->content($slug));
+        Assert::equals("title: Basics\ndate: 2027-03-12\nprice: 290\nteaser: |-\n  Line one\n  Line two\nbody: Some **text**.\n", $this->content($slug));
     }
 
     public function testTextIsQuotedOnlyWhenNeeded(): void
     {
         $slug = $this->handler->save(null, ["title" => "Photo basics, a day", "time" => "09:30-16:00", "teaser" => "Note: yes"], false);
-        Assert::equals("---\ntitle: Photo basics, a day\ntime: 09:30-16:00\nteaser: 'Note: yes'\n---\n", $this->content($slug));
+        Assert::equals("title: Photo basics, a day\ntime: 09:30-16:00\nteaser: 'Note: yes'\n", $this->content($slug));
         $slug = $this->handler->save(null, ["title" => "true"], false);
         Assert::contains("title: 'true'", $this->content($slug));
     }
@@ -80,29 +80,27 @@ class DataEntryHandlerTest
 
     public function testUnknownValuesAndDraftAreKept(): void
     {
-        file_put_contents($this->tmpDir . "/data/seminars/old.md", "---\ntitle: Old\nspeaker: Ann\n---\n\nText\n");
+        file_put_contents($this->tmpDir . "/data/seminars/old.yml", "title: Old\nspeaker: Ann\nbody: Text\n");
         $this->handler->save("old", ["title" => "New", "body" => "Text"], true);
-        Assert::equals("---\ntitle: New\ndraft: true\nspeaker: Ann\n---\n\nText\n", $this->content("old"));
+        Assert::equals("title: New\nbody: Text\ndraft: true\nspeaker: Ann\n", $this->content("old"));
         $this->handler->save("old", ["title" => "New", "body" => "Text"], false);
         Assert::false(str_contains($this->content("old"), "draft"));
     }
 
     public function testReadGivesTheFileValuesWithoutDefaults(): void
     {
-        file_put_contents($this->tmpDir . "/data/seminars/e.md", "---\ntitle: E\ndate: 2027-01-02\n---\n\nBody\n");
-        [$values, $body] = $this->handler->read("e");
-        Assert::equals(["title" => "E", "date" => "2027-01-02"], $values);
-        Assert::equals("Body", $body);
+        file_put_contents($this->tmpDir . "/data/seminars/e.yml", "title: E\ndate: 2027-01-02\nbody: Body\n");
+        Assert::equals(["title" => "E", "date" => "2027-01-02", "body" => "Body"], $this->handler->read("e"));
     }
 
     public function testSaveAndDeleteKeepTheOldVersion(): void
     {
         $slug = $this->handler->save(null, ["title" => "Keep", "date" => "2027-01-02"], false);
         $this->handler->save($slug, ["title" => "Kept", "date" => "2027-01-02"], false);
-        Assert::equals(1, count(glob($this->tmpDir . "/history/seminars/" . $slug . "/*.md")));
+        Assert::equals(1, count(glob($this->tmpDir . "/history/seminars/" . $slug . "/*.yml")));
         $this->handler->delete($slug);
         Assert::null($this->handler->file($slug));
-        Assert::true(count(glob($this->tmpDir . "/history/seminars/" . $slug . "/*.md")) >= 1);
+        Assert::true(count(glob($this->tmpDir . "/history/seminars/" . $slug . "/*.yml")) >= 1);
     }
 
     public function testSlugCannotLeaveTheCollection(): void

@@ -24,7 +24,7 @@ Reboot CMS is a flat-file, database-free CMS in PHP. Since version 4 a page is u
 - `site/`: the site you edit
   - `pages/`: content pages (`.yml`, `.md` or `.php`)
   - `blocks/`: block templates, Markdown blocks as files, structured blocks as folders, see `site/blocks/README.md`
-  - `data/<collection>/`: records with fixed fields, one Markdown file per entry
+  - `data/<collection>/`: records with fixed fields, one YAML file per entry
   - `blueprints/<collection>.yml`: the fields of a collection, with `url:` its entries are pages rendered by `blueprints/<collection>.php`
   - `addons/<Name>/<Name>.php`: site-specific addons, one folder each with optional `src/` and `admin/`
   - `template.php`: main HTML template
@@ -48,7 +48,7 @@ A request path maps straight onto `site/pages/`:
 - `/about` → `pages/about.yml`
 - `/howto/git` → `pages/howto/git.yml`
 - a folder is served by its `index` page
-- `/blog/<slug>` → the entry `data/blog/<slug>.md`, because `blueprints/blog.yml` has `url: blog`
+- `/blog/<slug>` → the entry `data/blog/<slug>.yml`, because `blueprints/blog.yml` has `url: blog`
 - `404.yml` (or `.md`, `.php`) is the custom 404 page
 
 To find a page's source, append the URL path to `site/pages/`. To add a page, create the file, no route registration needed. At one path `.md` wins over `.yml`, which wins over `.php`. If no file matches, the entries of collections with `url` are tried (`Page::renderEntry`), then the pages of AddOns (`Site::getAddOnPage()`), then the 404 page.
@@ -86,7 +86,7 @@ Each block name maps to `site/blocks/{name}.php`, or to the folder `site/blocks/
 
 ## Data
 
-Records with fixed fields (seminars, events, people) are no pages. Each entry is a Markdown file in `site/data/<collection>/`, its fields in the frontmatter, the Markdown below it is the field `body`. `site/blueprints/<collection>.yml` lists the fields with `type`, `required`, `default` and `options`. Templates and blocks query them with `$site->collection("seminars")->where("date", ">=", "today")->sortBy("date")->limit(3)`. Entries that don't match the blueprint and drafts (`draft: true`) are left out. See the README section "Data".
+Records with fixed fields (seminars, events, people) are no pages. Each entry is a YAML file in `site/data/<collection>/` with the fields of its blueprint, like a structured page, a longer text is a `markdown` field such as `body`. `site/blueprints/<collection>.yml` lists the fields with `type`, `required`, `default` and `options`. Templates and blocks query them with `$site->collection("seminars")->where("date", ">=", "today")->sortBy("date")->limit(3)`. Entries that don't match the blueprint and drafts (`draft: true`) are left out. See the README section "Data".
 
 A collection blueprint with `url: blog` makes each entry a page at `/blog/<slug>`, rendered by `site/blueprints/blog.php` with `$entry`; scalar entry fields become page config. `Entry::getUrl()` returns its address. In the demo the blog lives in `site/data/blog/` and the block `blog-list` lists it.
 
@@ -113,7 +113,7 @@ The **first path segment** then selects the language, `/de/about` is "about" in 
 
 - Markdown pages have a file per language next to each other: `about.md` is the default language, `about.de.md` German. A language without its own file shows the default one. `/about.de` is no address. The folder per language, `site/pages/de/about.md`, still works but is deprecated.
 - Structured pages keep all languages in one file. Blocks and list items are the same in all languages, the text fields (`text`, `textarea`, `markdown`, `image`, `url`) hold a value per language, `heading: {en: Welcome, de: Willkommen}`. A field with `shared: true` in its blueprint has one value for all. A plain value holds for all languages. `$block->get()` returns the value of the language of the page, templates need no change.
-- Data entries do it the same way: text fields `{en: …, de: …}` in the frontmatter, the Markdown below it is the body in the default language, the other languages go into the frontmatter, `body: {de: "…"}`. `$entry->get()` returns the language of the page being rendered (`$site->getLanguage()`), queries read the default language.
+- Data entries do it the same way, text fields `{en: …, de: …}`, `body` included. `$entry->get()` returns the language of the page being rendered (`$site->getLanguage()`), queries read the default language.
 
 In `template.php` and block templates:
 
@@ -146,7 +146,7 @@ The `Admin` addon of the admin site mounts the `admin/` pages and menu entries o
 | `Block` | A block, its template and the XPath queries of Markdown blocks |
 | `Blueprint` | Field definitions from `site/blueprints/<name>.yml` or a block folder, normalizes and validates values |
 | `Collection` | The entries of `site/data/<name>/`, queried via `$site->collection()` (`where`, `sortBy`, `limit`) |
-| `Entry` | One data entry, a Markdown file with frontmatter fields, `body` is the Markdown below |
+| `Entry` | One data entry, a YAML file with the fields of its blueprint |
 | `FieldAccess` | Trait with `get`, `html`, `date`, `items`, `entry` for `Entry`, `Block` and `Item` (list items) |
 | `YamlWriter` | Writes readable YAML (quotes only where needed, `\|` blocks), used for data entries and structured pages |
 | `Request` | HTTP request parser, language of the path |

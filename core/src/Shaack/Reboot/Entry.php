@@ -7,16 +7,18 @@
 
 namespace Shaack\Reboot;
 
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
+
 /**
- * One entry of a collection, a Markdown file in `site/data/<collection>/`.
- * The fields are its frontmatter, the Markdown below it is the field `body`.
- * See FieldAccess for the accessors.
+ * One entry of a collection, a YAML file in `site/data/<collection>/` with
+ * the fields its blueprint names, like a structured page. A Markdown text is a
+ * field of the type `markdown`, `body` for example. See FieldAccess for the
+ * accessors.
  *
  * On a multilingual site the text fields hold a value per language as in a
- * structured page, `title: {en: Basics, de: Grundlagen}`. The Markdown below
- * the frontmatter is the body in the default language, the frontmatter may
- * hold it in the other languages, `body: {de: "..."}`. The accessors show the
- * language of the page being rendered, see Site::getLanguage(), a language
+ * structured page, `title: {en: Basics, de: Grundlagen}`. The accessors show
+ * the language of the page being rendered, see Site::getLanguage(), a language
  * without a value shows the default one. Queries and the validation read the
  * default language, so an entry sorts and filters the same in every language.
  *
@@ -37,7 +39,7 @@ class Entry
     private array $localized = []; // the values by language, see fieldValues()
 
     /**
-     * @param array $values the normalized fields, `body` included, with a value per language in the translated ones
+     * @param array $values the normalized fields, with a value per language in the translated ones
      * @param array $errors the validation errors of the values, field path => message
      */
     public function __construct(string $slug, string $fsPath, array $values, array $errors = [], ?Blueprint $blueprint = null, ?Site $site = null)
@@ -56,28 +58,15 @@ class Entry
     public static function fromFile(string $fsPath, Blueprint $blueprint, ?Site $site = null): Entry
     {
         $site = $site ?? $blueprint->getSite();
-        [$frontmatter, $body] = Page::splitFrontmatter(trim((string)file_get_contents($fsPath)));
-        $values = self::withBody($frontmatter, trim($body), $site?->getDefaultLanguage());
-        $values = $blueprint->normalize($values);
-        $defaultValues = $site ? $site->localize($values, $site->getDefaultLanguage()) : $values;
-        return new Entry(basename($fsPath, ".md"), $fsPath, $values, $blueprint->validate($defaultValues), $blueprint, $site);
-    }
-
-    /**
-     * The frontmatter with the Markdown below it as `body`. The Markdown is the
-     * default language when the frontmatter holds the body in other languages.
-     */
-    public static function withBody(array $frontmatter, string $body, ?string $defaultLanguage): array
-    {
-        $values = $frontmatter;
-        if (is_array($values["body"] ?? null) && $defaultLanguage !== null) {
-            if ($body !== "") {
-                $values["body"] = [$defaultLanguage => $body] + $values["body"];
-            }
-        } else if ($body !== "" || !array_key_exists("body", $values)) {
-            $values["body"] = $body;
+        $slug = basename($fsPath, ".yml");
+        try {
+            $values = Yaml::parse((string)file_get_contents($fsPath));
+        } catch (ParseException $e) {
+            return new Entry($slug, $fsPath, [], ["" => "The file is no valid YAML: " . $e->getMessage()], $blueprint, $site);
         }
-        return $values;
+        $values = $blueprint->normalize(is_array($values) ? $values : []);
+        $defaultValues = $site ? $site->localize($values, $site->getDefaultLanguage()) : $values;
+        return new Entry($slug, $fsPath, $values, $blueprint->validate($defaultValues), $blueprint, $site);
     }
 
     protected function fieldSite(): ?Site
@@ -111,7 +100,7 @@ class Entry
     }
 
     /**
-     * The file name without `.md`, unique in its collection.
+     * The file name without `.yml`, unique in its collection.
      */
     public function getSlug(): string
     {

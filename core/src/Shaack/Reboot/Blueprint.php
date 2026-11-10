@@ -43,8 +43,7 @@ use Symfony\Component\Yaml\Yaml;
  * The other types are the same in all languages anyway, and so are the blocks
  * and the items of lists, only their fields are translated.
  *
- * In a collection, a field named `body` is the Markdown below the frontmatter
- * of an entry, all other fields live in the frontmatter.
+ * In a collection, every entry is a YAML file with these fields, see Entry.
  *
  * With `url: blog` every entry is a page of its own at `/blog/<slug>`, rendered
  * by the template `site/blueprints/<name>.php` next to the blueprint, which gets

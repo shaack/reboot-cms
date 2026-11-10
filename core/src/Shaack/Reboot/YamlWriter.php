@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Writes YAML for files people read and edit by hand, the frontmatter of data
+ * Writes YAML for files people read and edit by hand, data
  * entries and structured pages. Symfony's dumper quotes every text with a
  * space, this writer quotes only where YAML needs it, writes text with line
  * breaks as a `|` block and nested lists in block style:

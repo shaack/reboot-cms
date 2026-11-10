@@ -37,7 +37,7 @@ class StructuredPageTest
         $this->block("focus", "fields:\n  seminar: {type: entry, collection: seminars}\n",
             '<?php $s = $block->entry("seminar"); ?><em><?= $s ? $s->get("title") : "none" ?></em>');
         file_put_contents($this->tmpDir . "/blueprints/seminars.yml", "fields:\n  title: {type: text, required: true}\n");
-        file_put_contents($this->tmpDir . "/data/seminars/basics.md", "---\ntitle: Basics\n---\n");
+        file_put_contents($this->tmpDir . "/data/seminars/basics.yml", "title: Basics\n");
 
         $rebootRef = new \ReflectionClass(Reboot::class);
         $reboot = $rebootRef->newInstanceWithoutConstructor();
@@ -283,8 +283,8 @@ class StructuredPageTest
         mkdir($this->tmpDir . "/data/blog");
         file_put_contents($this->tmpDir . "/blueprints/blog.yml", "url: blog\nfields:\n  title: {type: text, required: true}\n  body: {type: markdown}\n");
         file_put_contents($this->tmpDir . "/blueprints/blog.php", '<h1><?= $entry->get("title") ?></h1><?= $entry->html("body") ?>');
-        file_put_contents($this->tmpDir . "/data/blog/first.md", "---\ntitle: First\n---\n\nHello\n");
-        file_put_contents($this->tmpDir . "/data/blog/draft.md", "---\ntitle: Draft\ndraft: true\n---\n");
+        file_put_contents($this->tmpDir . "/data/blog/first.yml", "title: First\nbody: Hello\n");
+        file_put_contents($this->tmpDir . "/data/blog/draft.yml", "title: Draft\ndraft: true\n");
         Assert::equals("<h1>First</h1><p>Hello</p>", $this->page->render("/blog/first"));
         Assert::equals("First", $this->page->meta("title"), "the fields are the config of the page");
         Assert::equals("blog/first", $this->site->collection("blog")->find("first")->getUrl());

@@ -47,9 +47,9 @@ YAML);
         rmdir($this->tmpDir);
     }
 
-    private function entry(string $slug, string $frontmatter, string $body): void
+    private function entry(string $slug, string $fields, string $body): void
     {
-        file_put_contents($this->tmpDir . "/data/seminars/" . $slug . ".md", "---\n" . $frontmatter . "\n---\n\n" . $body . "\n");
+        file_put_contents($this->tmpDir . "/data/seminars/" . $slug . ".yml", $fields . "\n" . ($body !== "" ? "body: |-\n  " . $body . "\n" : ""));
     }
 
     private function titles(Collection $collection): array
@@ -135,6 +135,15 @@ YAML);
         Assert::false($broken->isValid());
         Assert::equals(["date" => "Date must be a date like 2027-03-12", "price" => "Price must be a number"], $broken->getErrors());
         Assert::true($all->find("2027-07-01-draft")->isDraft());
+    }
+
+    public function testEntryThatIsNoValidYamlIsLeftOut(): void
+    {
+        file_put_contents($this->tmpDir . "/data/seminars/2027-09-01-broken.yml", "title: [Broken\n");
+        Assert::equals(3, count(Collection::load($this->site, "seminars")));
+        $broken = Collection::load($this->site, "seminars", true)->find("2027-09-01-broken");
+        Assert::false($broken->isValid());
+        Assert::contains("no valid YAML", implode(" ", $broken->getErrors()));
     }
 
     public function testMissingBlueprintGivesAnEmptyCollection(): void

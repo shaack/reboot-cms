@@ -19,7 +19,7 @@ Reboot CMS is very small and the pages are delivered extremely fast. My website 
 
 Reboot CMS works well with AI coding assistants, because its architecture maps onto what an agent can reliably reason about:
 
-- **Flat files, no database.** Pages are short YAML files or Markdown, data entries are Markdown files with frontmatter. Content is edited directly as text, there are no migrations and no admin API to learn.
+- **Flat files, no database.** Pages are short YAML files or Markdown, data entries are YAML files as well. Content is edited directly as text, there are no migrations and no admin API to learn.
 - **File equals URL.** The page for `/about` is always `site/pages/about.yml` (or `about.md`), so an agent locates content without crawling routes.
 - **Small, transparent core.** The CMS classes (`Reboot`, `Site`, `Page`, `Block`, `Collection`, `Request`) are short enough to fit a model's context window.
 - **Blocks are plain PHP and YAML.** A block type is a folder in `site/blocks/` with a PHP template and a blueprint that names its fields, with no framework or build step in between.
@@ -301,20 +301,18 @@ The other types, `number`, `date`, `boolean`, `select` and `entry`, are the same
 
 #### Data, all languages in one entry
 
-The entries of a collection follow the same rule as structured pages. A text field holds a value per language, the other fields and the fields with `shared: true` have one for all. The Markdown below the frontmatter is the body in the default language, the frontmatter holds it in the other languages:
+The entries of a collection are YAML files and follow the same rule as structured pages. A text field holds a value per language, the other fields and the fields with `shared: true` have one for all:
 
-```markdown
----
+```yaml
 title: {en: Markdown for Editors, de: Markdown für Redakteure}
 date: 2026-12-05
 location: Bremen
 price: 190
 body:
+  en: |-
+    A hands-on day for everyone who writes the content of a website.
   de: |-
     Ein Praxistag für alle, die die Inhalte einer Website schreiben.
----
-
-A hands-on day for everyone who writes the content of a website.
 ```
 
 `$seminar->get("title")` returns the title in the language of the page being rendered, a language without a value shows the default one. An entry that is a page of its own, `/blog/<slug>`, has the same slug in every language, `/de/blog/<slug>`. Queries read the default language, `where()` and `sortBy()` give the same order in every language. `$site->getLanguage()` names the language of the page being rendered.
@@ -524,18 +522,16 @@ $images = $block->xpath("//li/img", ["min" => 1, "description" => "Gallery image
 
 Pages hold text and layout. Records with fixed fields, like seminars, events or team members, live apart from the pages in `site/data/`. A page decides where they show up, with a block or a PHP page that queries them.
 
-A collection is a folder `site/data/<name>/` with one Markdown file per entry. The fields are the frontmatter, the Markdown below it is the field `body`. The file name is the slug of the entry, a date in front keeps the folder in order.
+A collection is a folder `site/data/<name>/` with one YAML file per entry, like a structured page. A longer text is a field of the type `markdown`, written as a `|` block. The file name is the slug of the entry, a date in front keeps the folder in order.
 
-```markdown
-<!-- site/data/seminars/2027-03-12-photo-basics.md -->
----
+```yaml
+# site/data/seminars/2027-03-12-photo-basics.yml
 title: Photo Basics
 date: 2027-03-12
 location: Bremen
 price: 290
----
-
-A day on aperture, exposure and composition.
+body: |-
+  A day on aperture, exposure and composition.
 ```
 
 A blueprint `site/blueprints/<name>.yml` describes the fields. A collection without a blueprint stays empty and logs an error.
@@ -602,11 +598,11 @@ foreach ($next as $seminar) { ?>
 - `$site->collection($name)` reads a collection once per request, sorted as the blueprint says.
 - `where($field, $operator, $value)` with `=`, `!=`, `<`, `<=`, `>`, `>=`, `contains` and `in`, `"today"` stands for the current date. `filter(fn($entry) => ...)` takes any condition.
 - `sortBy($field, "asc"|"desc")`, `limit($count, $offset)`, `first()`, `find($slug)`, `count()`. Every query returns a new collection.
-- `$entry->get($field)` returns a field escaped for HTML, `get($field, $default, false)` as written. `html($field)` renders a Markdown field, `date($field, $format)` formats a date, `items($field)` returns the items of a `list`, each with the same methods, `entry($field)` the entry an `entry` field names, `getSlug()` returns the file name without `.md`, `getUrl()` its address if the entries are pages.
+- `$entry->get($field)` returns a field escaped for HTML, `get($field, $default, false)` as written. `html($field)` renders a Markdown field, `date($field, $format)` formats a date, `items($field)` returns the items of a `list`, each with the same methods, `entry($field)` the entry an `entry` field names, `getSlug()` returns the file name without `.yml`, `getUrl()` its address if the entries are pages.
 
 #### Entries as pages
 
-With `url` in its blueprint, every entry of a collection is a page of its own. The blog of the demo works like that: `site/blueprints/blog.yml` has `url: blog`, so `site/data/blog/2026-09-14-your-content-your-files.md` is the page `/blog/2026-09-14-your-content-your-files`.
+With `url` in its blueprint, every entry of a collection is a page of its own. The blog of the demo works like that: `site/blueprints/blog.yml` has `url: blog`, so `site/data/blog/2026-09-14-your-content-your-files.yml` is the page `/blog/2026-09-14-your-content-your-files`.
 
 ```yaml
 title: Blog
@@ -735,7 +731,7 @@ restore them from the History dialog. The number of snapshots kept per page is c
 
 ### Data
 
-The menu entry "Data" lists the collections of `site/data/`, one per blueprint, see [Data](#data). A collection opens as a table of its entries, a click on a row opens the entry as a form made from the blueprint: a date picker for a `date`, a list for a `select`, a switch for a `boolean`, the media browser for an `image` and the Markdown editor for a `markdown` field. Required fields are marked, and the fields that do not fit the blueprint are named after saving. Such an entry is saved anyway, marked in the table and left out of the website until it is fixed. *Draft* keeps an entry off the website. A new entry gets its file name from its first date and text field, `2027-03-12-photo-basics.md`, and keeps it. Every save and delete keeps the previous version in `local/history/data/`. Editors can use the page like Pages and Media.
+The menu entry "Data" lists the collections of `site/data/`, one per blueprint, see [Data](#data). A collection opens as a table of its entries, a click on a row opens the entry as a form made from the blueprint: a date picker for a `date`, a list for a `select`, a switch for a `boolean`, the media browser for an `image` and the Markdown editor for a `markdown` field. Required fields are marked, and the fields that do not fit the blueprint are named after saving. Such an entry is saved anyway, marked in the table and left out of the website until it is fixed. *Draft* keeps an entry off the website. A new entry gets its file name from its first date and text field, `2027-03-12-photo-basics.yml`, and keeps it. Every save and delete keeps the previous version in `local/history/data/`. Editors can use the page like Pages and Media.
 
 ![Data](web/media/screenshots/reboot-cms-admin-data.png)
 

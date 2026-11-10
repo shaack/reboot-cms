@@ -1,4 +1,3 @@
----
 title:
   en: AI Agents and Your Content
   de: KI-Agenten und deine Inhalte
@@ -12,8 +11,5 @@ teaser:
   de: Lass einen KI-Agenten Seiten, Blöcke und Einträge anlegen, und prüfe jede Änderung als Git-Diff.
 link: mailto:seminars@example.com?subject=AI%20Agents
 body:
-  de: |-
-    Warum Flat Files gut mit Coding-Assistenten funktionieren und wie die Änderungen eines Agenten nachvollziehbar bleiben.
----
-
-Why flat files work well with coding assistants, and how to keep an agent's changes reviewable.
+  en: Why flat files work well with coding assistants, and how to keep an agent's changes reviewable.
+  de: Warum Flat Files gut mit Coding-Assistenten funktionieren und wie die Änderungen eines Agenten nachvollziehbar bleiben.

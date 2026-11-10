@@ -88,13 +88,13 @@ if ($actionSuccess) {
 $titleExtra = "";
 if ($blueprint && ($entry || $isNew)) {
     $titleExtra = '<span class="page-location"><code>'
-        . htmlspecialchars("data/" . $collectionName . "/" . ($entry ? $entry->getSlug() . ".md" : "…")) . '</code></span>';
+        . htmlspecialchars("data/" . $collectionName . "/" . ($entry ? $entry->getSlug() . ".yml" : "…")) . '</code></span>';
 }
 ?>
 <div class="container-fluid">
     <?= AdminHelper::renderStatusMessages($actionError, $actionSuccess) ?>
     <?= AdminHelper::renderPageTitle('Data', '', '
-        <p>Data are records with fixed fields, like seminars, events or team members. They are no pages, a page shows them with a block. Each entry is a Markdown file in <code>site/data/&lt;collection&gt;/</code>, its fields are the frontmatter, a field <code>body</code> is the text below it.</p>
+        <p>Data are records with fixed fields, like seminars, events or team members. They are no pages, a page shows them with a block. Each entry is a YAML file in <code>site/data/&lt;collection&gt;/</code> with the fields of its blueprint, like a structured page.</p>
         <h6>Collections</h6>
         <ul>
             <li>The list on the left shows the collections. Each one has a blueprint in <code>site/blueprints/</code> that names its fields, their types and which are required. Blueprints are written by the developer of the site, see the README section "Data".</li>
@@ -120,7 +120,7 @@ fields:
   title: {type: text, required: true}
   date:  {type: date, required: true}
   body:  {type: markdown, label: Description}</pre>
-                <p class="mb-0">The entries then go into <code>site/data/&lt;name&gt;/</code>, one Markdown file each. See the README section "Data".</p>
+                <p class="mb-0">The entries then go into <code>site/data/&lt;name&gt;/</code>, one YAML file each. See the README section "Data".</p>
             </div>
         </div>
     <?php } else { ?>
@@ -128,7 +128,7 @@ fields:
         <div class="col-md-3 col-xl-2 col-sidebar order-md-0 order-1 mt-4 mt-md-0">
             <nav class="nav nav-compact flex-column data-collections">
                 <?php foreach ($blueprints as $name => $collectionBlueprint) {
-                    $count = count(glob($dataDir . "/" . $name . "/*.md") ?: []); ?>
+                    $count = count(glob($dataDir . "/" . $name . "/*.yml") ?: []); ?>
                     <a class="page-tree-file<?= $name === $collectionName ? " active" : "" ?>" href="data?collection=<?= urlencode($name) ?>">
                         <?= AdminHelper::icon('folder') ?><span class="flex-grow-1"><?= htmlspecialchars($collectionBlueprint->getTitle()) ?></span>
                         <span class="data-count"><?= $count ?></span>
@@ -140,10 +140,7 @@ fields:
             <?php if (!$blueprint) { ?>
                 <p class="text-danger">There is no collection '<?= htmlspecialchars($collectionName) ?>'.</p>
             <?php } else if ($entry || $isNew) {
-                [$formValues, $formBody] = $entry ? $handler->read($entry->getSlug()) : [[], ""];
-                if (array_key_exists("body", $blueprint->getFields())) {
-                    $formValues["body"] = $formBody;
-                }
+                $formValues = $entry ? $handler->read($entry->getSlug()) : [];
                 $errors = $entry ? $entry->getErrors() : [];
                 ?>
                 <script>document.title = <?= json_encode(($entryTitle ?? "New entry") . ' – Reboot CMS Admin') ?>;</script>
@@ -181,7 +178,7 @@ fields:
                     <a class="btn btn-sm btn-primary ms-auto" href="data?collection=<?= urlencode($collectionName) ?>&new=1">New entry</a>
                 </div>
                 <?php if (!count($collection)) { ?>
-                    <p class="text-body-secondary">No entries yet. They are Markdown files in <code>site/data/<?= htmlspecialchars($collectionName) ?>/</code>.</p>
+                    <p class="text-body-secondary">No entries yet. They are YAML files in <code>site/data/<?= htmlspecialchars($collectionName) ?>/</code>.</p>
                 <?php } else {
                     $fields = $blueprint->getFields(); ?>
                     <div class="table-responsive">

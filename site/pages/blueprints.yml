@@ -169,7 +169,7 @@ blocks:
           body:     {type: markdown, label: Description}
         ```
 
-        Each entry is a Markdown file in `site/data/seminars/`. The fields are its frontmatter, the text below it is `body`. The admin lists the entries under *Data* as a table with the `columns` and edits each one as a form.
+        Each entry is a YAML file in `site/data/seminars/` with these fields, the description is the Markdown field `body`. The admin lists the entries under *Data* as a table with the `columns` and edits each one as a form.
       de: |-
         ## Daten aus einem Blueprint
 
@@ -187,7 +187,7 @@ blocks:
           body:     {type: markdown, label: Description}
         ```
 
-        Jeder Eintrag ist eine Markdown-Datei in `site/data/seminars/`. Die Felder sind ihr Frontmatter, der Text darunter ist `body`. Der Admin listet die Einträge unter *Data* als Tabelle mit den `columns` und bearbeitet jeden als Formular.
+        Jeder Eintrag ist eine YAML-Datei in `site/data/seminars/` mit diesen Feldern, die Beschreibung ist das Markdown-Feld `body`. Der Admin listet die Einträge unter *Data* als Tabelle mit den `columns` und bearbeitet jeden als Formular.
     image: media/screenshots/reboot-cms-admin-data.png
     alt:
       en: The table of the seminars in the admin
@@ -257,7 +257,7 @@ blocks:
           body:  {type: markdown}
         ```
 
-        With `url: blog` the file `site/data/blog/2026-11-08-reboot-cms-4.md` is the page `/blog/2026-11-08-reboot-cms-4`. A template `site/blueprints/blog.php` next to the blueprint renders it. The [blog](blog) of this demo works like that, the block `blog-list` lists its posts.
+        With `url: blog` the file `site/data/blog/2026-11-08-reboot-cms-4.yml` is the page `/blog/2026-11-08-reboot-cms-4`. A template `site/blueprints/blog.php` next to the blueprint renders it. The [blog](blog) of this demo works like that, the block `blog-list` lists its posts.
       de: |-
         ## Einträge, die Seiten sind
 
@@ -273,7 +273,7 @@ blocks:
           body:  {type: markdown}
         ```
 
-        Mit `url: blog` ist die Datei `site/data/blog/2026-11-08-reboot-cms-4.md` die Seite `/blog/2026-11-08-reboot-cms-4`. Ein Template `site/blueprints/blog.php` neben dem Blueprint rendert sie. Der [Blog](blog) dieser Demo funktioniert so, der Block `blog-list` listet seine Beiträge.
+        Mit `url: blog` ist die Datei `site/data/blog/2026-11-08-reboot-cms-4.yml` die Seite `/blog/2026-11-08-reboot-cms-4`. Ein Template `site/blueprints/blog.php` neben dem Blueprint rendert sie. Der [Blog](blog) dieser Demo funktioniert so, der Block `blog-list` listet seine Beiträge.
   - type: text
     text:
       en: |-
