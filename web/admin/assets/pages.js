@@ -152,6 +152,24 @@
         }
     });
 
+    // --- The language edited, the same for all pages ---
+    // A structured page shows it, see field-form.js, which shares the key. A
+    // Markdown page has a file per language, its entry in the page list opens
+    // the file of that language when there is one.
+    var EDIT_LANG_KEY = 'reboot_edit_lang';
+    document.addEventListener('click', function (e) {
+        var link = e.target.closest('[data-lang-link]');
+        if (link) store.set(EDIT_LANG_KEY, link.dataset.langLink);
+    });
+    var editLanguage = store.get(EDIT_LANG_KEY);
+    if (editLanguage) {
+        document.querySelectorAll('.page-tree-languages').forEach(function (languages) {
+            var version = languages.querySelector('[data-lang-link="' + editLanguage + '"]');
+            var entry = languages.parentElement.querySelector(':scope > .page-tree-file');
+            if (version && entry) entry.href = version.getAttribute('href');
+        });
+    }
+
     // --- Folder collapse state (persisted in localStorage) ---
 
     var STORAGE_KEY = 'reboot_sidebar_expanded';

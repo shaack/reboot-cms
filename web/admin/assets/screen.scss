@@ -1174,10 +1174,16 @@ textarea.yaml-editor-input {
     padding: 0;
     font-size: 0.8rem;
     line-height: 1.5rem;
+    color: var(--bs-secondary-color);
     text-decoration: none;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
 
     .icon {
         vertical-align: -0.125em;
+        color: var(--bs-primary);
     }
 }
 

@@ -179,7 +179,8 @@ class PageTreeHelper
                 continue;
             }
             $file = $byLanguage[$language];
-            $html .= "<a class='page-tree-language" . ($file === $editPageName ? " active" : "") . "' href='pages?page=" . urlencode($file) . "'"
+            $html .= "<a class='page-tree-language" . ($file === $editPageName ? " active" : "") . "' data-lang-link='" . htmlspecialchars($language, ENT_QUOTES) . "'"
+                . " href='pages?page=" . urlencode($file) . "'"
                 . " title='" . htmlspecialchars(ltrim($file, "/"), ENT_QUOTES) . "'>" . htmlspecialchars(strtoupper($language)) . "</a>";
         }
         return $html . "</span>";

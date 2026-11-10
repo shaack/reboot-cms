@@ -41,10 +41,12 @@ class LanguageSwitch
             } else if (($files[$language] ?? null) !== null) {
                 $isActive = $language === $active;
                 $html .= '<a class="btn btn-outline-secondary' . ($isActive ? ' active' : '') . '"'
+                    . ' data-lang-link="' . htmlspecialchars($language) . '"'
                     . ' href="pages?page=' . urlencode($files[$language]) . '"' . ($isActive ? ' aria-current="page"' : '')
                     . ' title="' . htmlspecialchars($title . ", " . ltrim($files[$language], "/")) . '">' . $code . '</a>';
             } else {
                 $html .= '<button type="button" class="btn btn-outline-secondary language-missing"'
+                    . ' data-lang-link="' . htmlspecialchars($language) . '"'
                     . ' onclick="addTranslation(' . htmlspecialchars(json_encode($language)) . ')"'
                     . ' title="' . htmlspecialchars("There is no " . $language . " version yet, create it as a copy of this page") . '">'
                     . $code . AdminHelper::icon("plus") . '</button>';

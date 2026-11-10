@@ -15,6 +15,9 @@
  */
 import {InsertMedia} from "./InsertMedia.js"
 
+// before the forms are set up below, a const is not there before its line
+const EDIT_LANG_KEY = "reboot_edit_lang"
+
 const forms = document.querySelectorAll("form[data-field-form]")
 let created = 0
 
@@ -229,8 +232,6 @@ function watchMarkdown(textarea) {
 }
 
 // --- The language shown in a multilingual form ---
-
-const EDIT_LANG_KEY = "reboot_edit_lang"
 
 function setupLanguages(form) {
     const buttons = [...document.querySelectorAll("[data-edit-lang-button]")]

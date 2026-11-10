@@ -344,7 +344,7 @@ class MultilingualTest
         Assert::true($editable, "the German version is editable");
         Assert::equals(1, substr_count($html, "data-path='about.md'"));
         Assert::false(str_contains($html, "data-path='about.de.md'"), "the version is no entry of its own");
-        Assert::contains("page-tree-language active' href='pages?page=%2Fabout.de.md'", $html);
+        Assert::contains("page-tree-language active' data-lang-link='de' href='pages?page=%2Fabout.de.md'", $html);
         Assert::equals(1, substr_count($html, "page-tree-languages"), "a structured page holds all languages, it has no links per language");
     }
 
