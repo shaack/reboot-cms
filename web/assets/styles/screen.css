@@ -385,8 +385,7 @@ main > .block-inverse:not(.block-intro):first-child {
 }
 
 .block-intro hr {
-    border-top: 1px solid var(--line);
-    opacity: 1;
+    border-top: 0;
 }
 
 /* Text, the Markdown block and the form block */
@@ -973,7 +972,6 @@ main > .block-text:first-child {
 
 .intro-image {
     width: 100%;
-    border: 1px solid var(--line);
 }
 
 /* Features, any number side by side, separated by lines */
