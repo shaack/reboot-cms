@@ -57,6 +57,19 @@ textarea.cm-md-editor {
   grid-row: 1;
   margin-left: 0;
 }
+@media (min-width: 992px) {
+  .page-location {
+    grid-template-columns: auto auto auto;
+    column-gap: 0.75rem;
+  }
+  .page-location a {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .page-location .unsaved-dot {
+    grid-column: 3;
+  }
+}
 
 #sidebar-toggle, #preview-panel-toggle {
   font-size: 1.1rem;
