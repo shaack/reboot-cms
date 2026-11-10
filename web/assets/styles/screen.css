@@ -995,7 +995,7 @@ main > .block-text:first-child {
     color: var(--soft);
 }
 
-/* a triangle in the signal color over the lower right corner */
+/* a black triangle over the lower right corner, the label in the signal color */
 .demo-ribbon {
     position: fixed;
     right: 0;
@@ -1003,7 +1003,7 @@ main > .block-text:first-child {
     z-index: 1040;
     width: 7.5rem;
     height: 7.5rem;
-    background: var(--signal);
+    background: #000;
     clip-path: polygon(100% 0, 100% 100%, 0 100%);
     cursor: default;
     user-select: none;
@@ -1014,7 +1014,7 @@ main > .block-text:first-child {
     right: 0.3rem;
     bottom: 2rem;
     transform: rotate(-45deg);
-    color: #000;
+    color: var(--signal);
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: 0.15em;
