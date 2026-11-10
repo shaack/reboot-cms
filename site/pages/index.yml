@@ -1,92 +1,191 @@
-title: Reboot CMS, the flat file CMS with blocks
-description: Reboot CMS is a small and fast flat file CMS in PHP. Pages are made of blocks with fields, content lives in files, no database needed.
+title:
+  en: Reboot CMS, the flat file CMS with blocks
+  de: Reboot CMS, das Flat-File-CMS mit Blöcken
+description:
+  en: Reboot CMS is a small and fast flat file CMS in PHP. Pages are made of blocks with fields, content lives in files, no database needed.
+  de: Reboot CMS ist ein kleines, schnelles Flat-File-CMS in PHP. Seiten bestehen aus Blöcken mit Feldern, die Inhalte liegen in Dateien, eine Datenbank braucht es nicht.
 blocks:
   - type: intro
     heading: Reboot CMS
-    lead: The flat file CMS that thinks in blocks.
+    lead:
+      en: The flat file CMS that thinks in blocks.
+      de: Das Flat-File-CMS, das in Blöcken denkt.
     image: media/screenshots/reboot-cms-admin-page-edit.png?v=4
-    button-label: View on GitHub
+    button-label:
+      en: View on GitHub
+      de: Auf GitHub ansehen
     button-link: https://github.com/shaack/reboot-cms
   - type: features
-    heading: Why Reboot CMS
+    heading:
+      en: Why Reboot CMS
+      de: Warum Reboot CMS
     items:
-      - title: Just files
-        text: A page is a short YAML file, and its path is its URL. Put the site under Git and every change becomes a reviewable diff. A backup is a copy of a folder.
-      - title: Build pages out of blocks
-        text: A block type is a PHP template and a blueprint that names its fields. The admin builds the form from it, so editors fill in content and cannot break the layout.
-      - title: Fast by default
-        text: No database, no framework, no queries. Pages render in milliseconds and ship without the weight of a classic CMS. Sites built with Reboot CMS score 100 on PageSpeed Insights.
+      - title:
+          en: Just files
+          de: Einfach Dateien
+        text:
+          en: A page is a short YAML file, and its path is its URL. Put the site under Git and every change becomes a reviewable diff. A backup is a copy of a folder.
+          de: Eine Seite ist eine kurze YAML-Datei, und ihr Pfad ist ihre URL. Liegt die Site in Git, wird jede Änderung zu einem nachvollziehbaren Diff. Ein Backup ist die Kopie eines Ordners.
+      - title:
+          en: Build pages out of blocks
+          de: Seiten aus Blöcken bauen
+        text:
+          en: A block type is a PHP template and a blueprint that names its fields. The admin builds the form from it, so editors fill in content and cannot break the layout.
+          de: Ein Blocktyp besteht aus einem PHP-Template und einem Blueprint, der seine Felder benennt. Der Admin baut daraus das Formular. So füllen Redakteure Inhalte aus und können das Layout nicht kaputt machen.
+      - title:
+          en: Fast by default
+          de: Von Haus aus schnell
+        text:
+          en: No database, no framework, no queries. Pages render in milliseconds and ship without the weight of a classic CMS. Sites built with Reboot CMS score 100 on PageSpeed Insights.
+          de: Keine Datenbank, kein Framework, keine Abfragen. Seiten entstehen in Millisekunden und kommen ohne das Gewicht eines klassischen CMS aus. Mit Reboot CMS gebaute Sites erreichen 100 Punkte bei PageSpeed Insights.
   - type: image-text
-    text: |-
-      ## Pages are forms
+    text:
+      en: |-
+        ## Pages are forms
 
-      The admin edits a page as a list of panels, one per block. *Add block* offers the block types of the site, and the live preview next to the form follows the field you type in. A click into the preview jumps to the block it shows.
+        The admin edits a page as a list of panels, one per block. *Add block* offers the block types of the site, and the live preview next to the form follows the field you type in. A click into the preview jumps to the block it shows.
 
-      Every save keeps the previous version, so nothing an editor does is final.
+        Every save keeps the previous version, so nothing an editor does is final.
 
-      [How structured pages work](documentation#structured-pages)
+        [How structured pages work](documentation#structured-pages)
+      de: |-
+        ## Seiten sind Formulare
+
+        Der Admin bearbeitet eine Seite als Liste von Panels, eines pro Block. *Add block* bietet die Blocktypen der Site an, und die Live-Vorschau neben dem Formular folgt dem Feld, in dem du gerade tippst. Ein Klick in die Vorschau springt zu dem Block, den sie zeigt.
+
+        Jedes Speichern bewahrt die vorherige Version auf, nichts, was ein Redakteur tut, ist endgültig.
+
+        [Wie strukturierte Seiten funktionieren](documentation#structured-pages)
     image: media/screenshots/reboot-cms-admin-add-block.png
-    alt: A structured page in the admin with the menu Add block open
-    caption: Add block offers the block types of the site
+    alt:
+      en: A structured page in the admin with the menu Add block open
+      de: Eine strukturierte Seite im Admin mit geöffnetem Menü Add block
+    caption:
+      en: Add block offers the block types of the site
+      de: Add block bietet die Blocktypen der Site an
   - type: image-text
-    text: |-
-      ## Data in tables
+    text:
+      en: |-
+        ## Data in tables
 
-      Seminars, posts, products, team members. A blueprint in `site/blueprints/` names their fields, the entries are files in `site/data/`, and the admin lists them as a table. Blocks show them wherever they fit.
+        Seminars, posts, products, team members. A blueprint in `site/blueprints/` names their fields, the entries are files in `site/data/`, and the admin lists them as a table. Blocks show them wherever they fit.
 
-      Change the price of a seminar once, and every page that shows it is up to date. With `url: blog` in its blueprint every entry becomes a page of its own, the posts of the [blog](blog) work like that.
+        Change the price of a seminar once, and every page that shows it is up to date. With `url: blog` in its blueprint every entry becomes a page of its own, the posts of the [blog](blog) work like that.
 
-      [How data works](documentation#data)
+        [How data works](documentation#data)
+      de: |-
+        ## Daten in Tabellen
+
+        Seminare, Beiträge, Produkte, Teammitglieder. Ein Blueprint in `site/blueprints/` benennt ihre Felder, die Einträge sind Dateien in `site/data/`, und der Admin listet sie als Tabelle. Blöcke zeigen sie dort, wo sie passen.
+
+        Ändere den Preis eines Seminars einmal, und jede Seite, die es zeigt, ist auf dem neuesten Stand. Mit `url: blog` in seinem Blueprint wird jeder Eintrag zu einer eigenen Seite, so funktionieren die Beiträge des [Blogs](blog).
+
+        [Wie Daten funktionieren](documentation#data)
     image: media/screenshots/reboot-cms-admin-data.png
-    alt: The table of the seminars in the admin
-    caption: The seminars of this demo as data
+    alt:
+      en: The table of the seminars in the admin
+      de: Die Tabelle der Seminare im Admin
+    caption:
+      en: The seminars of this demo as data
+      de: Die Seminare dieser Demo als Daten
     image-position: left
   - type: seminar-teaser
-    heading: Data on a page, the next seminars
+    heading:
+      en: Data on a page, the next seminars
+      de: Daten auf einer Seite, die nächsten Seminare
     count: 3
-    link-label: All seminars
+    link-label:
+      en: All seminars
+      de: Alle Seminare
     link: seminars
   - type: features
-    heading: Everything a small site needs
+    heading:
+      en: Everything a small site needs
+      de: Alles, was eine kleine Site braucht
     items:
-      - title: Markdown, if you like
-        text: Markdown pages still work and are handy for long texts. The admin converts one into a structured page with a click, see the [Markdown blocks](blocks).
-      - title: Protected areas
-        text: Pages for customers or members, behind a password or a login link by mail. Accounts are managed in the admin.
-      - title: Made for AI agents
-        text: Content is text, the URL names the file, and the whole core fits into a context window. The `AGENTS.md` of the repository orients coding assistants.
+      - title:
+          en: Markdown, if you like
+          de: Markdown, wenn du magst
+        text:
+          en: Markdown pages still work and are handy for long texts. The admin converts one into a structured page with a click, see the [Markdown blocks](blocks).
+          de: Markdown-Seiten funktionieren weiterhin und sind praktisch für lange Texte. Der Admin wandelt eine davon mit einem Klick in eine strukturierte Seite um, siehe die [Markdown-Blöcke](blocks).
+      - title:
+          en: Protected areas
+          de: Geschützte Bereiche
+        text:
+          en: Pages for customers or members, behind a password or a login link by mail. Accounts are managed in the admin.
+          de: Seiten für Kunden oder Mitglieder, hinter einem Passwort oder einem Login-Link per Mail. Die Zugänge werden im Admin verwaltet.
+      - title:
+          en: Made for AI agents
+          de: Gemacht für KI-Agenten
+        text:
+          en: Content is text, the URL names the file, and the whole core fits into a context window. The `AGENTS.md` of the repository orients coding assistants.
+          de: Inhalte sind Text, die URL benennt die Datei, und der ganze Kern passt in ein Kontextfenster. Die `AGENTS.md` des Repositorys hilft Coding-Assistenten bei der Orientierung.
   - type: gallery
-    heading: The admin at a glance
+    heading:
+      en: The admin at a glance
+      de: Der Admin auf einen Blick
     images:
       - image: media/screenshots/reboot-cms-admin-page-edit.png?v=4
-        caption: 'Pages: a form per block, with live preview'
+        caption:
+          en: 'Pages: a form per block, with live preview'
+          de: 'Pages: ein Formular pro Block, mit Live-Vorschau'
       - image: media/screenshots/reboot-cms-admin-add-block.png
-        caption: 'Add block: the block types of the site'
+        caption:
+          en: 'Add block: the block types of the site'
+          de: 'Add block: die Blocktypen der Site'
       - image: media/screenshots/reboot-cms-admin-data.png
-        caption: 'Data: records with fields, apart from the pages'
+        caption:
+          en: 'Data: records with fields, apart from the pages'
+          de: 'Data: Datensätze mit Feldern, getrennt von den Seiten'
       - image: media/screenshots/reboot-cms-admin-markdown-edit.png
-        caption: 'Markdown pages: text with blocks, with preview'
+        caption:
+          en: 'Markdown pages: text with blocks, with preview'
+          de: 'Markdown-Seiten: Text mit Blöcken, mit Vorschau'
       - image: media/screenshots/reboot-cms-admin-page-history.png?v=4
-        caption: 'History: every earlier version of a page'
+        caption:
+          en: 'History: every earlier version of a page'
+          de: 'History: jede frühere Version einer Seite'
       - image: media/screenshots/reboot-cms-admin-media.png?v=4
-        caption: 'Media: upload, browse and pick images'
+        caption:
+          en: 'Media: upload, browse and pick images'
+          de: 'Media: Bilder hochladen, durchsuchen und auswählen'
       - image: media/screenshots/reboot-cms-admin-protected-areas.png?v=4
-        caption: 'Protected areas: logins by password or mail link'
+        caption:
+          en: 'Protected areas: logins by password or mail link'
+          de: 'Protected areas: Anmeldung per Passwort oder Mail-Link'
       - image: media/screenshots/reboot-cms-admin-secure-downloads.png?v=4
-        caption: 'Secure downloads: a file with a link and a password'
+        caption:
+          en: 'Secure downloads: a file with a link and a password'
+          de: 'Secure downloads: eine Datei mit Link und Passwort'
   - type: text
-    text: |-
-      ## Up and running in a minute
+    text:
+      en: |-
+        ## Up and running in a minute
 
-      Clone the repository and start it. The included script runs Apache and PHP in a container, the same setup as on a typical web host.
+        Clone the repository and start it. The included script runs Apache and PHP in a container, the same setup as on a typical web host.
 
-      ```bash
-      git clone https://github.com/shaack/reboot-cms.git my-site
-      cd my-site
-      ./run.sh
-      ```
+        ```bash
+        git clone https://github.com/shaack/reboot-cms.git my-site
+        cd my-site
+        ./run.sh
+        ```
 
-      The site is at `http://localhost:21007`, the admin at `http://localhost:21007/admin`. On a server, point the document root at `web/` and open `/admin` to create the first account.
+        The site is at `http://localhost:21007`, the admin at `http://localhost:21007/admin`. On a server, point the document root at `web/` and open `/admin` to create the first account.
 
-      Reboot CMS is open source under the MIT license. Read [what is new in Reboot CMS 4](blog/2026-11-08-reboot-cms-4), the [documentation](documentation), or go straight to the [repository on GitHub](https://github.com/shaack/reboot-cms).
+        Reboot CMS is open source under the MIT license. Read [what is new in Reboot CMS 4](blog/2026-11-08-reboot-cms-4), the [documentation](documentation), or go straight to the [repository on GitHub](https://github.com/shaack/reboot-cms).
+      de: |-
+        ## In einer Minute startklar
+
+        Klone das Repository und starte es. Das mitgelieferte Skript startet Apache und PHP in einem Container, mit demselben Aufbau wie bei einem typischen Webhoster.
+
+        ```bash
+        git clone https://github.com/shaack/reboot-cms.git my-site
+        cd my-site
+        ./run.sh
+        ```
+
+        Die Site läuft unter `http://localhost:21007`, der Admin unter `http://localhost:21007/admin`. Auf einem Server lässt du das Document Root auf `web/` zeigen und öffnest `/admin`, um das erste Konto anzulegen.
+
+        Reboot CMS ist Open Source unter der MIT-Lizenz. Lies, [was neu ist in Reboot CMS 4](blog/2026-11-08-reboot-cms-4), die [Dokumentation](documentation) oder geh direkt zum [Repository auf GitHub](https://github.com/shaack/reboot-cms).
 author: shaack.com
