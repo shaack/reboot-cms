@@ -41,7 +41,7 @@ textarea.cm-md-editor {
 }
 
 // The page being edited next to the title: file, address, unsaved state
-// File and address stacked, the unsaved dot next to the file
+// File and address stacked on small screens, side by side from lg on
 .page-location {
     display: inline-grid;
     grid-template-columns: auto auto;
@@ -70,6 +70,20 @@ textarea.cm-md-editor {
         grid-column: 2;
         grid-row: 1;
         margin-left: 0;
+    }
+
+    // side by side where there is room, file, address, unsaved dot
+    @media (min-width: 992px) {
+        grid-template-columns: auto auto auto;
+        column-gap: 0.75rem;
+
+        a {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        .unsaved-dot {
+            grid-column: 3;
+        }
     }
 }
 
