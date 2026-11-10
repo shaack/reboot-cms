@@ -161,6 +161,7 @@ description: Shown by search engines
             <li>With <code>languages: [en, de]</code> in <code>site/config.yml</code> the site has several languages, <code>/de/about</code> is the page in German. A switcher above the editor chooses the language.</li>
             <li>A page with a form keeps all languages in one file. The blocks are the same in every language, the switcher shows the texts of one language. A field of a language without a text shows the default language as a dashed placeholder, the page shows that one too. A field with a globe is the same in all languages.</li>
             <li>A Markdown page has a file per language next to it, <code>about.md</code> and <code>about.de.md</code>. A dashed language in the switcher has no file yet, a click creates it as a copy to translate. The page list shows the languages next to the name.</li>
+            <li>With a key for DeepL in <code>local/config.local.yml</code>, a text field in another language has the button <em>Translate from EN</em> below it, and <em>Translate empty fields</em> next to the switcher fills all empty fields of the language shown. Check the translation, it is saved with the page. Send DeepL public texts only.</li>
         </ul>
         <h6>Saving and history</h6>
         <ul>
