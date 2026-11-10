@@ -123,6 +123,10 @@ In `template.php` and block templates:
 
 The built-in `LanguageRedirect` addon (enable it via `addons` in `config.yml`) redirects visitors to the language version matching their browser or saved preference. See the README for details.
 
+Machine translation in the admin: with `translation.deepl.authKey` in the ignored `local/config.local.yml` (never in Git), a text field of another language gets a button *Translate from EN* (`FieldForm::setLanguages(..., $translatable)`, `pages.js`), served by `core/admin/api/pages-translate.php` and `Shaack\Reboot\AddOns\Admin\Translator`. Markdown goes to DeepL line by line with links, emphasis and code protected as XML tags.
+
+To translate a whole site with a coding agent instead, add the value of each text field per language in the YAML (`heading: {en: …, de: …}`), leave `shared: true` fields and the block structure alone, and write Markdown pages as `name.<lang>.md` next to the default file.
+
 ## AddOns
 
 An addon is a folder `addons/<Name>/` with `<Name>.php` (class in namespace `Shaack\Reboot\AddOns`), optional `src/` (helpers in `Shaack\Reboot\AddOns\<Name>\`, autoloaded by `AddOnLoader`) and optional `admin/` (admin pages, mounted at `/admin/addons/<name>`, old `/admin/<name>` redirects). Lookup order: `site/addons/<Name>/`, deprecated `site/addons/<Name>.php`, `core/addons/<Name>/`. Register it in `site/config.yml` under `addons:`.

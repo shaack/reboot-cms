@@ -305,6 +305,18 @@ On a multilingual site the editor of a page has a language switcher above it. Fo
 
 For a Markdown page the switcher opens the file of the language. A language without a file is shown dashed, a click creates it as a copy of the open page, ready to translate. The page list shows a page once, with its languages next to it. Renaming or moving a page takes its versions in the other languages along.
 
+#### Machine translation with DeepL
+
+With a key for the [DeepL API](https://www.deepl.com/pro-api), a text field of a structured page in another language than the default one gets a button *Translate from EN* below it, and *Translate empty fields* next to the language switch fills every empty field of the language shown. The translation lands in the form, it is saved with the page like a change by hand. Put the key into the ignored `local/config.local.yml`, never into a file in Git:
+
+```yaml
+translation:
+  deepl:
+    authKey: "…:fx"   # a key of DeepL API Free ends with ":fx", any other is one of API Pro
+```
+
+DeepL knows no Markdown. Reboot CMS sends a Markdown field line by line, keeps the marks at the start of a line, code, images, HTML and the targets of links out of the translation, and hands links and emphasis to DeepL as tags it keeps around the translated words. The texts go to DeepL, a company in Cologne. DeepL API Free comes without a data processing agreement, so send it public texts only, nothing personal. Markdown pages, with a file per language, are not translated by the button.
+
 #### Detecting the language
 
 The `Request` object detects the language from the first path segment:
