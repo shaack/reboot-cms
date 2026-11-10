@@ -261,6 +261,21 @@ nav.navbar {
     }
 }
 
+/* the languages of a multilingual site, right in the navbar, closer together,
+   in the folded menu side by side below the pages */
+.navbar .language-switch {
+    flex-direction: row;
+    gap: 1.25rem;
+    margin: 0.5rem 0;
+}
+
+@media (min-width: 768px) {
+    .navbar .language-switch {
+        gap: 0.25rem;
+        margin: 0;
+    }
+}
+
 .navbar .nav-link:hover {
     color: #fff;
 }
