@@ -155,11 +155,11 @@ description: Shown by search engines
             <li>The second button next to the title opens and closes the <em>preview</em> on the right. It shows the page with your changes next to the editor, before saving. It needs a wide window. The zoom below the preview sets its size, <em>Fit desktop</em> shows the page as on a desktop screen, scaled down to the column. Drag the bar between editor and preview to change their widths, a double click resets them. A click in the preview puts the cursor on the line it shows. <em>Open page</em> opens the saved page in a new tab.</li>
             <li>Every save keeps the previous version. <em>… › History</em> shows the last ' . (int)$historyMaxVersions . ' versions and restores one; the current text is kept as a version too. This works the same for pages with forms and for Markdown pages.</li>
             <li>A right click in the page list, on a touch screen touch and hold, opens a menu. On a page it creates a new page or folder next to it, renames, moves or deletes the page. On a folder it does the same inside the folder, an empty folder can be deleted. On the free space below it creates pages and folders at the top level. A new folder starts with an empty <code>index</code> page, marked with a house. <em>…</em> below the editor has the same actions for the open page. From 30 pages on a field above the list finds a page by its name.</li>
-            <li>The first button next to the title hides the page list, so editor and preview get the whole width. The address next to the file name opens the page in a new tab.</li>
+            <li>The first button next to the title hides the page list, so editor and preview get the whole width. Drag the bar between page list and editor to change the width of the list, a double click resets it. The address next to the file name opens the page in a new tab.</li>
         </ul>
     ', $titleExtra) ?>
     <div class="row gx-2" id="pages-row">
-    <script>try { if (localStorage.getItem('reboot_sidebar_collapsed') === 'true') document.getElementById('pages-row').classList.add('sidebar-collapsed') } catch (e) {}</script>
+    <script>try { var r = document.getElementById('pages-row'); if (localStorage.getItem('reboot_sidebar_collapsed') === 'true') r.classList.add('sidebar-collapsed'); var w = parseInt(localStorage.getItem('reboot_sidebar_width'), 10); if (w > 0) { r.style.setProperty('--sidebar-width', w + 'px'); r.classList.add('sidebar-sized') } } catch (e) {}</script>
         <div class="col-md-3 col-xl-2 col-sidebar order-md-0 order-1 mt-4 mt-md-0" id="pages-sidebar">
             <?php if ($pageCount >= 30) { ?>
                 <div class="page-tree-tools">
@@ -172,6 +172,7 @@ description: Shown by search engines
             <p class="page-tree-hint">Right click or touch and hold for new pages and folders, renaming and deleting.</p>
         </div>
         <div class="col-12 col-lg-9 col-xl-10 order-md-1 order-0 editor-loading" id="editor-column">
+            <div id="sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="Resize the page list" aria-controls="pages-sidebar" tabindex="0" title="Drag to resize, double click to reset"></div>
             <?php if ($editPageName) {
                 $fullPath = $pagesDir . $editPageName;
                 $resolvedPath = realpath(dirname($fullPath));
