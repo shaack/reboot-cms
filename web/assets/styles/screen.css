@@ -276,6 +276,12 @@ nav.navbar {
     }
 }
 
+/* the current language in the signal color, not underlined like the current page */
+.navbar .language-switch .nav-link.active {
+    color: var(--signal);
+    border-bottom-color: transparent;
+}
+
 .navbar .nav-link:hover {
     color: #fff;
 }
