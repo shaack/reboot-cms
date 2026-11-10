@@ -1,42 +1,87 @@
-title: What is new in Reboot CMS 4
-description: Pages made of form blocks, data apart from the pages, entries that are pages of their own. And Markdown keeps working.
+title:
+  en: What is new in Reboot CMS 4
+  de: Was neu ist in Reboot CMS 4
+description:
+  en: Pages made of form blocks, data apart from the pages, entries that are pages of their own. And Markdown keeps working.
+  de: Seiten aus Formular-Blöcken, Daten getrennt von den Seiten, Einträge, die eigene Seiten sind. Und Markdown funktioniert weiter.
 date: 2026-11-08
-links: |
-  - [Upgrading to Reboot CMS 4](https://github.com/shaack/reboot-cms/blob/distrib-4/docs/upgrade-to-4.md)
-  - [Structure for editors, freedom for designers](blog/2026-10-12-structure-for-editors-freedom-for-designers)
-  - [Seminars, an example of data](seminars)
-  - [Documentation](documentation)
-body: |-
-  Reboot CMS started as a Markdown CMS with blocks. A page was a text file, and HTML comments split it into blocks that templates rendered. That still works. Version 4 adds a second way to build a page, and it becomes the default: a page made of blocks that are forms.
+links:
+  en: |
+    - [Upgrading to Reboot CMS 4](https://github.com/shaack/reboot-cms/blob/distrib-4/docs/upgrade-to-4.md)
+    - [Structure for editors, freedom for designers](blog/2026-10-12-structure-for-editors-freedom-for-designers)
+    - [Seminars, an example of data](seminars)
+    - [Documentation](documentation)
+  de: |
+    - [Upgrade auf Reboot CMS 4](https://github.com/shaack/reboot-cms/blob/distrib-4/docs/upgrade-to-4.md)
+    - [Struktur für die Redaktion, Freiheit für das Design](blog/2026-10-12-structure-for-editors-freedom-for-designers)
+    - [Seminare, ein Beispiel für Daten](seminars)
+    - [Dokumentation](documentation)
+body:
+  en: |-
+    Reboot CMS started as a Markdown CMS with blocks. A page was a text file, and HTML comments split it into blocks that templates rendered. That still works. Version 4 adds a second way to build a page, and it becomes the default: a page made of blocks that are forms.
 
-  ## Pages made of form blocks
+    ## Pages made of form blocks
 
-  A structured page is a short YAML file, `site/pages/about.yml` for the address `/about`. It holds a title, a description and a list of blocks. Each block has a type and the values of its fields, a heading, a text, an image or a list of features.
+    A structured page is a short YAML file, `site/pages/about.yml` for the address `/about`. It holds a title, a description and a list of blocks. Each block has a type and the values of its fields, a heading, a text, an image or a list of features.
 
-  A block type is a folder in `site/blocks/` with two files. The blueprint names the fields, the PHP template places them in the HTML. The admin builds the form from the blueprint, a panel per block, and shows a live preview next to it that follows the field being edited. Editors fill in content, and the layout stays as the designer made it.
+    A block type is a folder in `site/blocks/` with two files. The blueprint names the fields, the PHP template places them in the HTML. The admin builds the form from the blueprint, a panel per block, and shows a live preview next to it that follows the field being edited. Editors fill in content, and the layout stays as the designer made it.
 
-  ## Data apart from the pages
+    ## Data apart from the pages
 
-  Some content is no page at all. Seminars, team members, products and blog posts are records with the same fields again and again. In Reboot CMS 4 they live in `site/data/`, one YAML file per entry, described by a blueprint in `site/blueprints/`. The admin has a new section *Data* that lists them as a table and edits them as forms.
+    Some content is no page at all. Seminars, team members, products and blog posts are records with the same fields again and again. In Reboot CMS 4 they live in `site/data/`, one YAML file per entry, described by a blueprint in `site/blueprints/`. The admin has a new section *Data* that lists them as a table and edits them as forms.
 
-  Blocks query the entries. The start page of this demo shows the next three [seminars](seminars), and a seminar that has passed drops out by itself. Change a price in *Data*, and every page that shows the seminar is up to date.
+    Blocks query the entries. The start page of this demo shows the next three [seminars](seminars), and a seminar that has passed drops out by itself. Change a price in *Data*, and every page that shows the seminar is up to date.
 
-  ## Entries that are pages
+    ## Entries that are pages
 
-  With `url: blog` in its blueprint, every entry of a collection becomes a page at `/blog/<slug>`, rendered by a template next to the blueprint. The post you are reading works like that. It is a file in `site/data/blog/`, not a page in `site/pages/`.
+    With `url: blog` in its blueprint, every entry of a collection becomes a page at `/blog/<slug>`, rendered by a template next to the blueprint. The post you are reading works like that. It is a file in `site/data/blog/`, not a page in `site/pages/`.
 
-  ## Markdown keeps working
+    ## Markdown keeps working
 
-  Nothing of an existing site has to change. Markdown pages, their blocks and their frontmatter work as before, and the admin still creates them on request. A Markdown block can even sit inside a structured page. When a site is ready for forms, the admin converts a Markdown page into a structured page at the same address, and the old file stays in the history.
+    Nothing of an existing site has to change. Markdown pages, their blocks and their frontmatter work as before, and the admin still creates them on request. A Markdown block can even sit inside a structured page. When a site is ready for forms, the admin converts a Markdown page into a structured page at the same address, and the old file stays in the history.
 
-  ## Smaller things
+    ## Smaller things
 
-  Every save of a page keeps the previous version in the history, for structured pages as well. AddOns are folders now, with their own helpers and admin pages. A new AddOn colors the code blocks of a page on the server, the one below for example:
+    Every save of a page keeps the previous version in the history, for structured pages as well. AddOns are folders now, with their own helpers and admin pages. A new AddOn colors the code blocks of a page on the server, the one below for example:
 
-  ```bash
-  git clone https://github.com/shaack/reboot-cms.git my-site
-  cd my-site
-  ./run.sh
-  ```
+    ```bash
+    git clone https://github.com/shaack/reboot-cms.git my-site
+    cd my-site
+    ./run.sh
+    ```
 
-  Reboot CMS 4 is a major update, so a normal update of version 3 does not install it. From version 3.23 on, the page *Update* in the admin offers the upgrade with a button, makes a backup first and keeps the way back. The [upgrade guide](https://github.com/shaack/reboot-cms/blob/distrib-4/docs/upgrade-to-4.md) says what changes. Version 3 keeps getting security fixes, so there is no hurry.
+    Reboot CMS 4 is a major update, so a normal update of version 3 does not install it. From version 3.23 on, the page *Update* in the admin offers the upgrade with a button, makes a backup first and keeps the way back. The [upgrade guide](https://github.com/shaack/reboot-cms/blob/distrib-4/docs/upgrade-to-4.md) says what changes. Version 3 keeps getting security fixes, so there is no hurry.
+  de: |-
+    Reboot CMS begann als Markdown-CMS mit Blöcken. Eine Seite war eine Textdatei, und HTML-Kommentare teilten sie in Blöcke, die Templates ausgaben. Das funktioniert weiterhin. Version 4 bringt einen zweiten Weg, eine Seite zu bauen, und der wird zum Standard. Eine Seite aus Blöcken, die Formulare sind.
+
+    ## Seiten aus Formular-Blöcken
+
+    Eine strukturierte Seite ist eine kurze YAML-Datei, `site/pages/about.yml` für die Adresse `/about`. Sie enthält einen Titel, eine Beschreibung und eine Liste von Blöcken. Jeder Block hat einen Typ und die Werte seiner Felder, eine Überschrift, einen Text, ein Bild oder eine Liste von Features.
+
+    Ein Blocktyp ist ein Ordner in `site/blocks/` mit zwei Dateien. Der Blueprint benennt die Felder, das PHP-Template setzt sie ins HTML. Der Admin baut aus dem Blueprint das Formular, ein Panel pro Block, und zeigt daneben eine Live-Vorschau, die dem gerade bearbeiteten Feld folgt. Die Redaktion füllt Inhalte aus, und das Layout bleibt, wie das Design es gemacht hat.
+
+    ## Daten getrennt von den Seiten
+
+    Manche Inhalte sind gar keine Seiten. Seminare, Teammitglieder, Produkte und Blogbeiträge sind Datensätze mit immer wieder denselben Feldern. In Reboot CMS 4 liegen sie in `site/data/`, eine YAML-Datei pro Eintrag, beschrieben von einem Blueprint in `site/blueprints/`. Der Admin hat einen neuen Bereich *Data*, der sie als Tabelle listet und als Formular bearbeitet.
+
+    Blöcke fragen die Einträge ab. Die Startseite dieser Demo zeigt die nächsten drei [Seminare](seminars), und ein vergangenes Seminar fällt von selbst heraus. Ändere einen Preis unter *Data*, und jede Seite, die das Seminar zeigt, ist auf dem neuesten Stand.
+
+    ## Einträge, die Seiten sind
+
+    Mit `url: blog` im Blueprint wird jeder Eintrag einer Collection zu einer Seite unter `/blog/<slug>`, gerendert von einem Template neben dem Blueprint. Der Beitrag, den du gerade liest, funktioniert so. Er ist eine Datei in `site/data/blog/`, keine Seite in `site/pages/`.
+
+    ## Markdown funktioniert weiter
+
+    An einer bestehenden Site muss sich nichts ändern. Markdown-Seiten, ihre Blöcke und ihr Frontmatter funktionieren wie bisher, und der Admin legt sie auf Wunsch weiterhin an. Ein Markdown-Block kann sogar in einer strukturierten Seite stehen. Ist eine Site bereit für Formulare, wandelt der Admin eine Markdown-Seite unter derselben Adresse in eine strukturierte Seite um, und die alte Datei bleibt in der Historie.
+
+    ## Kleinere Dinge
+
+    Jedes Speichern einer Seite bewahrt die vorherige Version in der Historie auf, auch bei strukturierten Seiten. AddOns sind jetzt Ordner, mit eigenen Helfern und Admin-Seiten. Ein neues AddOn färbt die Codeblöcke einer Seite auf dem Server ein, zum Beispiel den hier:
+
+    ```bash
+    git clone https://github.com/shaack/reboot-cms.git my-site
+    cd my-site
+    ./run.sh
+    ```
+
+    Reboot CMS 4 ist ein Major-Update, ein normales Update von Version 3 installiert es also nicht. Ab Version 3.23 bietet die Seite *Update* im Admin das Upgrade mit einem Knopf an, legt vorher ein Backup an und hält den Weg zurück offen. Der [Upgrade-Guide](https://github.com/shaack/reboot-cms/blob/distrib-4/docs/upgrade-to-4.md) beschreibt, was sich ändert. Version 3 bekommt weiterhin Sicherheitsupdates, es gibt also keine Eile.
