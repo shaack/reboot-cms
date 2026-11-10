@@ -368,6 +368,14 @@ nav.navbar {
     padding: 0;
 }
 
+/* the button of the light intro in the signal color, black when pointed at */
+.block-intro:not(.block-inverse) {
+    --button: var(--signal);
+    --button-ink: #000;
+    --button-hover: #000;
+    --button-hover-ink: #fff;
+}
+
 /* a light surface as the first block starts right below the navigation */
 main > .block-intro:not(.block-inverse):first-child,
 main > .block-inverse:not(.block-intro):first-child {
