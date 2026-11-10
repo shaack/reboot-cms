@@ -1,8 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Black and white, straight edges, surfaces and lines, one signal color for
-   what can be done: links and buttons. Every line is 1px in the color --line,
-   a mark in the signal color is 2px.
+/* Black and white, straight edges and surfaces, no hairlines, one signal color
+   for what can be done: links and buttons. A mark in the signal color is 2px.
    The colors below are for the dark page. A light surface, the intro or a block
    with `inverse: true`, sets the light ones, see "Light surfaces". */
 :root {
@@ -13,7 +12,6 @@
     --strong: #fff;
     --soft: rgba(255, 255, 255, 0.72);
     --muted: rgba(255, 255, 255, 0.6);
-    --line: rgba(255, 255, 255, 0.2);
     --surface: rgba(255, 255, 255, 0.04);
     --surface-hover: rgba(255, 255, 255, 0.07);
     --code-bg: rgba(255, 255, 255, 0.1);
@@ -146,7 +144,6 @@ a:hover {
 pre {
     background: #000;
     color: #f2f2f2;
-    border: 1px solid var(--line);
     border-radius: 0;
     padding: 1.25rem;
     font-size: 0.9rem;
@@ -182,7 +179,6 @@ main table {
     width: 100%;
     margin-bottom: 1.5rem;
     border-collapse: collapse;
-    border-top: 1px solid var(--line);
     font-size: 0.95rem;
 }
 
@@ -195,9 +191,13 @@ main th {
 
 main th,
 main td {
-    padding: 0.6rem 0.75rem 0.6rem 0;
-    border-bottom: 1px solid var(--line);
+    padding: 0.6rem 0.75rem;
     vertical-align: top;
+}
+
+/* rows told apart by a surface, not by lines */
+main tbody tr:nth-child(odd) {
+    background: var(--surface);
 }
 
 /* Navbar */
@@ -290,7 +290,6 @@ nav.navbar {
     --strong: #000;
     --soft: rgba(0, 0, 0, 0.68);
     --muted: rgba(0, 0, 0, 0.55);
-    --line: rgba(0, 0, 0, 0.15);
     --surface: rgba(0, 0, 0, 0.03);
     --surface-hover: rgba(0, 0, 0, 0.05);
     --code-bg: rgba(0, 0, 0, 0.08);
@@ -319,7 +318,6 @@ nav.navbar {
     --text: #f2f2f2;
     --strong: #fff;
     --muted: rgba(255, 255, 255, 0.6);
-    --line: rgba(255, 255, 255, 0.2);
     --code-bg: rgba(255, 255, 255, 0.1);
     --link-line: var(--signal);
     --link-hover: var(--signal);
@@ -425,29 +423,21 @@ main > .block-text:first-child {
 }
 
 .block-image-text .img-fluid {
-    border: 1px solid var(--line);
     border-radius: 0;
 }
 
-/* Features of Markdown pages, columns separated by lines */
+/* Features of Markdown pages, side by side */
 .block-features .row {
     --bs-gutter-x: 0;
-    border-top: 1px solid var(--line);
 }
 
 .block-features .row > div {
     padding: 1.75rem 1.75rem 1.75rem 0;
-    border-bottom: 1px solid var(--line);
 }
 
 @media (min-width: 768px) {
     .block-features .row > div {
         padding: 2rem 2rem 2rem 1.75rem;
-        border-bottom: 0;
-    }
-
-    .block-features .row > div + div {
-        border-left: 1px solid var(--line);
     }
 
     .block-features .row > div:first-child {
@@ -460,14 +450,9 @@ main > .block-text:first-child {
 }
 
 /* Gallery, of Markdown pages and of structured pages */
-.block-gallery .card-group {
-    border-top: 1px solid var(--line);
-}
-
 .block-gallery .card {
     background: transparent !important;
     border: 0 !important;
-    border-bottom: 1px solid var(--line) !important;
     border-radius: 0 !important;
     margin: 0;
     color: inherit;
@@ -476,35 +461,17 @@ main > .block-text:first-child {
     transition: background 0.15s;
 }
 
-@media (min-width: 576px) {
-    .block-gallery .card + .card {
-        border-left: 1px solid var(--line) !important;
-    }
-}
-
 /* a gallery of more than four images wraps into rows, two or four images wide */
 @media (min-width: 576px) {
     .block-gallery .card-group:has(> .card:nth-child(5)) {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
     }
-
-    .block-gallery .card-group:has(> .card:nth-child(5)) > .card:nth-child(2n+1) {
-        border-left: 0 !important;
-    }
 }
 
 @media (min-width: 992px) {
     .block-gallery .card-group:has(> .card:nth-child(5)) {
         grid-template-columns: repeat(4, 1fr);
-    }
-
-    .block-gallery .card-group:has(> .card:nth-child(5)) > .card:nth-child(2n+1) {
-        border-left: 1px solid var(--line) !important;
-    }
-
-    .block-gallery .card-group:has(> .card:nth-child(5)) > .card:nth-child(4n+1) {
-        border-left: 0 !important;
     }
 }
 
@@ -562,7 +529,6 @@ main > .block-text:first-child {
     max-width: 100%;
     max-height: calc(100% - 3rem);
     object-fit: contain;
-    border: 1px solid var(--line);
     cursor: default;
 }
 
@@ -578,7 +544,7 @@ main > .block-text:first-child {
     position: absolute;
     width: 3rem;
     height: 3rem;
-    border: 1px solid var(--line);
+    border: 0;
     border-radius: 0;
     background: #000;
     color: #fff;
@@ -590,7 +556,6 @@ main > .block-text:first-child {
 .lightbox-button:hover,
 .lightbox-button:focus-visible {
     background: var(--signal);
-    border-color: var(--signal);
     color: #000;
 }
 
@@ -631,7 +596,6 @@ main > .block-text:first-child {
     max-width: 1200px;
     margin: 0 auto;
     padding: 1.5rem 1rem 0;
-    border-top: 1px solid var(--line);
     color: var(--muted);
     display: flex;
     flex-wrap: wrap;
@@ -679,7 +643,6 @@ main > .block-text:first-child {
     flex: 0 0 auto;
     width: 100%;
     padding-top: 1.25rem;
-    border-top: 1px solid var(--line);
 }
 
 @media (min-width: 992px) {
@@ -706,7 +669,6 @@ main > .block-text:first-child {
 
 .block-article .article-links li {
     padding: 0.6rem 0;
-    border-bottom: 1px solid var(--line);
 }
 
 .block-article .article-links a {
@@ -742,12 +704,10 @@ main > .block-text:first-child {
 
 .blog-list {
     max-width: 52em;
-    border-top: 1px solid var(--line);
 }
 
 .blog-teaser {
     padding: 1.5rem 0;
-    border-bottom: 1px solid var(--line);
 }
 
 .blog-teaser time {
@@ -772,18 +732,19 @@ main > .block-text:first-child {
 
 /* Seminar teaser, the next entries of site/data/seminars */
 .seminar-list {
-    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 0.75rem;
 }
 
 .seminar {
     display: grid;
     grid-template-columns: 7.5rem 1fr 11rem;
-    border-bottom: 1px solid var(--line);
+    background: var(--surface);
     transition: background 0.15s;
 }
 
 .seminar:hover {
-    background: var(--surface);
+    background: var(--surface-hover);
 }
 
 .seminar > * {
@@ -850,7 +811,6 @@ main > .block-text:first-child {
     align-items: stretch;
     justify-content: center;
     gap: 0.5rem;
-    border-left: 1px solid var(--line);
     text-align: center;
 }
 
@@ -890,7 +850,7 @@ main > .block-text:first-child {
 
 .seminar-booked-out {
     display: block;
-    border: 1px solid var(--line);
+    background: var(--surface-hover);
     font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -940,8 +900,6 @@ main > .block-text:first-child {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
-        border-left: 0;
-        border-top: 1px solid var(--line);
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
@@ -1003,7 +961,7 @@ main > .block-text:first-child {
     z-index: 1040;
     width: 7.5rem;
     height: 7.5rem;
-    background: #000;
+    background: #141414;
     clip-path: polygon(100% 0, 100% 100%, 0 100%);
     cursor: default;
     user-select: none;
