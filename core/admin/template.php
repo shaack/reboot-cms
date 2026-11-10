@@ -43,6 +43,7 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
     <link href="assets/screen.css?v=<?= @filemtime($adminAssetsDir . "/screen.css") ?>" rel="stylesheet">
     <style>textarea.editor-font { font-family: <?= $editorFont ?>; font-size: <?= $editorFontSize ?>; line-height: <?= $editorLineHeight ?>; tab-size: <?= $editorTabSize ?>; -moz-tab-size: <?= $editorTabSize ?>; }</style>
     <script src="vendor/bootstrap-auto-dark-mode/src/bootstrap-auto-dark-mode.js"></script>
+    <script src="vendor/@shaack/auto-resize-textarea/src/auto-resize-textarea.js"></script>
     <script>
         window._toastQueue = []
         window._toastsReady = false

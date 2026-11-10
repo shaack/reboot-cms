@@ -18,6 +18,15 @@ import {InsertMedia} from "./InsertMedia.js"
 // before the forms are set up below, a const is not there before its line
 const EDIT_LANG_KEY = "reboot_edit_lang"
 
+// A textarea grows with its text, see @shaack/auto-resize-textarea. One of a
+// language not shown or in a folded block has no height yet, it is set up
+// when it is shown.
+const resizeObserver = new ResizeObserver(entries => entries.forEach(entry => {
+    if (entry.contentRect.height === 0) return
+    resizeObserver.unobserve(entry.target)
+    autoResizeTextarea([entry.target])
+}))
+
 const forms = document.querySelectorAll("form[data-field-form]")
 let created = 0
 
@@ -59,6 +68,7 @@ forms.forEach(form => {
     }, true)
 
     form.querySelectorAll("textarea.markdown").forEach(watchMarkdown)
+    form.querySelectorAll("textarea").forEach(autoResize)
     form.querySelectorAll("[data-image-input]").forEach(updatePreview)
 
     form.addEventListener("click", event => {
@@ -218,9 +228,14 @@ function addItem(list, blockType) {
         if (window.rebootMarkdownEditor) window.rebootMarkdownEditor(textarea)
         watchMarkdown(textarea)
     })
+    item.querySelectorAll("textarea").forEach(autoResize)
     item.querySelectorAll("[data-image-input]").forEach(updatePreview)
     const first = item.querySelector("input:not([type=hidden]), textarea, select")
     if (first) first.focus()
+}
+
+function autoResize(textarea) {
+    if (window.autoResizeTextarea) resizeObserver.observe(textarea)
 }
 
 // the Markdown editor changes its textarea without an input event on the form

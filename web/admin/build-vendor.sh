@@ -23,6 +23,8 @@ bootstrap-show-modal/LICENSE
 bootstrap-show-modal/src/ShowModal.js
 bootstrap-show-toast/LICENSE
 bootstrap-show-toast/src/bootstrap-show-toast.js
+@shaack/auto-resize-textarea/LICENSE
+@shaack/auto-resize-textarea/src/auto-resize-textarea.js
 cm-md-editor/LICENSE
 cm-md-editor/src
 "

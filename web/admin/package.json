@@ -11,6 +11,7 @@
   "author": "shaack.com",
   "license": "UNLICENSED",
   "dependencies": {
+    "@shaack/auto-resize-textarea": "^1.1.9",
     "bootstrap": "^5.3.8",
     "bootstrap-auto-dark-mode": "^1.1.1",
     "bootstrap-show-modal": "^6.1.0",
