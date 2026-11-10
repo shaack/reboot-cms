@@ -591,11 +591,12 @@ main > .block-text:first-child {
     }
 }
 
-/* Footer */
+/* Footer, the only hairline of the site sets it apart */
 .site-footer {
     max-width: 1200px;
     margin: 0 auto;
     padding: 1.5rem 1rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
     color: var(--muted);
     display: flex;
     flex-wrap: wrap;
