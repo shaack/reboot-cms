@@ -19,17 +19,12 @@ use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\AddOns\Admin\FieldForm;
 use Shaack\Reboot\AddOns\Admin\LanguageSwitch;
 use Shaack\Reboot\AddOns\Admin\StructuredPageHandler;
-use Shaack\Reboot\AddOns\Admin\Translator;
 use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\CsrfProtection;
 
 $pageBlueprint = Blueprint::forPage($defaultSite);
 // on a multilingual site the text fields get an input per language, the switcher above shows one language
-// a field in another language can be translated with DeepL, without a key in the local
-// configuration its button explains how to set one up, see translation-modal.php
-$translatable = $defaultSite->isMultilingual();
-$translationReady = Translator::fromConfig($localConfig) !== null;
-FieldForm::setLanguages($defaultSite->getLanguages(), $defaultSite->getDefaultLanguage(), $translatable);
+FieldForm::setLanguages($defaultSite->getLanguages(), $defaultSite->getDefaultLanguage());
 $editLanguages = $defaultSite->isMultilingual() ? $defaultSite->getLanguages() : [];
 $structuredHandler = new StructuredPageHandler($pageBlueprint, $pagesDir, $historyDir, $historyMaxVersions);
 $structuredMessage = $request->getParam("converted", "get") ? "The page is a structured page now. Its Markdown version is in the history." : null;
@@ -78,16 +73,10 @@ try {
     <?php } ?>
     <?php if ($editLanguages) { ?>
         <style><?php foreach ($editLanguages as $language) { ?>.structured-page[data-edit-lang="<?= $language ?>"] .field-language:not([data-lang="<?= $language ?>"]){display:none}<?php } ?></style>
-        <div class="language-tools">
-            <?= LanguageSwitch::render($editLanguages, $defaultSite->getDefaultLanguage(), null) ?>
-            <?php if ($translatable) { ?>
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="translate-empty" hidden
-                        title="Translate every empty field of this language from <?= htmlspecialchars(strtoupper($defaultSite->getDefaultLanguage())) ?> with DeepL">Translate empty fields</button>
-            <?php } ?>
-        </div>
+        <?= LanguageSwitch::render($editLanguages, $defaultSite->getDefaultLanguage(), null) ?>
     <?php } ?>
     <!--suppress HtmlUnknownTarget -->
-    <form method="post" action="pages?page=<?= urlencode($editPageName) ?>" class="structured-page" data-field-form<?= $editLanguages ? ' data-edit-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '" data-default-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '" data-translation-ready="' . ($translationReady ? '1' : '0') . '"' : '' ?>>
+    <form method="post" action="pages?page=<?= urlencode($editPageName) ?>" class="structured-page" data-field-form<?= $editLanguages ? ' data-edit-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '" data-default-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '"' : '' ?>>
         <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
         <input type="hidden" name="structured" value="1">
         <?php
@@ -134,8 +123,5 @@ try {
         </div>
     </form>
     <?php require __DIR__ . "/history-modal.php"; ?>
-    <?php if ($translatable && !$translationReady) {
-        require __DIR__ . "/translation-modal.php";
-    } ?>
 <?php } ?>
 <script type="module" src="assets/field-form.js?v=<?= @filemtime($reboot->getBaseFsPath() . "/web/admin/assets/field-form.js") ?>"></script>

@@ -1006,42 +1006,6 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   opacity: 1;
 }
 
-.language-tools {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-.language-tools .language-switch {
-  margin-bottom: 0.75rem;
-}
-
-.field-translated {
-  position: relative;
-}
-
-.field-translate {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0;
-  font-size: 0.8rem;
-  line-height: 1.5rem;
-  color: var(--bs-secondary-color);
-  text-decoration: none;
-}
-.field-translate:hover {
-  color: var(--bs-body-color);
-}
-.field-translate .icon {
-  vertical-align: -0.125em;
-  color: var(--bs-primary);
-}
-
-.field-list-item > .field-item-tools + .field-translated > .field-language > .field-translate {
-  right: 88px;
-}
-
 .field-shared {
   margin-left: 0.3em;
   color: var(--bs-info-text-emphasis);
