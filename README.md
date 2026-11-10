@@ -307,7 +307,7 @@ For a Markdown page the switcher opens the file of the language. A language with
 
 #### Machine translation with DeepL
 
-With a key for the [DeepL API](https://www.deepl.com/pro-api), a text field of a structured page in another language than the default one gets a button *Translate from EN* below it, and *Translate empty fields* next to the language switch fills every empty field of the language shown. The translation lands in the form, it is saved with the page like a change by hand. Put the key into the ignored `local/config.local.yml`, never into a file in Git:
+A text field of a structured page in another language than the default one has a button *Translate from EN* below it, and *Translate empty fields* next to the language switch fills every empty field of the language shown. They translate with the [DeepL API](https://www.deepl.com/pro-api). Without a key they explain how to set one up. The translation lands in the form, it is saved with the page like a change by hand. Put the key into the ignored `local/config.local.yml`, never into a file in Git:
 
 ```yaml
 translation:

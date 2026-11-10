@@ -34,9 +34,9 @@ class FieldForm
     /**
      * The languages of a multilingual site, for the forms of structured pages.
      * Empty languages, the default, render a field in one language.
-     * With `$translatable`, a machine translation is set up, see Translator, a
-     * text in another language than the default one gets a button that
-     * translates it from the default language.
+     * With `$translatable` a text in another language than the default one gets
+     * a button that translates it from the default language, see Translator.
+     * Without a key for DeepL the button explains how to set one up.
      * @param string[] $languages
      */
     public static function setLanguages(array $languages, string $defaultLanguage, bool $translatable = false): void

@@ -25,8 +25,10 @@ use Shaack\Reboot\CsrfProtection;
 
 $pageBlueprint = Blueprint::forPage($defaultSite);
 // on a multilingual site the text fields get an input per language, the switcher above shows one language
-// with a key for DeepL in the local configuration, a field in another language can be translated
-$translatable = $defaultSite->isMultilingual() && Translator::fromConfig($localConfig) !== null;
+// a field in another language can be translated with DeepL, without a key in the local
+// configuration its button explains how to set one up, see translation-modal.php
+$translatable = $defaultSite->isMultilingual();
+$translationReady = Translator::fromConfig($localConfig) !== null;
 FieldForm::setLanguages($defaultSite->getLanguages(), $defaultSite->getDefaultLanguage(), $translatable);
 $editLanguages = $defaultSite->isMultilingual() ? $defaultSite->getLanguages() : [];
 $structuredHandler = new StructuredPageHandler($pageBlueprint, $pagesDir, $historyDir, $historyMaxVersions);
@@ -85,7 +87,7 @@ try {
         </div>
     <?php } ?>
     <!--suppress HtmlUnknownTarget -->
-    <form method="post" action="pages?page=<?= urlencode($editPageName) ?>" class="structured-page" data-field-form<?= $editLanguages ? ' data-edit-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '" data-default-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '"' : '' ?>>
+    <form method="post" action="pages?page=<?= urlencode($editPageName) ?>" class="structured-page" data-field-form<?= $editLanguages ? ' data-edit-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '" data-default-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '" data-translation-ready="' . ($translationReady ? '1' : '0') . '"' : '' ?>>
         <input type="hidden" name="csrf_token" value="<?= CsrfProtection::getToken() ?>">
         <input type="hidden" name="structured" value="1">
         <?php
@@ -132,5 +134,8 @@ try {
         </div>
     </form>
     <?php require __DIR__ . "/history-modal.php"; ?>
+    <?php if ($translatable && !$translationReady) {
+        require __DIR__ . "/translation-modal.php";
+    } ?>
 <?php } ?>
 <script type="module" src="assets/field-form.js?v=<?= @filemtime($reboot->getBaseFsPath() . "/web/admin/assets/field-form.js") ?>"></script>

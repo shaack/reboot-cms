@@ -1315,12 +1315,21 @@
             });
         };
 
+        // without a key for DeepL the buttons explain how to set one up
+        var translationReady = function () {
+            if (structuredForm.dataset.translationReady === '1') return true;
+            var setup = document.getElementById('translation-setup-modal');
+            if (setup) bootstrap.Modal.getOrCreateInstance(setup).show();
+            return false;
+        };
+
         structuredForm.addEventListener('click', function (e) {
             var button = e.target.closest('.field-translate');
-            if (button) translateFields([button]);
+            if (button && translationReady()) translateFields([button]);
         });
         if (translateEmpty) {
             translateEmpty.addEventListener('click', function () {
+                if (!translationReady()) return;
                 var language = structuredForm.dataset.editLang;
                 var buttons = Array.prototype.filter.call(
                     structuredForm.querySelectorAll('.field-language[data-lang="' + language + '"] .field-translate'),
