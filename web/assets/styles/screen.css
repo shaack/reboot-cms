@@ -1015,8 +1015,8 @@ main > .block-text:first-child {
     right: 0;
     bottom: 0;
     z-index: 1040;
-    width: 6rem;
-    height: 6rem;
+    width: 7.5rem;
+    height: 7.5rem;
     background: var(--signal);
     clip-path: polygon(100% 0, 100% 100%, 0 100%);
     cursor: default;
@@ -1025,11 +1025,11 @@ main > .block-text:first-child {
 
 .demo-ribbon span {
     position: absolute;
-    right: 0.35rem;
-    bottom: 1.6rem;
+    right: 0.3rem;
+    bottom: 2rem;
     transform: rotate(-45deg);
     color: #000;
-    font-size: 0.75rem;
+    font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
