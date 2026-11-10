@@ -954,28 +954,61 @@ main > .block-text:first-child {
     color: var(--soft);
 }
 
-/* a black triangle over the lower right corner, the label in the signal color */
+/* a velvet ribbon sewn over the lower right corner, soft against the hard site */
 .demo-ribbon {
     position: fixed;
     right: 0;
     bottom: 0;
     z-index: 1040;
-    width: 7.5rem;
-    height: 7.5rem;
-    background: #141414;
-    clip-path: polygon(100% 0, 100% 100%, 0 100%);
-    cursor: default;
-    user-select: none;
+    width: 9rem;
+    height: 9rem;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 .demo-ribbon span {
     position: absolute;
-    right: 0.3rem;
-    bottom: 2rem;
+    right: -3.6rem;
+    bottom: 2.1rem;
+    width: 14rem;
+    padding: 0.5rem 0;
     transform: rotate(-45deg);
-    color: var(--signal);
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    text-align: center;
+    color: #f7e4ee;
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(20, 0, 18, 0.6);
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E"),
+        linear-gradient(180deg, #7a3468 0%, #5a1f50 35%, #3d1338 70%, #26091f 100%);
+    background-blend-mode: soft-light, normal;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 240, 0.2),
+        inset 0 -4px 8px rgba(20, 0, 18, 0.45),
+        0 4px 14px rgba(0, 0, 0, 0.45);
+    pointer-events: auto;
+    cursor: default;
+    user-select: none;
+}
+
+/* the seams, stitched along both edges */
+.demo-ribbon span::after {
+    content: "";
+    position: absolute;
+    inset: 0.22rem 0;
+    border-top: 1px dashed rgba(247, 228, 238, 0.45);
+    border-bottom: 1px dashed rgba(247, 228, 238, 0.45);
+    pointer-events: none;
+}
+
+/* the sheen of the pile, light falling across the fabric */
+.demo-ribbon span::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 15%, rgba(255, 210, 235, 0.14) 45%, transparent 75%);
+    pointer-events: none;
 }
