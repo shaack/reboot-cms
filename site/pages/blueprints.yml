@@ -1,144 +1,286 @@
-title: Blueprints in Reboot CMS
-description: A blueprint is a short YAML file that names fields. Reboot CMS makes blocks and data from it, with a form in the admin.
+title:
+  en: Blueprints in Reboot CMS
+  de: Blueprints in Reboot CMS
+description:
+  en: A blueprint is a short YAML file that names fields. Reboot CMS makes blocks and data from it, with a form in the admin.
+  de: Ein Blueprint ist eine kurze YAML-Datei, die Felder benennt. Reboot CMS macht daraus Blöcke und Daten, mit einem Formular im Admin.
 blocks:
   - type: intro
     heading: Blueprints
-    lead: A short YAML file that names fields. Reboot CMS builds the form from it, checks the content against it, and the template reads the fields.
+    lead:
+      en: A short YAML file that names fields. Reboot CMS builds the form from it, checks the content against it, and the template reads the fields.
+      de: Eine kurze YAML-Datei, die Felder benennt. Reboot CMS baut daraus das Formular, prüft die Inhalte dagegen, und das Template liest die Felder.
     image: media/screenshots/reboot-cms-admin-add-block.png
   - type: text
-    text: |-
-      The same kind of file describes a **block type** for pages and a **collection** of data, seminars or blog posts for example. This page shows both.
+    text:
+      en: |-
+        The same kind of file describes a **block type** for pages and a **collection** of data, seminars or blog posts for example. This page shows both.
 
-      ## What a blueprint says
+        ## What a blueprint says
 
-      A blueprint has a title and a list of fields. Each field has a name, a type and a few options.
+        A blueprint has a title and a list of fields. Each field has a name, a type and a few options.
 
-      ```yaml
-      title: Quote
-      fields:
-        text:   {type: textarea, required: true}
-        author: {type: text}
-        photo:  {type: image, help: "A square portrait"}
-      ```
+        ```yaml
+        title: Quote
+        fields:
+          text:   {type: textarea, required: true}
+          author: {type: text}
+          photo:  {type: image, help: "A square portrait"}
+        ```
 
-      Reboot CMS reads it in three places:
+        Reboot CMS reads it in three places:
 
-      - **The admin** builds a form from it, a text area, a text field and the media browser. The field `text` is marked as required, the help sits below the photo.
-      - **The website** checks the content against it. A value that does not fit is named in the admin after saving, an entry of data that does not fit stays off the website.
-      - **The template** reads the fields by their names, `$block->get("author")` for example.
+        - **The admin** builds a form from it, a text area, a text field and the media browser. The field `text` is marked as required, the help sits below the photo.
+        - **The website** checks the content against it. A value that does not fit is named in the admin after saving, an entry of data that does not fit stays off the website.
+        - **The template** reads the fields by their names, `$block->get("author")` for example.
 
-      | Type | In the admin | In the template |
-      |------|--------------|-----------------|
-      | `text`, `textarea` | a field, a text area | `get()`, escaped for HTML |
-      | `markdown` | the Markdown editor | `html()`, rendered |
-      | `number`, `date`, `boolean`, `select` | a number, a date picker, a switch, a list | `get()`, `date()` |
-      | `image`, `url` | the media browser, a field | `get()` |
-      | `list` | items with their own fields, added and moved | `items()` |
-      | `entry` | a select of the entries of a collection | `entry()` |
+        | Type | In the admin | In the template |
+        |------|--------------|-----------------|
+        | `text`, `textarea` | a field, a text area | `get()`, escaped for HTML |
+        | `markdown` | the Markdown editor | `html()`, rendered |
+        | `number`, `date`, `boolean`, `select` | a number, a date picker, a switch, a list | `get()`, `date()` |
+        | `image`, `url` | the media browser, a field | `get()` |
+        | `list` | items with their own fields, added and moved | `items()` |
+        | `entry` | a select of the entries of a collection | `entry()` |
 
-      Further options are `label`, `default`, `min`, `max` and `options`, the [documentation](documentation#data) lists them all.
+        Further options are `label`, `default`, `min`, `max` and `options`, the [documentation](documentation#data) lists them all.
+      de: |-
+        Dieselbe Art von Datei beschreibt einen **Blocktyp** für Seiten und eine **Collection** von Daten, zum Beispiel Seminare oder Blogbeiträge. Diese Seite zeigt beides.
+
+        ## Was ein Blueprint sagt
+
+        Ein Blueprint hat einen Titel und eine Liste von Feldern. Jedes Feld hat einen Namen, einen Typ und ein paar Optionen.
+
+        ```yaml
+        title: Quote
+        fields:
+          text:   {type: textarea, required: true}
+          author: {type: text}
+          photo:  {type: image, help: "A square portrait"}
+        ```
+
+        Reboot CMS liest ihn an drei Stellen:
+
+        - **Der Admin** baut daraus ein Formular, mit einem Textbereich, einem Textfeld und dem Medienbrowser. Das Feld `text` ist als Pflichtfeld markiert, die Hilfe steht unter dem Foto.
+        - **Die Website** prüft die Inhalte dagegen. Einen Wert, der nicht passt, nennt der Admin nach dem Speichern, ein Dateneintrag, der nicht passt, bleibt der Website fern.
+        - **Das Template** liest die Felder über ihre Namen, zum Beispiel `$block->get("author")`.
+
+        | Typ | Im Admin | Im Template |
+        |------|--------------|-----------------|
+        | `text`, `textarea` | ein Feld, ein Textbereich | `get()`, für HTML maskiert |
+        | `markdown` | der Markdown-Editor | `html()`, gerendert |
+        | `number`, `date`, `boolean`, `select` | eine Zahl, eine Datumsauswahl, ein Schalter, eine Liste | `get()`, `date()` |
+        | `image`, `url` | der Medienbrowser, ein Feld | `get()` |
+        | `list` | Einträge mit eigenen Feldern, hinzugefügt und verschoben | `items()` |
+        | `entry` | eine Auswahl aus den Einträgen einer Collection | `entry()` |
+
+        Weitere Optionen sind `label`, `default`, `min`, `max` und `options`, die [Dokumentation](documentation#data) nennt sie alle.
   - type: text
-    text: |-
-      ## A block from a blueprint
+    text:
+      en: |-
+        ## A block from a blueprint
 
-      A block type is a folder in `site/blocks/` with two files, both named like the folder. The blueprint above becomes `site/blocks/quote/quote.yml`, and the template next to it places the fields in the HTML:
+        A block type is a folder in `site/blocks/` with two files, both named like the folder. The blueprint above becomes `site/blocks/quote/quote.yml`, and the template next to it places the fields in the HTML:
 
-      ```php
-      <?php /** @var \Shaack\Reboot\Block $block */ ?>
-      <section class="block block-quote">
-          <blockquote>
-              <p><?= nl2br($block->get("text")) ?></p>
-              <?php if ($block->get("author")) { ?>
-                  <footer><?= $block->get("author") ?></footer>
-              <?php } ?>
-          </blockquote>
-      </section>
-      ```
+        ```php
+        <?php /** @var \Shaack\Reboot\Block $block */ ?>
+        <section class="block block-quote">
+            <blockquote>
+                <p><?= nl2br($block->get("text")) ?></p>
+                <?php if ($block->get("author")) { ?>
+                    <footer><?= $block->get("author") ?></footer>
+                <?php } ?>
+            </blockquote>
+        </section>
+        ```
 
-      From now on *Add block* in the admin offers "Quote". The page stores what the editor fills in as YAML, `site/pages/about.yml` for the address `/about`:
+        From now on *Add block* in the admin offers "Quote". The page stores what the editor fills in as YAML, `site/pages/about.yml` for the address `/about`:
 
-      ```yaml
-      title: About us
-      blocks:
-        - type: quote
-          text: We build websites that load fast.
-          author: Jane Doe
-      ```
+        ```yaml
+        title: About us
+        blocks:
+          - type: quote
+            text: We build websites that load fast.
+            author: Jane Doe
+        ```
 
-      Editors fill in fields and cannot break the layout. Designers change the template, and every page with a quote follows.
+        Editors fill in fields and cannot break the layout. Designers change the template, and every page with a quote follows.
+      de: |-
+        ## Ein Block aus einem Blueprint
+
+        Ein Blocktyp ist ein Ordner in `site/blocks/` mit zwei Dateien, beide benannt wie der Ordner. Der Blueprint oben wird zu `site/blocks/quote/quote.yml`, und das Template daneben setzt die Felder ins HTML:
+
+        ```php
+        <?php /** @var \Shaack\Reboot\Block $block */ ?>
+        <section class="block block-quote">
+            <blockquote>
+                <p><?= nl2br($block->get("text")) ?></p>
+                <?php if ($block->get("author")) { ?>
+                    <footer><?= $block->get("author") ?></footer>
+                <?php } ?>
+            </blockquote>
+        </section>
+        ```
+
+        Ab jetzt bietet *Add block* im Admin "Quote" an. Die Seite speichert, was die Redaktion ausfüllt, als YAML, `site/pages/about.yml` für die Adresse `/about`:
+
+        ```yaml
+        title: About us
+        blocks:
+          - type: quote
+            text: We build websites that load fast.
+            author: Jane Doe
+        ```
+
+        Redakteure füllen Felder aus und können das Layout nicht kaputt machen. Designer ändern das Template, und jede Seite mit einem Zitat zieht mit.
   - type: features
-    heading: Blocks of this demo
+    heading:
+      en: Blocks of this demo
+      de: Blöcke dieser Demo
     items:
       - title: intro, text, image-text
-        text: The bands of a page, with headings, Markdown and images. A `boolean` field `inverse` turns an image-text into a white band.
+        text:
+          en: The bands of a page, with headings, Markdown and images. A `boolean` field `inverse` turns an image-text into a white band.
+          de: Die Bänder einer Seite, mit Überschriften, Markdown und Bildern. Ein `boolean`-Feld `inverse` macht aus einem image-text ein weißes Band.
       - title: features, gallery
-        text: A `list` field each. The editor adds as many features or images as the page needs, each item with its own fields.
+        text:
+          en: A `list` field each. The editor adds as many features or images as the page needs, each item with its own fields.
+          de: Je ein `list`-Feld. Die Redaktion fügt so viele Features oder Bilder hinzu, wie die Seite braucht, jeder Eintrag mit eigenen Feldern.
       - title: seminar-spotlight
-        text: An `entry` field. The editor chooses one seminar from a list, the template shows its date, place and price.
+        text:
+          en: An `entry` field. The editor chooses one seminar from a list, the template shows its date, place and price.
+          de: Ein `entry`-Feld. Die Redaktion wählt ein Seminar aus einer Liste, das Template zeigt Datum, Ort und Preis.
   - type: image-text
-    text: |-
-      ## Data from a blueprint
+    text:
+      en: |-
+        ## Data from a blueprint
 
-      Seminars, posts, products, team members. Content with the same fields again and again is no page, it is data. A blueprint in `site/blueprints/` describes it, `seminars.yml` in this demo:
+        Seminars, posts, products, team members. Content with the same fields again and again is no page, it is data. A blueprint in `site/blueprints/` describes it, `seminars.yml` in this demo:
 
-      ```yaml
-      title: Seminars
-      sort: date
-      columns: [date, title, location, price]
-      fields:
-        title:    {type: text, required: true}
-        date:     {type: date, required: true}
-        location: {type: text, required: true}
-        price:    {type: number, label: "Price (€)", min: 0}
-        body:     {type: markdown, label: Description}
-      ```
+        ```yaml
+        title: Seminars
+        sort: date
+        columns: [date, title, location, price]
+        fields:
+          title:    {type: text, required: true}
+          date:     {type: date, required: true}
+          location: {type: text, required: true}
+          price:    {type: number, label: "Price (€)", min: 0}
+          body:     {type: markdown, label: Description}
+        ```
 
-      Each entry is a Markdown file in `site/data/seminars/`. The fields are its frontmatter, the text below it is `body`. The admin lists the entries under *Data* as a table with the `columns` and edits each one as a form.
+        Each entry is a Markdown file in `site/data/seminars/`. The fields are its frontmatter, the text below it is `body`. The admin lists the entries under *Data* as a table with the `columns` and edits each one as a form.
+      de: |-
+        ## Daten aus einem Blueprint
+
+        Seminare, Beiträge, Produkte, Teammitglieder. Inhalte mit immer wieder denselben Feldern sind keine Seiten, sondern Daten. Ein Blueprint in `site/blueprints/` beschreibt sie, in dieser Demo `seminars.yml`:
+
+        ```yaml
+        title: Seminars
+        sort: date
+        columns: [date, title, location, price]
+        fields:
+          title:    {type: text, required: true}
+          date:     {type: date, required: true}
+          location: {type: text, required: true}
+          price:    {type: number, label: "Price (€)", min: 0}
+          body:     {type: markdown, label: Description}
+        ```
+
+        Jeder Eintrag ist eine Markdown-Datei in `site/data/seminars/`. Die Felder sind ihr Frontmatter, der Text darunter ist `body`. Der Admin listet die Einträge unter *Data* als Tabelle mit den `columns` und bearbeitet jeden als Formular.
     image: media/screenshots/reboot-cms-admin-data.png
-    alt: The table of the seminars in the admin
-    caption: The seminars of this demo under Data
+    alt:
+      en: The table of the seminars in the admin
+      de: Die Tabelle der Seminare im Admin
+    caption:
+      en: The seminars of this demo under Data
+      de: Die Seminare dieser Demo unter Data
   - type: text
-    text: |-
-      ## Data in a block
+    text:
+      en: |-
+        ## Data in a block
 
-      A block or a PHP page queries the collection and decides where the entries show up. The block `seminar-teaser` lists the next seminars like this:
+        A block or a PHP page queries the collection and decides where the entries show up. The block `seminar-teaser` lists the next seminars like this:
 
-      ```php
-      <?php
-      $next = $site->collection("seminars")
-          ->where("date", ">=", "today")
-          ->limit(3);
-      foreach ($next as $seminar) { ?>
-          <h3><?= $seminar->get("title") ?></h3>
-          <p><?= $seminar->date("date", "d.m.Y") ?>, <?= $seminar->get("location") ?></p>
-      <?php } ?>
-      ```
+        ```php
+        <?php
+        $next = $site->collection("seminars")
+            ->where("date", ">=", "today")
+            ->limit(3);
+        foreach ($next as $seminar) { ?>
+            <h3><?= $seminar->get("title") ?></h3>
+            <p><?= $seminar->date("date", "d.m.Y") ?>, <?= $seminar->get("location") ?></p>
+        <?php } ?>
+        ```
 
-      Past seminars drop out on their own. Change a price in *Data*, and every page that shows the seminar is up to date. This is the block, on this page:
+        Past seminars drop out on their own. Change a price in *Data*, and every page that shows the seminar is up to date. This is the block, on this page:
+      de: |-
+        ## Daten in einem Block
+
+        Ein Block oder eine PHP-Seite fragt die Collection ab und entscheidet, wo die Einträge erscheinen. Der Block `seminar-teaser` listet die nächsten Seminare so:
+
+        ```php
+        <?php
+        $next = $site->collection("seminars")
+            ->where("date", ">=", "today")
+            ->limit(3);
+        foreach ($next as $seminar) { ?>
+            <h3><?= $seminar->get("title") ?></h3>
+            <p><?= $seminar->date("date", "d.m.Y") ?>, <?= $seminar->get("location") ?></p>
+        <?php } ?>
+        ```
+
+        Vergangene Seminare fallen von selbst heraus. Ändere einen Preis unter *Data*, und jede Seite, die das Seminar zeigt, ist auf dem neuesten Stand. Das ist der Block, auf dieser Seite:
   - type: seminar-teaser
-    heading: The next seminars
+    heading:
+      en: The next seminars
+      de: Die nächsten Seminare
     count: 3
-    link-label: All seminars
+    link-label:
+      en: All seminars
+      de: Alle Seminare
     link: seminars
   - type: text
-    text: |-
-      ## Entries that are pages
+    text:
+      en: |-
+        ## Entries that are pages
 
-      One line more in the blueprint, and every entry becomes a page of its own:
+        One line more in the blueprint, and every entry becomes a page of its own:
 
-      ```yaml
-      title: Blog
-      sort: date desc
-      url: blog
-      fields:
-        title: {type: text, required: true}
-        date:  {type: date, required: true}
-        body:  {type: markdown}
-      ```
+        ```yaml
+        title: Blog
+        sort: date desc
+        url: blog
+        fields:
+          title: {type: text, required: true}
+          date:  {type: date, required: true}
+          body:  {type: markdown}
+        ```
 
-      With `url: blog` the file `site/data/blog/2026-11-08-reboot-cms-4.md` is the page `/blog/2026-11-08-reboot-cms-4`. A template `site/blueprints/blog.php` next to the blueprint renders it. The [blog](blog) of this demo works like that, the block `blog-list` lists its posts.
+        With `url: blog` the file `site/data/blog/2026-11-08-reboot-cms-4.md` is the page `/blog/2026-11-08-reboot-cms-4`. A template `site/blueprints/blog.php` next to the blueprint renders it. The [blog](blog) of this demo works like that, the block `blog-list` lists its posts.
+      de: |-
+        ## Einträge, die Seiten sind
+
+        Eine Zeile mehr im Blueprint, und jeder Eintrag wird zu einer eigenen Seite:
+
+        ```yaml
+        title: Blog
+        sort: date desc
+        url: blog
+        fields:
+          title: {type: text, required: true}
+          date:  {type: date, required: true}
+          body:  {type: markdown}
+        ```
+
+        Mit `url: blog` ist die Datei `site/data/blog/2026-11-08-reboot-cms-4.md` die Seite `/blog/2026-11-08-reboot-cms-4`. Ein Template `site/blueprints/blog.php` neben dem Blueprint rendert sie. Der [Blog](blog) dieser Demo funktioniert so, der Block `blog-list` listet seine Beiträge.
   - type: text
-    text: |-
-      ## Markdown, if you like
+    text:
+      en: |-
+        ## Markdown, if you like
 
-      Pages can still be Markdown, with blocks started by an HTML comment. The [Markdown blocks](blocks) of this demo show each one next to the text that produces it. With a `convert` section a blueprint says how to read the Markdown of its block, then the admin converts a Markdown page into a structured page with a click.
+        Pages can still be Markdown, with blocks started by an HTML comment. The [Markdown blocks](blocks) of this demo show each one next to the text that produces it. With a `convert` section a blueprint says how to read the Markdown of its block, then the admin converts a Markdown page into a structured page with a click.
+      de: |-
+        ## Markdown, wenn du magst
+
+        Seiten können weiterhin Markdown sein, mit Blöcken, die ein HTML-Kommentar beginnt. Die [Markdown-Blöcke](blocks) dieser Demo zeigen jeden neben dem Text, der ihn erzeugt. Mit einem Abschnitt `convert` sagt ein Blueprint, wie das Markdown seines Blocks zu lesen ist, dann wandelt der Admin eine Markdown-Seite mit einem Klick in eine strukturierte Seite um.

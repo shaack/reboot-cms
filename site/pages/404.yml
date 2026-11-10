@@ -1,9 +1,18 @@
-title: Page not found
+title:
+  en: Page not found
+  de: Seite nicht gefunden
 blocks:
   - type: text
-    text: |-
-      # 404
+    text:
+      en: |-
+        # 404
 
-      There is no page at this address. The URL of a page is the path of its file, so a typo in either is the usual cause.
+        There is no page at this address. The URL of a page is the path of its file, so a typo in either is the usual cause.
 
-      [Back to the start page](./)
+        [Back to the start page](./)
+      de: |-
+        # 404
+
+        Unter dieser Adresse gibt es keine Seite. Die URL einer Seite ist der Pfad ihrer Datei, ein Tippfehler in einem von beiden ist die übliche Ursache.
+
+        [Zurück zur Startseite](./)

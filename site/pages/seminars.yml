@@ -1,17 +1,34 @@
-title: Seminars Example
-description: Seminars on Reboot CMS. An example of data that lives apart from the pages.
+title:
+  en: Seminars Example
+  de: Seminar-Beispiel
+description:
+  en: Seminars on Reboot CMS. An example of data that lives apart from the pages.
+  de: Seminare zu Reboot CMS. Ein Beispiel für Daten, die getrennt von den Seiten liegen.
 blocks:
   - type: text
-    text: |-
-      # Seminars Example
+    text:
+      en: |-
+        # Seminars Example
 
-      The seminars on this page are data, not pages. Each one is a Markdown file in `site/data/seminars/`, and the blueprint `site/blueprints/seminars.yml` names their fields. The admin edits them under *Data* as a form and lists them as a table.
+        The seminars on this page are data, not pages. Each one is a Markdown file in `site/data/seminars/`, and the blueprint `site/blueprints/seminars.yml` names their fields. The admin edits them under *Data* as a form and lists them as a table.
 
-      The blocks below query the entries. Past seminars and drafts drop out on their own, and a price changed in *Data* shows up on every page at once. The seminars are made up, they only show how data works.
+        The blocks below query the entries. Past seminars and drafts drop out on their own, and a price changed in *Data* shows up on every page at once. The seminars are made up, they only show how data works.
+      de: |-
+        # Seminar-Beispiel
+
+        Die Seminare auf dieser Seite sind Daten, keine Seiten. Jedes ist eine Markdown-Datei in `site/data/seminars/`, und der Blueprint `site/blueprints/seminars.yml` benennt ihre Felder. Der Admin bearbeitet sie unter *Data* als Formular und listet sie als Tabelle.
+
+        Die Blöcke unten fragen die Einträge ab. Vergangene Seminare und Entwürfe fallen von selbst heraus, und ein unter *Data* geänderter Preis erscheint sofort auf jeder Seite. Die Seminare sind erfunden, sie zeigen nur, wie Daten funktionieren.
   - type: seminar-spotlight
-    heading: In focus
+    heading:
+      en: In focus
+      de: Im Fokus
     seminar: 2027-03-12-agents-and-content
-    note: The block `seminar-spotlight` points to one entry, chosen in the admin from a list of the seminars.
+    note:
+      en: The block `seminar-spotlight` points to one entry, chosen in the admin from a list of the seminars.
+      de: Der Block `seminar-spotlight` zeigt auf einen Eintrag, den man im Admin aus einer Liste der Seminare wählt.
   - type: seminar-teaser
-    heading: All dates
+    heading:
+      en: All dates
+      de: Alle Termine
     count: 20

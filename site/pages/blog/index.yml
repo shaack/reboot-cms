@@ -1,6 +1,14 @@
-title: Blog Example
-description: Notes on running websites with Reboot CMS.
+title:
+  en: Blog Example
+  de: Blog-Beispiel
+description:
+  en: Notes on running websites with Reboot CMS.
+  de: Notizen zum Betrieb von Websites mit Reboot CMS.
 blocks:
   - type: blog-list
-    heading: Blog Example
-    lead: Notes on running websites with Reboot CMS. Every post is an entry in `site/data/blog/`, edited under Data in the admin, and this list is built from them.
+    heading:
+      en: Blog Example
+      de: Blog-Beispiel
+    lead:
+      en: Notes on running websites with Reboot CMS. Every post is an entry in `site/data/blog/`, edited under Data in the admin, and this list is built from them.
+      de: Notizen zum Betrieb von Websites mit Reboot CMS. Jeder Beitrag ist ein Eintrag in `site/data/blog/`, bearbeitet unter Data im Admin, und diese Liste wird daraus gebaut.
