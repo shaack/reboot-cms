@@ -8,8 +8,8 @@ blocks:
   - type: intro
     heading: Reboot CMS
     lead:
-      en: The flat file CMS that thinks in blocks.
-      de: Das Flat-File-CMS, das in Blöcken denkt.
+      en: The agent friendly CMS that thinks in blocks.
+      de: Das agentenfreundliche CMS, das in Blöcken denkt.
     image: media/screenshots/reboot-cms-admin-page-edit.png?v=4
     button-label:
       en: View on GitHub
