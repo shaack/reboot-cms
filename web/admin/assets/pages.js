@@ -1257,6 +1257,82 @@
             updatePreview();
         });
     }
+
+    // --- Machine translation of fields ---
+    // With a key for DeepL in the local configuration, a field in another language
+    // than the default one has a button that fills it with the translation of the
+    // field in the default language, see Translator.php. Saved with the page.
+    if (structuredForm && structuredForm.hasAttribute('data-edit-lang')) {
+        var translateEmpty = document.getElementById('translate-empty');
+        var syncTranslateEmpty = function () {
+            if (translateEmpty) translateEmpty.hidden = structuredForm.dataset.editLang === config.defaultLanguage;
+        };
+        syncTranslateEmpty();
+        structuredForm.addEventListener('languagechange', syncTranslateEmpty);
+
+        var requestTranslation = function (texts, target, format) {
+            var body = new FormData();
+            body.append('csrf_token', csrfToken);
+            body.append('source', config.defaultLanguage);
+            body.append('target', target);
+            body.append('format', format);
+            texts.forEach(function (text) { body.append('texts[]', text); });
+            return fetch('pages?translate=1', {method: 'POST', body: body}).then(function (response) {
+                return response.json().catch(function () { return {}; }).then(function (data) {
+                    if (!response.ok || !Array.isArray(data.texts)) throw new Error(data.error || 'The translation failed.');
+                    return data.texts;
+                });
+            });
+        };
+
+        // the fields of the buttons, one request per language and format
+        var translateFields = function (buttons) {
+            var groups = {};
+            buttons.forEach(function (button) {
+                var field = button.closest('.field-language');
+                var source = document.getElementById(button.dataset.translateFrom);
+                var input = field && field.querySelector('input, textarea');
+                if (!source || !input || source.value.trim() === '') return;
+                var key = field.dataset.lang + '|' + button.dataset.translateFormat;
+                (groups[key] = groups[key] || []).push({source: source, input: input, field: field});
+            });
+            buttons.forEach(function (button) { button.disabled = true; });
+            return Promise.all(Object.keys(groups).map(function (key) {
+                var jobs = groups[key];
+                return requestTranslation(jobs.map(function (job) { return job.source.value; }), key.split('|')[0], key.split('|')[1])
+                    .then(function (texts) {
+                        jobs.forEach(function (job, index) {
+                            job.input.value = texts[index] || '';
+                            // marks the page as changed, updates the preview and the Markdown editor
+                            job.input.dispatchEvent(new Event('input', {bubbles: true}));
+                            job.field.classList.toggle('is-untranslated', job.input.value === '');
+                        });
+                    });
+            })).catch(function (error) {
+                statusMessage('<strong>Not translated.</strong> ' + escapeHtml(error.message), 'text-bg-danger');
+            }).finally(function () {
+                buttons.forEach(function (button) { button.disabled = false; });
+            });
+        };
+
+        structuredForm.addEventListener('click', function (e) {
+            var button = e.target.closest('.field-translate');
+            if (button) translateFields([button]);
+        });
+        if (translateEmpty) {
+            translateEmpty.addEventListener('click', function () {
+                var language = structuredForm.dataset.editLang;
+                var buttons = Array.prototype.filter.call(
+                    structuredForm.querySelectorAll('.field-language[data-lang="' + language + '"] .field-translate'),
+                    function (button) {
+                        var input = button.closest('.field-language').querySelector('input, textarea');
+                        return input && input.value.trim() === '';
+                    });
+                translateEmpty.disabled = true;
+                translateFields(buttons).finally(function () { translateEmpty.disabled = false; });
+            });
+        }
+    }
     var previewFront = 'a';
 
     function getFrontIframe() {

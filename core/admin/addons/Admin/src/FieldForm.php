@@ -29,16 +29,21 @@ class FieldForm
     private static int $counter = 0;
     private static array $languages = []; // see setLanguages()
     private static string $defaultLanguage = "";
+    private static bool $translatable = false; // a button "Translate" per field, see setLanguages()
 
     /**
      * The languages of a multilingual site, for the forms of structured pages.
      * Empty languages, the default, render a field in one language.
+     * With `$translatable`, a machine translation is set up, see Translator, a
+     * text in another language than the default one gets a button that
+     * translates it from the default language.
      * @param string[] $languages
      */
-    public static function setLanguages(array $languages, string $defaultLanguage): void
+    public static function setLanguages(array $languages, string $defaultLanguage, bool $translatable = false): void
     {
         self::$languages = count($languages) > 1 ? array_values($languages) : [];
         self::$defaultLanguage = $defaultLanguage;
+        self::$translatable = $translatable;
     }
 
     /**
@@ -169,8 +174,16 @@ class FieldForm
             // that is not shown, the validation on saving names a missing value
             $attr = ' class="form-control' . $invalid . '" id="' . $id . '-' . self::e($language) . '" name="' . self::e($name . "[" . $language . "]") . '"'
                 . ' lang="' . self::e($language) . '"';
+            $translate = "";
+            if (!$isDefault && self::$translatable && in_array($props["type"], ["text", "textarea", "markdown"], true)) {
+                // pages.js fills the input with the translation of the one in the default language
+                $translate = '<button type="button" class="btn btn-link btn-sm field-translate" data-translate-from="' . $id . '-' . self::e(self::$defaultLanguage) . '"'
+                    . ' data-translate-format="' . ($props["type"] === "markdown" ? "markdown" : "text") . '">'
+                    . 'Translate from ' . self::e(strtoupper(self::$defaultLanguage)) . '</button>';
+            }
             $html .= '<div class="field-language' . ($text === "" && !$isDefault ? ' is-untranslated' : '') . '" data-lang="' . self::e($language) . '">'
                 . self::textControl($props["type"], $attr, $languagePlaceholder, $text)
+                . $translate
                 . '</div>';
         }
         return $html . self::help($props, $error) . '</div>';

@@ -47,3 +47,10 @@ history:
 #   from: noreply@example.com
 #   fromName: "Example Inc."
 #   replyTo: office@example.com
+
+# Translation: on a multilingual site, a button "Translate" below the fields of
+# the other languages fills them with a translation by DeepL. Put the key into
+# the ignored local/config.local.yml, not into this file, which is in Git.
+# translation:
+#   deepl:
+#     authKey: "…:fx"           # a key of DeepL API Free ends with ":fx"

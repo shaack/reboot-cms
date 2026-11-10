@@ -45,6 +45,10 @@ if ($request->getParam("validate") && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require __DIR__ . "/../api/pages-validate.php";
     return;
 }
+if ($request->getParam("translate") && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require __DIR__ . "/../api/pages-translate.php";
+    return;
+}
 // a GET only, the form of a structured page posts its values as `fields`
 if ($request->getParam("fields", "get")) {
     require __DIR__ . "/../api/pages-fields.php";

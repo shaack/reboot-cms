@@ -19,12 +19,15 @@ use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\AddOns\Admin\FieldForm;
 use Shaack\Reboot\AddOns\Admin\LanguageSwitch;
 use Shaack\Reboot\AddOns\Admin\StructuredPageHandler;
+use Shaack\Reboot\AddOns\Admin\Translator;
 use Shaack\Reboot\Blueprint;
 use Shaack\Reboot\CsrfProtection;
 
 $pageBlueprint = Blueprint::forPage($defaultSite);
 // on a multilingual site the text fields get an input per language, the switcher above shows one language
-FieldForm::setLanguages($defaultSite->getLanguages(), $defaultSite->getDefaultLanguage());
+// with a key for DeepL in the local configuration, a field in another language can be translated
+$translatable = $defaultSite->isMultilingual() && Translator::fromConfig($localConfig) !== null;
+FieldForm::setLanguages($defaultSite->getLanguages(), $defaultSite->getDefaultLanguage(), $translatable);
 $editLanguages = $defaultSite->isMultilingual() ? $defaultSite->getLanguages() : [];
 $structuredHandler = new StructuredPageHandler($pageBlueprint, $pagesDir, $historyDir, $historyMaxVersions);
 $structuredMessage = $request->getParam("converted", "get") ? "The page is a structured page now. Its Markdown version is in the history." : null;
@@ -73,7 +76,13 @@ try {
     <?php } ?>
     <?php if ($editLanguages) { ?>
         <style><?php foreach ($editLanguages as $language) { ?>.structured-page[data-edit-lang="<?= $language ?>"] .field-language:not([data-lang="<?= $language ?>"]){display:none}<?php } ?></style>
-        <?= LanguageSwitch::render($editLanguages, $defaultSite->getDefaultLanguage(), null) ?>
+        <div class="language-tools">
+            <?= LanguageSwitch::render($editLanguages, $defaultSite->getDefaultLanguage(), null) ?>
+            <?php if ($translatable) { ?>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="translate-empty" hidden
+                        title="Translate every empty field of this language from <?= htmlspecialchars(strtoupper($defaultSite->getDefaultLanguage())) ?> with DeepL">Translate empty fields</button>
+            <?php } ?>
+        </div>
     <?php } ?>
     <!--suppress HtmlUnknownTarget -->
     <form method="post" action="pages?page=<?= urlencode($editPageName) ?>" class="structured-page" data-field-form<?= $editLanguages ? ' data-edit-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '" data-default-lang="' . htmlspecialchars($defaultSite->getDefaultLanguage()) . '"' : '' ?>>

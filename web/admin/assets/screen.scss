@@ -1150,6 +1150,25 @@ textarea.yaml-editor-input {
     }
 }
 
+// the switcher and the button that translates the empty fields of a language
+.language-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+
+    .language-switch {
+        margin-bottom: 0.75rem;
+    }
+}
+
+// below an input of another language, fills it with the translation of the default language
+.field-translate {
+    padding: 0.15rem 0;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+
 // a text field with one value for all languages, next to its label
 .field-shared {
     margin-left: 0.3em;

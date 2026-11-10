@@ -1006,6 +1006,22 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   opacity: 1;
 }
 
+.language-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.language-tools .language-switch {
+  margin-bottom: 0.75rem;
+}
+
+.field-translate {
+  padding: 0.15rem 0;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
 .field-shared {
   margin-left: 0.3em;
   color: var(--bs-info-text-emphasis);

@@ -275,6 +275,20 @@ class MultilingualTest
         Assert::contains('value="Hi"', $single, "a value per language shows the default one");
     }
 
+    public function testTranslateButtonWithAKeyForDeepL(): void
+    {
+        $blueprint = Blueprint::forBlock($this->site, "intro");
+        FieldForm::setLanguages($this->site->getLanguages(), "en");
+        Assert::false(str_contains(FieldForm::render($blueprint, ["heading" => "Hi"]), "field-translate\""), "no key, no button");
+        FieldForm::setLanguages($this->site->getLanguages(), "en", true);
+        $html = FieldForm::render($blueprint, ["heading" => "Hi", "text" => "Some **text**"]);
+        FieldForm::setLanguages([], "");
+        Assert::equals(2, substr_count($html, 'class="btn btn-link btn-sm field-translate"'), "heading and text in German, not in English, not the shared image");
+        Assert::contains('data-translate-format="markdown"', $html);
+        Assert::contains('data-translate-format="text"', $html);
+        Assert::true((bool)preg_match('/data-translate-from="field-\d+-en"/', $html), "points at the input of the default language");
+    }
+
     // --- Admin: page list and page actions ---
 
     private function actions(): PageActionHandler
