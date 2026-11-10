@@ -118,6 +118,7 @@ In `template.php` and block templates:
 
 - `$request->getLanguage()`: the active language code, for `<html lang>`
 - `$request->getPathWithoutLanguage()`: the path without the prefix
+- `$site->languagePath($path, $language)`: a path in a language, for the links of the navigation
 - `$site->languageUrls($request)`: the current page in every language, for a switcher and `hreflang` links
 - `$page->getLanguage()`: the language the page was rendered in
 

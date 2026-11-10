@@ -303,7 +303,11 @@ The other types, `number`, `date`, `boolean`, `select` and `entry`, are the same
 
 On a multilingual site the editor of a page has a language switcher above it. For a structured page it shows the inputs of one language, the preview and the address next to the title follow it, the blocks stay the same. A field of a language that has no value yet has a dashed border and shows the default language as its placeholder. A shared field has one input and a globe next to its label, a change applies to all languages. The language chosen is kept for the next page.
 
-For a Markdown page the switcher opens the file of the language. A language without a file is shown dashed, a click creates it as a copy of the open page, ready to translate. The page list shows a page once, with its languages next to it. Renaming or moving a page takes its versions in the other languages along.
+For a Markdown page the switcher opens the file of the language. A language without a file is shown dashed, a click creates it as a copy of the open page, ready to translate. The page list shows a page once, with its languages next to it, and opens the version in the language chosen last. Renaming or moving a page takes its versions in the other languages along.
+
+#### Translating a site
+
+Translate in the admin field by field, or let a coding agent do it in the files. For a structured page it adds the value of each text field in the new language, `heading: {en: Welcome, de: Willkommen}`, and leaves the blocks, the lists and the fields with `shared: true` as they are. For a Markdown page it writes `about.de.md` next to `about.md`. The `AGENTS.md` of the repository tells the agent so. The homepage of the demo was translated that way, see `site/pages/index.yml`.
 
 #### Detecting the language
 
@@ -315,7 +319,9 @@ The `Request` object detects the language from the first path segment:
 The `Site` object knows the languages and builds the addresses:
 
 - `$site->getLanguages()`, `$site->getDefaultLanguage()` and `$site->isMultilingual()`
+- `$site->languagePath($path, $language)`: a path in a language, `/contact` in German is `/de/contact`, the default language has no prefix
 - `$site->languageUrls($request)`: the address of the current page in every language, `["en" => "/about", "de" => "/de/about"]`
+- `$page->getLanguage()`: the language the page was rendered in
 
 ```php
 <?php foreach ($site->languageUrls($request) as $language => $url) { ?>
@@ -325,8 +331,25 @@ The `Site` object knows the languages and builds the addresses:
 
 #### Multilingual navigation
 
-Define one navigation structure per language in `site/config.yml`, so that both
-the labels and the target paths are translated:
+The simplest navigation has one structure for all languages, as in the demo. The template puts each path into the language of the page, so a visitor on `/de/` stays in German:
+
+```php
+$language = $request->getLanguage();
+foreach ($site->getConfig()['navbar']['structure'] as $label => $path) {
+    echo '<a href="' . $site->getWebPath() . $site->languagePath($path, $language) . '">' . $label . '</a>';
+}
+```
+
+The language switcher of the demo links the current page in every language and marks the one shown:
+
+```php
+<?php foreach ($site->languageUrls($request) as $code => $url) { ?>
+    <a href="<?= $url ?>" hreflang="<?= $code ?>"
+       <?= $code === $request->getLanguage() ? 'class="active" aria-current="true"' : '' ?>><?= strtoupper($code) ?></a>
+<?php } ?>
+```
+
+To translate the labels as well, define one navigation structure per language in `site/config.yml`:
 
 ```yaml
 navbar:
@@ -350,7 +373,7 @@ foreach ($structure as $label => $path) {
 }
 ```
 
-Build a language switcher with `$site->languageUrls($request)`. Append a `?setlang=xx` marker so the `LanguageRedirect` addon (see below) registers the choice:
+With the `LanguageRedirect` addon (see below), append a `?setlang=xx` marker to the links of the switcher, so the addon registers the choice:
 
 ```php
 <?php foreach ($site->languageUrls($request) as $language => $url) { ?>
