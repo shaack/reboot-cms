@@ -186,7 +186,7 @@ class Translator
             throw new \RuntimeException(match ($status) {
                 0 => "DeepL cannot be reached.",
                 403 => "DeepL does not accept the key in local/config.local.yml.",
-                456 => "The characters of this month at DeepL are used up.",
+                456 => "The characters of the DeepL plan are used up.",
                 429 => "Too many requests to DeepL, try again in a moment.",
                 default => "DeepL answered with the status " . $status . ".",
             });
