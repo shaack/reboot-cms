@@ -77,7 +77,9 @@ if ($next === $homePath) {
     if ($user !== null) {
         $next = $protectedAreas->firstPathOf($user) ?? $next;
     } elseif ($admin && $protectedAreas->getAreas()) {
-        $next = rtrim($homePath, '/') . $protectedAreas->getAreas()[0];
+        // The first area itself, without language prefix, like the own area
+        // of an account
+        $next = $protectedAreas->getAreas()[0];
     }
 }
 ?>
