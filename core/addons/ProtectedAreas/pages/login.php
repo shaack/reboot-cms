@@ -69,6 +69,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 }
 
 $user = $protectedAreas->getUser();
+// An admin of the backend may enter every area without an account of their
+// own, the page offers the way in instead of the form
+$admin = $user === null && $protectedAreas->isBackendAdmin();
+if ($next === $homePath) {
+    // No target asked for: continue to the own area, not to the home page
+    if ($user !== null) {
+        $next = $protectedAreas->firstPathOf($user) ?? $next;
+    } elseif ($admin && $protectedAreas->getAreas()) {
+        $next = rtrim($homePath, '/') . $protectedAreas->getAreas()[0];
+    }
+}
 ?>
 <style>
     /* Default look of the login page, deliberately without specificity (:where), so the
@@ -102,7 +113,12 @@ $user = $protectedAreas->getUser();
     <?php if ($denied && $user !== null) { ?>
         <p class="protected-areas-error alert alert-danger"><?= htmlspecialchars($texts['denied']) ?></p>
     <?php } ?>
-    <?php if ($user !== null) { ?>
+    <?php if ($admin) { ?>
+        <p><?= htmlspecialchars($texts['loggedInAsAdmin']) ?></p>
+        <p>
+            <a class="protected-areas-button btn btn-primary" href="<?= htmlspecialchars($webPath . $next) ?>"><?= htmlspecialchars($texts['continue']) ?></a>
+        </p>
+    <?php } elseif ($user !== null) { ?>
         <p><?= htmlspecialchars(sprintf($texts['loggedInAs'], $user)) ?></p>
         <p>
             <?php if (!$denied) { ?>
