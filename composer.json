@@ -1,6 +1,6 @@
 {
     "name": "shaack/reboot-cms",
-    "version": "4.2.1",
+    "version": "4.2.2",
     "description": "The Agent-Friendly CMS \u2014 a lightweight, flat-file Content Management System with block-based content rendering",
     "license": "MIT",
     "type": "project",
