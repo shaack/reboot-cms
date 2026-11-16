@@ -540,43 +540,13 @@ main > .block-text:first-child {
     padding: 1rem 1.25rem 1.25rem;
 }
 
-/* Lightbox, see assets/scripts/lightbox.js */
-.lightbox-open {
-    overflow: hidden;
-}
-
-.lightbox {
-    width: 100vw;
-    height: 100vh;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #fff;
-}
-
-.lightbox::backdrop {
-    background: rgba(0, 0, 0, 0.92);
-}
-
-.lightbox-figure {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    height: 100%;
-    margin: 0;
-    padding: 4rem 4.5rem 2rem;
-}
-
-.lightbox-image {
-    max-width: 100%;
-    max-height: calc(100% - 3rem);
-    object-fit: contain;
-    cursor: default;
+/* Lightbox of the AddOn Lightbox: black buttons that turn to the signal color,
+   the caption as a label */
+:root {
+    --lightbox-button-background: #000;
+    --lightbox-button-color: #fff;
+    --lightbox-button-hover-background: var(--signal);
+    --lightbox-button-hover-color: #000;
 }
 
 .lightbox-caption {
@@ -584,58 +554,6 @@ main > .block-text:first-child {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    text-align: center;
-}
-
-.lightbox-button {
-    position: absolute;
-    width: 3rem;
-    height: 3rem;
-    border: 0;
-    border-radius: 0;
-    background: #000;
-    color: #fff;
-    font-size: 1.75rem;
-    line-height: 1;
-    transition: background 0.15s, color 0.15s;
-}
-
-.lightbox-button:hover,
-.lightbox-button:focus-visible {
-    background: var(--signal);
-    color: #000;
-}
-
-.lightbox-prev,
-.lightbox-next {
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.lightbox-prev {
-    left: 1rem;
-}
-
-.lightbox-next {
-    right: 1rem;
-}
-
-.lightbox-close {
-    top: 1rem;
-    right: 1rem;
-}
-
-@media (max-width: 575px) {
-    .lightbox-figure {
-        padding: 4rem 0.75rem 5.5rem;
-    }
-
-    .lightbox-prev,
-    .lightbox-next {
-        top: auto;
-        bottom: 1.25rem;
-        transform: none;
-    }
 }
 
 /* Footer, the only hairline of the site sets it apart */

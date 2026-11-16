@@ -1,0 +1,109 @@
+/* Lightbox AddOn. The selectors sit in :where(), so every rule of the site
+   wins, and the colors are variables the site can set, on :root for example. */
+:where(.lightbox) {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--lightbox-color, #fff);
+}
+
+:where(.lightbox-open) {
+    overflow: hidden;
+}
+
+:where(.lightbox)::backdrop {
+    background: var(--lightbox-backdrop, rgba(0, 0, 0, 0.92));
+}
+
+:where(.lightbox-figure) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    height: 100%;
+    margin: 0;
+    padding: 4rem 4.5rem 2rem;
+}
+
+:where(.lightbox-image) {
+    max-width: 100%;
+    max-height: calc(100% - 3rem);
+    object-fit: contain;
+    cursor: default;
+}
+
+:where(.lightbox-caption) {
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+:where(.lightbox-counter) {
+    position: absolute;
+    top: 1.75rem;
+    left: 1.25rem;
+    font-size: 0.875rem;
+    opacity: 0.75;
+}
+
+:where(.lightbox-button) {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--lightbox-button-background, transparent);
+    color: var(--lightbox-button-color, #fff);
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+:where(.lightbox-button:hover, .lightbox-button:focus-visible) {
+    background: var(--lightbox-button-hover-background, #fff);
+    color: var(--lightbox-button-hover-color, #000);
+}
+
+:where(.lightbox-button[hidden], .lightbox-counter[hidden], .lightbox-caption[hidden]) {
+    display: none;
+}
+
+:where(.lightbox-prev, .lightbox-next) {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+:where(.lightbox-prev) {
+    left: 1rem;
+}
+
+:where(.lightbox-next) {
+    right: 1rem;
+}
+
+:where(.lightbox-close) {
+    top: 1rem;
+    right: 1rem;
+}
+
+@media (max-width: 575px) {
+    :where(.lightbox-figure) {
+        padding: 4rem 0.75rem 5.5rem;
+    }
+
+    :where(.lightbox-prev, .lightbox-next) {
+        top: auto;
+        bottom: 1.25rem;
+        transform: none;
+    }
+}

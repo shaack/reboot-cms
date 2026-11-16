@@ -4,9 +4,9 @@
  * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  *
- * Example of dynamic lists. Each image links to itself, the script
- * `assets/scripts/lightbox.js` opens it enlarged in a dialog. Without
- * JavaScript the link shows the image on its own.
+ * Example of dynamic lists. Each image links to itself, the AddOn
+ * Lightbox opens it enlarged in a dialog. Without JavaScript the link
+ * shows the image on its own.
  */
 
 /** @var \Shaack\Reboot\Block $block */
