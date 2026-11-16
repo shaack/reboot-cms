@@ -30,7 +30,7 @@ The attributes are written by a block template, the gallery blocks of the demo s
 ## Behaviour
 
 - A click on a link opens its image. With a pressed modifier key, for a new tab for example, the link stays a link.
-- The arrow keys, the buttons beside the image and a horizontal swipe page through the group, which starts again at the end. A counter shows the position. A group of one image has no buttons and no counter.
+- The arrow keys, the buttons beside the image and a horizontal swipe page through the group, which starts again at the end. Links that are hidden, one of a light and a dark variant of an image for example, are left out. A counter shows the position. A group of one image has no buttons and no counter.
 - `data-caption` is shown below the image and is its alternative text.
 - Escape, the close button or a click beside the image end it, the focus returns to the link.
 - The labels of the buttons follow the language of the page, English or German.

@@ -105,7 +105,9 @@
         if (!dialog) {
             build()
         }
+        // only the links that are shown, a page may hide one of two variants of an image
         group = Array.from(document.querySelectorAll('a[data-lightbox="' + CSS.escape(link.dataset.lightbox) + '"]'))
+            .filter((other) => other === link || other.getClientRects().length > 0)
         show(group.indexOf(link))
         document.documentElement.classList.add("lightbox-open")
         dialog.showModal()
