@@ -147,6 +147,19 @@ Available editor tools: `Headings`, `Bold`, `Italic`, `Strikethrough`, `Unordere
 `InsertLink`, `InsertImage`. Use `"|"` for a separator. The admin tools (`InsertPageLink`, `InsertMedia`,
 `InsertBlock`) are always appended automatically.
 
+### Redirects
+
+When a page moves, list its old address under `redirects` in `site/config.yml`. Reboot CMS answers it with a permanent redirect (301) to the new one:
+
+```yaml
+redirects:
+  /microtask: /products/microtask
+  /microtask/privacy-policy.html: /products/microtask/privacy-policy
+  /shop: https://shop.example.com
+```
+
+A key is the old path, its value the new path or a full URL. Paths match exactly, a trailing slash does not matter, and the query of the request is passed on. A path with a language prefix, `/de/microtask` for example, needs its own entry. On a multilingual site with the `LanguageRedirect` AddOn, a visitor who prefers another language than the default one is sent to the new page in that language, `/microtask` to `/de/products/microtask`. A redirect only applies to paths that reach Reboot CMS, so a real file or folder with the old name in `web/` must be removed.
+
 ## Template
 
 The file `site/template.php` is the main HTML template. It receives three variables:

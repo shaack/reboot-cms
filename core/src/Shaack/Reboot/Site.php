@@ -61,12 +61,52 @@ class Site
                 return "";
             }
         }
+        // After the AddOns, so LanguageRedirect can send the visitor to the
+        // new page in their language first
+        $target = $this->redirectTarget($request);
+        if ($target !== null) {
+            $this->reboot->redirect($target, 301);
+            return "";
+        }
         $page = new Page($this->reboot, $this);
         $content = renderPage($this, $page, $request);
         foreach ($this->addOns as $addOn) {
             $content = $addOn->postRender($request, $content);
         }
         return $content;
+    }
+
+    /**
+     * The address a request is permanently redirected to, from `redirects` in
+     * `site/config.yml`, else null. A key is an old path, its value the new
+     * path or a full URL:
+     *
+     *     redirects:
+     *       /microtask: /products/microtask
+     *       /microtask/privacy-policy.html: /products/microtask/privacy-policy
+     *
+     * Paths match exactly, a trailing slash does not matter, and a path with a
+     * language prefix needs its own entry. A new path gets the web path of the
+     * site, the query of the request is kept. LanguageRedirect sends visitors
+     * to the new page in their preferred language.
+     */
+    public function redirectTarget(Request $request): ?string
+    {
+        foreach ((array)($this->config["redirects"] ?? []) as $from => $to) {
+            $from = rtrim(Request::canonicalizePath((string)$from), "/") ?: "/";
+            if ($from !== $request->getPath() || !is_string($to) || $to === "" || $to === $from) {
+                continue;
+            }
+            if (str_starts_with($to, "/")) {
+                $to = $this->webPath . $to;
+            }
+            $query = $request->getParamsGet();
+            if ($query && !str_contains($to, "?")) {
+                $to .= "?" . http_build_query($query);
+            }
+            return $to;
+        }
+        return null;
     }
 
     /**

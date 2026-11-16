@@ -18,6 +18,11 @@ use Shaack\Reboot\Request;
  * visit, a visitor whose browser prefers a non-default language consistently
  * lands on that language's homepage.
  *
+ * A redirect from `redirects` in `site/config.yml` to a page of the site leads
+ * to that page in the preferred language, so with German preferred `/microtask`
+ * goes to `/de/products/microtask`. An old path with a language prefix, or a
+ * new one that names its language, is left to the plain redirect.
+ *
  * The `lang` cookie only ever records an *explicit* choice. Language switcher
  * links must carry a `?setlang=xx` marker; when the addon sees it, it stores
  * the choice and redirects to the same page without the marker. That is what
@@ -60,7 +65,48 @@ class LanguageRedirect extends AddOn
                 return false;
             }
         }
+
+        // A configured redirect leads to the new page in the preferred language.
+        // Not permanent, the target depends on the visitor.
+        $target = $this->localizedRedirect($request);
+        if ($target !== null) {
+            $this->reboot->redirect($target);
+            return false;
+        }
         return true;
+    }
+
+    /**
+     * The target of a redirect from `redirects` in `site/config.yml` in the
+     * visitor's preferred language, null if the plain redirect applies: no
+     * redirect for this path, a full URL as target, a language prefix on the
+     * old or the new path, or the default language preferred.
+     */
+    public function localizedRedirect(Request $request): ?string
+    {
+        $languages = $this->site->getLanguages();
+        if (count($languages) < 2) {
+            return null;
+        }
+        $target = $this->site->redirectTarget($request);
+        $webPath = $this->site->getWebPath();
+        if ($target === null || !str_starts_with($target, $webPath . '/')) {
+            return null;
+        }
+        if ($this->site->splitLanguage($request->getPath())[2]) {
+            return null;
+        }
+        $parts = explode('?', substr($target, strlen($webPath)), 2);
+        $path = $parts[0];
+        if ($this->site->splitLanguage($path)[2]) {
+            return null;
+        }
+        $defaultLanguage = $this->site->getDefaultLanguage();
+        $preferred = $this->preferredLanguage($languages, $defaultLanguage);
+        if ($preferred === $defaultLanguage) {
+            return null;
+        }
+        return $webPath . $this->site->languagePath($path, $preferred) . (isset($parts[1]) ? '?' . $parts[1] : '');
     }
 
     /**

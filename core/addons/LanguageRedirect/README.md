@@ -18,7 +18,18 @@ addons: [ LanguageRedirect ]
 
 On the homepage the visitor is redirected to their preferred language. An explicit choice stored in the `lang` cookie wins. Without a cookie the browser's `Accept-Language` header decides, taking the quality values into account and matching `de-DE` to `de`. A visitor whose preference is the default language is not redirected.
 
-The decision is taken on every visit, so a visitor whose browser prefers a non-default language consistently lands on that language's homepage. Only the homepage `/` redirects. Deep links to a page in any language are served as requested.
+The decision is taken on every visit, so a visitor whose browser prefers a non-default language consistently lands on that language's homepage. Deep links to a page in any language are served as requested.
+
+## Redirects
+
+The redirects under `redirects` in `site/config.yml` follow the preference too. With German preferred and
+
+```yaml
+redirects:
+  /microtask: /products/microtask
+```
+
+`/microtask` leads to `/de/products/microtask`, everybody else gets the permanent redirect to `/products/microtask`. The redirect to a language is temporary (302), because its target depends on the visitor. An old path with a language prefix, a new path that names its language and a full URL as target are left to the plain redirect.
 
 ## Language switcher
 
