@@ -177,6 +177,12 @@ class ProtectedAreas extends AddOn
             $this->sendNoStoreHeaders();
             return true;
         }
+        if ($this->canResumeBackendAdmin($request)) {
+            $query = $request->getParamsGet();
+            $next = $this->site->getWebPath() . $request->getPath() . ($query ? '?' . http_build_query($query) : '');
+            $this->reboot->redirect(AdminSession::resumeUrl($this->reboot->getBaseWebPath(), $next));
+            return false;
+        }
         $user = $this->getUser();
         $next = $request->getPath();
         if ($user === null) {
@@ -205,6 +211,21 @@ class ProtectedAreas extends AddOn
     }
 
     // Public API, used by the login page, the admin page and site templates
+
+    /**
+     * True if an admin whose session expired comes back. The admin remembers
+     * the login ("Stay signed in") and restores the session at
+     * `/admin/resume`, which sends the visitor back to the page. The token
+     * itself is only sent to the admin, the site sees a hint cookie.
+     */
+    private function canResumeBackendAdmin(Request $request): bool
+    {
+        if (($this->config['adminAccess'] ?? true) === false || $_SERVER['REQUEST_METHOD'] !== 'GET') {
+            return false;
+        }
+        $base = $this->reboot->getBaseFsPath();
+        return AdminSession::hasResumeHint($base) && !AdminSession::hasValidLogin($base);
+    }
 
     /**
      * The logged in user, or null. Safe to call from the template on any page.

@@ -7,6 +7,7 @@
 
 namespace Shaack\Reboot\AddOns\Authentication;
 
+use Shaack\Reboot\AdminSession;
 use Shaack\Reboot\TokenStore;
 
 /**
@@ -15,7 +16,7 @@ use Shaack\Reboot\TokenStore;
  */
 class RememberMeStore extends TokenStore
 {
-    public const LIFETIME = 14 * 24 * 60 * 60; // two weeks
+    public const LIFETIME = AdminSession::REMEMBER_LIFETIME; // two weeks
 
     public function __construct(string $baseFsPath)
     {

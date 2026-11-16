@@ -863,7 +863,7 @@ Credentials are stored as APR1-MD5 hashes in `local/.htpasswd`, roles in `local/
 
 ### Stay signed in
 
-The login form offers "Stay signed in for 2 weeks". Without it the login lasts as long as the browser session. With it, Reboot CMS sets a second cookie with a random token that restores the session for two weeks, for example after a restart of the browser. Only a hash of the token is stored, in `local/remember-tokens.json`, and every token is good for one use, the next visit replaces it. Logging out, changing the password, disabling or deleting the account forgets the tokens of that user.
+The login form offers "Stay signed in for 2 weeks". Without it the login lasts as long as the browser session. With it, Reboot CMS sets a second cookie with a random token that restores the session for two weeks, for example after a restart of the browser. Only a hash of the token is stored, in `local/remember-tokens.json`, and every token is good for one use, the next visit replaces it. Logging out, changing the password, disabling or deleting the account forgets the tokens of that user. The token is only sent to `/admin`. A protected area of the site, see [ProtectedAreas](core/addons/ProtectedAreas/README.md), restores an expired admin session through a short detour over `/admin/resume`.
 
 ![Users](web/media/screenshots/reboot-cms-admin-users.png)
 

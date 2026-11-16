@@ -20,8 +20,8 @@ class Authentication extends AddOn
     private string $rolesFile;
     private array $roles = [];
 
-    /** The "Stay signed in" cookie, see RememberMeStore. */
-    const REMEMBER_COOKIE = "reboot_remember";
+    /** The "Stay signed in" cookie, see AdminSession. */
+    const REMEMBER_COOKIE = AdminSession::REMEMBER_COOKIE;
 
     const ROLE_ADMIN = "admin";
     const ROLE_EDITOR = "editor";
@@ -45,27 +45,8 @@ class Authentication extends AddOn
             $this->roles = $roles;
         }
         if (empty($_SESSION['user']) && isset($_COOKIE[self::REMEMBER_COOKIE])) {
-            $this->loginFromRememberCookie();
+            AdminSession::restoreFromRememberCookie($this->reboot->getBaseFsPath(), $this->reboot->getBaseWebPath());
         }
-    }
-
-    /**
-     * Restores the session from the "Stay signed in" cookie. The token is
-     * good for one use, a valid one is replaced by a fresh one, anything
-     * else clears the cookie.
-     */
-    private function loginFromRememberCookie(): void
-    {
-        $username = $this->rememberMe->consume($_COOKIE[self::REMEMBER_COOKIE]);
-        if ($username === null || !in_array($username, $this->htpasswd->getUsers(), true)
-            || $this->getUserRole($username) === self::ROLE_DISABLED) {
-            Logger::info("Stay signed in: cookie rejected");
-            $this->clearRememberCookie();
-            return;
-        }
-        Logger::info("Stay signed in: session restored for " . $username);
-        $this->startSession($username);
-        $this->issueRememberCookie($username);
     }
 
     private function startSession(string $username): void
@@ -77,29 +58,12 @@ class Authentication extends AddOn
 
     private function issueRememberCookie(string $username): void
     {
-        $token = $this->rememberMe->create($username);
-        setcookie(self::REMEMBER_COOKIE, $token, $this->rememberCookieOptions(time() + RememberMeStore::LIFETIME));
-        $_COOKIE[self::REMEMBER_COOKIE] = $token;
+        AdminSession::issueRememberCookie($this->reboot->getBaseFsPath(), $this->reboot->getBaseWebPath(), $username);
     }
 
     private function clearRememberCookie(): void
     {
-        if (isset($_COOKIE[self::REMEMBER_COOKIE])) {
-            setcookie(self::REMEMBER_COOKIE, "", $this->rememberCookieOptions(1));
-            unset($_COOKIE[self::REMEMBER_COOKIE]);
-        }
-    }
-
-    private function rememberCookieOptions(int $expires): array
-    {
-        $https = Session::isHttps();
-        return [
-            'expires' => $expires,
-            'path' => $this->site->getWebPath() ?: '/',
-            'secure' => $https,
-            'httponly' => true,
-            'samesite' => 'Strict',
-        ];
+        AdminSession::clearRememberCookie($this->reboot->getBaseWebPath());
     }
 
     /**
@@ -119,6 +83,10 @@ class Authentication extends AddOn
                 return false;
             }
             return true;
+        }
+        if ($request->getPath() === AdminSession::RESUME_PATH) {
+            $this->resume($request);
+            return false;
         }
         // Handle stop impersonating before access control
         if ($this->isImpersonating() && $request->getParam("action") === "stop_impersonate") {
@@ -171,6 +139,35 @@ class Authentication extends AddOn
             }
         }
         return true;
+    }
+
+    /**
+     * The detour of a protected area of the site: restores the session from
+     * the "Stay signed in" cookie and returns to the page in `next`. Without a
+     * valid token the hint cookie goes away, so the site does not send the
+     * visitor here again.
+     */
+    private function resume(Request $request): void
+    {
+        $baseFsPath = $this->reboot->getBaseFsPath();
+        $baseWebPath = $this->reboot->getBaseWebPath();
+        $next = AdminSession::safeNext($baseWebPath, $request->getParam("next", "get"));
+        if (!AdminSession::hasValidLogin($baseFsPath)) {
+            if (isset($_COOKIE[self::REMEMBER_COOKIE])) {
+                unset($_SESSION['user'], $_SESSION['checksum'], $_SESSION['impersonator']);
+                AdminSession::restoreFromRememberCookie($baseFsPath, $baseWebPath);
+            } else if ($request->getParam("retry", "get") === null) {
+                // Coming from a link on another site, a mail for example, the browser holds
+                // back the Strict cookie. It arrives when this page reloads itself.
+                header("Cache-Control: no-store");
+                $url = htmlspecialchars(AdminSession::resumeUrl($baseWebPath, $next) . "&retry=1", ENT_QUOTES, 'UTF-8');
+                echo '<!DOCTYPE html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=' . $url . '">';
+                return;
+            } else {
+                AdminSession::clearResumeHint($baseWebPath);
+            }
+        }
+        $this->reboot->redirect($next);
     }
 
     /**

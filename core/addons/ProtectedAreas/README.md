@@ -101,6 +101,8 @@ The AddOn protects pages, not files. An image or PDF in `web/media/` referenced 
 
 The login shares the PHP session with the admin. Logging out of the admin in the same browser therefore ends a customer login as well, which only matters while testing.
 
+An admin logged in to the admin with "Stay signed in" sees all protected pages. If the admin session has expired, a protected page sends the browser through `/admin/resume`, which restores the session from the cookie and returns to the page. The token of "Stay signed in" is only sent to `/admin`, the site gets a hint cookie `reboot_remembered` without any secret. Set `adminAccess: false` to turn the admin access off.
+
 ## Files
 
 ```
