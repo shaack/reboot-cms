@@ -18,8 +18,8 @@ use Shaack\Reboot\Request;
 /**
  * Built-in AddOn that opens the content of the site to AI agents through the
  * Model Context Protocol (MCP). An agent like Claude Code connects to `/mcp`
- * with a token and gets tools to read the pages, the block types and the
- * media of the site.
+ * with a token and gets tools to read and write the pages, translate them,
+ * and to read the block types and the media of the site.
  *
  * Tokens are created in the admin under "MCP" and stored hashed in
  * `local/mcp/tokens.json`. A token reads or writes, and only the pages below
@@ -113,7 +113,8 @@ class Mcp extends AddOn
         if (isset($message['method']) && $message['method'] === 'tools/call') {
             Logger::info("MCP: '" . $token['name'] . "' calls " . ($message['params']['name'] ?? '?'));
         }
-        $tools = new Tools($this->site, $this->reboot->getBaseFsPath(), $this->reboot->getBaseWebPath(), $token);
+        $tools = new Tools($this->site, $this->reboot->getBaseFsPath(), $this->reboot->getBaseWebPath(), $token,
+            (int)($this->reboot->getConfig()['history']['maxVersions'] ?? 50));
         $response = (new Server($tools, $this->version()))->handle($message);
         $this->respond($response === null ? 202 : 200, $response);
     }

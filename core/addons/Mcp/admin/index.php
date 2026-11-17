@@ -46,10 +46,11 @@ $list = $tokens->getTokens();
 <div class="container-fluid max-width-xxl">
     <?= AdminHelper::renderStatusMessages($error, $success) ?>
     <?= AdminHelper::renderPageTitle(AdminMenu::infoLabel($mcp), '', '
-        <p>The MCP endpoint lets AI agents like Claude Code read the content of this site through the Model Context Protocol. Each agent gets a token of its own.</p>
+        <p>The MCP endpoint lets AI agents like Claude Code read, write and translate the content of this site through the Model Context Protocol. Each agent gets a token of its own.</p>
         <h6>Tokens</h6>
         <ul>
-            <li>A token reads, or reads and writes. Writing is not available yet, the tools come in a later version.</li>
+            <li>A token reads, or reads and writes. Every change needs the md5 the agent got when it read the page, a page changed in between is not overwritten. The previous version goes into the history of the page, <em>… › History</em> in Pages restores it. Changes are logged in <code>local/mcp/changes.log</code>.</li>
+            <li>Uploading media needs a token with the path <code>/</code>.</li>
             <li>A token reaches only the pages below its paths, <code>/</code> means all pages, <code>/blog</code> the pages in <code>site/pages/blog/</code>.</li>
             <li>Templates, configuration, PHP pages and <code>local/</code> are never reachable.</li>
             <li>The token is shown once. Only its hash is stored, in <code>local/mcp/tokens.json</code>. Revoke a token that is no longer needed or got lost.</li>

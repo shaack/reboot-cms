@@ -19,8 +19,9 @@ use Symfony\Component\Yaml\Yaml;
  * that returns an array, which goes to the agent as JSON.
  *
  * Pages are addressed by their file in `site/pages/`, `/blog/first-post.md`
- * or `/about.de.md`. PHP pages are code and stay out of reach, so do
- * templates, configuration and everything in `local/`.
+ * or `/about.de.md`, see Pages. PHP pages are code and stay out of reach, so
+ * do templates, configuration and everything in `local/`. Tools that change
+ * something need a token with write access.
  *
  * Other AddOns add tools with a method `getMcpTools()` that returns them in
  * the same form, see `definitions()`. Their handler gets the arguments and
@@ -28,21 +29,27 @@ use Symfony\Component\Yaml\Yaml;
  */
 class Tools
 {
+    /** What upload_media stores. No SVG and no HTML, they could carry scripts. */
+    public const MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'pdf', 'mp4', 'webm', 'mp3', 'zip', 'txt', 'csv'];
+    public const MEDIA_MAX_BYTES = 20 * 1024 * 1024;
+
     private Site $site;
     private string $baseFsPath;
     private string $baseWebPath;
     private array $token;
+    private Pages $pages;
     private ?array $tools = null;
 
     /**
      * @param array $token the entry of the token that makes the request, see Tokens
      */
-    public function __construct(Site $site, string $baseFsPath, string $baseWebPath, array $token)
+    public function __construct(Site $site, string $baseFsPath, string $baseWebPath, array $token, int $historyMaxVersions = 50)
     {
         $this->site = $site;
         $this->baseFsPath = rtrim($baseFsPath, '/');
         $this->baseWebPath = rtrim($baseWebPath, '/');
         $this->token = $token;
+        $this->pages = new Pages($site, $baseFsPath, $token, $historyMaxVersions);
     }
 
     /**
@@ -122,7 +129,69 @@ class Tools
                     'path' => ['type' => 'string', 'description' => 'The file in site/pages, for example /blog/first-post.md or /index.yml'],
                 ], 'required' => ['path']],
                 'access' => 'read',
-                'handler' => fn(array $args) => $this->readPage((string)($args['path'] ?? '')),
+                'handler' => fn(array $args) => $this->pages->read((string)($args['path'] ?? '')),
+            ],
+            'write_page' => [
+                'description' => 'Creates or replaces a page with its complete source. To change a page pass the md5 from read_page, the write is refused if the page changed in between. To create a page leave md5 out. The previous version goes into the history of the admin. Problems the page would show, a block type that does not exist for example, come back as problems.',
+                'inputSchema' => ['type' => 'object', 'properties' => [
+                    'path' => ['type' => 'string', 'description' => 'The file in site/pages, for example /blog/new-post.md'],
+                    'content' => ['type' => 'string', 'description' => 'The complete source of the page'],
+                    'md5' => ['type' => 'string', 'description' => 'The md5 from read_page, empty for a new page'],
+                ], 'required' => ['path', 'content']],
+                'access' => 'write',
+                'handler' => fn(array $args) => $this->pages->write((string)($args['path'] ?? ''), (string)($args['content'] ?? ''),
+                    ($args['md5'] ?? '') === '' ? null : (string)$args['md5']),
+            ],
+            'delete_page' => [
+                'description' => 'Deletes a page. Needs the md5 from read_page. The page stays in the history of the admin.',
+                'inputSchema' => ['type' => 'object', 'properties' => [
+                    'path' => ['type' => 'string'],
+                    'md5' => ['type' => 'string', 'description' => 'The md5 from read_page'],
+                ], 'required' => ['path', 'md5']],
+                'access' => 'write',
+                'handler' => fn(array $args) => $this->pages->delete((string)($args['path'] ?? ''), (string)($args['md5'] ?? '')),
+            ],
+            'upload_media' => [
+                'description' => 'Stores a file in web/media, an image or a download for a page. Only for tokens with the path /. An existing file is only replaced with the md5 of its current content.',
+                'inputSchema' => ['type' => 'object', 'properties' => [
+                    'path' => ['type' => 'string', 'description' => 'The file below web/media, for example /blog/2026/team.jpg'],
+                    'base64' => ['type' => 'string', 'description' => 'The content of the file, base64 encoded'],
+                    'md5' => ['type' => 'string', 'description' => 'The md5 of the file to replace, empty for a new file'],
+                ], 'required' => ['path', 'base64']],
+                'access' => 'write',
+                'handler' => fn(array $args) => $this->uploadMedia((string)($args['path'] ?? ''), (string)($args['base64'] ?? ''), (string)($args['md5'] ?? '')),
+            ],
+            'list_translations' => [
+                'description' => 'Lists the translations that are missing, outdated because their source changed, or of unknown state, for the pages this token may read. A Markdown page has a file per language, a structured page holds a value per language in its text fields.',
+                'inputSchema' => ['type' => 'object', 'properties' => [
+                    'language' => ['type' => 'string', 'description' => 'Only this language, for example de'],
+                    'all' => ['type' => 'boolean', 'description' => 'Also list the current translations'],
+                ]],
+                'access' => 'read',
+                'handler' => fn(array $args) => $this->translations()->overview(isset($args['language']) ? (string)$args['language'] : null, !empty($args['all'])),
+            ],
+            'read_translation' => [
+                'description' => 'Source and translation of a page side by side. For a Markdown page the whole texts, with the previous source if the translation is outdated. For a structured page the text fields with a pointer each. A plain value without languages holds for all languages and counts as missing, write it unchanged if it needs no translation. Status unknown means the translation exists but was not written through this server, write it unchanged to confirm it.',
+                'inputSchema' => ['type' => 'object', 'properties' => [
+                    'path' => ['type' => 'string', 'description' => 'The page in the default language, for example /about.md or /index.yml'],
+                    'language' => ['type' => 'string', 'description' => 'The language of the translation, for example de'],
+                ], 'required' => ['path', 'language']],
+                'access' => 'read',
+                'handler' => fn(array $args) => $this->translations()->read((string)($args['path'] ?? ''), (string)($args['language'] ?? '')),
+            ],
+            'write_translation' => [
+                'description' => 'Writes a translation. For a Markdown page pass the complete translated source as content, with sourceMd5 and targetMd5 (empty for a new translation) from read_translation. For a structured page pass fields, an object of pointer => translated text, with md5 from read_translation. Only the language of the translation changes.',
+                'inputSchema' => ['type' => 'object', 'properties' => [
+                    'path' => ['type' => 'string', 'description' => 'The page in the default language'],
+                    'language' => ['type' => 'string'],
+                    'content' => ['type' => 'string', 'description' => 'Markdown page: the translated source'],
+                    'sourceMd5' => ['type' => 'string', 'description' => 'Markdown page: sourceMd5 from read_translation'],
+                    'targetMd5' => ['type' => 'string', 'description' => 'Markdown page: targetMd5 from read_translation, empty for a new translation'],
+                    'fields' => ['type' => 'object', 'additionalProperties' => ['type' => 'string'], 'description' => 'Structured page: pointer => translated text'],
+                    'md5' => ['type' => 'string', 'description' => 'Structured page: md5 from read_translation'],
+                ], 'required' => ['path', 'language']],
+                'access' => 'write',
+                'handler' => fn(array $args) => $this->writeTranslation($args),
             ],
             'list_block_types' => [
                 'description' => 'The block types of the site. Structured blocks have fields, a structured page lists its blocks with type and fields. Markdown blocks are named in a comment, <!-- name -->, in Markdown pages.',
@@ -149,6 +218,59 @@ class Tools
         return $this->tools;
     }
 
+    private function uploadMedia(string $path, string $base64, string $md5): array
+    {
+        if (!in_array('/', $this->token['paths'] ?? [], true)) {
+            throw new \InvalidArgumentException("Only a token with the path / may upload media");
+        }
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (!preg_match('#^(/[A-Za-z0-9_-][A-Za-z0-9._-]*)+$#', $path) || str_contains($path, '..')
+            || !in_array($extension, self::MEDIA_EXTENSIONS, true)) {
+            throw new \InvalidArgumentException("Invalid media path '$path', allowed are " . implode(', ', self::MEDIA_EXTENSIONS));
+        }
+        $content = base64_decode($base64, true);
+        if ($content === false || $content === '') {
+            throw new \InvalidArgumentException("The content is no valid base64");
+        }
+        if (strlen($content) > self::MEDIA_MAX_BYTES) {
+            throw new \InvalidArgumentException("The file is larger than " . (self::MEDIA_MAX_BYTES >> 20) . " MB");
+        }
+        $root = realpath($this->baseFsPath . '/web/media');
+        $file = $root . $path;
+        $parent = dirname($file);
+        if (!is_dir($parent) && !@mkdir($parent, 0755, true) && !is_dir($parent)) {
+            throw new \RuntimeException("Could not create the folder of $path");
+        }
+        if (!FileSystemUtils::isInside(realpath($parent), $root)) {
+            throw new \InvalidArgumentException("Invalid media path '$path'");
+        }
+        if (is_file($file) && md5_file($file) !== $md5) {
+            throw new \InvalidArgumentException("'$path' exists. Pass the md5 of its current content to replace it");
+        }
+        FileSystemUtils::writeAtomic($file, $content);
+        return ['path' => $path, 'url' => $this->baseWebPath . '/media' . $path, 'md5' => md5($content), 'size' => strlen($content)];
+    }
+
+    private function translations(): Translations
+    {
+        return new Translations($this->site, $this->pages, $this->baseFsPath);
+    }
+
+    private function writeTranslation(array $args): array
+    {
+        $path = (string)($args['path'] ?? '');
+        $language = (string)($args['language'] ?? '');
+        if (is_array($args['fields'] ?? null)) {
+            return $this->translations()->writeFields($path, $language, $args['fields'], (string)($args['md5'] ?? ''));
+        }
+        if (!is_string($args['content'] ?? null)) {
+            throw new \InvalidArgumentException("Pass content for a Markdown page or fields for a structured page");
+        }
+        $targetMd5 = (string)($args['targetMd5'] ?? '');
+        return $this->translations()->writeMarkdown($path, $language, $args['content'], $targetMd5 === '' ? null : $targetMd5,
+            (string)($args['sourceMd5'] ?? ''));
+    }
+
     private function siteInfo(): array
     {
         $config = $this->site->getConfig();
@@ -172,7 +294,7 @@ class Tools
 
     private function listPages(string $folder): array
     {
-        $dir = $this->pagesDir();
+        $dir = $this->pages->dir();
         $folder = '/' . trim($folder, '/');
         $start = realpath($dir . $folder);
         if (!FileSystemUtils::isInside($start, $dir) || !is_dir($start)) {
@@ -204,22 +326,6 @@ class Tools
         }
         usort($pages, fn($a, $b) => strcmp($a['path'], $b['path']));
         return ['pages' => $pages];
-    }
-
-    private function readPage(string $path): array
-    {
-        $file = $this->pageFile($path);
-        [$address, $language] = $this->site->pageFileAddress($path);
-        $content = (string)file_get_contents($file);
-        return [
-            'path' => $path,
-            'url' => $this->site->getWebPath() . $this->site->languagePath($address, $language),
-            'language' => $language,
-            'format' => str_ends_with($path, '.yml') ? 'structured' : 'markdown',
-            'md5' => md5($content),
-            'modified' => date('c', filemtime($file)),
-            'content' => $content,
-        ];
     }
 
     private function listBlockTypes(): array
@@ -267,30 +373,6 @@ class Tools
             ];
         }
         return ['folder' => $folder, 'items' => $items];
-    }
-
-    /**
-     * The file of a page the token may read, as an absolute path.
-     */
-    private function pageFile(string $path): string
-    {
-        if (!preg_match('#^(/[A-Za-z0-9_-][A-Za-z0-9._-]*)+\.(md|yml)$#', $path) || str_contains($path, '..')) {
-            throw new \InvalidArgumentException("Invalid page path '$path', expected something like /blog/first-post.md");
-        }
-        if (!Tokens::allows($this->token['paths'] ?? [], $path)) {
-            throw new \InvalidArgumentException("The token may not access '$path'");
-        }
-        $dir = $this->pagesDir();
-        $file = realpath($dir . $path);
-        if (!FileSystemUtils::isInside($file, $dir) || !is_file($file)) {
-            throw new \InvalidArgumentException("No page '$path'");
-        }
-        return $file;
-    }
-
-    private function pagesDir(): string
-    {
-        return (string)realpath($this->site->getFsPath() . '/pages');
     }
 
     private function title(string $file): ?string

@@ -957,9 +957,9 @@ See the [Lightbox README](core/addons/Lightbox/README.md).
 
 ### Mcp
 
-Opens the content of the site to AI agents like Claude Code through the Model Context Protocol. The agent connects to `/mcp` with a token from the admin section "MCP" and gets tools to read the pages, the block types and the media. A token reads or writes and reaches only the pages below its paths, templates, configuration, PHP pages and `local/` stay out of reach. A guide for agents in `site/agents.md` is handed to every agent that connects.
+Opens the content of the site to AI agents like Claude Code through the Model Context Protocol. The agent connects to `/mcp` with a token from the admin section "MCP" and gets tools to read, write and translate the pages and to upload media. Every change needs the md5 of the version the agent read, so no edit in the admin gets lost, and the previous version goes into the history of the page. A token reads or writes and reaches only the pages below its paths, templates, configuration, PHP pages and `local/` stay out of reach. A guide for agents in `site/agents.md` is handed to every agent that connects.
 
-See the [Mcp README](core/addons/Mcp/README.md).
+Like every built-in AddOn it is off by default. To switch it on, add `Mcp` to `addons` in `site/config.yml` and create a token in the admin under "MCP". See the [Mcp README](core/addons/Mcp/README.md) for the steps.
 
 ### SecureDownloads
 
