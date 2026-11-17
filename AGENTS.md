@@ -19,7 +19,7 @@ Reboot CMS is a flat-file, database-free CMS in PHP. Since version 4 a page is u
 ## Project layout
 
 - `core/src/Shaack/Reboot/`: CMS core classes, see "Core classes" below
-- `core/addons/<Name>/`: AddOns shipped with the CMS (`CodeHighlighting`, `EmailObfuscation`, `LanguageRedirect`, `ProtectedAreas`, `SecureDownloads`), one folder each with `<Name>.php`, `src/` and `admin/`
+- `core/addons/<Name>/`: AddOns shipped with the CMS (`CodeHighlighting`, `EmailObfuscation`, `LanguageRedirect`, `Lightbox`, `Mcp`, `ProtectedAreas`, `SecureDownloads`), one folder each with `<Name>.php`, `src/` and `admin/`
 - `core/admin/`: the admin interface, itself a Reboot CMS site. Its addons `Authentication` and `Admin` live in `core/admin/addons/`. Authentication keeps "Stay signed in" tokens hashed in `local/remember-tokens.json` via `src/RememberMeStore.php`, a subclass of `Shaack\Reboot\TokenStore`, which ProtectedAreas uses as well for login links and its 30 day cookie.
 - `site/`: the site you edit
   - `pages/`: content pages (`.yml`, `.md` or `.php`)

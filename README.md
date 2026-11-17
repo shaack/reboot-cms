@@ -76,7 +76,7 @@ On first visit to `/admin`, you will be prompted to create an admin account.
 ## Directory Structure
 
 - `core/src/` — Core CMS classes (Reboot, Site, Page, Block, Collection, Request, AddOn)
-- `core/addons/` — AddOns shipped with Reboot CMS (`CodeHighlighting`, `EmailObfuscation`, `LanguageRedirect`, `Lightbox`, `ProtectedAreas`, `SecureDownloads`)
+- `core/addons/` — AddOns shipped with Reboot CMS (`CodeHighlighting`, `EmailObfuscation`, `LanguageRedirect`, `Lightbox`, `Mcp`, `ProtectedAreas`, `SecureDownloads`)
 - `site/` — Site content: `pages/`, `blocks/`, `data/`, `blueprints/`, `addons/`, `template.php`, `config.yml`
 - `web/` — Document root (`index.php`, `.htaccess`)
 - `local/` — Local environment config (`config.yml`, `.htpasswd`) — not in git
@@ -924,7 +924,7 @@ It is recommended to make a backup of the project folder before updating.
 Some features of Reboot CMS are not part of the core but ship as AddOns in `core/addons/`. They are off by default and switched on per site by listing them under `addons` in `site/config.yml`:
 
 ```yaml
-addons: [ LanguageRedirect, EmailObfuscation, SecureDownloads, ProtectedAreas, CodeHighlighting, Lightbox ]
+addons: [ LanguageRedirect, EmailObfuscation, SecureDownloads, ProtectedAreas, CodeHighlighting, Lightbox, Mcp ]
 ```
 
 Everything an AddOn needs is in its folder, including its admin pages, so an AddOn that is not listed leaves no trace in the admin. Because `core/` is replaced by the [updater](#update), the built-in AddOns are updated together with the CMS. A project can still override one by placing an AddOn of the same name in `site/addons/`.
@@ -954,6 +954,12 @@ See the [CodeHighlighting README](core/addons/CodeHighlighting/README.md).
 Opens linked images enlarged in a dialog. A link takes part with the attribute `data-lightbox`, links with the same value form a group that can be paged with the arrow keys, the buttons or a swipe, and `data-caption` sets the text below the image. The AddOn adds its small style and script only to pages with such links. The colors are CSS variables like `--lightbox-backdrop`, which the style sheet of the site can set.
 
 See the [Lightbox README](core/addons/Lightbox/README.md).
+
+### Mcp
+
+Opens the content of the site to AI agents like Claude Code through the Model Context Protocol. The agent connects to `/mcp` with a token from the admin section "MCP" and gets tools to read the pages, the block types and the media. A token reads or writes and reaches only the pages below its paths, templates, configuration, PHP pages and `local/` stay out of reach. A guide for agents in `site/agents.md` is handed to every agent that connects.
+
+See the [Mcp README](core/addons/Mcp/README.md).
 
 ### SecureDownloads
 

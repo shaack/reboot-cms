@@ -1,5 +1,5 @@
-# AddOns of this site, one site AddOn and 5 core AddOns. Disable them, if not needed.
-addons: ["ExampleAddOn", "EmailObfuscation", "ProtectedAreas", "SecureDownloads", "CodeHighlighting", "Lightbox"]
+# AddOns of this site, one site AddOn and the core AddOns. Disable them, if not needed.
+addons: ["ExampleAddOn", "EmailObfuscation", "ProtectedAreas", "SecureDownloads", "CodeHighlighting", "Lightbox", "Mcp"]
 protectedAreas: { areas: [ /customers ] }
 # permanent redirects from old paths to new ones, see "Redirects" in the README
 # redirects:

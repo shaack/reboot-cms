@@ -28,6 +28,9 @@
 
 RewriteEngine On
 
+# Hand the Authorization header to PHP, the MCP endpoint reads its token from it
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
 # Run everything but real files through index.php
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
