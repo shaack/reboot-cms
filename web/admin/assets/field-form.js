@@ -221,6 +221,9 @@ function syncFoldAll(form) {
     button.disabled = blocks.length === 0
     const expand = blocks.length > 0 && blocks.every(block => block.classList.contains("is-collapsed"))
     button.querySelector("span").textContent = expand ? "Expand all" : "Collapse all"
+    // "Collapse all" stands out, it is the way back to the overview
+    button.classList.toggle("btn-outline-primary", !expand)
+    button.classList.toggle("btn-outline-secondary", expand)
     const [collapseIcon, expandIcon] = button.querySelectorAll("svg")
     // an svg has no hidden property, only the attribute
     collapseIcon.toggleAttribute("hidden", expand)
@@ -232,9 +235,15 @@ function restoreFolds(form) {
     try {
         state = JSON.parse(localStorage.getItem(foldKey(form)))
     } catch (e) {
+        // no storage, as on the first visit
+    }
+    if (!state) {
+        // the first visit of a page shows its blocks folded, with the start of their texts
+        topBlocks(form).forEach(block => {
+            if (!block.classList.contains("has-errors")) setCollapsed(block, true)
+        })
         return
     }
-    if (!state) return
     const settings = form.querySelector("details[data-fold]")
     if (settings && !settings.hasAttribute("data-fold-forced") && typeof state.settings === "boolean") {
         settings.open = state.settings
