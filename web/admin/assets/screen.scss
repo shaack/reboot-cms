@@ -980,7 +980,7 @@ textarea.yaml-editor-input {
     transition: transform .15s;
 }
 
-.field-block-title strong, .field-block-type {
+.field-block-title strong {
     flex-shrink: 0;
 }
 
@@ -988,6 +988,15 @@ textarea.yaml-editor-input {
     font-family: var(--bs-font-monospace);
     font-size: .8rem;
     color: var(--bs-secondary-color);
+}
+
+// the technical name, at the bottom right of the open block
+.field-block-name {
+    margin: -.5rem 0 .375rem;
+    text-align: right;
+    font-family: var(--bs-font-monospace);
+    font-size: .75rem;
+    color: var(--bs-tertiary-color);
 }
 
 // the start of the first text, only while the block is folded

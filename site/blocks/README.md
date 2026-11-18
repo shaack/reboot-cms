@@ -15,17 +15,17 @@ intro/
   intro.php     # the HTML
 ```
 
-The structured blocks of the demo are `intro`, `text`, `image-text`, `features`, `gallery`, `blog-list`, `seminar-teaser` and `seminar-spotlight`.
+The structured blocks of the demo are `intro`, `text`, `text-image`, `features`, `gallery`, `blog-list`, `seminar-teaser` and `seminar-spotlight`.
 
 ## Markdown blocks, directly in this folder
 
 A file `<name>.php` directly in this folder is a block of Markdown pages. In a Markdown page an HTML comment like `<!-- intro -->` starts the block, and its template reads the Markdown below the comment with XPath queries, `$block->field("//h2", "Heading")` for example. A line with `---` separates the parts of a block.
 
-The Markdown blocks of the demo are `intro`, `text`, `image-text`, `features`, `gallery` and `article`. The page `site/pages/blocks.md` shows each of them with the Markdown that produces it.
+The Markdown blocks of the demo are `intro`, `text`, `text-image`, `features`, `gallery` and `article`. The page `site/pages/blocks.md` shows each of them with the Markdown that produces it.
 
 ## Same name, two kinds
 
-A file and a folder may share a name. Markdown pages use the file `intro.php`, structured pages the folder `intro/`. That is why `intro`, `text`, `image-text`, `features` and `gallery` exist twice. A structured page may also hold a Markdown block, written with `markdown:` instead of fields, which then renders with the file.
+A file and a folder may share a name. Markdown pages use the file `intro.php`, structured pages the folder `intro/`. That is why `intro`, `text`, `text-image`, `features` and `gallery` exist twice. A structured page may also hold a Markdown block, written with `markdown:` instead of fields, which then renders with the file.
 
 If one of the two is missing, a block takes the other. `seminar-teaser` has only a folder, and its blueprint says `markdown: true`, so its template renders both kinds.
 

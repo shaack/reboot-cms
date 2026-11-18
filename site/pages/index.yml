@@ -38,7 +38,7 @@ blocks:
         text:
           en: No database, no framework, no queries. Pages render in milliseconds and ship without the weight of a classic CMS. Sites built with Reboot CMS score 100 on PageSpeed Insights.
           de: Keine Datenbank, kein Framework, keine Abfragen. Seiten entstehen in Millisekunden und kommen ohne das Gewicht eines klassischen CMS aus. Mit Reboot CMS gebaute Sites erreichen 100 Punkte bei PageSpeed Insights.
-  - type: image-text
+  - type: text-image
     text:
       en: |-
         ## Pages are forms
@@ -63,7 +63,7 @@ blocks:
     caption:
       en: Add block offers the block types of the site
       de: Add block bietet die Blocktypen der Site an
-  - type: image-text
+  - type: text-image
     text:
       en: |-
         ## Data in tables

@@ -217,11 +217,11 @@ The main idea is to have a **minimal CMS** without needing a database, but with 
 
 [Learn more](documentation)
 
-<!-- image-text -->
+<!-- text-image -->
 
-## The "image-text" block
+## The "text-image" block
 
-The block above is an "intro" block. This one is an "image-text" block. You can define multiple blocks as you need.
+The block above is an "intro" block. This one is a "text-image" block. You can define multiple blocks as you need.
 [Reboot CMS documentation](documentation)
 
 Shipped with this CMS are some default block types, but it is easy to create your own, if you know some PHP.
@@ -249,9 +249,9 @@ Every part of the block is one column.
 No database, no framework, no queries.
 ```
 
-This `Page` contains 3 `Block` types, "intro", "image-text" and "features". The page [`site/pages/blocks.md`](site/pages/blocks.md) of the demo shows each of them with the Markdown that produces it.
+This `Page` contains 3 `Block` types, "intro", "text-image" and "features". The page [`site/pages/blocks.md`](site/pages/blocks.md) of the demo shows each of them with the Markdown that produces it.
 
-Blocks can be configured in the block comment. With `<!-- image-text: {image-position: left} -->` the `image-text` block shows the image on the left side in desktop view.
+Blocks can be configured in the block comment. With `<!-- text-image: {image-position: left} -->` the `text-image` block shows the image on the left side in desktop view.
 
 Markdown files without blocks will render to a flat Markdown page like in every other flat file CMS, as one `text` block. With `block: post` in the frontmatter another block renders it, and that block gets the frontmatter as its config. The posts of the blog of the demo are such pages, `site/pages/blog/2026-11-08-reboot-cms-4.md`, the block `site/blocks/post.php` shows their title, date and links:
 
@@ -318,7 +318,7 @@ A structured page keeps every language in its one YAML file. Its blocks and the 
 ```yaml
 title: {en: About us, de: Über uns}
 blocks:
-  - type: image-text
+  - type: text-image
     text:
       en: "## Pages are forms"
       de: "## Seiten sind Formulare"
@@ -468,14 +468,14 @@ A block template is also rendered once with empty content when the admin collect
 
 A `Block` describes how a block is rendered. Blocks are written in PHP.
 
-The code for the "image-text" `Block` which was used in the page above, looks like this:
+The code for the "text-image" `Block` which was used in the page above, looks like this:
 
 ```php
 <?php
 // read the configuration
 $imagePosition = @$block->getConfig()["image-position"];
 ?>
-<section class="block block-image-text">
+<section class="block block-text-image">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-6 <?= $imagePosition === "left" ? "order-md-1" : "" ?>">
@@ -713,7 +713,7 @@ The fields of the page itself are a title, a description and the blocks. `site/b
 A structured page can hold the blocks of Markdown pages too. Such a block has `markdown` instead of fields, the other values are its config, and it renders with its Markdown template as in a Markdown page:
 
 ```yaml
-  - type: image-text
+  - type: text-image
     image-position: left
     markdown: |-
       ## A heading
@@ -739,7 +739,7 @@ convert:
     button-link: "//a[part(3)]/@href"
 ```
 
-A `list` field takes an item per node or per part: `{each: "//li/img", fields: {image: "@src", caption: "@alt"}}` reads relative to each node, `{each: part, fields: {title: "//h3", text: {part: 1, strip-heading: true}}}` reads each part like a block of its own, `strip-heading` leaves out its heading line. The config of the Markdown block, `inverse: true` for example, stays with the form block. In the demo the form blocks `text`, `image-text`, `gallery` and `features` take over the Markdown blocks of the same names. The Markdown `intro` stays a Markdown block, its text between lead and button has no field in the form block `intro`. A site from Reboot CMS 3 with other names, `hero` for example, sets `from: hero`. `{part: 0}` reads the whole block, separators included.
+A `list` field takes an item per node or per part: `{each: "//li/img", fields: {image: "@src", caption: "@alt"}}` reads relative to each node, `{each: part, fields: {title: "//h3", text: {part: 1, strip-heading: true}}}` reads each part like a block of its own, `strip-heading` leaves out its heading line. The config of the Markdown block, `inverse: true` for example, stays with the form block. In the demo the form blocks `text`, `text-image`, `gallery` and `features` take over the Markdown blocks of the same names. The Markdown `intro` stays a Markdown block, its text between lead and button has no field in the form block `intro`. A site from Reboot CMS 3 with other names, `hero` for example, sets `from: hero`. `{part: 0}` reads the whole block, separators included.
 
 ## Admin interface
 

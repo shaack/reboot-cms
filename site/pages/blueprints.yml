@@ -138,10 +138,10 @@ blocks:
       en: Blocks of this demo
       de: Blöcke dieser Demo
     items:
-      - title: intro, text, image-text
+      - title: intro, text, text-image
         text:
-          en: The bands of a page, with headings, Markdown and images. A `boolean` field `inverse` turns an image-text into a white band.
-          de: Die Bänder einer Seite, mit Überschriften, Markdown und Bildern. Ein `boolean`-Feld `inverse` macht aus einem image-text ein weißes Band.
+          en: The bands of a page, with headings, Markdown and images. A `boolean` field `inverse` turns a text-image into a white band.
+          de: Die Bänder einer Seite, mit Überschriften, Markdown und Bildern. Ein `boolean`-Feld `inverse` macht aus einem text-image ein weißes Band.
       - title: features, gallery
         text:
           en: A `list` field each. The editor adds as many features or images as the page needs, each item with its own fields.
@@ -150,7 +150,7 @@ blocks:
         text:
           en: An `entry` field. The editor chooses one seminar from a list, the template shows its date, place and price.
           de: Ein `entry`-Feld. Die Redaktion wählt ein Seminar aus einer Liste, das Template zeigt Datum, Ort und Preis.
-  - type: image-text
+  - type: text-image
     text:
       en: |-
         ## Data from a blueprint

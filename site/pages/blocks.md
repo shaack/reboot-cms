@@ -7,7 +7,7 @@ description: The Markdown blocks that ship with Reboot CMS, each with the Markdo
 
 # Markdown blocks
 
-Most pages of this demo are structured pages, edited as forms. This page is a Markdown page, written as text. An HTML comment with the name of a block type, like the first line of the examples below, starts a block, and the type decides how the Markdown below it is rendered. A line with `---` separates the parts of a block, for example the text and the image of an "image-text" block.
+Most pages of this demo are structured pages, edited as forms. This page is a Markdown page, written as text. An HTML comment with the name of a block type, like the first line of the examples below, starts a block, and the type decides how the Markdown below it is rendered. A line with `---` separates the parts of a block, for example the text and the image of a "text-image" block.
 
 Every block type is a PHP template in `site/blocks/`. Each section below shows the Markdown first and the rendered block right after it. A structured page can hold these blocks as well, under *Add block › Markdown blocks*.
 
@@ -51,7 +51,7 @@ The image sits on the right by default. A configuration in the block comment mov
 
 ```markdown
 <!--
-image-text:
+text-image:
     image-position: left
 -->
 
@@ -65,7 +65,7 @@ Some text with a [link](documentation).
 ```
 
 <!--
-image-text:
+text-image:
     image-position: left
 -->
 
@@ -177,6 +177,6 @@ Every block of this demo but the text can be set inverse with a configuration in
 
 ## Your own blocks
 
-A new block type is a new PHP file in `site/blocks/`. As a folder with the template and a blueprint, a YAML file of its fields, it becomes a block of [structured pages](documentation#structured-pages), which editors fill in as a form. File and folder may share a name: the form blocks of this demo are called `intro`, `text`, `image-text`, `gallery` and `features` as well, Markdown pages use the file, structured pages the folder. The template receives the parts of the block and picks what it needs, the heading, the image, the list, with a short query. The [documentation](documentation#block) shows how the blocks above are built.
+A new block type is a new PHP file in `site/blocks/`. As a folder with the template and a blueprint, a YAML file of its fields, it becomes a block of [structured pages](documentation#structured-pages), which editors fill in as a form. File and folder may share a name: the form blocks of this demo are called `intro`, `text`, `text-image`, `gallery` and `features` as well, Markdown pages use the file, structured pages the folder. The template receives the parts of the block and picks what it needs, the heading, the image, the list, with a short query. The [documentation](documentation#block) shows how the blocks above are built.
 
 The [test pages](testpages) hold a few edge cases used during development, an empty page, an unknown block and a code block with HTML inside.

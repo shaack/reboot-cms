@@ -334,7 +334,6 @@ class FieldForm
             . '<button type="button" class="field-block-title" data-block-collapse aria-expanded="true">'
             . AdminHelper::icon("chevron", "field-block-chevron")
             . '<strong>' . self::e($blueprint ? $blueprint->getTitle() : $type) . '</strong>'
-            . '<span class="field-block-type">' . self::e($markdown ? $type . " · Markdown" : $type) . '</span>'
             // the start of the first text, shown while the block is folded, see field-form.js
             . '<span class="field-block-summary" data-block-summary></span></button>'
             . '<label class="field-block-switch form-check form-switch mb-0" title="Show the block on the page">'
@@ -362,6 +361,8 @@ class FieldForm
         } else {
             $html .= '<p class="text-danger small mb-0">There is no block type \'' . self::e($type) . '\' with a blueprint in <code>site/blocks/' . self::e($type) . '/</code>. Its values are kept as they are.</p>';
         }
+        // the technical name of the block type, in the corner of the open block
+        $html .= '<div class="field-block-name">' . self::e($markdown ? $type . " · Markdown" : $type) . '</div>';
         return $html . '</div></div>';
     }
 

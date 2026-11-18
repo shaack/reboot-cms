@@ -461,15 +461,15 @@ main > .block-text:first-child {
 }
 
 /* Text with image, the Markdown block and the form block */
-.block-image-text {
+.block-text-image {
     padding: 2rem 0;
 }
 
-.block-image-text .row {
+.block-text-image .row {
     align-items: center;
 }
 
-.block-image-text .img-fluid {
+.block-text-image .img-fluid {
     border-radius: 0;
 }
 

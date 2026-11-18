@@ -79,7 +79,7 @@ A page is split into **blocks** with HTML comments. Without any block comment th
 Some content.
 ```
 
-A line with `---` separates the parts of a block. A block can be configured in its comment, `<!-- image-text: {image-position: left} -->`, the template reads it with `$block->getConfig()`.
+A line with `---` separates the parts of a block. A block can be configured in its comment, `<!-- text-image: {image-position: left} -->`, the template reads it with `$block->getConfig()`.
 
 ## Blocks
 

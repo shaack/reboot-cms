@@ -4,8 +4,8 @@
  * Repository: https://github.com/shaack/reboot-cms
  * License: MIT, see file 'LICENSE'
  *
- * A text next to an image, the counterpart of the Markdown block `image-text`.
- * Fields: image-text.yml
+ * A text next to an image, the counterpart of the Markdown block `text-image`.
+ * Fields: text-image.yml
  */
 
 /** @var \Shaack\Reboot\Block $block */
