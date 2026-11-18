@@ -980,10 +980,29 @@ textarea.yaml-editor-input {
     transition: transform .15s;
 }
 
+.field-block-title strong, .field-block-type {
+    flex-shrink: 0;
+}
+
 .field-block-type {
     font-family: var(--bs-font-monospace);
     font-size: .8rem;
     color: var(--bs-secondary-color);
+}
+
+// the start of the first text, only while the block is folded
+.field-block-summary {
+    display: none;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: .8rem;
+    color: var(--bs-tertiary-color);
+
+    .is-collapsed & {
+        display: block;
+    }
 }
 
 .field-block-body {
@@ -1105,7 +1124,9 @@ textarea.yaml-editor-input {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--bs-secondary-color);
+    // like the summary of a folded block
+    font-size: .8rem;
+    color: var(--bs-tertiary-color);
 }
 
 .page-settings-body {

@@ -334,7 +334,9 @@ class FieldForm
             . '<button type="button" class="field-block-title" data-block-collapse aria-expanded="true">'
             . AdminHelper::icon("chevron", "field-block-chevron")
             . '<strong>' . self::e($blueprint ? $blueprint->getTitle() : $type) . '</strong>'
-            . '<span class="field-block-type">' . self::e($markdown ? $type . " · Markdown" : $type) . '</span></button>'
+            . '<span class="field-block-type">' . self::e($markdown ? $type . " · Markdown" : $type) . '</span>'
+            // the start of the first text, shown while the block is folded, see field-form.js
+            . '<span class="field-block-summary" data-block-summary></span></button>'
             . '<label class="field-block-switch form-check form-switch mb-0" title="Show the block on the page">'
             . '<input type="hidden" name="' . self::e($name) . '[_disabled]" value="1">'
             . '<input class="form-check-input" type="checkbox" role="switch" name="' . self::e($name) . '[_disabled]" value="0"' . ($disabled ? '' : ' checked') . ' data-block-enabled>'

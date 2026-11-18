@@ -7,7 +7,8 @@
  * for every form with `data-field-form`: adds, moves and removes the items of
  * lists and blocks, switches blocks off and folds them, chooses images from the
  * media and keeps track of unsaved changes. Which blocks are folded, and whether
- * the page settings are open, is remembered per page in the localStorage.
+ * the page settings are open, is remembered per page in the localStorage. A
+ * folded block shows the start of its first text in its head.
  *
  * A form with `data-edit-lang` has an input per language in its translated
  * fields, the buttons with `data-edit-lang-button` above it choose the language
@@ -69,6 +70,8 @@ forms.forEach(form => {
     restoreFolds(form)
     syncFoldAll(form)
     if (form.hasAttribute("data-edit-lang")) setupLanguages(form)
+    form.querySelectorAll(".field-block").forEach(updateSummary)
+    form.addEventListener("languagechange", () => form.querySelectorAll(".field-block").forEach(updateSummary))
     form.addEventListener("toggle", event => {
         if (event.target.matches("details[data-fold]")) saveFolds(form)
     }, true)
@@ -91,7 +94,10 @@ forms.forEach(form => {
         if (button.matches("[data-fold-all]")) {
             const blocks = [...topBlocks(form)]
             const collapse = blocks.some(block => !block.classList.contains("is-collapsed"))
-            blocks.forEach(block => setCollapsed(block, collapse))
+            blocks.forEach(block => {
+                setCollapsed(block, collapse)
+                updateSummary(block)
+            })
             saveFolds(form)
             syncFoldAll(form)
             return
@@ -115,6 +121,7 @@ forms.forEach(form => {
         } else if (button.matches("[data-block-collapse]")) {
             const block = button.closest(".field-block")
             setCollapsed(block, !block.classList.contains("is-collapsed"))
+            updateSummary(block)
             saveFolds(form)
             syncFoldAll(form)
             return
@@ -178,6 +185,32 @@ function saveFolds(form) {
 function setCollapsed(block, collapsed) {
     block.classList.toggle("is-collapsed", collapsed)
     block.querySelector("[data-block-collapse]").setAttribute("aria-expanded", collapsed ? "false" : "true")
+}
+
+/**
+ * The start of the first text of a block into its head, from the language shown.
+ * An untranslated field shows the text of the default language, its placeholder.
+ * Only a folded block shows it, it is set when the block is folded.
+ */
+function updateSummary(block) {
+    const summary = block.querySelector(":scope > .field-block-head [data-block-summary]")
+    if (!summary) return
+    const language = block.closest("form").dataset.editLang
+    const fields = block.querySelectorAll(':scope > .field-block-body :is(input[type="text"], input:not([type]), textarea):not([data-image-input])')
+    let text = ""
+    for (const field of fields) {
+        const lang = field.closest("[data-lang]")
+        if (lang && lang.dataset.lang !== language) continue
+        text = (field.value || field.placeholder || "")
+            // Markdown marks and tags are no text
+            .replace(/<[^>]*>/g, " ")
+            .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+            .replace(/[#*_`>~|]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+        if (text) break
+    }
+    summary.textContent = text.slice(0, 200)
 }
 
 // "Collapse all" while a block is open, else "Expand all"

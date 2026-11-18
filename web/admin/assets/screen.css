@@ -859,10 +859,27 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   transition: transform 0.15s;
 }
 
+.field-block-title strong, .field-block-type {
+  flex-shrink: 0;
+}
+
 .field-block-type {
   font-family: var(--bs-font-monospace);
   font-size: 0.8rem;
   color: var(--bs-secondary-color);
+}
+
+.field-block-summary {
+  display: none;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.8rem;
+  color: var(--bs-tertiary-color);
+}
+.is-collapsed .field-block-summary {
+  display: block;
 }
 
 .field-block-body {
@@ -968,7 +985,8 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+  color: var(--bs-tertiary-color);
 }
 
 .page-settings-body {
@@ -1052,5 +1070,3 @@ textarea.yaml-editor-input, textarea.yaml-editor-input:focus {
   border-color: #007bff;
   color: #fff;
 }
-
-/*# sourceMappingURL=screen.css.map */
