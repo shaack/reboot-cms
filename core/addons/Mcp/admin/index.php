@@ -76,8 +76,13 @@ $list = $tokens->getTokens();
             <div class="card-header">New token</div>
             <div class="card-body">
                 <p class="mb-2"><code class="user-select-all fs-6"><?= htmlspecialchars($newToken) ?></code></p>
-                <p class="small text-body-secondary mb-1">Connect Claude Code:</p>
-                <pre class="small bg-body-tertiary p-2 mb-0 user-select-all"><code>claude mcp add --transport http <?= htmlspecialchars(preg_replace('/[^a-z0-9-]+/', '-', strtolower($_SERVER['HTTP_HOST'] ?? 'site'))) ?> <?= htmlspecialchars($endpoint) ?> --header "Authorization: Bearer <?= htmlspecialchars($newToken) ?>"</code></pre>
+                <p class="small text-body-secondary mb-1">Connect Claude Code, in a terminal of its own:</p>
+                <pre class="small bg-body-tertiary p-2 mb-2 user-select-all"><code>claude mcp add --transport http <?= htmlspecialchars(preg_replace('/[^a-z0-9-]+/', '-', strtolower($_SERVER['HTTP_HOST'] ?? 'site'))) ?> <?= htmlspecialchars($endpoint) ?> --header "X-Reboot-Token: <?= htmlspecialchars($newToken) ?>" --scope user</code></pre>
+                <p class="small text-body-secondary mb-0">
+                    <code>X-Reboot-Token</code> works on every server, some hostings drop the header <code>Authorization</code>.
+                    Without <code>--scope user</code> the server is only known in the folder the command runs in.
+                    Do not paste the token into a chat with an agent, it would end up in its transcript.
+                </p>
             </div>
         </div>
     <?php } ?>

@@ -13,19 +13,15 @@ The AddOn is off by default. As long as it is not listed under `addons`, there i
    ```
 
 2. Reload the admin. The menu "AddOns (n)" now has the entry "MCP".
-3. Create a token there: a name, read or read and write, the paths it may reach and, if it should, the only tools it may call. The page shows the token once, together with the command that connects Claude Code:
+3. Create a token there: a name, read or read and write, the paths it may reach and, if it should, the only tools it may call. The page shows the token once, together with the command that connects Claude Code. Run it in a terminal of its own, not through an agent, so the token stays out of its transcript:
 
    ```bash
-   claude mcp add --transport http example-com https://example.com/mcp --header "Authorization: Bearer rbt_…"
+   claude mcp add --transport http example-com https://example.com/mcp --header "X-Reboot-Token: rbt_…" --scope user
    ```
 
-4. On an installation older than 4.5, check `web/.htaccess`, see [Transport](#transport).
+   `--scope user` makes the server known in every folder, without it only in the folder the command runs in. In a new session `/mcp` shows whether the connection works.
 
 To switch the AddOn off again, remove `Mcp` from `addons`. The endpoint is gone at once, the tokens stay in `local/mcp/tokens.json` and work again when the AddOn comes back. Revoke them first if they should not.
-
-```bash
-claude mcp add --transport http example-com https://example.com/mcp --header "Authorization: Bearer rbt_…"
-```
 
 The address of the endpoint can be changed:
 
@@ -105,13 +101,13 @@ The handler returns an array, which the agent gets as JSON. An `\InvalidArgument
 
 The endpoint speaks the Streamable HTTP transport of MCP without sessions: every request is a POST with one JSON-RPC message, answered with JSON. There is no stream from the server. Requests from web pages of other origins are refused.
 
-The token is sent as `Authorization: Bearer …`. Some Apache setups drop this header before PHP sees it. The `web/.htaccess` of Reboot CMS passes it on with
+The token goes in the header `X-Reboot-Token: …` or as `Authorization: Bearer …`. Prefer `X-Reboot-Token`, it reaches PHP on every server. Many hostings, Apache with PHP-FPM for example, drop `Authorization` before PHP sees it, the endpoint then answers 401 although the token is right. The `web/.htaccess` of Reboot CMS since 4.5 passes it on with
 
 ```apache
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 ```
 
-which an older installation may have to add, since the updater does not replace `web/.htaccess`. The header `X-Reboot-Token: …` works as well.
+The updater does not replace `web/.htaccess`, an older installation has to add the line itself to use `Authorization`.
 
 ## Files
 
