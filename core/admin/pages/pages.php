@@ -308,6 +308,8 @@ description: Shown by search engines
                     <input class="form-check-input" type="checkbox" role="switch" id="preview-follow" checked>
                     <label class="form-check-label text-body-secondary" for="preview-follow">Follow the cursor</label>
                 </div>
+                <?php // links in the preview open other pages there, this shows the edited page again ?>
+                <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" id="preview-reload" title="Show the edited page again in the preview"><?= AdminHelper::icon("arrow-clockwise", "me-1") ?>Reload</button>
                 <select class="form-select form-select-sm w-auto" id="preview-zoom" aria-label="Preview zoom">
                     <option value="fit">Fit desktop</option>
                     <option value="1">100 %</option>

@@ -59,6 +59,7 @@ forms.forEach(form => {
         if (dirty) event.preventDefault()
     })
     form.markDirty = markDirty
+    form.isDirty = () => dirty
     form.changeCount = () => changes
     // clean, unless something changed after `count`
     form.clean = (count = changes) => {

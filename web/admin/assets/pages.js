@@ -28,14 +28,15 @@
 
     // Posts the form like the browser would and hands the save result of the
     // answer, `<script id="save-result">`, to onSaved. The page stays as it is.
+    // Resolves with the save result, or with null when the page was not saved.
     function postForm(form, onSaved) {
-        fetch(form.getAttribute('action'), {
+        return fetch(form.getAttribute('action'), {
             method: 'POST',
             body: new FormData(form)
         }).then(function (response) {
             if (!response.ok) {
                 notSaved("The server answered with error " + response.status + ".");
-                return;
+                return null;
             }
             return response.text().then(function (html) {
                 var doc = new DOMParser().parseFromString(html, 'text/html');
@@ -45,32 +46,36 @@
                     notSaved(response.redirected
                         ? "Your session has expired. Log in again in a new tab, then save here once more."
                         : "The answer of the server was unexpected.");
-                    return;
+                    return null;
                 }
                 var data = JSON.parse(resultEl.textContent);
                 if (data.error) {
                     notSaved(escapeHtml(data.error));
-                    return;
+                    return null;
                 }
                 onSaved(data);
+                return data;
             });
         }).catch(function () {
             notSaved("The server could not be reached.");
+            return null;
         });
     }
 
+    // Resolves with the save result of a Markdown page, a structured page is
+    // saved by its submit handler
     window.savePageAsync = function () {
         var form = document.querySelector('form[action^="pages?page="]');
-        if (!form) return;
+        if (!form) return Promise.resolve(null);
         // a structured page is a form of fields, its submit handler saves it, see
         // "Saving a structured page" below; requestSubmit checks required fields first
         if (form.hasAttribute('data-field-form')) {
             form.requestSubmit();
-            return;
+            return Promise.resolve(null);
         }
         // what is saved, typing during the request stays unsaved
         var sentContent = editorTextarea ? editorTextarea.value : '';
-        postForm(form, function (data) {
+        return postForm(form, function (data) {
             savedContent = sentContent;
             updateUnsaved();
             if (!data.changed) {
@@ -102,21 +107,26 @@
     // the page loads anew when there are some, or were some before.
 
     var asyncForm = document.querySelector('form[data-field-form][action^="pages?page="]');
+
+    function saveStructured() {
+        var count = asyncForm.changeCount ? asyncForm.changeCount() : 0;
+        return postForm(asyncForm, function (data) {
+            if (asyncForm.clean) asyncForm.clean(count);
+            if (data.changed) {
+                statusMessage("Page saved");
+            } else {
+                statusMessage("No changes", "text-bg-secondary");
+            }
+        });
+    }
+
     if (asyncForm) {
         asyncForm.setAttribute('data-async-save', '');
         asyncForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            var count = asyncForm.changeCount ? asyncForm.changeCount() : 0;
-            postForm(asyncForm, function (data) {
-                if (asyncForm.clean) asyncForm.clean(count);
-                if (data.problems > 0 || document.getElementById('structured-problems')) {
+            saveStructured().then(function (data) {
+                if (data && (data.problems > 0 || document.getElementById('structured-problems'))) {
                     window.location.href = asyncForm.getAttribute('action');
-                    return;
-                }
-                if (data.changed) {
-                    statusMessage("Page saved");
-                } else {
-                    statusMessage("No changes", "text-bg-secondary");
                 }
             });
         });
@@ -144,6 +154,83 @@
         if (pageUnsaved) {
             e.preventDefault();
         }
+    });
+
+    // --- Leaving with unsaved changes ---
+    // A link asks first and offers to save. Closing the tab or reloading is left
+    // to the dialog of the browser, it has no button to save.
+
+    function isUnsaved() {
+        return pageUnsaved || !!(asyncForm && asyncForm.isDirty && asyncForm.isDirty());
+    }
+
+    // resolves with true when the page was saved
+    function saveForLeaving() {
+        if (asyncForm) {
+            // the required fields first, as the save button checks them
+            if (!asyncForm.reportValidity()) return Promise.resolve(false);
+            return saveStructured().then(function (data) { return !!data; });
+        }
+        return window.savePageAsync().then(function (data) { return !!data; });
+    }
+
+    function discardChanges() {
+        pageUnsaved = false;
+        if (asyncForm && asyncForm.clean) asyncForm.clean();
+    }
+
+    var leaveModal = null;
+    var leaveElement = null;
+    function askBeforeLeaving(href) {
+        if (!leaveModal) {
+            var element = leaveElement = document.createElement('div');
+            element.className = 'modal fade';
+            element.tabIndex = -1;
+            element.setAttribute('aria-labelledby', 'leave-modal-title');
+            element.innerHTML = '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">'
+                + '<div class="modal-header"><h2 class="modal-title fs-5" id="leave-modal-title">Unsaved changes</h2>'
+                + '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cancel"></button></div>'
+                + '<div class="modal-body">The page has changes that are not saved yet.</div>'
+                + '<div class="modal-footer">'
+                + '<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>'
+                + '<button type="button" class="btn btn-outline-danger" data-leave="discard">Discard changes</button>'
+                + '<button type="button" class="btn btn-primary" data-leave="save">Save and continue</button>'
+                + '</div></div></div>';
+            document.body.appendChild(element);
+            leaveModal = new bootstrap.Modal(element);
+            element.addEventListener('click', function (e) {
+                var button = e.target.closest('[data-leave]');
+                if (!button) return;
+                var target = element.dataset.href;
+                if (button.dataset.leave === 'discard') {
+                    discardChanges();
+                    window.location.href = target;
+                    return;
+                }
+                button.disabled = true;
+                leaveModal.hide();
+                saveForLeaving().then(function (saved) {
+                    button.disabled = false;
+                    // not saved, the message says why and the page stays
+                    if (saved) window.location.href = target;
+                });
+            });
+        }
+        leaveElement.dataset.href = href;
+        leaveModal.show();
+    }
+
+    document.addEventListener('click', function (e) {
+        if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        var link = e.target.closest('a[href]');
+        if (!link || (link.target && link.target !== '_self') || link.hasAttribute('download')) return;
+        var url = new URL(link.href, window.location.href);
+        if (!/^https?:$/.test(url.protocol)) return;
+        // a link within the page, a folder of the page list or a menu
+        if (url.hash && url.href.split('#')[0] === window.location.href.split('#')[0]) return;
+        if (!isUnsaved()) return;
+        e.preventDefault();
+        askBeforeLeaving(url.href);
     });
     document.addEventListener('keydown', function (e) {
         if ((e.metaKey || e.ctrlKey) && e.key === 's') {
@@ -1303,13 +1390,14 @@
         return previewForm;
     }
 
-    function updatePreview() {
+    // fromTop: from the top of the page, not where the preview was scrolled to
+    function updatePreview(fromTop) {
         if (!previewActive || !currentPage) return;
         var front = getFrontIframe();
         var back = getBackIframe();
         var content = editorTextarea ? editorTextarea.value : '';
         var savedScrollTop = 0;
-        if (previewInitialized && front.contentDocument) {
+        if (fromTop !== true && previewInitialized && front.contentDocument) {
             var doc = front.contentDocument;
             savedScrollTop = doc.documentElement.scrollTop || doc.body.scrollTop || 0;
         }
@@ -1349,6 +1437,14 @@
             return;
         }
         form.submit();
+    }
+
+    // A link in the preview opens its page there, Reload shows the edited page again
+    var previewReload = document.getElementById('preview-reload');
+    if (previewReload) {
+        previewReload.addEventListener('click', function () {
+            updatePreview(true);
+        });
     }
 
     function schedulePreviewUpdate() {
