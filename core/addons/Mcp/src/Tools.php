@@ -59,7 +59,7 @@ class Tools
     {
         $result = [];
         foreach ($this->tools() as $name => $tool) {
-            if (!$this->mayUse($tool)) {
+            if (!$this->mayUse($tool, $name)) {
                 continue;
             }
             $result[] = [
@@ -85,6 +85,9 @@ class Tools
         if (!$this->mayUse($tool)) {
             throw new \InvalidArgumentException("The token has no " . $tool['access'] . " access");
         }
+        if (!$this->mayUse($tool, $name)) {
+            throw new \InvalidArgumentException("The token may not use the tool '$name'");
+        }
         return ($tool['handler'])($arguments, $this->token);
     }
 
@@ -97,9 +100,22 @@ class Tools
         return is_file($file) ? (string)file_get_contents($file) : null;
     }
 
-    private function mayUse(array $tool): bool
+    private function mayUse(array $tool, ?string $name = null): bool
     {
+        $only = $this->token['tools'] ?? [];
+        if ($name !== null && $only && !in_array($name, $only, true)) {
+            return false;
+        }
         return ($tool['access'] ?? 'read') === 'read' || ($this->token['access'] ?? 'read') === 'write';
+    }
+
+    /**
+     * The names of all tools, for the admin, whatever a token may use.
+     * @return string[]
+     */
+    public function names(): array
+    {
+        return array_keys($this->tools());
     }
 
     private function tools(): array
@@ -286,6 +302,7 @@ class Tools
                 'name' => $this->token['name'] ?? '',
                 'access' => $this->token['access'] ?? 'read',
                 'paths' => $this->token['paths'] ?? [],
+                'tools' => $this->token['tools'] ?? [],
             ],
             'navigation' => $config['nav'] ?? null,
             'guide' => $this->guide(),

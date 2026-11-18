@@ -19,6 +19,7 @@ use Shaack\Utils\FileSystemUtils;
  *   access      "read" or "write"
  *   paths       the page paths the token may touch, "/" for all, "/blog" for
  *               everything below `site/pages/blog/`
+ *   tools       the only tools the token may call, empty for all its access allows
  *   createdAt   unix timestamp
  *   lastUsedAt  unix timestamp of the last request, or null
  */
@@ -52,8 +53,9 @@ class Tokens
     /**
      * Creates a token and returns it. It cannot be read again later.
      * @param string[] $paths
+     * @param string[] $tools the only tools the token may call, empty for all
      */
-    public function create(string $name, string $access, array $paths): string
+    public function create(string $name, string $access, array $paths, array $tools = []): string
     {
         $name = trim($name);
         if ($name === '') {
@@ -66,8 +68,9 @@ class Tokens
         if (!$paths) {
             throw new \InvalidArgumentException("The token needs at least one path, / for all pages");
         }
+        $tools = self::normalizeTools($tools);
         $token = self::PREFIX . bin2hex(random_bytes(24));
-        $this->withTokens(function (array &$tokens) use ($name, $access, $paths, $token) {
+        $this->withTokens(function (array &$tokens) use ($name, $access, $paths, $tools, $token) {
             do {
                 $id = bin2hex(random_bytes(4));
             } while (isset($tokens[$id]));
@@ -76,6 +79,7 @@ class Tokens
                 'hash' => hash('sha256', $token),
                 'access' => $access,
                 'paths' => $paths,
+                'tools' => $tools,
                 'createdAt' => time(),
                 'lastUsedAt' => null,
             ];
@@ -138,6 +142,27 @@ class Tokens
             }
         }
         return false;
+    }
+
+    /**
+     * @return string[] tool names, without duplicates, sorted
+     */
+    public static function normalizeTools(array $tools): array
+    {
+        $result = [];
+        foreach ($tools as $tool) {
+            $tool = trim((string)$tool);
+            if ($tool === '') {
+                continue;
+            }
+            if (!preg_match('/^[a-z][a-z0-9_]*$/', $tool)) {
+                throw new \InvalidArgumentException("Invalid tool name '$tool'");
+            }
+            $result[$tool] = true;
+        }
+        $result = array_keys($result);
+        sort($result);
+        return $result;
     }
 
     /**

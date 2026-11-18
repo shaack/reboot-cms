@@ -51,9 +51,9 @@ class McpTest
         rmdir($this->tmpDir);
     }
 
-    private function tools(array $paths = ["/"], string $access = "read"): Tools
+    private function tools(array $paths = ["/"], string $access = "read", array $only = []): Tools
     {
-        return new Tools($this->site, $this->tmpDir, "", ["id" => "x", "name" => "Test", "access" => $access, "paths" => $paths]);
+        return new Tools($this->site, $this->tmpDir, "", ["id" => "x", "name" => "Test", "access" => $access, "paths" => $paths, "tools" => $only]);
     }
 
     private function rpc(Tools $tools, string $method, array $params = []): array
@@ -294,5 +294,20 @@ class McpTest
         $this->fails(fn() => $tools->call("upload_media", ["path" => "/new/b.png", "base64" => base64_encode("other")]), "exists");
         $tools->call("upload_media", ["path" => "/new/b.png", "base64" => base64_encode("other"), "md5" => md5("png")]);
         Assert::equals("other", file_get_contents($this->tmpDir . "/web/media/new/b.png"));
+    }
+
+    public function testTokenLimitedToTools(): void
+    {
+        $tokens = new Tokens($this->tmpDir);
+        $token = $tokens->create("Tasks", "write", ["/customers"], ["read_page", " read_page", "write_page"]);
+        Assert::equals(["read_page", "write_page"], $tokens->authenticate($token)["tools"]);
+        $this->fails(fn() => $tokens->create("X", "read", ["/"], ["Read Page"]), "Invalid tool");
+
+        $tools = $this->tools(["/"], "write", ["read_page"]);
+        Assert::equals(["read_page"], array_column($tools->definitions(), "name"));
+        Assert::equals("/about.md", $tools->call("read_page", ["path" => "/about.md"])["path"]);
+        $this->fails(fn() => $tools->call("write_page", ["path" => "/x.md", "content" => "x"]), "may not use the tool");
+        $this->fails(fn() => $tools->call("list_pages", []), "may not use the tool");
+        Assert::true(in_array("write_page", $tools->names(), true), "the admin sees all tools");
     }
 }

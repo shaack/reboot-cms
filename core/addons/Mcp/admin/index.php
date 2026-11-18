@@ -8,6 +8,7 @@ $admin = $site->getAddOn("Admin");
 use Shaack\Reboot\AddOns\Admin\AdminHelper;
 use Shaack\Reboot\AddOns\Admin\AdminMenu;
 use Shaack\Reboot\AddOns\Mcp;
+use Shaack\Reboot\AddOns\Mcp\Tools;
 use Shaack\Reboot\CsrfProtection;
 use Shaack\Reboot\Session;
 
@@ -17,6 +18,9 @@ if (!AdminHelper::requireAdmin($site, $reboot)) return;
 $mcp = $admin->getDefaultSite()->getAddOn("Mcp");
 $tokens = $mcp->getTokens();
 $adminPath = ltrim($mcp->getAdminPath(), '/');
+// every tool the site offers, also those of other AddOns, for the field "Tools"
+$toolNames = (new Tools($admin->getDefaultSite(), $reboot->getBaseFsPath(), $reboot->getBaseWebPath(),
+    ['access' => 'write', 'paths' => ['/']]))->names();
 $endpoint = (Session::isHttps() ? "https://" : "http://") . ($_SERVER['HTTP_HOST'] ?? 'localhost')
     . $admin->getDefaultSite()->getWebPath() . $mcp->getPath();
 
@@ -25,11 +29,16 @@ $success = null;
 $newToken = null;
 $action = $request->getParam("action");
 if ($action) {
-    $result = AdminHelper::handleAction($request, function () use ($action, $request, $tokens) {
+    $result = AdminHelper::handleAction($request, function () use ($action, $request, $tokens, $toolNames) {
         if ($action === "create") {
             $paths = preg_split('/[\r\n,]+/', (string)$request->getParam("paths"), -1, PREG_SPLIT_NO_EMPTY) ?: [];
             $name = (string)$request->getParam("name");
-            $token = $tokens->create($name, (string)$request->getParam("access"), $paths);
+            $tools = preg_split('/[\s,]+/', (string)$request->getParam("tools"), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            $unknown = array_diff($tools, $toolNames);
+            if ($unknown) {
+                throw new \InvalidArgumentException("Unknown tool '" . reset($unknown) . "'");
+            }
+            $token = $tokens->create($name, (string)$request->getParam("access"), $paths, $tools);
             return ['success' => "Token '$name' created. Copy it now, it is not shown again.", 'token' => $token];
         } elseif ($action === "revoke") {
             $tokens->revoke((string)$request->getParam("id"));
@@ -51,6 +60,7 @@ $list = $tokens->getTokens();
         <ul>
             <li>A token reads, or reads and writes. Every change needs the md5 the agent got when it read the page, a page changed in between is not overwritten. The previous version goes into the history of the page, <em>… › History</em> in Pages restores it. Changes are logged in <code>local/mcp/changes.log</code>.</li>
             <li>Uploading media needs a token with the path <code>/</code>.</li>
+            <li>A token can be limited to single tools, a script that only updates one block for example. Without tools it may use every tool its access allows.</li>
             <li>A token reaches only the pages below its paths, <code>/</code> means all pages, <code>/blog</code> the pages in <code>site/pages/blog/</code>.</li>
             <li>Templates, configuration, PHP pages and <code>local/</code> are never reachable.</li>
             <li>The token is shown once. Only its hash is stored, in <code>local/mcp/tokens.json</code>. Revoke a token that is no longer needed or got lost.</li>
@@ -90,13 +100,26 @@ $list = $tokens->getTokens();
                         <option value="write">Read and write</option>
                     </select>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-2">
                     <label class="form-label small mb-1" for="token-paths">Paths, one per line</label>
                     <textarea id="token-paths" name="paths" class="form-control form-control-sm font-monospace" rows="1">/</textarea>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small mb-1" for="token-tools">Only these tools (optional)</label>
+                    <input id="token-tools" name="tools" class="form-control form-control-sm font-monospace" autocomplete="off"
+                           list="mcp-tool-names" placeholder="all">
+                    <datalist id="mcp-tool-names">
+                        <?php foreach ($toolNames as $toolName) { ?>
+                            <option value="<?= htmlspecialchars($toolName) ?>">
+                        <?php } ?>
+                    </datalist>
                 </div>
                 <div class="col-md-2">
                     <button class="btn btn-sm btn-primary w-100">Create</button>
                 </div>
+            </div>
+            <div class="form-text">
+                Tools, separated by commas: <?= htmlspecialchars(implode(", ", $toolNames)) ?>
             </div>
         </div>
     </form>
@@ -111,6 +134,7 @@ $list = $tokens->getTokens();
                     <th>Name</th>
                     <th>Access</th>
                     <th>Paths</th>
+                    <th>Tools</th>
                     <th style="width: 150px">Created</th>
                     <th style="width: 150px">Last used</th>
                     <th style="width: 100px"></th>
@@ -124,6 +148,15 @@ $list = $tokens->getTokens();
                         <td>
                             <?php foreach ($token['paths'] ?? [] as $path) { ?>
                                 <code class="me-2"><?= htmlspecialchars($path) ?></code>
+                            <?php } ?>
+                        </td>
+                        <td class="small">
+                            <?php if (empty($token['tools'])) { ?>
+                                <span class="text-body-secondary">all</span>
+                            <?php } else { ?>
+                                <?php foreach ($token['tools'] as $toolName) { ?>
+                                    <code class="me-2"><?= htmlspecialchars($toolName) ?></code>
+                                <?php } ?>
                             <?php } ?>
                         </td>
                         <td class="small"><?= date("Y-m-d H:i", (int)($token['createdAt'] ?? 0)) ?></td>

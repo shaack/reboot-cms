@@ -13,7 +13,7 @@ The AddOn is off by default. As long as it is not listed under `addons`, there i
    ```
 
 2. Reload the admin. The menu "AddOns (n)" now has the entry "MCP".
-3. Create a token there: a name, read or read and write, and the paths it may reach. The page shows the token once, together with the command that connects Claude Code:
+3. Create a token there: a name, read or read and write, the paths it may reach and, if it should, the only tools it may call. The page shows the token once, together with the command that connects Claude Code:
 
    ```bash
    claude mcp add --transport http example-com https://example.com/mcp --header "Authorization: Bearer rbt_…"
@@ -38,6 +38,7 @@ mcp:
 
 - A token reads, or reads and writes.
 - A token reaches only the pages below its paths. `/` means all pages, `/blog` the pages in `site/pages/blog/`, `/customers/acme` only the pages of that customer.
+- A token can be limited to single tools, `read_customer_tasks` and `update_customer_tasks` for a script that only updates one block, for example. Then it may call nothing else, not even `read_page`. Without tools it may use every tool its access allows.
 - Only a SHA-256 hash of the token is stored, in `local/mcp/tokens.json`. A lost token cannot be shown again, revoke it and create a new one.
 - After five requests with a wrong token from one IP address, further requests from there are refused for 15 minutes.
 
