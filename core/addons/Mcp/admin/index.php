@@ -91,7 +91,7 @@ $list = $tokens->getTokens();
                 <div class="col-md-3">
                     <label class="form-label small mb-1" for="token-name">Name</label>
                     <input id="token-name" name="name" class="form-control form-control-sm" required
-                           placeholder="Claude Code" autocomplete="off">
+                           placeholder="What the token is for" autocomplete="off">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small mb-1" for="token-access">Access</label>
