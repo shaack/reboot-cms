@@ -100,8 +100,8 @@ blocks:
     link: seminars
   - type: features
     heading:
-      en: Everything a small site needs
-      de: Alles, was eine kleine Site braucht
+      en: Everything a site needs
+      de: Alles, was eine Site braucht
     items:
       - title:
           en: Markdown, if you like
