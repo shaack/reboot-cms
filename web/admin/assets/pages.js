@@ -1046,7 +1046,8 @@
     function jumpToLine(line) {
         var st = pageStructure(editorTextarea.value);
         var offset = st.lineStarts[Math.min(line, st.lineStarts.length - 1)] || 0;
-        editorTextarea.focus();
+        // the textarea scrolls itself below, focus() must not move the window
+        editorTextarea.focus({preventScroll: true});
         editorTextarea.setSelectionRange(offset, offset);
         var top = editorOffsetTop(offset);
         if (top === null) {
@@ -1589,6 +1590,19 @@
         return null;
     }
 
+    // Scrolls the box of the form to the panel. scrollIntoView() would move every
+    // ancestor that can scroll, in Safari also the window with the preview in it.
+    // Without the box, in a narrow window, the window itself scrolls.
+    function scrollFormTo(panel) {
+        var box = panel.closest('.structured-page-fields');
+        if (box && getComputedStyle(box).overflowY === 'auto') {
+            var top = panel.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+            box.scrollTo({top: top, behavior: 'smooth'});
+        } else {
+            panel.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+    }
+
     function outlineBriefly(element) {
         var previous = element.style.outline;
         var previousOffset = element.style.outlineOffset;
@@ -1704,6 +1718,8 @@
         var doc = e.currentTarget;
         var element = e.target.nodeType === Node.ELEMENT_NODE ? e.target : e.target.parentNode;
         if (!element) return;
+        // a click selects the block, a link would load another page into the preview
+        if (element.closest('a[href]')) e.preventDefault();
         if (structuredForm) {
             var markers = [];
             var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_COMMENT);
@@ -1718,7 +1734,7 @@
             if (panel.classList.contains('is-collapsed')) {
                 panel.querySelector('[data-block-collapse]').click();
             }
-            panel.scrollIntoView({behavior: 'smooth', block: 'start'});
+            scrollFormTo(panel);
             outlineBriefly(panel);
         } else if (editorTextarea) {
             var block = markerAround(previewMarkers(doc), element);
