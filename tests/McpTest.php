@@ -5,6 +5,7 @@ namespace Shaack\Tests;
 use Shaack\Reboot\AddOns\Mcp\Server;
 use Shaack\Reboot\AddOns\Mcp\Tokens;
 use Shaack\Reboot\AddOns\Mcp\Tools;
+use Shaack\Reboot\AddOns\Mcp\Uploads;
 use Shaack\Reboot\Site;
 
 class McpTest
@@ -53,7 +54,8 @@ class McpTest
 
     private function tools(array $paths = ["/"], string $access = "read", array $only = []): Tools
     {
-        return new Tools($this->site, $this->tmpDir, "", ["id" => "x", "name" => "Test", "access" => $access, "paths" => $paths, "tools" => $only]);
+        return new Tools($this->site, $this->tmpDir, "", ["id" => "x", "name" => "Test", "access" => $access, "paths" => $paths, "tools" => $only],
+            50, "https://example.com/mcp/upload/");
     }
 
     private function rpc(Tools $tools, string $method, array $params = []): array
@@ -294,6 +296,36 @@ class McpTest
         $this->fails(fn() => $tools->call("upload_media", ["path" => "/new/b.png", "base64" => base64_encode("other")]), "exists");
         $tools->call("upload_media", ["path" => "/new/b.png", "base64" => base64_encode("other"), "md5" => md5("png")]);
         Assert::equals("other", file_get_contents($this->tmpDir . "/web/media/new/b.png"));
+    }
+
+    public function testCreateUploadUrl(): void
+    {
+        $this->fails(fn() => $this->tools(["/blog"], "write")->call("create_upload_url", ["path" => "/a.png"]), "path /");
+        $this->fails(fn() => $this->tools(["/"], "read")->call("create_upload_url", ["path" => "/a.png"]), "write access");
+        $tools = $this->tools(["/"], "write");
+        $this->fails(fn() => $tools->call("create_upload_url", ["path" => "/a.html"]), "Invalid media path");
+        // an existing file needs its md5 already here, not only after the file was sent
+        $this->fails(fn() => $tools->call("create_upload_url", ["path" => "/products/a.jpg"]), "exists");
+        $result = $tools->call("create_upload_url", ["path" => "/products/a.jpg", "md5" => md5("jpg")]);
+        Assert::equals("PUT", $result["method"]);
+        Assert::true(str_starts_with($result["url"], "https://example.com/mcp/upload/"));
+        $id = substr($result["url"], strlen("https://example.com/mcp/upload/"));
+        $stored = json_decode(file_get_contents($this->tmpDir . "/local/mcp/uploads.json"), true);
+        Assert::false(str_contains(json_encode($stored), $id), "only the hash of the id is stored");
+        $upload = (new Uploads($this->tmpDir))->redeem($id);
+        Assert::equals(["path" => "/products/a.jpg", "md5" => md5("jpg"), "tokenId" => "x"], array_diff_key($upload, ["expiresAt" => 0]));
+    }
+
+    public function testUploadAddressWorksOnceAndExpires(): void
+    {
+        $uploads = new Uploads($this->tmpDir);
+        $id = $uploads->create("/a.png", "", "x", 1000)["id"];
+        Assert::equals("/a.png", $uploads->redeem($id, 1001)["path"]);
+        Assert::equals(null, $uploads->redeem($id, 1002));
+        $id = $uploads->create("/b.png", "", "x", 1000)["id"];
+        Assert::equals(null, $uploads->redeem($id, 1000 + Uploads::TTL));
+        Assert::equals(null, $uploads->redeem("not-an-id"));
+        Assert::equals([], json_decode(file_get_contents($this->tmpDir . "/local/mcp/uploads.json"), true), "expired ones are dropped");
     }
 
     public function testTokenLimitedToTools(): void

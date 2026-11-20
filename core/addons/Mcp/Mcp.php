@@ -9,11 +9,14 @@ namespace Shaack\Reboot\AddOns;
 
 use Shaack\Logger;
 use Shaack\Reboot\AddOn;
+use Shaack\Reboot\AddOns\Mcp\Media;
 use Shaack\Reboot\AddOns\Mcp\Server;
 use Shaack\Reboot\AddOns\Mcp\Tokens;
 use Shaack\Reboot\AddOns\Mcp\Tools;
+use Shaack\Reboot\AddOns\Mcp\Uploads;
 use Shaack\Reboot\LoginThrottle;
 use Shaack\Reboot\Request;
+use Shaack\Reboot\Session;
 
 /**
  * Built-in AddOn that opens the content of the site to AI agents through the
@@ -34,6 +37,9 @@ use Shaack\Reboot\Request;
  *
  * The endpoint speaks the Streamable HTTP transport without sessions: a POST
  * with one JSON-RPC message, answered with JSON.
+ *
+ * Below it, `/mcp/upload/<id>` takes a file for `web/media` with a plain PUT,
+ * at an address the tool create_upload_url made, see Uploads.
  */
 class Mcp extends AddOn
 {
@@ -68,7 +74,12 @@ class Mcp extends AddOn
      */
     public function preRender(Request $request): bool
     {
-        if ($request->getPath() !== $this->path) {
+        $path = $request->getPath();
+        if (str_starts_with($path, $this->path . '/upload/')) {
+            $this->serveUpload(substr($path, strlen($this->path . '/upload/')));
+            return false;
+        }
+        if ($path !== $this->path) {
             return true;
         }
         $this->serve();
@@ -113,10 +124,58 @@ class Mcp extends AddOn
         if (isset($message['method']) && $message['method'] === 'tools/call') {
             Logger::info("MCP: '" . $token['name'] . "' calls " . ($message['params']['name'] ?? '?'));
         }
+        $uploadUrl = (Session::isHttps() ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost')
+            . $this->site->getWebPath() . $this->path . '/upload/';
         $tools = new Tools($this->site, $this->reboot->getBaseFsPath(), $this->reboot->getBaseWebPath(), $token,
-            (int)($this->reboot->getConfig()['history']['maxVersions'] ?? 50));
+            (int)($this->reboot->getConfig()['history']['maxVersions'] ?? 50), $uploadUrl);
         $response = (new Server($tools, $this->version()))->handle($message);
         $this->respond($response === null ? 202 : 200, $response);
+    }
+
+    /**
+     * A file sent to an upload address. The address is the authorization, it
+     * works once and only for its path, as long as its token is not revoked.
+     */
+    private function serveUpload(string $id): void
+    {
+        header('Cache-Control: no-store');
+        if (!$this->isSameOrigin()) {
+            $this->respond(403, ['error' => 'Requests from web pages of other origins are not allowed']);
+            return;
+        }
+        if (!in_array($_SERVER['REQUEST_METHOD'], ['PUT', 'POST'], true)) {
+            header('Allow: PUT');
+            $this->respond(405, ['error' => 'Send the file with PUT']);
+            return;
+        }
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        $throttle = new LoginThrottle($this->reboot->getBaseFsPath() . '/local/mcp/.attempts');
+        if ($throttle->isBlocked($ip)) {
+            $this->respond(429, ['error' => 'Too many requests with a wrong address, try again later']);
+            return;
+        }
+        $upload = (new Uploads($this->reboot->getBaseFsPath()))->redeem($id);
+        if ($upload === null) {
+            $throttle->registerFailure($ip);
+            $this->respond(404, ['error' => 'Unknown upload address, it was used or has expired. Get a new one with create_upload_url']);
+            return;
+        }
+        $token = $this->getTokens()->getTokens()[$upload['tokenId'] ?? ''] ?? null;
+        if ($token === null) {
+            $this->respond(403, ['error' => 'The token of this upload address was revoked']);
+            return;
+        }
+        // one byte more than allowed, to know that it is too much
+        $content = (string)stream_get_contents(fopen('php://input', 'rb'), Media::MAX_BYTES + 1);
+        try {
+            $result = (new Media($this->reboot->getBaseFsPath(), $this->reboot->getBaseWebPath()))
+                ->store($token, (string)$upload['path'], $content, (string)($upload['md5'] ?? ''));
+        } catch (\InvalidArgumentException $e) {
+            $this->respond(strlen($content) > Media::MAX_BYTES ? 413 : 400, ['error' => $e->getMessage()]);
+            return;
+        }
+        Logger::info("MCP: '" . ($token['name'] ?? '?') . "' uploaded " . $result['path']);
+        $this->respond(201, $result);
     }
 
     private function respond(int $status, ?array $body): void

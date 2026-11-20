@@ -29,27 +29,28 @@ use Symfony\Component\Yaml\Yaml;
  */
 class Tools
 {
-    /** What upload_media stores. No SVG and no HTML, they could carry scripts. */
-    public const MEDIA_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'pdf', 'mp4', 'webm', 'mp3', 'zip', 'txt', 'csv'];
-    public const MEDIA_MAX_BYTES = 20 * 1024 * 1024;
-
     private Site $site;
     private string $baseFsPath;
     private string $baseWebPath;
     private array $token;
     private Pages $pages;
+    private string $uploadUrl;
     private ?array $tools = null;
 
     /**
      * @param array $token the entry of the token that makes the request, see Tokens
+     * @param string $uploadUrl the absolute address the upload addresses start with,
+     *        `https://example.com/mcp/upload/`, see Uploads
      */
-    public function __construct(Site $site, string $baseFsPath, string $baseWebPath, array $token, int $historyMaxVersions = 50)
+    public function __construct(Site $site, string $baseFsPath, string $baseWebPath, array $token, int $historyMaxVersions = 50,
+                                string $uploadUrl = '')
     {
         $this->site = $site;
         $this->baseFsPath = rtrim($baseFsPath, '/');
         $this->baseWebPath = rtrim($baseWebPath, '/');
         $this->token = $token;
         $this->pages = new Pages($site, $baseFsPath, $token, $historyMaxVersions);
+        $this->uploadUrl = $uploadUrl;
     }
 
     /**
@@ -168,7 +169,7 @@ class Tools
                 'handler' => fn(array $args) => $this->pages->delete((string)($args['path'] ?? ''), (string)($args['md5'] ?? '')),
             ],
             'upload_media' => [
-                'description' => 'Stores a file in web/media, an image or a download for a page. Only for tokens with the path /. An existing file is only replaced with the md5 of its current content.',
+                'description' => 'Stores a small file in web/media, an image or a download for a page, as base64. For a larger file or several files use create_upload_url, base64 costs a lot of context. Only for tokens with the path /. An existing file is only replaced with the md5 of its current content.',
                 'inputSchema' => ['type' => 'object', 'properties' => [
                     'path' => ['type' => 'string', 'description' => 'The file below web/media, for example /blog/2026/team.jpg'],
                     'base64' => ['type' => 'string', 'description' => 'The content of the file, base64 encoded'],
@@ -176,6 +177,15 @@ class Tools
                 ], 'required' => ['path', 'base64']],
                 'access' => 'write',
                 'handler' => fn(array $args) => $this->uploadMedia((string)($args['path'] ?? ''), (string)($args['base64'] ?? ''), (string)($args['md5'] ?? '')),
+            ],
+            'create_upload_url' => [
+                'description' => 'Returns an address to send a file for web/media to with a plain HTTP PUT, for example curl -T team.jpg <url>. The file does not pass through the conversation, better than upload_media for images and larger files. The address works once, for 15 minutes, and only for this path, up to 20 MB. Only for tokens with the path /. An existing file is only replaced with the md5 of its current content.',
+                'inputSchema' => ['type' => 'object', 'properties' => [
+                    'path' => ['type' => 'string', 'description' => 'The file below web/media, for example /blog/2026/team.jpg'],
+                    'md5' => ['type' => 'string', 'description' => 'The md5 of the file to replace, empty for a new file'],
+                ], 'required' => ['path']],
+                'access' => 'write',
+                'handler' => fn(array $args) => $this->createUploadUrl((string)($args['path'] ?? ''), (string)($args['md5'] ?? '')),
             ],
             'list_translations' => [
                 'description' => 'Lists the translations that are missing, outdated because their source changed, or of unknown state, for the pages this token may read. A Markdown page has a file per language, a structured page holds a value per language in its text fields.',
@@ -236,35 +246,37 @@ class Tools
 
     private function uploadMedia(string $path, string $base64, string $md5): array
     {
-        if (!in_array('/', $this->token['paths'] ?? [], true)) {
-            throw new \InvalidArgumentException("Only a token with the path / may upload media");
-        }
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        if (!preg_match('#^(/[A-Za-z0-9_-][A-Za-z0-9._-]*)+$#', $path) || str_contains($path, '..')
-            || !in_array($extension, self::MEDIA_EXTENSIONS, true)) {
-            throw new \InvalidArgumentException("Invalid media path '$path', allowed are " . implode(', ', self::MEDIA_EXTENSIONS));
-        }
+        Media::check($this->token, $path);
         $content = base64_decode($base64, true);
         if ($content === false || $content === '') {
             throw new \InvalidArgumentException("The content is no valid base64");
         }
-        if (strlen($content) > self::MEDIA_MAX_BYTES) {
-            throw new \InvalidArgumentException("The file is larger than " . (self::MEDIA_MAX_BYTES >> 20) . " MB");
+        return $this->media()->store($this->token, $path, $content, $md5);
+    }
+
+    private function createUploadUrl(string $path, string $md5): array
+    {
+        Media::check($this->token, $path);
+        if ($this->uploadUrl === '') {
+            throw new \RuntimeException("This endpoint offers no upload addresses");
         }
-        $root = realpath($this->baseFsPath . '/web/media');
-        $file = $root . $path;
-        $parent = dirname($file);
-        if (!is_dir($parent) && !@mkdir($parent, 0755, true) && !is_dir($parent)) {
-            throw new \RuntimeException("Could not create the folder of $path");
-        }
-        if (!FileSystemUtils::isInside(realpath($parent), $root)) {
-            throw new \InvalidArgumentException("Invalid media path '$path'");
-        }
-        if (is_file($file) && md5_file($file) !== $md5) {
-            throw new \InvalidArgumentException("'$path' exists. Pass the md5 of its current content to replace it");
-        }
-        FileSystemUtils::writeAtomic($file, $content);
-        return ['path' => $path, 'url' => $this->baseWebPath . '/media' . $path, 'md5' => md5($content), 'size' => strlen($content)];
+        // refused now already, not only after the file was sent
+        $this->media()->checkReplace($path, $md5);
+        $upload = (new Uploads($this->baseFsPath))->create($path, $md5, (string)($this->token['id'] ?? ''));
+        $url = $this->uploadUrl . $upload['id'];
+        return [
+            'url' => $url,
+            'method' => 'PUT',
+            'path' => $path,
+            'expiresAt' => gmdate('c', $upload['expiresAt']),
+            'maxBytes' => Media::MAX_BYTES,
+            'example' => 'curl -sS -T <file> ' . $url,
+        ];
+    }
+
+    private function media(): Media
+    {
+        return new Media($this->baseFsPath, $this->baseWebPath);
     }
 
     private function translations(): Translations

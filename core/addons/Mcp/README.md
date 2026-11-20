@@ -52,7 +52,8 @@ mcp:
 | `write_page` | write | Creates or replaces a page |
 | `delete_page` | write | Deletes a page |
 | `write_translation` | write | Writes a translation |
-| `upload_media` | write | Stores an image or a download in `web/media` |
+| `upload_media` | write | Stores a small image or download in `web/media`, sent as base64 |
+| `create_upload_url` | write | An address to send a file for `web/media` to with a plain PUT |
 
 Pages are addressed by their file in `site/pages/`, `/blog/first-post.md` or `/about.de.md`. PHP pages are code and stay out of reach, so do templates, blueprints, configuration and everything in `local/`.
 
@@ -62,7 +63,8 @@ Pages are addressed by their file in `site/pages/`, `/blog/first-post.md` or `/a
 - **History.** Before a page changes or is deleted, its previous version goes into the history of the admin, `local/history/pages/`. In the admin, *… › History* of the page shows it and restores it.
 - **Log.** Every change is a line in `local/mcp/changes.log` with time, token, action, page and the md5 before and after.
 - **Checks.** A structured page must be valid YAML. Block types that do not exist and the problems the editor of the admin would show come back as `problems`, the page is written anyway, like in the admin.
-- **Media.** `upload_media` needs a token with the path `/`. It takes images, PDF, audio, video, ZIP, text and CSV up to 20 MB, no SVG and no HTML, which could carry scripts. An existing file is only replaced with the md5 of its current content.
+- **Media.** `upload_media` and `create_upload_url` need a token with the path `/`. They take images, PDF, audio, video, ZIP, text and CSV up to 20 MB, no SVG and no HTML, which could carry scripts. An existing file is only replaced with the md5 of its current content.
+- **Upload addresses.** A tool call is JSON, so `upload_media` takes the file as base64 text, and the agent has to write all of it into its context. For a screenshot that is already a lot. `create_upload_url` returns an address below the endpoint, `/mcp/upload/<id>`, and the agent sends the file there with `curl -T shot.png <url>`. The address works once, for 15 minutes, only for the path it was made for, and only as long as its token is not revoked. `local/mcp/uploads.json` keeps the open addresses, with a hash of the id only. A wrong address counts as a failed attempt, like a wrong token.
 
 ## Translations
 
