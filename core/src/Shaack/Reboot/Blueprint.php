@@ -59,6 +59,7 @@ class Blueprint
 
     private string $name;
     private string $title;
+    private string $help = "";
     private ?Site $site;
     private array $fields = [];
     private ?string $sortField = null;
@@ -76,6 +77,7 @@ class Blueprint
         $this->name = $name;
         $this->site = $site;
         $this->title = (string)($definition["title"] ?? ucfirst($name));
+        $this->help = trim((string)($definition["help"] ?? ""));
         $this->markdown = !empty($definition["markdown"]);
         $this->convert = is_array($definition["convert"] ?? null) ? $definition["convert"] : null;
         $url = trim((string)($definition["url"] ?? ""), "/");
@@ -216,6 +218,17 @@ class Blueprint
     public function getTitle(): string
     {
         return $this->title;
+    }
+
+    /**
+     * A hint for the editors next to the title, `help` in the blueprint, one
+     * line of Markdown, so it may link to a collection in the admin, for
+     * example `[Edit the news](data?collection=news)`. The admin shows it
+     * at the top of an open block.
+     */
+    public function getHelp(): string
+    {
+        return $this->help;
     }
 
     /**

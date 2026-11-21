@@ -357,6 +357,9 @@ class FieldForm
                     . self::help($props, $error) . '</div>';
             }
         } else if ($blueprint) {
+            if ($blueprint->getHelp() !== "") {
+                $html .= '<p class="form-text field-block-help">' . self::inlineMarkdown($blueprint->getHelp()) . '</p>';
+            }
             $html .= self::render($blueprint, $values, $errors, $name, $path);
         } else {
             $html .= '<p class="text-danger small mb-0">There is no block type \'' . self::e($type) . '\' with a blueprint in <code>site/blocks/' . self::e($type) . '/</code>. Its values are kept as they are.</p>';
@@ -382,6 +385,17 @@ class FieldForm
             $html .= '<div class="form-text">' . self::e((string)$props["help"]) . '</div>';
         }
         return $html;
+    }
+
+    /**
+     * One line of Markdown, links and emphasis, from a blueprint. Safe mode
+     * escapes HTML in it, a link opens in the admin like any other.
+     */
+    private static function inlineMarkdown(string $markdown): string
+    {
+        $parsedown = new \Parsedown();
+        $parsedown->setSafeMode(true);
+        return $parsedown->line($markdown);
     }
 
     private static function e(string $text): string

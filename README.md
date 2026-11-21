@@ -708,6 +708,8 @@ fields:
 
 The template reads the fields like an entry: `get()`, `html()`, `date()`, `items()` and `entry()`. The fields are the config of the block as well, so `inverse: true` and `disabled: true` work as in a Markdown page. The values next to `blocks`, here `title` and `description`, are the config of the page, `$page->meta('title')` in the template reads them like frontmatter.
 
+`help` next to `title` is a hint for the editors, one line of Markdown that the admin shows at the top of the open block. It may link into the admin, a block that lists the entries of a collection points to where they are edited: `help: "The news are edited under [Data › News](data?collection=news)."`
+
 The fields of the page itself are a title, a description and the blocks. `site/blueprints/page.yml` replaces them with your own, it needs one field of the type `blocks`. A block type with a blueprint is offered in structured pages only. With `markdown: true` in its blueprint it is offered in Markdown pages as well, its template then reads the Markdown when `$block->getBlueprint()` is null, like `seminar-teaser/seminar-teaser.php` of the demo. A Markdown block may live in a folder as well, `site/blocks/<name>/<name>.php`. A file and a folder may share a name: Markdown pages and blocks with `markdown` take the file `site/blocks/<name>.php`, blocks with fields the folder. A block type without its own template takes the other one. A Markdown page and a structured page of the same name are one address, the Markdown page wins.
 
 A structured page can hold the blocks of Markdown pages too. Such a block has `markdown` instead of fields, the other values are its config, and it renders with its Markdown template as in a Markdown page:

@@ -165,6 +165,15 @@ class StructuredPageTest
         Assert::null(Blueprint::forBlock($this->site, "text"), "a single file is a Markdown block");
     }
 
+    public function testBlockHelpLinksInTheAdmin(): void
+    {
+        $this->block("all-news", "title: All news\nhelp: \"The entries are [news](data?collection=news), <b>not</b> fields\"\nfields: {}\n", '<p>news</p>');
+        $blueprint = Blueprint::forPage($this->site);
+        $html = \Shaack\Reboot\AddOns\Admin\FieldForm::render($blueprint, ["blocks" => [["type" => "all-news"], ["type" => "intro", "heading" => "Hi"]]]);
+        Assert::contains('<p class="form-text field-block-help">The entries are <a href="data?collection=news">news</a>, &lt;b&gt;not&lt;/b&gt; fields</p>', $html, "the help of a block type, Markdown with links, HTML escaped");
+        Assert::equals(substr_count($html, "[_type]\" value=\"all-news\""), substr_count($html, "field-block-help"), "a help only in the blocks whose blueprint has one, the template of a new block included");
+    }
+
     public function testFormInputBecomesCleanYaml(): void
     {
         $blueprint = Blueprint::forPage($this->site);
