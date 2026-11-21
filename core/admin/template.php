@@ -173,7 +173,14 @@ $editorTools = $editor['tools'] ?? $defaultEditorTools;
                                        href="#" role="button" data-bs-toggle="dropdown"
                                        aria-expanded="false"><?= htmlspecialchars($label) ?></a>
                                     <ul class="dropdown-menu">
-                                        <?php foreach ($path as $subLabel => $subPath) { ?>
+                                        <?php foreach ($path as $subLabel => $subPath) {
+                                            if (preg_match('#^https?://#', $subPath)) {
+                                                // an external page, opens in a new tab, after a divider ?>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="<?= htmlspecialchars($subPath) ?>"
+                                                   target="_blank" rel="noopener"><?= htmlspecialchars($subLabel) ?></a></li>
+                                            <?php continue;
+                                            } ?>
                                             <li><a class="dropdown-item <?= $request->getPath() == $subPath ? "active" : "" ?>"
                                                    data-nav-path="<?= htmlspecialchars($subPath) ?>"
                                                    href="<?= $site->getWebPath() . $subPath ?>"><?= htmlspecialchars($subLabel) ?></a></li>
