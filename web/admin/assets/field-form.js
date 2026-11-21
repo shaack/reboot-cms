@@ -36,6 +36,13 @@ const resizeObserver = new ResizeObserver(entries => entries.forEach(entry => {
 
 const forms = document.querySelectorAll("form[data-field-form]")
 
+// the save button is primary while there is something to save
+function markSaveButton(button, unsaved) {
+    if (!button) return
+    button.classList.toggle("btn-primary", unsaved)
+    button.classList.toggle("btn-outline-secondary", !unsaved)
+}
+
 // loads the page anew with what is saved. A navigation, not a reload, so the
 // browser does not fill the form with the values typed before.
 function reloadSaved() {
@@ -44,7 +51,7 @@ function reloadSaved() {
 let created = 0
 
 forms.forEach(form => {
-    const saveDot = form.querySelector("[data-save-dot]")
+    const saveButton = form.querySelector("#save-button")
     const undoButton = form.querySelector("[data-undo-changes]")
     let dirty = false
     // counts the changes, so a save that is answered later knows whether more came
@@ -52,7 +59,7 @@ forms.forEach(form => {
     const markDirty = () => {
         dirty = true
         changes++
-        if (saveDot) saveDot.classList.remove("d-none")
+        markSaveButton(saveButton, true)
         if (undoButton) undoButton.classList.remove("d-none")
         // the page Pages updates its preview on it
         form.dispatchEvent(new CustomEvent("fieldchange"))
@@ -73,7 +80,7 @@ forms.forEach(form => {
     form.clean = (count = changes) => {
         if (count !== changes) return
         dirty = false
-        if (saveDot) saveDot.classList.add("d-none")
+        markSaveButton(saveButton, false)
         if (undoButton) undoButton.classList.add("d-none")
     }
     if (undoButton) undoButton.addEventListener("click", () => {

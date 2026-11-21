@@ -165,8 +165,8 @@ fields:
                         <label class="form-check-label" for="field-draft">Draft, not shown on the website</label>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <button type="submit" class="btn btn-sm btn-primary px-3" id="save-button">Save<span class="unsaved-dot d-none" aria-hidden="true" data-save-dot></span></button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary d-none" data-undo-changes title="Undo the changes since the last save">Undo changes</button>
+                        <button type="submit" class="btn btn-sm <?= !$entry || $actionError ? "btn-primary" : "btn-outline-secondary" ?> px-3" id="save-button">Save</button>
+                        <button type="button" class="btn btn-sm btn-outline-warning d-none" data-undo-changes title="Undo the changes since the last save">Undo changes</button>
                         <a class="btn btn-sm btn-outline-secondary" href="data?collection=<?= urlencode($collectionName) ?>">Close</a>
                         <?php if ($entry) { ?>
                             <button type="button" class="btn btn-sm btn-outline-danger ms-auto" id="delete-button">Delete</button>
