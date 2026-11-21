@@ -383,6 +383,21 @@ class Updater
             }
             file_put_contents($localPath, json_encode($localData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
         }
+        self::resetOpcache();
+    }
+
+    /**
+     * Drops the compiled PHP files from the OPcache. Without it a server that
+     * checks the files for changes only now and then runs parts of the old
+     * version for a while, next to the new configuration. The reset may be
+     * restricted by the host (opcache.restrict_api), then the cache catches up
+     * on its own.
+     */
+    private static function resetOpcache(): void
+    {
+        if (function_exists("opcache_reset") && @opcache_reset()) {
+            Logger::info("Updater: OPcache reset");
+        }
     }
 
     private static function deleteDirectory(string $dir): void
