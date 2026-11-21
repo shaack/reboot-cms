@@ -34,7 +34,7 @@ textarea.cm-md-editor {
 
 .page-location {
   display: inline-grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: auto;
   align-items: center;
   align-self: center;
   order: 1;
@@ -55,22 +55,14 @@ textarea.cm-md-editor {
   font-size: 0.75em;
   vertical-align: 0;
 }
-.page-location .unsaved-dot {
-  grid-column: 2;
-  grid-row: 1;
-  margin-left: 0;
-}
 @media (min-width: 992px) {
   .page-location {
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto;
     column-gap: 0.75rem;
   }
   .page-location a {
     grid-column: 2;
     grid-row: 1;
-  }
-  .page-location .unsaved-dot {
-    grid-column: 3;
   }
 }
 
@@ -80,16 +72,6 @@ textarea.cm-md-editor {
 }
 #sidebar-toggle:hover, #sidebar-toggle[aria-expanded=false], #sidebar-toggle[aria-pressed=false], #preview-panel-toggle:hover, #preview-panel-toggle[aria-expanded=false], #preview-panel-toggle[aria-pressed=false] {
   color: var(--bs-body-color) !important;
-}
-
-.unsaved-dot {
-  display: inline-block;
-  width: 0.45rem;
-  height: 0.45rem;
-  margin-left: 0.4rem;
-  border-radius: 50%;
-  background-color: var(--bs-warning);
-  vertical-align: middle;
 }
 
 :root {

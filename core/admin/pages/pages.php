@@ -121,7 +121,6 @@ if ($editPageName) {
         . '<code>' . htmlspecialchars(ltrim($editPageName, '/')) . '</code>'
         . '<a href="' . htmlspecialchars($viewUrl) . '" target="_blank" title="View the page in a new tab" id="page-view-link">'
         . '<span>' . htmlspecialchars($viewPath) . '</span>' . AdminHelper::icon('external') . '</a>'
-        . '<span class="unsaved-dot d-none" id="unsaved-badge" title="Unsaved changes" role="img" aria-label="Unsaved changes"></span>'
         . '</span>';
 }
 ?>

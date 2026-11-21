@@ -137,16 +137,14 @@
     var pageUnsaved = false;
     var editorTextarea = document.querySelector('textarea[name="edited"]');
     var savedContent = editorTextarea ? editorTextarea.value : '';
-    var unsavedBadge = document.getElementById('unsaved-badge');
     // the structured form marks its own save button, see field-form.js
     var saveButton = asyncForm ? null : document.getElementById('save-button');
     // the structured form handles its own button, see field-form.js
     var undoButton = asyncForm ? null : document.querySelector('[data-undo-changes]');
 
-    // shown next to the page name and on the save button
+    // the save button is primary and Undo changes shown while there are changes
     function updateUnsaved() {
         pageUnsaved = editorTextarea ? editorTextarea.value !== savedContent : false;
-        if (unsavedBadge) unsavedBadge.classList.toggle('d-none', !pageUnsaved);
         if (saveButton) {
             saveButton.classList.toggle('btn-primary', pageUnsaved);
             saveButton.classList.toggle('btn-outline-secondary', !pageUnsaved);
