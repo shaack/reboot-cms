@@ -65,4 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     </div>
+    <p class="text-center small text-body-secondary mt-3">
+        Powered by <a href="https://shaack.com/products/reboot-cms" target="_blank" rel="noopener"
+                      class="link-secondary">Reboot CMS</a>, the Agent-Friendly CMS
+    </p>
 </div>
