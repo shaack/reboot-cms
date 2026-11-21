@@ -255,6 +255,7 @@ description: Shown by search engines
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <textarea name="edited" class="form-control cm-md-editor markdown editor-font"><?= htmlspecialchars(file_get_contents($fullPath)) ?></textarea>
                     <button type="button" class="btn btn-sm btn-primary px-3" onclick="savePageAsync()" id="save-button">Save<span class="unsaved-dot d-none" aria-hidden="true"></span></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2 d-none" data-undo-changes title="Undo the changes since the last save">Undo changes</button>
                     <a class="btn btn-sm btn-outline-secondary ms-2" href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" title="Open the saved page in a new tab"><?= AdminHelper::icon("external", "me-1") ?>Open page</a>
                     <?php /* <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleStructuredEditor()" id="structured-toggle">Structured</button> */ ?>
                     <?php $currentBaseName = basename($editPageName, '.md'); ?>

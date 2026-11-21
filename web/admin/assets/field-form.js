@@ -35,10 +35,17 @@ const resizeObserver = new ResizeObserver(entries => entries.forEach(entry => {
 }))
 
 const forms = document.querySelectorAll("form[data-field-form]")
+
+// loads the page anew with what is saved. A navigation, not a reload, so the
+// browser does not fill the form with the values typed before.
+function reloadSaved() {
+    window.location.replace(window.location.href.split("#")[0])
+}
 let created = 0
 
 forms.forEach(form => {
     const saveDot = form.querySelector("[data-save-dot]")
+    const undoButton = form.querySelector("[data-undo-changes]")
     let dirty = false
     // counts the changes, so a save that is answered later knows whether more came
     let changes = 0
@@ -46,6 +53,7 @@ forms.forEach(form => {
         dirty = true
         changes++
         if (saveDot) saveDot.classList.remove("d-none")
+        if (undoButton) undoButton.classList.remove("d-none")
         // the page Pages updates its preview on it
         form.dispatchEvent(new CustomEvent("fieldchange"))
     }
@@ -66,7 +74,13 @@ forms.forEach(form => {
         if (count !== changes) return
         dirty = false
         if (saveDot) saveDot.classList.add("d-none")
+        if (undoButton) undoButton.classList.add("d-none")
     }
+    if (undoButton) undoButton.addEventListener("click", () => {
+        if (!window.confirm("Undo all changes since the last save?")) return
+        form.clean()
+        reloadSaved()
+    })
 
     restoreFolds(form)
     syncFoldAll(form)

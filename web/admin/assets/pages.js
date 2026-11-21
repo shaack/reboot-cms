@@ -139,12 +139,22 @@
     var savedContent = editorTextarea ? editorTextarea.value : '';
     var unsavedBadge = document.getElementById('unsaved-badge');
     var unsavedDot = document.querySelector('#save-button .unsaved-dot');
+    // the structured form handles its own button, see field-form.js
+    var undoButton = asyncForm ? null : document.querySelector('[data-undo-changes]');
 
     // shown next to the page name and on the save button
     function updateUnsaved() {
         pageUnsaved = editorTextarea ? editorTextarea.value !== savedContent : false;
         if (unsavedBadge) unsavedBadge.classList.toggle('d-none', !pageUnsaved);
         if (unsavedDot) unsavedDot.classList.toggle('d-none', !pageUnsaved);
+        if (undoButton) undoButton.classList.toggle('d-none', !pageUnsaved);
+    }
+    if (undoButton) {
+        undoButton.addEventListener('click', function () {
+            if (!window.confirm('Undo all changes since the last save?')) return;
+            pageUnsaved = false;
+            window.location.replace(window.location.href.split('#')[0]);
+        });
     }
 
     if (editorTextarea) {

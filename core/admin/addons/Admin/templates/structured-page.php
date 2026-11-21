@@ -108,6 +108,7 @@ try {
         </div>
         <div class="structured-page-actions">
             <button type="submit" class="btn btn-sm btn-primary px-3" id="save-button">Save<span class="unsaved-dot d-none" aria-hidden="true" data-save-dot></span></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 d-none" data-undo-changes title="Undo the changes since the last save">Undo changes</button>
             <a class="btn btn-sm btn-outline-secondary ms-2" href="<?= htmlspecialchars($viewUrl) ?>" target="_blank" title="Open the saved page in a new tab"><?= AdminHelper::icon("external", "me-1") ?>Open page</a>
             <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-fold-all title="Fold or unfold all blocks"><?= AdminHelper::icon("arrows-collapse", "me-1") ?><?= str_replace("<svg ", "<svg hidden ", AdminHelper::icon("arrows-expand", "me-1")) ?><span>Collapse all</span></button>
             <div class="dropdown d-inline-block ms-2">
