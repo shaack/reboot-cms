@@ -6,9 +6,21 @@
 # the .htaccess files). PHP's built-in server ignores .htaccess, so caching and
 # rewrite behaviour could not be tested with it.
 #
-# Ports from ~/Shared/Work/PORTS.md (own project 07): 21007 HTTP, 24007 SMTP,
-# 25007 the Mailpit web UI. Nothing is installed on the host; the images are
-# pulled by Podman on first run.
+# Nothing is installed on the host; the images are pulled by Podman on first run.
+#
+# Ports and container names come from local/run.env, a file for this machine
+# only that is ignored by Git. This script stays the same in every installation
+# and can be replaced on an update without losing the settings. Example:
+#
+#   HTTP_PORT=21008
+#   MAIL_PORT=24008
+#   MAIL_UI_PORT=25008
+#   CONTAINER_NAME=my-site
+#
+# Every key is optional. Without the file the defaults apply: 21007 HTTP,
+# 24007 SMTP, 25007 the Mailpit web UI, and a container name derived from the
+# project folder (the Mailpit container gets "-mail" appended). Arguments win
+# over the file: ./run.sh 3000 3025 3080 for HTTP, SMTP and the Mailpit UI.
 #
 # On the first start a local/config.local.yml is written that points the CMS at
 # Mailpit and raises the log level. That file is for this machine only and is
@@ -16,14 +28,27 @@
 
 set -e
 
-PORT="${1:-21007}"
-MAIL_PORT="${2:-24007}"
-MAIL_UI_PORT="${3:-25007}"
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+RUN_ENV="$ROOT/local/run.env"
+
+if [ -f "$RUN_ENV" ]; then
+    # shellcheck disable=SC1090
+    . "$RUN_ENV"
+fi
+
+# Lowercase letters, digits, dots, dashes and underscores are valid in a
+# container name, everything else in the folder name becomes a dash. The name
+# has to start with a letter or digit, "reboot-cms" if nothing is left.
+DEFAULT_NAME="$(basename "$ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_.-]/-/g; s/^[^a-z0-9]*//')"
+DEFAULT_NAME="${DEFAULT_NAME:-reboot-cms}"
+
+PORT="${1:-${HTTP_PORT:-21007}}"
+MAIL_PORT="${2:-${MAIL_PORT:-24007}}"
+MAIL_UI_PORT="${3:-${MAIL_UI_PORT:-25007}}"
+NAME="${CONTAINER_NAME:-$DEFAULT_NAME}"
+MAIL_NAME="$NAME-mail"
 IMAGE="php:8.5-apache"
 MAIL_IMAGE="docker.io/axllent/mailpit"
-NAME="reboot-cms"
-MAIL_NAME="reboot-cms-mail"
 LOCAL_CONFIG="$ROOT/local/config.local.yml"
 
 if ! command -v podman >/dev/null 2>&1; then
@@ -53,6 +78,7 @@ fi
 echo "Starting Reboot CMS (Apache + PHP in Podman) at http://localhost:$PORT"
 echo "Admin: http://localhost:$PORT/admin"
 echo "Mail:  http://localhost:$MAIL_UI_PORT (Mailpit, SMTP on $MAIL_PORT)"
+echo "Containers: $NAME, $MAIL_NAME"
 echo "Press Ctrl+C to stop"
 echo ""
 

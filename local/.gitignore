@@ -10,3 +10,4 @@
 /backups
 /*.lock
 /trusted-hosts.json
+/run.env

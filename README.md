@@ -57,7 +57,7 @@ Run the CMS in a Podman container with Apache and PHP, the same setup as a typic
 ./run.sh
 ```
 
-The site is available at `http://localhost:21007`, the admin at `http://localhost:21007/admin`. The script also starts [Mailpit](https://mailpit.axllent.org), a mail catcher, at `http://localhost:25007`, so every mail the CMS sends, for example a login link, shows up there instead of leaving your machine. On the first start the script writes `local/config.local.yml`, which points the CMS at Mailpit and raises the log level. That file is for your machine only and ignored by Git, see [Configuration](#configuration). Other ports: `./run.sh 3000 3025 3080` for HTTP, SMTP and the Mailpit UI.
+The site is available at `http://localhost:21007`, the admin at `http://localhost:21007/admin`. The script also starts [Mailpit](https://mailpit.axllent.org), a mail catcher, at `http://localhost:25007`, so every mail the CMS sends, for example a login link, shows up there instead of leaving your machine. On the first start the script writes `local/config.local.yml`, which points the CMS at Mailpit and raises the log level. That file is for your machine only and ignored by Git, see [Configuration](#configuration). Ports and container names can be set in `local/run.env`, which is also for your machine only and ignored by Git, so `run.sh` itself stays unchanged and can be replaced on an update. The keys are `HTTP_PORT`, `MAIL_PORT`, `MAIL_UI_PORT` and `CONTAINER_NAME`, all optional. Without them the ports above apply and the container is named after the project folder. Arguments win over the file, `./run.sh 3000 3025 3080` for HTTP, SMTP and the Mailpit UI.
 
 ### Docker / Podman
 

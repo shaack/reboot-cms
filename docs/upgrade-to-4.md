@@ -47,7 +47,7 @@ The README describes all of it in the sections "Data", "Entries as pages", "Stru
 
 1. Make a backup, in the admin under *Backup* or as a copy of the project folder.
 2. Download Reboot CMS 4 from the branch `distrib-4`: [reboot-cms-distrib-4.zip](https://github.com/shaack/reboot-cms/archive/refs/heads/distrib-4.zip).
-3. Replace `core/`, `web/admin/` and `vendor/` of your installation with the ones from the download. Replace `composer.json` as well, it holds the version, and the files `README.md`, `AGENTS.md`, `LICENSE`, `run.sh` and `test.sh` if you use them.
+3. Replace `core/`, `web/admin/` and `vendor/` of your installation with the ones from the download. Replace `composer.json` as well, it holds the version, and the files `README.md`, `AGENTS.md`, `LICENSE`, `run.sh` and `test.sh` if you use them. If you changed ports or container names in `run.sh`, move them to `local/run.env` first, see the README.
 4. Keep `site/`, `local/`, `web/index.php` and the rest of `web/` as they are.
 5. Open the admin. The page *Update* shows version 4 and from now on checks `distrib-4`.
 6. Optional: copy the form blocks you want from `site/blocks/` of the download into your site, and convert Markdown pages with *… › Convert to structured page*.

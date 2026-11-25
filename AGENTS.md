@@ -182,6 +182,7 @@ The admin's own classes live in `core/admin/addons/Admin/src/`: `FieldForm` (HTM
 composer install  # PHP dependencies, if vendor/ is missing
 ./run.sh          # Apache + PHP in Podman at http://localhost:21007, Mailpit at http://localhost:25007
                   # writes local/config.local.yml on the first start (not in Git), ./run.sh 3000 3025 3080 for other ports
+                  # ports and container names per machine in local/run.env (not in Git): HTTP_PORT, MAIL_PORT, MAIL_UI_PORT, CONTAINER_NAME
 ```
 
 The site is at `http://localhost:21007`, the admin at `http://localhost:21007/admin`.
